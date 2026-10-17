@@ -93,3 +93,8 @@ export function editIndexFor(editSet, date, ex, sets) {
 export function rolloverDate(current, lastToday, nowToday) {
   return current === lastToday && nowToday !== lastToday ? nowToday : current;
 }
+
+// A day counts as trained when it has logged sets or any cardio.
+export function trainedOn(w) {
+  return !!w && ((w.entries || []).some(e => (e.sets || []).length > 0) || (w.cardio || []).length > 0);
+}

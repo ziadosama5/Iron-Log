@@ -64,3 +64,28 @@ test("long text is cut, not trusted", () => {
   const r = cleanBackupItems([{ id: W.id, data: { ...W.data, dayName: "x".repeat(500) } }], OPTS);
   assert.equal(r.items[0].data.dayName.length, 60);
 });
+
+test("set times and valid cardio are kept", () => {
+  const data = { ...W.data, entries: [{ ex: "Bench Press", sets: [{ w: 60, r: 8, t: 1760000000000 }, { w: 60, r: 8, t: -1 }] }],
+    cardio: [{ id: "c1", type: "bike", min: 30, intensity: "easy", kcal: null }, { id: "c2", type: "treadmill", min: 20, intensity: "hard", kcal: 250 },
+             { id: "c3", type: "rocket", min: 20, intensity: "easy", kcal: null }, { id: "c4", type: "bike", min: 0, intensity: "easy", kcal: null },
+             { id: "c5", type: "bike", min: 20, intensity: "easy", kcal: 9000 }] };
+  const r = cleanBackupItems([{ id: W.id, data }], OPTS).items[0].data;
+  assert.deepEqual(r.entries[0].sets, [{ w: 60, r: 8, t: 1760000000000 }, { w: 60, r: 8 }]);
+  assert.deepEqual(r.cardio, [data.cardio[0], data.cardio[1]]);
+});
+
+test("old workouts without t or cardio restore unchanged", () =>
+  assert.deepEqual(cleanBackupItems([W], OPTS).items, [W]));
+
+test("food docs are cleaned; doc without valid meals is skipped", () => {
+  const f = { id: "f-2026-10-17", data: { date: "2026-10-17", updated: 1, meals: [
+    { id: "m1", name: "Lunch", kcal: 650, protein: 45 }, { id: "m2", name: null, kcal: 300, protein: null },
+    { id: "m3", name: "x", kcal: 0, protein: null }, { id: "m4", name: "y".repeat(80), kcal: 100, protein: 900 }] } };
+  const r = cleanBackupItems([f], OPTS).items[0].data;
+  assert.deepEqual(r.meals.map(m => m.id), ["m1", "m2", "m4"]);
+  assert.equal(r.meals[2].name.length, 40);
+  assert.equal(r.meals[2].protein, null);
+  assert.equal(cleanBackupItems([{ id: "f-2026-10-17", data: { date: "2026-10-17", meals: [] } }], OPTS).skipped, 1);
+  assert.equal(cleanBackupItems([{ id: "f-2026-10-17", data: { date: "2026-10-16", meals: f.data.meals } }], OPTS).skipped, 1);
+});

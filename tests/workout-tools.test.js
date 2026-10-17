@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  defaultRest, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, prefillFor, shouldWake, createWakeLock, editIndexFor, rolloverDate
+  defaultRest, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, prefillFor, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn
 } from "../public/workout-tools.js";
 
 test("defaultRest tiers", () => {
@@ -131,3 +131,10 @@ test("rolloverDate keeps a past date the user picked on purpose", () =>
   assert.equal(rolloverDate("2026-10-10", "2026-10-17", "2026-10-18"), "2026-10-10"));
 test("rolloverDate does nothing on the same day", () =>
   assert.equal(rolloverDate("2026-10-17", "2026-10-17", "2026-10-17"), "2026-10-17"));
+
+test("trainedOn counts sets or cardio", () => {
+  assert.equal(trainedOn({ entries: [{ ex: "Squat", sets: [{ w: 1, r: 1 }] }] }), true);
+  assert.equal(trainedOn({ entries: [{ ex: "Squat", sets: [] }], cardio: [{ type: "bike", min: 20 }] }), true);
+  assert.equal(trainedOn({ entries: [{ ex: "Squat", sets: [] }] }), false);
+  assert.equal(trainedOn({ entries: [], cardio: [] }), false);
+});

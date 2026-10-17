@@ -250,7 +250,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
-import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate } from "./workout-tools.js";
+import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
@@ -269,7 +269,7 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
-let state = { workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, rest:null, editSet:null };
+let state = { workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -289,16 +289,16 @@ const store = {
       if (this.unsub){ this.unsub(); this.unsub=null; }
       this.user=user; state.authed=!!user;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; setSync(""); onData(); return; }
       setSync("Loading your data…");
       this.col = collection(fs, "users", user.uid, "items");
       this.unsub = onSnapshot(this.col, { includeMetadataChanges:true }, snap=>{
-        const ws=[], bs=[]; let prog={}, prof={}, settings={rest:{}};
+        const ws=[], bs=[], food={}; let prog={}, prof={}, settings={rest:{}};
         snap.docs.forEach(d=>{ const v=d.data();
-          if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
+          if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("f-")) food[d.id.slice(2)]={date:d.id.slice(2),meals:v.meals||[]}; else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
         // One-time fix for days missing muscle tags. Only on server data, so a stale offline copy never overwrites newer edits.
         const mp=migrateProgram(prog), days=mp.days;
-        state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings;
+        state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings; state.food=food;
         if(mp.needsSave && !snap.metadata.fromCache) this.saveDays(days);
         setSync(snap.metadata.hasPendingWrites ? (navigator.onLine===false?"Offline · will sync":"Saving…") : (snap.metadata.fromCache?"Offline":"Synced"));
         onData();
@@ -316,7 +316,9 @@ const store = {
   save(w){
     w.updated=Date.now();
     const i=state.workouts.findIndex(x=>x.id===w.id); if(i<0) state.workouts.push(w); else state.workouts[i]=w;
-    this.write(w.id,{date:w.date,dayId:w.dayId||null,dayName:w.dayName||null,entries:w.entries,updated:w.updated});
+    const body={date:w.date,dayId:w.dayId||null,dayName:w.dayName||null,entries:w.entries,updated:w.updated};
+    if(w.cardio) body.cardio=w.cardio;  // only when present: Firestore rejects undefined
+    this.write(w.id,body);
   },
   remove(id){ state.workouts=state.workouts.filter(w=>w.id!==id); this.write(id,null); },
   saveDays(days){ state.days=days; this.write("program",{days,v:PROGRAM_VERSION,updated:Date.now()}); },
@@ -327,6 +329,10 @@ const store = {
   removeBody(date){ state.body=state.body.filter(x=>x.date!==date); this.write("b-"+date,null); },
   saveProfile(p){ state.profile=p; this.write("profile",p); },
   // Whole-doc setDoc, so exercise names containing dots are safe as map keys.
+  // One doc per day of meals; the last meal removed deletes the doc.
+  saveFood(doc){ const meals=doc.meals||[];
+    if(meals.length){ state.food[doc.date]={date:doc.date,meals}; this.write("f-"+doc.date,{date:doc.date,meals,updated:Date.now()}); }
+    else { delete state.food[doc.date]; this.write("f-"+doc.date,null); } },
   saveSettings(s){ state.settings={rest:s.rest}; this.write("settings",{rest:s.rest,updated:Date.now()}); },
   async restore(items){
     // items: [{id, data}] ; Firestore batches hold up to 500 writes
@@ -799,8 +805,8 @@ function insights(){
   }
 
   // Training volume per muscle
-  const wk=state.workouts.filter(w=>daysAgo(w.date)<7&&w.entries.some(e=>e.sets.length));
-  if(state.workouts.some(w=>w.entries.some(e=>e.sets.length))){
+  const wk=state.workouts.filter(w=>daysAgo(w.date)<7&&trainedOn(w));
+  if(state.workouts.some(trainedOn)){
     const sets=weeklySets();
     const lows=MUSCLES.filter(m=>m!=="Core"&&m!=="Calves"&&sets[m]<6).sort((a,b)=>sets[a]-sets[b]).slice(0,3);
     if(wk.length<2) add("Training","warn",`${wk.length} workout${wk.length===1?"":"s"} in the last 7 days`,"Training each muscle about twice a week gives the best results for most people. Aim for 3–4 sessions a week.");
@@ -883,7 +889,7 @@ async function copyReview(){
 
 /* ---------- HISTORY ---------- */
 function renderHistory(){
-  const ws=sorted().filter(w=>w.entries.some(e=>e.sets.length)).reverse();
+  const ws=sorted().filter(trainedOn).reverse();
   let h=`<h2>History</h2>`;
   if(!ws.length){ $("#view-history").innerHTML=h+`<div class="empty"><strong>No workouts yet</strong>Every day you log shows up here. Tap one to open and edit it.</div>`+backupCard(); return; }
   const week=ws.filter(w=>(Date.now()-new Date(w.date+"T12:00:00"))/864e5<7).length;
@@ -919,7 +925,8 @@ function exportData(){
     ...state.body.map(b=>({id:"b-"+b.date,data:b})),
     {id:"program",data:{days:state.days,v:PROGRAM_VERSION,updated:Date.now()}},
     {id:"profile",data:state.profile},
-    {id:"settings",data:{rest:state.settings.rest,updated:Date.now()}}
+    {id:"settings",data:{rest:state.settings.rest,updated:Date.now()}},
+    ...Object.values(state.food).map(fd=>({id:"f-"+fd.date,data:{date:fd.date,meals:fd.meals,updated:Date.now()}}))
   ];
   const blob=new Blob([JSON.stringify({app:"iron-log",version:1,exported:new Date().toISOString(),items},null,1)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="iron-log-backup-"+today()+".json";
@@ -1094,12 +1101,12 @@ document.addEventListener("click",e=>{
     case "save-set":{
       const w=ensureWorkout(), en=w.entries[ei], v=readSet(ei), si=editIndexFor(state.editSet, state.date, en.ex, en.sets);
       if(!v||si<0) return;
-      en.sets[si]={w:v.w,r:v.r}; stopEditing(); store.save(w); renderLog(); break; }
+      en.sets[si]=en.sets[si].t?{w:v.w,r:v.r,t:en.sets[si].t}:{w:v.w,r:v.r}; stopEditing(); store.save(w); renderLog(); break; }
     case "add-set":{
       const w=ensureWorkout(), en=w.entries[ei], v=readSet(ei);
       if(!v) return;
       const wt=v.w, r=v.r;
-      en.sets.push({w:wt,r}); delete ui[en.ex]; store.save(w); renderLog(); startRestFor(en.ex);
+      en.sets.push({w:wt,r,t:Date.now()}); delete ui[en.ex]; store.save(w); renderLog(); startRestFor(en.ex);
       const best=bestBefore(en.ex,state.date);
       if(best>0&&e1rm(wt,r)>best&&en.sets.filter(s=>e1rm(s.w,s.r)>best).length===1) toast("New PR on "+en.ex+"!");
       break; }
