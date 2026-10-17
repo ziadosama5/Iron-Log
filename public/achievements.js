@@ -99,11 +99,23 @@ export const BADGES = [
 ];
 const RATIO_LIFTS = { bench: "bench press", squat: "squat", deadlift: "deadlift" };
 
+const HOLD_KG = 0.5; // a target this close to the start weight means "hold", not lose/gain
+
+// Start weight for a goal: the weight on or before goalStart, else the first one logged after it
+// (people often set the target before their first weigh-in).
+export function startWeight(body, goalStart) {
+  const before = weightOn(body, goalStart);
+  if (before != null) return before;
+  const after = (body || []).filter(b => typeof b.weight === "number" && b.date > goalStart).sort((a, b) => (a.date < b.date ? -1 : 1));
+  return after.length ? after[0].weight : null;
+}
+
 function goalInfo(profile, body) {
   const p = profile || {};
   if (p.goalWeight == null || !p.goalStart) return null;
-  const start = weightOn(body, p.goalStart);
-  return start == null ? null : { start, goal: p.goalWeight, from: p.goalStart, lose: p.goalWeight < start };
+  const start = startWeight(body, p.goalStart);
+  if (start == null || Math.abs(p.goalWeight - start) < HOLD_KG) return null;
+  return { start, goal: p.goalWeight, from: p.goalStart, lose: p.goalWeight < start };
 }
 
 // Replays history day by day; a badge's earned date is the first day its metric reached the target.
@@ -120,13 +132,23 @@ export function badges({ workouts = [], body = [], food = {}, days = [], profile
   const weekCount = new Map();
   const m = { workouts: 0, kcal: 0, cardioMin: 0, volume: 0, prs: 0, bench: 0, squat: 0, deadlift: 0, goalKg: 0, goalReached: 0, streak: 0, foodStreak: 0 };
   const earned = {};
+  // Running values carried from day to day (recounting them for every day was quadratic).
+  const weights = [...bodyOn].sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  let wi = 0, kg = null;                    // latest weight on or before the day
+  let week = null, finishedChain = 0;       // qualifying weeks in a row before the current week
+  let lastMealDay = null, mealRun = 0;      // consecutive days with meals
   for (const d of dates) {
+    while (wi < weights.length && weights[wi][0] <= d) kg = weights[wi++][1];
+    const wk = weekKey(d);
+    if (wk !== week) {
+      finishedChain = week !== null && addDays(week, 7) === wk && (weekCount.get(week) || 0) >= N ? finishedChain + 1 : 0;
+      week = wk;
+    }
+    if (hasMeals(food, d)) { mealRun = lastMealDay === addDays(d, -1) ? mealRun + 1 : 1; lastMealDay = d; }
     const w = byDate.get(d);
     if (w && trainedOn(w)) {
       m.workouts++;
-      const k = weekKey(d);
-      weekCount.set(k, (weekCount.get(k) || 0) + 1);
-      const kg = weightOn(body, d);
+      weekCount.set(wk, (weekCount.get(wk) || 0) + 1);
       m.kcal += exerciseKcal(w, kg).total || 0;
       m.cardioMin += (w.cardio || []).reduce((a, c) => a + (c.min || 0), 0);
       (w.entries || []).forEach(e => (e.sets || []).forEach(s => {
@@ -137,12 +159,10 @@ export function badges({ workouts = [], body = [], food = {}, days = [], profile
       }));
     }
     m.prs += prs.get(d) || 0;
-    // Training streak as of this day: this week if already met, plus the qualifying weeks before it.
-    const cur = weekKey(d);
-    let s = (weekCount.get(cur) || 0) >= N ? 1 : 0;
-    for (let k = addDays(cur, -7); (weekCount.get(k) || 0) >= N; k = addDays(k, -7)) s++;
-    m.streak = s;
-    m.foodStreak = foodStreak(food, d);
+    // Training streak as of this day: qualifying weeks before this one, plus this week once it is met.
+    m.streak = finishedChain + ((weekCount.get(wk) || 0) >= N ? 1 : 0);
+    // Food streak as of this day: ends today, or yesterday when today has no meals yet.
+    m.foodStreak = lastMealDay === d || lastMealDay === addDays(d, -1) ? mealRun : 0;
     if (g && d >= g.from && bodyOn.has(d)) {
       const wt = bodyOn.get(d);
       m.goalKg = Math.max(m.goalKg, g.lose ? g.start - wt : wt - g.start);
@@ -186,9 +206,9 @@ const clamp01 = v => Math.max(0, Math.min(1, v));
 export function goalProgress({ workouts = [], body = [], food = {}, profile = {}, today }) {
   const p = profile || {};
   if (p.goalWeight == null || !p.goalStart) return null;
-  const start = weightOn(body, p.goalStart);
+  const start = startWeight(body, p.goalStart);
   if (start == null) return { needsStartWeight: true };
-  if (Math.abs(p.goalWeight - start) < 0.5) return { hold: true };
+  if (Math.abs(p.goalWeight - start) < HOLD_KG) return { hold: true };
   const target = Math.round((p.goalWeight - start) * KCAL_PER_KG);
   const balances = [];
   let totalDays = 0;
@@ -204,12 +224,14 @@ export function goalProgress({ workouts = [], body = [], food = {}, profile = {}
   const recent = balances.slice(-FINISH_WINDOW);
   const avg = recent.length ? recent.reduce((a, x) => a + x, 0) / recent.length : 0;
   const remaining = target - bank;
-  const toward = avg !== 0 && Math.sign(avg) === Math.sign(remaining);
-  const finish = toward && Math.abs(avg) >= MIN_AVG ? addDays(today, Math.round(remaining / avg)) : null;
+  // Direction is judged against the goal itself, so passing the target never reads as "moving away".
+  const bankReached = Math.sign(remaining) !== Math.sign(target);
+  const toward = avg !== 0 && Math.sign(avg) === Math.sign(target);
+  const finish = !bankReached && toward && Math.abs(avg) >= MIN_AVG ? addDays(today, Math.round(remaining / avg)) : null;
   return {
     direction: p.goalWeight < start ? "lose" : "gain", start, now, goalWeight: p.goalWeight,
     bank, target, bankPct: clamp01(bank / target),
     weightPct: now == null ? 0 : clamp01((start - now) / (start - p.goalWeight)),
-    loggedDays: balances.length, totalDays, finish, awayFromGoal: avg !== 0 && !toward,
+    loggedDays: balances.length, totalDays, finish, bankReached, awayFromGoal: !bankReached && avg !== 0 && !toward,
   };
 }

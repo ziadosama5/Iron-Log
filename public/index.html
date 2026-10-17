@@ -327,6 +327,7 @@ const store = {
         // One-time fix for days missing muscle tags. Only on server data, so a stale offline copy never overwrites newer edits.
         const mp=migrateProgram(prog), days=mp.days;
         state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings; state.food=food; state.serverSynced=!snap.metadata.fromCache;
+        if(snap.docChanges().length) state.dataRev=(state.dataRev||0)+1;  // metadata-only snapshots ("saved") change nothing
         if(mp.needsSave && !snap.metadata.fromCache) this.saveDays(days);
         setSync(snap.metadata.hasPendingWrites ? (navigator.onLine===false?"Offline · will sync":"Saving…") : (snap.metadata.fromCache?"Offline":"Synced"));
         onData();
@@ -990,7 +991,7 @@ function renderGoals(){
   else goal=`<div class="gbar"><div class="row label"><span class="grow">Calorie bank</span><span class="num">${signed(g.bank)} / ${signed(g.target)} kcal</span></div><div class="ebar"><i style="width:${g.bankPct*100}%"></i></div></div>
     <div class="gbar"><div class="row label"><span class="grow">Weight</span><span class="num">${kg(g.start)} → ${kg(g.goalWeight)} kg · ${Math.round(g.weightPct*100)}%</span></div><div class="ebar"><i style="width:${g.weightPct*100}%"></i></div></div>
     <p class="prev" style="margin:0">Based on ${g.loggedDays} of ${g.totalDays} days with meals logged.</p>
-    <p style="margin:0">${g.finish?`Estimated finish: <b>${esc(fmtDateY(g.finish))}</b>`:g.awayFromGoal?"At this pace you're moving away from your goal.":"Log meals for a few days to estimate a finish date."}</p>`;
+    <p style="margin:0">${g.bankReached?"Calorie target reached. Keep logging until the scale catches up.":g.finish?`Estimated finish: <b>${esc(fmtDateY(g.finish))}</b>`:g.awayFromGoal?"At this pace you're moving away from your goal.":"Log meals for a few days to estimate a finish date."}</p>`;
   const dots=Array.from({length:ts.target},(_,i)=>i<ts.thisWeek?"●":"○").join("");
   const earned=list.filter(b=>b.earned).sort((a,b)=>a.earned<b.earned?1:a.earned>b.earned?-1:0), locked=list.filter(b=>!b.earned);
   const tile=b=>`<div class="ach ${b.earned?"on":""}"><span class="medal" aria-hidden="true"></span><span class="bname">${esc(b.name)}</span><span class="prev bsub">${esc(badgeProgress(b))}</span></div>`;
@@ -1006,8 +1007,11 @@ function renderGoals(){
 }
 // New badges toast once (across devices). Runs only on server-confirmed data, so an empty offline
 // cache on a new device can't overwrite the saved list. First run marks existing badges silently.
+let badgeRev=null;
 function checkBadges(){
   if(!state.authed||!state.serverSynced) return;
+  if(badgeRev===state.dataRev) return;  // nothing changed since the last check
+  badgeRev=state.dataRev;
   const earned=badges(goalsInput()).filter(b=>b.earned), seen=state.settings.seenBadges;
   if(seen===undefined){ store.saveSettings({seenBadges:earned.map(b=>b.id)}); return; }
   const fresh=earned.filter(b=>!seen.includes(b.id));

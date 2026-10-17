@@ -129,5 +129,49 @@ test("goalProgress: away from goal", () => {
 });
 
 test("goalProgress hold", () => assert.deepEqual(goalProgress(goalInput({ profile: { goalWeight: 80.2, goalStart: "2026-10-01" } })), { hold: true }));
-test("goalProgress needs a start weight", () => assert.deepEqual(goalProgress(goalInput({ body: [{ date: "2026-10-02", weight: 79 }] })), { needsStartWeight: true }));
+test("goalProgress needs a start weight (no weight logged at all)", () => assert.deepEqual(goalProgress(goalInput({ body: [] })), { needsStartWeight: true }));
 test("goalProgress without a goal", () => assert.equal(goalProgress({ ...base, workouts: [] }), null));
+
+test("goalProgress uses the first weight after goalStart when none was logged before it", () => {
+  const g = goalProgress(goalInput({ body: [{ date: "2026-10-02", weight: 80 }, { date: "2026-10-03", weight: 79 }] }));
+  assert.equal(g.start, 80);
+  assert.equal(g.direction, "lose");
+});
+
+test("goalProgress: passing the calorie target is not 'moving away'", () => {
+  const big = { "2026-10-01": { date: "2026-10-01", meals: [{ id: "a", kcal: 1 }] }, "2026-10-02": { date: "2026-10-02", meals: [{ id: "b", kcal: 1 }] } };
+  const g = goalProgress(goalInput({ food: big, profile: { ...goalInput().profile, goalWeight: 79.5 } })); // target −3,850; bank ≈ −4,294
+  assert.equal(g.bankReached, true);
+  assert.equal(g.awayFromGoal, false);
+  assert.equal(g.finish, null);
+  assert.equal(g.bankPct, 1);
+});
+
+test("a target equal to the start weight earns no goal badges", () => {
+  const list = badges({ ...base, workouts: [], profile: { goalWeight: 80, goalStart: "2026-10-01" },
+    body: [{ date: "2026-10-01", weight: 80 }, { date: "2026-10-05", weight: 81.2 }] });
+  assert.equal(B(list, "goal-reached").earned, null);
+  assert.equal(B(list, "goal-first-kg").earned, null);
+});
+
+test("goal badges also use the first weight after goalStart", () => {
+  const list = badges({ ...base, workouts: [], profile: { goalWeight: 75, goalStart: "2026-10-01" },
+    body: [{ date: "2026-10-03", weight: 80 }, { date: "2026-10-12", weight: 78.8 }] });
+  assert.equal(B(list, "goal-first-kg").earned, "2026-10-12");
+});
+
+test("badges() stays fast with two years of daily data", () => {
+  const ws = [], food = {}, body = [];
+  for (let i = 0; i < 730; i++) {
+    const d = new Date("2025-01-01T12:00:00"); d.setDate(d.getDate() + i);
+    const k = d.toISOString().slice(0, 10);
+    food[k] = { date: k, meals: [{ id: "m", kcal: 2000 }] };
+    if (i % 7 < 4) ws.push(wo(k, [S(60 + (i % 20), 5), S(60, 5)]));
+    if (i % 3 === 0) body.push({ date: k, weight: 80 });
+  }
+  const t0 = performance.now();
+  const list = badges({ ...base, today: "2026-12-31", workouts: ws, food, body });
+  const ms = performance.now() - t0;
+  assert.equal(B(list, "food-30").earned, "2025-01-30");
+  assert.ok(ms < 150, `took ${Math.round(ms)} ms`);
+});
