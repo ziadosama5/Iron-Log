@@ -188,6 +188,11 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .ex-tips{margin:6px 0 10px;padding-left:20px}
 .ex-tips li{margin:3px 0}
 .ex-credit{margin:0;font-size:12px}
+.cardio-adder{grid-template-columns:1fr 1fr}
+.cardio-adder .btn{grid-column:1/-1}
+.cardio-list{list-style:none;margin:0;padding:0}
+.cardio-list li{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--line)}
+.cardio-list li:last-child{border-bottom:0}
 /* "!" exercise info buttons: small visible circle, 44px tap area */
 .infobtn{appearance:none;border:0;background:none;color:var(--muted);padding:11px;margin:-11px 0;flex:none;cursor:pointer;display:grid;place-items:center;font:inherit}
 .infobtn .ib{width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font:700 13px/1 var(--f-body)}
@@ -252,6 +257,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
+import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 (function(){
@@ -269,7 +275,7 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
-let state = { workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, rest:null, editSet:null };
+let state = { workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -400,7 +406,9 @@ function renderLog(){
     <input type="date" id="log-date" value="${state.date}" max="${today()}" style="width:auto">
   </div>`;
 
-  if (!w || state.pickDay){ $("#view-log").innerHTML = h + dayPicker(w); fillDatalist(); syncWake(); return; }
+  // A day with only cardio still asks which training day it is (the cardio is kept when one is picked).
+  const cardioOnly = w && !w.dayId && !w.entries.length && w.dayName==="Cardio";
+  if (!w || state.pickDay || cardioOnly){ $("#view-log").innerHTML = h + dayPicker(cardioOnly&&!state.pickDay?null:w) + cardioCard(); fillDatalist(); syncWake(); return; }
 
   const day = dayById(w.dayId);
   const entries = w.entries;
@@ -464,6 +472,7 @@ function renderLog(){
       <input id="new-ex" list="ex-list" placeholder="Or type any exercise" style="flex:1 1 180px">
       <button class="btn" type="submit">Add</button>
     </form></div>`;
+  h += cardioCard();
   $("#view-log").innerHTML = h; fillDatalist(); syncWake();
 }
 function dayPicker(w){
@@ -482,6 +491,23 @@ function dayPicker(w){
   </div>`;
 }
 function fillDatalist(){ $("#ex-list").innerHTML=[...new Set([...exerciseNames(),...ALL_EX])].map(n=>`<option value="${esc(n)}">`).join(""); }
+/* cardio card (Workout tab) */
+const CARDIO_LABEL={treadmill:"Treadmill",elliptical:"Elliptical",bike:"Bike",other:"Other"};
+const INT_LABEL={easy:"Easy",moderate:"Moderate",hard:"Hard"};
+function cardioText(c,kg){ const k=cardioKcal(c,kg); return c.kcal!=null?`${k} kcal`:k!=null?`~${k} kcal est.`:"log weight for kcal"; }
+function cardioCard(){
+  const w=workoutFor(state.date), list=(w&&w.cardio)||[], kg=weightOn(state.body,state.date), d=state.cardioDraft;
+  const rows=list.map(c=>`<li><span class="grow">${CARDIO_LABEL[c.type]||"Cardio"} · ${c.min} min · ${cardioText(c,kg)}</span><button class="btn ghost small danger" data-act="rm-cardio" data-id="${esc(c.id)}" aria-label="Delete ${CARDIO_LABEL[c.type]||"cardio"} session">✕</button></li>`).join("");
+  return `<div class="card" id="cardio-card"><h3>Cardio</h3>
+    ${rows?`<ul class="cardio-list">${rows}</ul>`:""}
+    <div class="stack" style="gap:6px"><span class="label">Type</span><div class="chips">${CARDIO_TYPES.map(t=>`<button class="chip" data-act="cardio-type" data-v="${t}" aria-pressed="${d.type===t}">${CARDIO_LABEL[t]}</button>`).join("")}</div></div>
+    <div class="stack" style="gap:6px"><span class="label">Intensity · used when kcal is blank</span><div class="chips">${INTENSITIES.map(i=>`<button class="chip" data-act="cardio-int" data-v="${i}" aria-pressed="${d.intensity===i}">${INT_LABEL[i]}</button>`).join("")}</div></div>
+    <div class="adder cardio-adder">
+      <label><span class="label">Minutes</span><div class="stepper"><button data-act="cardio-step" data-d="-5" aria-label="Minus 5 minutes">−</button><input id="cardio-min" inputmode="numeric" value="${esc(d.min)}"><button data-act="cardio-step" data-d="5" aria-label="Plus 5 minutes">+</button></div></label>
+      <label><span class="label">Machine kcal</span><input id="cardio-kcal" inputmode="numeric" placeholder="optional" value="${esc(d.kcal)}"></label>
+      <button class="btn primary" data-act="add-cardio">Add cardio</button>
+    </div></div>`;
+}
 // "!" button that opens the exercise info sheet; nothing for exercises without info.
 function infoBtn(name){ return infoFor(name) ? `<button class="infobtn" data-act="ex-info" data-name="${esc(name)}" aria-label="About ${esc(name)}"><span class="ib" aria-hidden="true">!</span></button>` : ""; }
 function chipInfo(chip,name){ const i=infoBtn(name); return i ? `<span class="chipgrp">${chip}${i}</span>` : chip; }
@@ -899,13 +925,18 @@ function renderHistory(){
     const v=done.reduce((a,e)=>a+vol(e.sets),0), sets=done.reduce((a,e)=>a+e.sets.length,0);
     const day=dayById(w.dayId), dname=day?day.name:(w.dayName||"Free workout");
     h+=`<div class="card" data-open="${esc(w.date)}" tabindex="0" style="cursor:pointer">
-      <div class="ex-head"><div class="stack" style="gap:6px;min-width:0"><span class="prev">${fmtDateY(w.date)}</span><span class="daytag" style="align-self:flex-start">${esc(dname)}</span></div><span class="num prev" style="white-space:nowrap">${sets} sets · ${kg(v)} kg</span></div>
-      <div class="chips">${done.map(e=>`<span class="chip">${esc(e.ex)} · ${e.sets.length}</span>`).join("")}</div>
+      <div class="ex-head"><div class="stack" style="gap:6px;min-width:0"><span class="prev">${fmtDateY(w.date)}</span><span class="daytag" style="align-self:flex-start">${esc(dname)}</span></div><span class="num prev" style="white-space:nowrap">${historySummary(w,sets,v)}</span></div>
+      <div class="chips">${done.map(e=>`<span class="chip">${esc(e.ex)} · ${e.sets.length}</span>`).join("")}${(w.cardio||[]).map(c=>`<span class="chip">${CARDIO_LABEL[c.type]||"Cardio"} ${c.min} min</span>`).join("")}</div>
       <div class="row" style="justify-content:flex-end">${state.confirmDel===w.id
         ?`<span class="prev">Delete this workout?</span><button class="btn small" data-act="cancel-del">Keep</button><button class="btn small danger" data-act="del-w" data-id="${w.id}">Delete</button>`
         :`<button class="btn ghost small danger" data-act="ask-del" data-id="${w.id}">Delete</button>`}</div></div>`;
   });
   $("#view-history").innerHTML=h+"</div>"+backupCard();
+}
+function historySummary(w,sets,v){
+  const parts=[]; if(sets) parts.push(`${sets} sets · ${kg(v)} kg`);
+  const ek=exerciseKcal(w,weightOn(state.body,w.date)).total; if(ek) parts.push(`${ek.toLocaleString()} kcal exercise`);
+  return parts.join(" · ");
 }
 function backupCard(){
   let last=null; try{ last=localStorage.getItem("ironlog.lastBackup"); }catch(e){}
@@ -1052,7 +1083,7 @@ function go(view){ state.view=view; try{localStorage.setItem("ironlog.view",view
 document.querySelector("nav").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) go(b.dataset.view); });
 let renameTimer=null;
 document.addEventListener("input",e=>{
-  const r=e.target; if(r.dataset&&r.dataset.actChange==="rename"){ clearTimeout(renameTimer); renameTimer=setTimeout(()=>{ const v=r.value.trim(); if(v&&dayById(r.dataset.id)&&dayById(r.dataset.id).name!==v) editDays(ds=>{ ds.find(d=>d.id===r.dataset.id).name=v; },{quiet:true}); },700); } const t=e.target; if(t.dataset.f&&t.dataset.ex!=null){ (ui[t.dataset.ex]||={w:"",r:""})[t.dataset.f]=t.value; } });
+  const r=e.target; if(r.dataset&&r.dataset.actChange==="rename"){ clearTimeout(renameTimer); renameTimer=setTimeout(()=>{ const v=r.value.trim(); if(v&&dayById(r.dataset.id)&&dayById(r.dataset.id).name!==v) editDays(ds=>{ ds.find(d=>d.id===r.dataset.id).name=v; },{quiet:true}); },700); } const t=e.target; if(t.id==="cardio-min") state.cardioDraft.min=t.value; if(t.id==="cardio-kcal") state.cardioDraft.kcal=t.value; if(t.dataset.f&&t.dataset.ex!=null){ (ui[t.dataset.ex]||={w:"",r:""})[t.dataset.f]=t.value; } });
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.id==="log-date"&&t.value){ stopEditing(); state.date=t.value; state.pickDay=false; state.openEx=undefined; renderLog(); }
@@ -1113,6 +1144,16 @@ document.addEventListener("click",e=>{
     case "rest-adj": adjustRestBy(+b.dataset.d); break;
     case "rest-skip": clearRest(); break;
     case "ex-info": openExInfo(b.dataset.name); break;
+    case "cardio-type": state.cardioDraft.type=b.dataset.v; renderLog(); break;
+    case "cardio-int": state.cardioDraft.intensity=b.dataset.v; renderLog(); break;
+    case "cardio-step":{ const d=state.cardioDraft; d.min=String(Math.max(1,Math.min(600,(parseInt(d.min,10)||0)+(+b.dataset.d)))); renderLog(); break; }
+    case "add-cardio":{
+      const d=state.cardioDraft, mRaw=String(d.min).trim(), kRaw=String(d.kcal).trim(), m=Number(mRaw), k=kRaw===""?null:Number(kRaw);
+      if(!(Number.isInteger(m)&&m>=1&&m<=600) || (k!==null&&!(Number.isInteger(k)&&k>=1&&k<=5000))){ toast("Enter 1–600 minutes and, if you have it, 1–5000 kcal"); return; }
+      const w=ensureWorkout(); if(!workoutFor(state.date)&&!w.dayName) w.dayName="Cardio";
+      w.cardio=[...(w.cardio||[]),{id:uid(),type:d.type,min:m,intensity:d.intensity,kcal:k}];
+      store.save(w); d.kcal=""; renderLog(); toast("Cardio added"); break; }
+    case "rm-cardio":{ const w=ensureWorkout(); w.cardio=(w.cardio||[]).filter(c=>c.id!==b.dataset.id); store.save(w); renderLog(); break; }
     case "exinfo-close": closeExInfo(); break;
     case "rm-set":{ const w=ensureWorkout(), en=w.entries[ei], si=+b.dataset.si;
       // Deleting the edited set or one before it would shift indexes, so leave edit mode.
