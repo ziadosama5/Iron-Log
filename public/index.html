@@ -252,7 +252,7 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
-let state = { workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false };
+let state = { workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -272,14 +272,14 @@ const store = {
       if (this.unsub){ this.unsub(); this.unsub=null; }
       this.user=user; state.authed=!!user;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; setSync(""); onData(); return; }
       setSync("Loading your data…");
       this.col = collection(fs, "users", user.uid, "items");
       this.unsub = onSnapshot(this.col, { includeMetadataChanges:true }, snap=>{
-        const ws=[], bs=[]; let days=[], prof={};
+        const ws=[], bs=[]; let days=[], prof={}, settings={rest:{}};
         snap.docs.forEach(d=>{ const v=d.data();
-          if(d.id==="program") days=v.days||[]; else if(d.id==="profile") prof=v; else if(d.id.startsWith("b-")) bs.push(v); else ws.push({id:d.id,...v}); });
-        state.workouts=ws; state.days=days; state.body=bs; state.profile=prof;
+          if(d.id==="program") days=v.days||[]; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
+        state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings;
         setSync(snap.metadata.hasPendingWrites ? (navigator.onLine===false?"Offline · will sync":"Saving…") : (snap.metadata.fromCache?"Offline":"Synced"));
         onData();
       }, err=>{ setSync("Sync stopped. Reload to reconnect"); console.error(err); });
@@ -306,6 +306,8 @@ const store = {
   },
   removeBody(date){ state.body=state.body.filter(x=>x.date!==date); this.write("b-"+date,null); },
   saveProfile(p){ state.profile=p; this.write("profile",p); },
+  // Whole-doc setDoc, so exercise names containing dots are safe as map keys.
+  saveSettings(s){ state.settings={rest:s.rest}; this.write("settings",{rest:s.rest,updated:Date.now()}); },
   async restore(items){
     // items: [{id, data}] ; Firestore batches hold up to 500 writes
     for (let i=0;i<items.length;i+=450){
@@ -882,7 +884,8 @@ function exportData(){
     ...state.workouts.map(w=>{ const {id,...data}=w; return {id,data}; }),
     ...state.body.map(b=>({id:"b-"+b.date,data:b})),
     {id:"program",data:{days:state.days,updated:Date.now()}},
-    {id:"profile",data:state.profile}
+    {id:"profile",data:state.profile},
+    {id:"settings",data:{rest:state.settings.rest,updated:Date.now()}}
   ];
   const blob=new Blob([JSON.stringify({app:"iron-log",version:1,exported:new Date().toISOString(),items},null,1)],{type:"application/json"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download="iron-log-backup-"+today()+".json";
@@ -894,7 +897,7 @@ async function importData(file){
   try{
     const j=JSON.parse(await file.text());
     if(j.app!=="iron-log"||!Array.isArray(j.items)) throw new Error("format");
-    const items=j.items.filter(it=>it&&typeof it.id==="string"&&/^(w-|b-)\d{4}-\d{2}-\d{2}$|^program$|^profile$/.test(it.id)&&it.data&&typeof it.data==="object");
+    const items=j.items.filter(it=>it&&typeof it.id==="string"&&/^(w-|b-)\d{4}-\d{2}-\d{2}$|^program$|^profile$|^settings$/.test(it.id)&&it.data&&typeof it.data==="object");
     await store.restore(items); toast("Restored "+items.length+" items");
   }catch(e){ console.error(e); toast(e.message==="format"?"That file isn't an Iron Log backup":"Couldn't restore that file"); }
 }
