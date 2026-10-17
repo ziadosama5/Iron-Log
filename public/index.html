@@ -12,14 +12,17 @@
 <title>Iron Log</title>
 <link rel="icon" type="image/svg+xml" href="/logo-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<script>/* apply the saved theme before the page draws */try{var t=localStorage.getItem("ironlog.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: single phone-first column, sticky top bar with four tabs (Workout / Days / Progress / History); plate-blue accent on cold steel neutrals */
+/* "Clean plate": phone-first single column, soft white cards on a light steel background (navy/slate in dark), plate-blue accent, bottom tab bar */
 :root{
-  --bg:#eef1f5; --surface:#ffffff; --sunk:#e3e8ef; --line:#cfd6e0;
+  --bg:#f3f5f9; --surface:#ffffff; --sunk:#eef2f8; --line:#e3e8ef;
   --fg:#141a23; --muted:#5b6676; --accent:#1f5fd1; --accent-ink:#ffffff; --accent-soft:#dbe6fb;
   --good:#1d8a52; --danger:#c43a2f;
+  --shadow:0 1px 3px rgb(20 30 50 / .08); --card-border:transparent;
+  --r-card:18px; --r-btn:14px; --tabbar:64px;
   --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-num:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
@@ -27,11 +30,11 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f1319; --surface:#171d26; --sunk:#0b0f14; --line:#283140;
   --fg:#e6ebf2; --muted:#8c97a8; --accent:#6c9cff; --accent-ink:#0b1220; --accent-soft:#1b2a47;
-  --good:#4cc78a; --danger:#ff7a6e; color-scheme:dark}}
+  --good:#4cc78a; --danger:#ff7a6e; --shadow:none; --card-border:var(--line); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f1319; --surface:#171d26; --sunk:#0b0f14; --line:#283140;
   --fg:#e6ebf2; --muted:#8c97a8; --accent:#6c9cff; --accent-ink:#0b1220; --accent-soft:#1b2a47;
-  --good:#4cc78a; --danger:#ff7a6e; color-scheme:dark}
+  --good:#4cc78a; --danger:#ff7a6e; --shadow:none; --card-border:var(--line); color-scheme:dark}
 
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
@@ -65,6 +68,11 @@ details[open] summary{margin-bottom:10px}
 .ai{white-space:pre-wrap;font-size:14px;line-height:1.6}
 nav button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
 main{padding-block:18px 64px}
+/* big stepper: − value + with 48px round buttons (Workout focus mode) */
+.bigstep{display:flex;align-items:center;gap:8px;background:var(--sunk);border-radius:16px;padding:6px}
+.bigstep button{appearance:none;flex:none;width:48px;height:48px;border-radius:50%;border:0;background:var(--surface);color:var(--accent);font:700 22px/1 var(--f-body);box-shadow:var(--shadow);cursor:pointer}
+.bigstep input{flex:1;border:0;background:none;text-align:center;font:600 28px/1 var(--f-num);padding:6px 0}
+.bigstep input:focus-visible{outline-offset:-2px}
 .view{display:flex;flex-direction:column;gap:16px}
 h2{font:700 22px/1.1 var(--f-display);letter-spacing:.03em;text-transform:uppercase;margin:0;text-wrap:balance}
 h3{font:700 16px/1.1 var(--f-display);letter-spacing:.06em;text-transform:uppercase;margin:0;color:var(--muted)}
@@ -73,15 +81,17 @@ h3{font:700 16px/1.1 var(--f-display);letter-spacing:.06em;text-transform:upperc
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .grow{flex:1;min-width:0}
 .stack{display:flex;flex-direction:column;gap:10px}
-input,select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0;width:100%}
+input,select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0;width:100%}
 input:focus-visible,select:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:600 14px/1 var(--f-body);padding:11px 14px;border-radius:8px;cursor:pointer;white-space:nowrap}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:600 14px/1 var(--f-body);padding:11px 14px;min-height:44px;border-radius:var(--r-btn);cursor:pointer;white-space:nowrap}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);min-height:48px}
+.btn.secondary{background:var(--surface);border-color:var(--line);color:var(--fg)}
+.btn.small,.btn.ghost{min-height:0}
 .btn.ghost{border-color:transparent;background:none;color:var(--muted);padding:8px}
 .btn.danger{color:var(--danger)}
 .btn.small{padding:7px 10px;font-size:13px}
 .btn:active{transform:translateY(1px)}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border:1px solid var(--card-border);border-radius:var(--r-card);box-shadow:var(--shadow);padding:16px;display:flex;flex-direction:column;gap:12px}
 .ex-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .ex-name{font:700 20px/1.1 var(--f-display);letter-spacing:.02em;text-transform:uppercase;overflow-wrap:anywhere}
 .prev{font-size:13px;color:var(--muted)}
@@ -227,6 +237,15 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 </style>
 </head>
 <body>
+<!-- line icons (24×24, stroke = currentColor); used with <svg><use href="#i-…"/></svg> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-workout" viewBox="0 0 24 24"><path d="M3 10v4M6 7v10M18 7v10M21 10v4M6 12h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-coach" viewBox="0 0 24 24"><path d="M5 5h14v10H10l-5 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-body" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 10a4 4 0 0 1 6 0M12 10l1-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-goals" viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="18" cy="12" r="1.8" fill="currentColor"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
 
 <header>
   <div class="wrap">
@@ -278,6 +297,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
+import { themeAttr, sortTips, withWeight } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION } from "./exercise-library.js";
@@ -1163,6 +1183,17 @@ function resumeRest(){
   if(ph==="resting"||ph==="go"){ state.rest=r; restAlerted=ph==="go"; runRest(); } else clearRest();
 }
 
+/* ---------- THEME ---------- */
+// "system" follows the phone; light/dark override it. The <head> script applies it before first paint.
+function currentTheme(){ try{ const t=localStorage.getItem("ironlog.theme"); return t==="light"||t==="dark"?t:"system"; }catch(e){ return "system"; } }
+function applyTheme(setting){
+  try{ localStorage.setItem("ironlog.theme",setting); }catch(e){}
+  const a=themeAttr(setting);
+  if(a) document.documentElement.dataset.theme=a; else delete document.documentElement.dataset.theme;
+  const m=document.querySelector('meta[name="theme-color"]');
+  if(m) m.content=getComputedStyle(document.documentElement).getPropertyValue("--surface").trim()||"#ffffff";
+}
+
 /* ---------- render + events ---------- */
 const VIEWS=["log","days","body","coach","goals","progress","history"];
 function renderSignin(){
@@ -1345,6 +1376,7 @@ if ("serviceWorker" in navigator) {
 }
 if(!configured) $("#signout").hidden=true;
 render();
+applyTheme(currentTheme());
 resumeRest();
 // Don't redraw under someone who is typing; redraw as soon as they leave the field instead.
 const typing=()=>{ const a=document.activeElement; return !!(a&&a.matches&&a.matches("input:not([type=date]),select,textarea")); };
