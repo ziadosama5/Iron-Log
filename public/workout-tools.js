@@ -98,3 +98,20 @@ export function rolloverDate(current, lastToday, nowToday) {
 export function trainedOn(w) {
   return !!w && ((w.entries || []).some(e => (e.sets || []).length > 0) || (w.cardio || []).length > 0);
 }
+
+// Focus mode: the next exercise not marked done after `fromIndex`, wrapping around (never fromIndex
+// itself). fromIndex -1 searches from the start. -1 when every other exercise is done.
+export function nextUnfinished(entries, fromIndex) {
+  const n = (entries || []).length;
+  for (let k = 1; k <= n; k++) {
+    const i = (fromIndex + k + n) % n;
+    if (i !== fromIndex && !entries[i].done) return i;
+  }
+  return -1;
+}
+
+// Whole minutes since the first timed set of a workout; null when no set has a time.
+export function elapsedMin(workout, now) {
+  const t = ((workout && workout.entries) || []).flatMap(e => (e.sets || []).map(s => s.t)).filter(x => typeof x === "number" && x > 0);
+  return t.length ? Math.floor((now - Math.min(...t)) / 60000) : null;
+}

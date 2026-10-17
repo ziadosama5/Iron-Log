@@ -1,0 +1,19 @@
+// Small pure helpers for the UI (theme, tip order, quick weight). Unit-tested in tests/ui-helpers.test.js.
+
+// Theme setting ("system" | "light" | "dark") → value for <html data-theme>, or null to follow the phone.
+export function themeAttr(setting) {
+  return setting === "light" || setting === "dark" ? setting : null;
+}
+
+// Coach tips: warnings first, then info, then good news; order kept within each group.
+const TONE_ORDER = { warn: 0, info: 1, good: 2 };
+export function sortTips(items) {
+  return (items || []).map((t, i) => [t, i])
+    .sort((a, b) => (TONE_ORDER[a[0].tone] ?? 1) - (TONE_ORDER[b[0].tone] ?? 1) || a[1] - b[1])
+    .map(([t]) => t);
+}
+
+// Body tab quick weight: set the weight on that day's entry and keep everything else.
+export function withWeight(entry, date, kg) {
+  return { ...(entry || { date }), weight: kg };
+}

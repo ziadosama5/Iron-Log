@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  defaultRest, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, prefillFor, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn
+  defaultRest, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, prefillFor, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin
 } from "../public/workout-tools.js";
 
 test("defaultRest tiers", () => {
@@ -137,4 +137,20 @@ test("trainedOn counts sets or cardio", () => {
   assert.equal(trainedOn({ entries: [{ ex: "Squat", sets: [] }], cardio: [{ type: "bike", min: 20 }] }), true);
   assert.equal(trainedOn({ entries: [{ ex: "Squat", sets: [] }] }), false);
   assert.equal(trainedOn({ entries: [], cardio: [] }), false);
+});
+
+test("nextUnfinished wraps and skips the current one", () => {
+  const e = [{ done: true }, {}, { done: true }, {}];
+  assert.equal(nextUnfinished(e, 1), 3);
+  assert.equal(nextUnfinished(e, 3), 1);
+  assert.equal(nextUnfinished(e, -1), 1);
+  assert.equal(nextUnfinished([{ done: true }, {}], 1), -1);
+  assert.equal(nextUnfinished([], -1), -1);
+});
+
+test("elapsedMin from the first timed set", () => {
+  const T = 1760000000000;
+  assert.equal(elapsedMin({ entries: [{ sets: [{ w: 1, r: 1, t: T + 60000 }, { w: 1, r: 1, t: T }] }] }, T + 38 * 60000 + 30000), 38);
+  assert.equal(elapsedMin({ entries: [{ sets: [{ w: 1, r: 1 }] }] }, T), null);
+  assert.equal(elapsedMin(null, T), null);
 });
