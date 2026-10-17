@@ -10,7 +10,8 @@ function rgb(color) {
 }
 
 // Everkinetic drawings use one near-black line color and white fills. Lines follow the text
-// color (currentColor) and fills use --ex-bg, so the drawing matches light and dark themes.
+// color (currentColor) and white shapes get class="exbg" (filled from CSS), so the drawing
+// matches light and dark themes. var() inside SVG attributes isn't reliable in every browser.
 // Any other color throws, so a surprising source file is caught at import time.
 export function recolorSvg(text, label = "svg") {
   if (/style="[^"]*fill/i.test(text)) throw new Error(`${label}: fill inside a style attribute is not supported`);
@@ -22,7 +23,7 @@ export function recolorSvg(text, label = "svg") {
       if (color === "none") return all;
       const v = rgb(color);
       if (v && v.every(n => n <= 0x60)) return 'fill="currentColor"';
-      if (v && v.every(n => n === 255)) return 'fill="var(--ex-bg)"';
+      if (v && v.every(n => n === 255)) return 'class="exbg"';
       throw new Error(`${label}: unexpected fill ${color}`);
     })
     .replace(/<svg\b([^>]*)>/, (all, attrs) => "<svg" + attrs.replace(/\s(width|height)="[^"]*"/g, "") + ">")

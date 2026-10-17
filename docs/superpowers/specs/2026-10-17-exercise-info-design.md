@@ -50,7 +50,7 @@ Tapping a "!" next to an exercise shows what the move looks like (start and fini
 
 `recolorSvg(text)`:
 - any near-black fill (R, G and B all ≤ 0x60, e.g. `#333`, `#2e2e2c`, `#40413f`; two source files use the latter) → `fill="currentColor"`
-- `fill="#FFF"` (and `#FFFFFF`, `white`, any case) → `fill="var(--ex-bg)"`
+- `fill="#FFF"` (and `#FFFFFF`, `white`, any case) → `class="exbg"`, filled from CSS (`var()` inside SVG presentation attributes is not reliable in every browser)
 - Removes the root `width`/`height` attributes (keeps `viewBox`) so CSS sizes it; strips XML prolog, comments and editor metadata; collapses whitespace.
 - Throws if the input contains any other fill color, so a surprising source file is caught at import time rather than shipped.
 

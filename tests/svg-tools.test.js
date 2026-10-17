@@ -7,13 +7,14 @@ const SRC = '<?xml version="1.0"?><!-- c --><svg width="268pt" height="275pt" vi
 test("recolorSvg maps line and background fills", () => {
   const out = recolorSvg(SRC);
   assert.match(out, /fill="currentColor"/);
-  assert.match(out, /fill="var\(--ex-bg\)"/);
-  assert.doesNotMatch(out, /#333|#FFF/i);
+  // Background shapes get a class (styled from CSS); var() inside SVG attributes isn't reliable in all browsers.
+  assert.match(out, /<g class="exbg">/);
+  assert.doesNotMatch(out, /#333|#FFF|var\(/i);
 });
 
 test("recolorSvg accepts other near-black and white spellings", () => {
   for (const c of ["#2e2e2c", "#40413F", "#333333", "#000"]) assert.match(recolorSvg(SRC.replace("#333", c)), /currentColor/, c);
-  for (const c of ["#ffffff", "white", "#FfF"]) assert.match(recolorSvg(SRC.replace("#FFF", c)), /var\(--ex-bg\)/, c);
+  for (const c of ["#ffffff", "white", "#FfF"]) assert.match(recolorSvg(SRC.replace("#FFF", c)), /class="exbg"/, c);
 });
 
 test("recolorSvg drops width/height, keeps viewBox, strips prolog and comments", () => {
