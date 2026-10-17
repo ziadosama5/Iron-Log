@@ -223,7 +223,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
-import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock } from "./workout-tools.js";
+import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock } from "./workout-tools.js";
 (function(){
 /* ---------- exercise library ---------- */
 const LIB = {
@@ -396,7 +396,7 @@ function renderLog(){
     <input type="date" id="log-date" value="${state.date}" max="${today()}" style="width:auto">
   </div>`;
 
-  if (!w || state.pickDay){ $("#view-log").innerHTML = h + dayPicker(w); fillDatalist(); return; }
+  if (!w || state.pickDay){ $("#view-log").innerHTML = h + dayPicker(w); fillDatalist(); syncWake(); return; }
 
   const day = dayById(w.dayId);
   const entries = w.entries;
@@ -460,7 +460,7 @@ function renderLog(){
       <input id="new-ex" list="ex-list" placeholder="Or type any exercise" style="flex:1 1 180px">
       <button class="btn" type="submit">Add</button>
     </form></div>`;
-  $("#view-log").innerHTML = h; fillDatalist();
+  $("#view-log").innerHTML = h; fillDatalist(); syncWake();
 }
 function dayPicker(w){
   if (!state.days.length) return `<div class="empty"><strong>Set up your training days</strong>Split your week into days like Push, Pull and Legs. Each day keeps its own exercise list, so starting a workout is one tap.
@@ -935,6 +935,10 @@ async function importData(file){
   }catch(e){ console.error(e); toast(e.message==="format"?"That file isn't an Iron Log backup":"Couldn't restore that file"); }
 }
 
+/* ---------- SCREEN WAKE LOCK ---------- */
+const wake = createWakeLock();
+function syncWake(){ wake.want(state.authed && shouldWake({view:state.view, date:state.date, today:today(), exerciseCount:(workoutFor(state.date)?.entries.length)||0})); }
+
 /* ---------- REST TIMER ---------- */
 // state.rest = {ex, endsAt, total}. Time left is always computed from endsAt, so it stays right
 // after the browser throttles a background tab. Mirrored to localStorage to survive a reload.
@@ -993,11 +997,12 @@ function renderSignin(){
 function render(){
   const authed=state.authed;
   $("#nav").hidden=!authed; $("#view-signin").hidden=authed;
-  if(!authed){ VIEWS.forEach(v=>$("#view-"+v).hidden=true); renderSignin(); return; }
+  if(!authed){ VIEWS.forEach(v=>$("#view-"+v).hidden=true); renderSignin(); syncWake(); return; }
   document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.view===state.view));
   VIEWS.forEach(v=>$("#view-"+v).hidden=v!==state.view);
   ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,progress:renderProgress,history:renderHistory})[state.view]();
   document.querySelector(`nav button[data-view="${state.view}"]`)?.scrollIntoView({block:"nearest",inline:"nearest"});
+  syncWake();
 }
 function go(view){ state.view=view; try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
 

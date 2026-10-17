@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  defaultRest, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, prefillFor
+  defaultRest, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, prefillFor, shouldWake, createWakeLock
 } from "../public/workout-tools.js";
 
 test("defaultRest tiers", () => {
@@ -63,3 +63,53 @@ test("prefill: no history", () =>
   assert.deepEqual(prefillFor({ sets:[] }, null), { w:"20", r:"8" }));
 test("prefill: today's sets but no last session", () =>
   assert.deepEqual(prefillFor({ sets:[{w:40,r:10}] }, null), { w:"40", r:"10" }));
+
+test("shouldWake", () => {
+  assert.equal(shouldWake({view:"log", date:"2026-10-17", today:"2026-10-17", exerciseCount:3}), true);
+  assert.equal(shouldWake({view:"body", date:"2026-10-17", today:"2026-10-17", exerciseCount:3}), false);
+  assert.equal(shouldWake({view:"log", date:"2026-10-17", today:"2026-10-17", exerciseCount:0}), false);
+});
+test("want false for past date", () =>
+  assert.equal(shouldWake({view:"log", date:"2026-10-10", today:"2026-10-17", exerciseCount:3}), false));
+
+function fakeEnv() {
+  const env = { requests:0, releases:0, handler:null };
+  env.navigator = { wakeLock: { request: async (type) => {
+    assert.equal(type, "screen"); env.requests++;
+    const s = { released:false, release: async () => { s.released = true; env.releases++; } };
+    env.last = s; return s;
+  } } };
+  env.document = { visibilityState:"visible", addEventListener: (ev, fn) => { if (ev === "visibilitychange") env.handler = fn; } };
+  return env;
+}
+const tick = () => new Promise(r => setTimeout(r, 0));
+
+test("createWakeLock acquires once, releases, reacquires on visible", async () => {
+  const env = fakeEnv(), wl = createWakeLock(env);
+  wl.want(true); await tick(); wl.want(true); await tick();
+  assert.equal(env.requests, 1);
+  wl.want(false); await tick();
+  assert.equal(env.releases, 1);
+  wl.want(true); await tick();
+  assert.equal(env.requests, 2);
+  env.last.released = true;                 // browser drops the lock when the app is hidden
+  env.document.visibilityState = "hidden"; env.handler(); await tick();
+  assert.equal(env.requests, 2);
+  env.document.visibilityState = "visible"; env.handler(); await tick();
+  assert.equal(env.requests, 3);
+});
+test("createWakeLock does not reacquire when no longer wanted", async () => {
+  const env = fakeEnv(), wl = createWakeLock(env);
+  wl.want(true); await tick(); wl.want(false); await tick();
+  env.handler(); await tick();
+  assert.equal(env.requests, 1);
+});
+test("createWakeLock swallows request errors", async () => {
+  const env = fakeEnv();
+  env.navigator.wakeLock.request = async () => { throw new Error("NotAllowedError"); };
+  const wl = createWakeLock(env);
+  assert.doesNotThrow(() => wl.want(true)); await tick();
+});
+test("createWakeLock no-op without API", () => {
+  assert.doesNotThrow(() => createWakeLock({ navigator:{}, document:{ addEventListener(){} } }).want(true));
+});

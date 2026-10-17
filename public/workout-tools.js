@@ -51,3 +51,33 @@ export function prefillFor(entry, last) {
   const s = (last && last.sets[n]) || entry.sets[n - 1] || (last && last.sets[0]);
   return s ? { w: String(Math.round(s.w * 100) / 100), r: String(s.r) } : { w: "20", r: "8" };
 }
+
+// Keep the screen on only while logging today's workout.
+export function shouldWake({ view, date, today, exerciseCount }) {
+  return view === "log" && date === today && exerciseCount > 0;
+}
+
+// Screen Wake Lock wrapper. Browsers drop the lock when the app is hidden, so it is
+// requested again when the page becomes visible. Unsupported or refused: does nothing.
+export function createWakeLock(env = globalThis) {
+  const api = env.navigator && env.navigator.wakeLock;
+  if (!api) return { want() {} };
+  let wanted = false, sentinel = null, pending = false;
+  const release = () => {
+    const s = sentinel; sentinel = null;
+    if (s && !s.released) s.release().catch(() => {});
+  };
+  const acquire = () => {
+    if (!wanted || pending || (sentinel && !sentinel.released)) return;
+    if (env.document.visibilityState !== "visible") return;
+    pending = true;
+    try {
+      api.request("screen").then(
+        s => { pending = false; sentinel = s; if (!wanted) release(); },
+        () => { pending = false; }
+      );
+    } catch (e) { pending = false; }
+  };
+  env.document.addEventListener("visibilitychange", acquire);
+  return { want(on) { wanted = !!on; if (wanted) acquire(); else release(); } };
+}
