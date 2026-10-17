@@ -9,6 +9,7 @@ const APP_SHELL = [
   "/",
   "/index.html",
   "/firebase-config.js",
+  "/workout-tools.js",
   "/manifest.webmanifest",
   "/icon-192.png",
   "/icon-512.png",
