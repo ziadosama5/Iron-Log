@@ -198,6 +198,15 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .meal-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .meal-fields label{display:flex;flex-direction:column;gap:4px;min-width:0}
 .meal-fields .meal-name{grid-column:1/-1}
+.gbar{display:flex;flex-direction:column;gap:4px}
+.dots{letter-spacing:2px;color:var(--accent)}
+.achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.ach{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:10px 6px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.ach .medal{width:30px;height:30px;border-radius:50%;background:var(--sunk);border:3px solid var(--line)}
+.ach.on .medal{background:var(--accent);border-color:var(--accent-soft)}
+.ach .bname{font-weight:600;font-size:13px;line-height:1.2}
+.ach:not(.on) .bname{color:var(--muted)}
+.ach .bsub{font-size:11px;line-height:1.3}
 .cardio-adder{grid-template-columns:1fr 1fr}
 .cardio-adder .btn{grid-column:1/-1}
 .cardio-list{list-style:none;margin:0;padding:0}
@@ -230,6 +239,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
       <button role="tab" id="tab-days" aria-selected="false" data-view="days">Days</button>
       <button role="tab" id="tab-body" aria-selected="false" data-view="body">Body</button>
       <button role="tab" id="tab-coach" aria-selected="false" data-view="coach">Coach</button>
+      <button role="tab" id="tab-goals" aria-selected="false" data-view="goals">Goals</button>
       <button role="tab" id="tab-progress" aria-selected="false" data-view="progress">Lifts</button>
       <button role="tab" id="tab-history" aria-selected="false" data-view="history">History</button>
     </nav>
@@ -243,6 +253,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
     <section id="view-days" class="view" hidden></section>
     <section id="view-body" class="view" hidden></section>
     <section id="view-coach" class="view" hidden></section>
+    <section id="view-goals" class="view" hidden></section>
     <section id="view-progress" class="view" hidden></section>
     <section id="view-history" class="view" hidden></section>
   </main>
@@ -268,6 +279,7 @@ import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
+import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 (function(){
@@ -305,7 +317,7 @@ const store = {
       if (this.unsub){ this.unsub(); this.unsub=null; }
       this.user=user; state.authed=!!user;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; setSync(""); onData(); return; }
       setSync("Loading your data…");
       this.col = collection(fs, "users", user.uid, "items");
       this.unsub = onSnapshot(this.col, { includeMetadataChanges:true }, snap=>{
@@ -314,7 +326,7 @@ const store = {
           if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}, ...(Array.isArray(v.seenBadges)?{seenBadges:v.seenBadges}:{})}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("f-")) food[d.id.slice(2)]={date:d.id.slice(2),meals:v.meals||[]}; else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
         // One-time fix for days missing muscle tags. Only on server data, so a stale offline copy never overwrites newer edits.
         const mp=migrateProgram(prog), days=mp.days;
-        state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings; state.food=food;
+        state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings; state.food=food; state.serverSynced=!snap.metadata.fromCache;
         if(mp.needsSave && !snap.metadata.fromCache) this.saveDays(days);
         setSync(snap.metadata.hasPendingWrites ? (navigator.onLine===false?"Offline · will sync":"Saving…") : (snap.metadata.fromCache?"Offline":"Synced"));
         onData();
@@ -712,7 +724,7 @@ function renderBody(){
       <div class="row"><button class="btn primary" type="submit">Save</button>${profileReady()?`<button class="btn ghost" type="button" data-act="cancel-profile">Cancel</button>`:""}</div>
     </form>`;
   } else {
-    h+=`<div class="row prev"><span class="grow">${p.sex==="male"?"Male":"Female"} · ${p.height} cm · ${new Date().getFullYear()-p.birthYear} yrs · Goal: <b>${esc(GOALS[p.goal])}</b></span><button class="btn ghost small" data-act="edit-profile">Edit</button></div>`;
+    h+=`<div class="row prev"><span class="grow">${p.sex==="male"?"Male":"Female"} · ${p.height} cm · ${new Date().getFullYear()-p.birthYear} yrs · Goal: <b>${esc(GOALS[p.goal])}</b>${p.goalWeight!=null?` · Target ${kg(p.goalWeight)} kg`:""}</span><button class="btn ghost small" data-act="edit-profile">Edit</button></div>`;
   }
 
   const hasM=["waist","chest","hips","neck","arm","thigh","calf"].some(k=>entry[k]!=null), hasI=["smm","bfm","pbf","vfl","bmr","tbw","score"].some(k=>entry[k]!=null);
@@ -950,6 +962,60 @@ async function copyReview(){
   catch(e){ ta.hidden=false; ta.value=text; ta.focus(); ta.select(); toast("Select all and copy the text below"); }
 }
 
+/* ---------- GOALS ---------- */
+// Everything here is derived from logged data (achievements.js); only seenBadges is stored.
+function goalsInput(){ return {workouts:state.workouts, body:state.body, food:state.food, days:state.days, profile:state.profile, today:today()}; }
+const RATIO_BADGE={"bench-bw":"Bench Press","squat-1.5":"Squat","deadlift-2":"Deadlift"};
+function badgeProgress(b){
+  if(b.earned) return "Earned "+fmtDate(b.earned);
+  const n=v=>Math.floor(v).toLocaleString(), id=b.id;
+  if(RATIO_BADGE[id]) return b.value?`Best ${b.value.toFixed(2)}× of ${b.target}×`:`Log a ${RATIO_BADGE[id]} set and your weight`;
+  if(id.startsWith("volume")) return `${n(b.value/1000)} / ${n(b.target/1000)} t`;
+  if(id==="goal-first-kg") return `${Math.max(0,b.value).toFixed(1)} / 1 kg`;
+  if(id==="goal-reached") return "Reach your target weight";
+  if(id.startsWith("streak")) return `${b.value} / ${b.target} weeks`;
+  if(id.startsWith("food")) return `${b.value} / ${b.target} days`;
+  if(id.startsWith("kcal")) return `${n(b.value)} / ${n(b.target)} kcal`;
+  if(id.startsWith("cardio")) return `${n(b.value)} / ${n(b.target)} min`;
+  return `${n(b.value)} / ${n(b.target)}`;
+}
+function renderGoals(){
+  const input=goalsInput(), list=badges(input), xp=xpSummary(input,list), g=goalProgress(input);
+  const ts=trainingStreak(state.workouts,state.days,today()), fdays=foodStreak(state.food,today());
+  const signed=v=>(v>0?"+":v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString();
+  let goal;
+  if(!g) goal=`<p class="prev" style="margin:0">Set a target weight to track your progress.</p><div class="row"><button class="btn primary small" data-act="set-goal">Set a target weight</button></div>`;
+  else if(g.hold) goal=`<p style="margin:0">Your target is your current weight: hold within ±1 kg.</p>`;
+  else if(g.needsStartWeight) goal=`<p style="margin:0">Log your weight to start tracking this goal.</p>`;
+  else goal=`<div class="gbar"><div class="row label"><span class="grow">Calorie bank</span><span class="num">${signed(g.bank)} / ${signed(g.target)} kcal</span></div><div class="ebar"><i style="width:${g.bankPct*100}%"></i></div></div>
+    <div class="gbar"><div class="row label"><span class="grow">Weight</span><span class="num">${kg(g.start)} → ${kg(g.goalWeight)} kg · ${Math.round(g.weightPct*100)}%</span></div><div class="ebar"><i style="width:${g.weightPct*100}%"></i></div></div>
+    <p class="prev" style="margin:0">Based on ${g.loggedDays} of ${g.totalDays} days with meals logged.</p>
+    <p style="margin:0">${g.finish?`Estimated finish: <b>${esc(fmtDateY(g.finish))}</b>`:g.awayFromGoal?"At this pace you're moving away from your goal.":"Log meals for a few days to estimate a finish date."}</p>`;
+  const dots=Array.from({length:ts.target},(_,i)=>i<ts.thisWeek?"●":"○").join("");
+  const earned=list.filter(b=>b.earned).sort((a,b)=>a.earned<b.earned?1:a.earned>b.earned?-1:0), locked=list.filter(b=>!b.earned);
+  const tile=b=>`<div class="ach ${b.earned?"on":""}"><span class="medal" aria-hidden="true"></span><span class="bname">${esc(b.name)}</span><span class="prev bsub">${esc(badgeProgress(b))}</span></div>`;
+  $("#view-goals").innerHTML=`<h2>Goals</h2>
+    <div class="card"><div class="row"><h3 class="grow">Level ${xp.level} · ${xp.title}</h3><span class="num prev">${xp.xp.toLocaleString()} XP</span></div>
+      <div class="ebar" role="progressbar" aria-label="XP to next level" aria-valuemin="0" aria-valuemax="${xp.needed}" aria-valuenow="${xp.into}"><i style="width:${xp.into/xp.needed*100}%"></i></div>
+      <p class="prev" style="margin:0">${xp.into.toLocaleString()} / ${xp.needed.toLocaleString()} XP to level ${xp.level+1} · +${xp.weekXp.toLocaleString()} XP this week</p></div>
+    <div class="card"><h3>Target weight</h3>${goal}</div>
+    <div class="card"><h3>Streaks</h3>
+      <div class="row"><span class="grow">Training: <b>${ts.weeks} week${ts.weeks===1?"":"s"}</b></span><span class="dots" role="img" aria-label="${ts.thisWeek} of ${ts.target} this week">${dots}</span><span class="prev">${ts.thisWeek} of ${ts.target} this week</span></div>
+      <div class="row"><span class="grow">Food log: <b>${fdays} day${fdays===1?"":"s"}</b></span></div></div>
+    <div class="card"><h3>Badges · ${earned.length} of ${list.length}</h3><div class="achs">${earned.map(tile).join("")}${locked.map(tile).join("")}</div></div>`;
+}
+// New badges toast once (across devices). Runs only on server-confirmed data, so an empty offline
+// cache on a new device can't overwrite the saved list. First run marks existing badges silently.
+function checkBadges(){
+  if(!state.authed||!state.serverSynced) return;
+  const earned=badges(goalsInput()).filter(b=>b.earned), seen=state.settings.seenBadges;
+  if(seen===undefined){ store.saveSettings({seenBadges:earned.map(b=>b.id)}); return; }
+  const fresh=earned.filter(b=>!seen.includes(b.id));
+  if(!fresh.length) return;
+  store.saveSettings({seenBadges:[...seen,...fresh.map(b=>b.id)]});
+  fresh.forEach((b,i)=>setTimeout(()=>toast("Badge earned: "+b.name),i*2600));
+}
+
 /* ---------- HISTORY ---------- */
 function renderHistory(){
   const ws=sorted().filter(trainedOn).reverse();
@@ -1094,7 +1160,7 @@ function resumeRest(){
 }
 
 /* ---------- render + events ---------- */
-const VIEWS=["log","days","body","coach","progress","history"];
+const VIEWS=["log","days","body","coach","goals","progress","history"];
 function renderSignin(){
   const el=$("#view-signin");
   if(state.setup){ el.innerHTML=`<div class="card signin"><h2>Almost there</h2><p class="prev" style="margin:0">Paste your Firebase project's config into <b class="num">firebase-config.js</b>, then deploy again. The README walks through it step by step.</p></div>`; return; }
@@ -1111,7 +1177,7 @@ function render(){
   if(!authed){ VIEWS.forEach(v=>$("#view-"+v).hidden=true); renderSignin(); syncWake(); return; }
   document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.view===state.view));
   VIEWS.forEach(v=>$("#view-"+v).hidden=v!==state.view);
-  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,progress:renderProgress,history:renderHistory})[state.view]();
+  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory})[state.view]();
   document.querySelector(`nav button[data-view="${state.view}"]`)?.scrollIntoView({block:"nearest",inline:"nearest"});
   syncWake();
 }
@@ -1193,6 +1259,7 @@ document.addEventListener("click",e=>{
     case "rest-adj": adjustRestBy(+b.dataset.d); break;
     case "rest-skip": clearRest(); break;
     case "ex-info": openExInfo(b.dataset.name); break;
+    case "set-goal": state.editProfile=true; go("body"); setTimeout(()=>document.getElementById("pf-goalw")?.focus(),0); break;
     case "meal-name": $("#meal-name").value=state.mealDraft.name=b.dataset.name; break;
     case "rm-meal":{ const d=state.cdate; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderCoach(); break; }
     case "cardio-type": state.cardioDraft.type=b.dataset.v; renderLog(); break;
@@ -1290,7 +1357,7 @@ function checkNewDay(){
 }
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkNewDay(); });
 setInterval(checkNewDay,60000);
-store.init(renderSoon);
+store.init(()=>{ renderSoon(); checkBadges(); });
 })();
 </script>
 </body>
