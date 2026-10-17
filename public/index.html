@@ -224,43 +224,9 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRe
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor } from "./workout-tools.js";
+import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION } from "./exercise-library.js";
 (function(){
-/* ---------- exercise library ---------- */
-const LIB = {
-  "Chest":     ["Bench Press","Incline Barbell Press","Incline Dumbbell Press","Dumbbell Bench Press","Machine Chest Press","Dumbbell Fly","Cable Crossover","Push-up"],
-  "Back":      ["Pull-up","Lat Pulldown","Barbell Row","One-arm Dumbbell Row","Seated Cable Row","T-bar Row","Chin-up","Deadlift"],
-  "Shoulders": ["Overhead Press","Dumbbell Shoulder Press","Arnold Press","Lateral Raise","Cable Lateral Raise","Rear Delt Fly","Face Pull","Upright Row"],
-  "Biceps":    ["Barbell Curl","Dumbbell Curl","Hammer Curl","Preacher Curl","Incline Dumbbell Curl","Cable Curl"],
-  "Triceps":   ["Tricep Pushdown","Skull Crusher","Overhead Tricep Extension","Close-grip Bench Press","Dip"],
-  "Quads":     ["Squat","Front Squat","Leg Press","Hack Squat","Bulgarian Split Squat","Walking Lunge","Leg Extension"],
-  "Hamstrings & Glutes": ["Romanian Deadlift","Lying Leg Curl","Seated Leg Curl","Hip Thrust","Good Morning","Glute Bridge"],
-  "Calves":    ["Standing Calf Raise","Seated Calf Raise"],
-  "Core":      ["Plank","Hanging Leg Raise","Cable Crunch","Ab Wheel Rollout","Russian Twist"]
-};
-const MUSCLES = Object.keys(LIB);
-const ALL_EX = [...new Set(Object.values(LIB).flat())];
-
-const TEMPLATES = [
-  { name:"Push / Pull / Legs", note:"3 days · classic split", days:[
-    {name:"Push", focus:["Chest","Shoulders","Triceps"], exercises:["Bench Press","Overhead Press","Incline Dumbbell Press","Lateral Raise","Tricep Pushdown"]},
-    {name:"Pull", focus:["Back","Biceps"], exercises:["Pull-up","Barbell Row","Lat Pulldown","Face Pull","Barbell Curl","Hammer Curl"]},
-    {name:"Legs", focus:["Quads","Hamstrings & Glutes","Calves"], exercises:["Squat","Romanian Deadlift","Leg Press","Lying Leg Curl","Standing Calf Raise"]}]},
-  { name:"Upper / Lower", note:"4 days · strength + size", days:[
-    {name:"Upper A", focus:["Chest","Back","Shoulders"], exercises:["Bench Press","Barbell Row","Overhead Press","Lat Pulldown","Barbell Curl","Tricep Pushdown"]},
-    {name:"Lower A", focus:["Quads","Hamstrings & Glutes","Calves"], exercises:["Squat","Romanian Deadlift","Leg Press","Standing Calf Raise"]},
-    {name:"Upper B", focus:["Chest","Back","Shoulders"], exercises:["Incline Dumbbell Press","Pull-up","Dumbbell Shoulder Press","Seated Cable Row","Hammer Curl","Skull Crusher"]},
-    {name:"Lower B", focus:["Quads","Hamstrings & Glutes","Core"], exercises:["Deadlift","Front Squat","Hip Thrust","Lying Leg Curl","Hanging Leg Raise"]}]},
-  { name:"Full Body", note:"3 days · A / B / C", days:[
-    {name:"Full Body A", focus:["Quads","Chest","Back"], exercises:["Squat","Bench Press","Barbell Row","Plank"]},
-    {name:"Full Body B", focus:["Hamstrings & Glutes","Shoulders","Back"], exercises:["Deadlift","Overhead Press","Pull-up","Hanging Leg Raise"]},
-    {name:"Full Body C", focus:["Quads","Chest","Back"], exercises:["Front Squat","Incline Dumbbell Press","Seated Cable Row","Hip Thrust"]}]},
-  { name:"Bro Split", note:"5 days · one muscle a day", days:[
-    {name:"Chest", focus:["Chest"], exercises:["Bench Press","Incline Dumbbell Press","Dumbbell Fly","Cable Crossover"]},
-    {name:"Back", focus:["Back"], exercises:["Deadlift","Pull-up","Barbell Row","Seated Cable Row"]},
-    {name:"Shoulders", focus:["Shoulders"], exercises:["Overhead Press","Lateral Raise","Rear Delt Fly","Face Pull"]},
-    {name:"Arms", focus:["Biceps","Triceps"], exercises:["Barbell Curl","Close-grip Bench Press","Hammer Curl","Skull Crusher","Tricep Pushdown"]},
-    {name:"Legs", focus:["Quads","Hamstrings & Glutes","Calves"], exercises:["Squat","Romanian Deadlift","Leg Press","Lying Leg Curl","Standing Calf Raise"]}]}
-];
+/* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -298,10 +264,13 @@ const store = {
       setSync("Loading your data…");
       this.col = collection(fs, "users", user.uid, "items");
       this.unsub = onSnapshot(this.col, { includeMetadataChanges:true }, snap=>{
-        const ws=[], bs=[]; let days=[], prof={}, settings={rest:{}};
+        const ws=[], bs=[]; let prog={}, prof={}, settings={rest:{}};
         snap.docs.forEach(d=>{ const v=d.data();
-          if(d.id==="program") days=v.days||[]; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
+          if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
+        // One-time fix for days missing muscle tags. Only on server data, so a stale offline copy never overwrites newer edits.
+        const mp=migrateProgram(prog), days=mp.days;
         state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings;
+        if(mp.needsSave && !snap.metadata.fromCache) this.saveDays(days);
         setSync(snap.metadata.hasPendingWrites ? (navigator.onLine===false?"Offline · will sync":"Saving…") : (snap.metadata.fromCache?"Offline":"Synced"));
         onData();
       }, err=>{ setSync("Sync stopped. Reload to reconnect"); console.error(err); });
@@ -321,7 +290,7 @@ const store = {
     this.write(w.id,{date:w.date,dayId:w.dayId||null,dayName:w.dayName||null,entries:w.entries,updated:w.updated});
   },
   remove(id){ state.workouts=state.workouts.filter(w=>w.id!==id); this.write(id,null); },
-  saveDays(days){ state.days=days; this.write("program",{days,updated:Date.now()}); },
+  saveDays(days){ state.days=days; this.write("program",{days,v:PROGRAM_VERSION,updated:Date.now()}); },
   saveBody(entry){
     const i=state.body.findIndex(x=>x.date===entry.date); if(i<0) state.body.push(entry); else state.body[i]=entry;
     this.write("b-"+entry.date, entry);
@@ -916,7 +885,7 @@ function exportData(){
   const items=[
     ...state.workouts.map(w=>{ const {id,...data}=w; return {id,data}; }),
     ...state.body.map(b=>({id:"b-"+b.date,data:b})),
-    {id:"program",data:{days:state.days,updated:Date.now()}},
+    {id:"program",data:{days:state.days,v:PROGRAM_VERSION,updated:Date.now()}},
     {id:"profile",data:state.profile},
     {id:"settings",data:{rest:state.settings.rest,updated:Date.now()}}
   ];
