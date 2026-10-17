@@ -44,13 +44,10 @@ body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--f-body);margin:0}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
 .wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px 0}
-.brand{font:700 26px/1 var(--f-display);letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px}
+.brand{font:700 22px/1 var(--f-display);letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
 .plate{width:22px;height:22px;border-radius:50%;background:var(--accent);box-shadow:inset 0 0 0 6px var(--accent),inset 0 0 0 8px var(--surface)}
 .sync{font-size:12px;color:var(--muted);text-align:right}
-nav{display:flex;gap:2px;padding-block:10px 0;overflow-x:auto;scrollbar-width:none}
-nav::-webkit-scrollbar{display:none}
-nav button{flex:1 0 auto;appearance:none;border:0;background:none;color:var(--muted);font:600 15px/1 var(--f-display);letter-spacing:.07em;text-transform:uppercase;padding:10px 8px 12px;border-bottom:3px solid transparent;cursor:pointer}
 .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
 .fields label{display:flex;flex-direction:column;gap:4px;min-width:0}
 .fields input{font-family:var(--f-num)}
@@ -66,8 +63,16 @@ details[open] summary{margin-bottom:10px}
 .bars .fill.low{background:var(--danger)} .bars .fill.ok{background:var(--good)}
 .bars .zone{position:absolute;top:0;bottom:0;border-left:1px dashed var(--muted);border-right:1px dashed var(--muted)}
 .ai{white-space:pre-wrap;font-size:14px;line-height:1.6}
-nav button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
-main{padding-block:18px 64px}
+main{padding-block:18px calc(var(--tabbar) + 24px + env(safe-area-inset-bottom,0px))}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:14;display:flex;justify-content:space-around;align-items:stretch;background:var(--surface);border-top:1px solid var(--line);height:calc(var(--tabbar) + env(safe-area-inset-bottom,0px));padding:0 max(8px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(8px,env(safe-area-inset-left,0px))}
+.tabbar button{appearance:none;border:0;background:none;color:var(--muted);flex:1;max-width:128px;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 11px/1 var(--f-body);cursor:pointer}
+.tabbar svg{width:24px;height:24px}
+.tabbar button[aria-current="page"]{color:var(--accent)}
+.more-row{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 4px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:600 16px/1 var(--f-body);cursor:pointer;text-align:left}
+.more-row svg{width:20px;height:20px;color:var(--muted)}
+.seg{display:flex;gap:4px;background:var(--sunk);border-radius:12px;padding:4px}
+.seg button{flex:1;min-height:40px;border:0;border-radius:9px;background:none;color:var(--muted);font:600 14px/1 var(--f-body);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
 /* big stepper: − value + with 48px round buttons (Workout focus mode) */
 .bigstep{display:flex;align-items:center;gap:8px;background:var(--sunk);border-radius:16px;padding:6px}
 .bigstep button{appearance:none;flex:none;width:48px;height:48px;border-radius:50%;border:0;background:var(--surface);color:var(--accent);font:700 22px/1 var(--f-body);box-shadow:var(--shadow);cursor:pointer}
@@ -125,7 +130,7 @@ tr.setrow.editing td{background:var(--accent-soft)}
 button.chip{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:500 13px/1.2 var(--f-body);padding:7px 12px;cursor:pointer}
 button.chip.add::before{content:"+ ";color:var(--accent);font-weight:600}
 button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+.toast{position:fixed;left:50%;bottom:calc(var(--tabbar) + 12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
 .notice{font-size:13px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:10px 12px}
 .legend{display:flex;gap:16px;font-size:12px;color:var(--muted);flex-wrap:wrap}
 .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
@@ -174,7 +179,7 @@ button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--acc
 .dayhead{appearance:none;border:0;background:none;padding:0;margin:0;color:inherit;font:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
 .brand svg{width:30px;height:30px;flex:none;border-radius:8px}
 /* rest timer bar, pinned to the bottom on every tab */
-.restbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgb(0 0 0 / .08);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.restbar{position:fixed;left:0;right:0;bottom:calc(var(--tabbar) + env(safe-area-inset-bottom,0px));z-index:15;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgb(0 0 0 / .08);padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
 .restbar-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:8px}
 .restbar .rb-label{flex:1 1 auto;min-width:0;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .restbar .rb-clock{font-size:24px;font-weight:600;min-width:4.2ch;text-align:right}
@@ -182,8 +187,8 @@ button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--acc
 .restbar.go{background:var(--accent);border-top-color:var(--accent)}
 .restbar.go .rb-label,.restbar.go .rb-clock{color:var(--accent-ink)}
 .restbar.go .btn{background:transparent;border-color:var(--accent-ink);color:var(--accent-ink)}
-body.has-restbar main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
-body.has-restbar .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+body.has-restbar main{padding-bottom:calc(var(--tabbar) + 96px + env(safe-area-inset-bottom,0px))}
+body.has-restbar .toast{bottom:calc(var(--tabbar) + 84px + env(safe-area-inset-bottom,0px))}
 /* exercise info bottom sheet */
 dialog.sheet{position:fixed;inset:auto 0 0 0;margin:0 auto;width:100%;max-width:640px;max-height:85vh;overflow:auto;border:0;border-radius:16px 16px 0 0;background:var(--surface);color:var(--fg);box-shadow:0 -8px 32px rgb(0 0 0 / .2);padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
@@ -250,18 +255,9 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 <header>
   <div class="wrap">
     <div class="bar">
-      <div class="brand"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" ><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f74ea"/><stop offset="1" stop-color="#123c96"/></linearGradient></defs><rect  rx="112" fill="url(#lg)"/><rect x="76" y="327" width="360" height="22" rx="11" fill="#fff"/><rect x="126" y="263" width="40" height="150" rx="12" fill="#fff"/><rect x="91" y="286" width="30" height="104" rx="12" fill="#fff"/><rect x="70" y="312" width="12" height="52" rx="6" fill="#fff"/><rect x="346" y="263" width="40" height="150" rx="12" fill="#fff"/><rect x="391" y="286" width="30" height="104" rx="12" fill="#fff"/><rect x="430" y="312" width="12" height="52" rx="6" fill="#fff"/><path d="M120 214 L204 160 L268 186 L378 102" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/><path d="M318 96 L384 96 L384 162" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></svg>Iron Log</div>
-      <div class="acct"><span class="sync" id="sync">Loading…</span><span id="acct-user" hidden></span><button class="btn ghost small" id="signout" hidden>Sign out</button></div>
+      <div class="brand"><svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" ><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f74ea"/><stop offset="1" stop-color="#123c96"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="url(#lg)"/><rect x="76" y="327" width="360" height="22" rx="11" fill="#fff"/><rect x="126" y="263" width="40" height="150" rx="12" fill="#fff"/><rect x="91" y="286" width="30" height="104" rx="12" fill="#fff"/><rect x="70" y="312" width="12" height="52" rx="6" fill="#fff"/><rect x="346" y="263" width="40" height="150" rx="12" fill="#fff"/><rect x="391" y="286" width="30" height="104" rx="12" fill="#fff"/><rect x="430" y="312" width="12" height="52" rx="6" fill="#fff"/><path d="M120 214 L204 160 L268 186 L378 102" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/><path d="M318 96 L384 96 L384 162" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="screen-title">Iron Log</span></div>
+      <span class="sync" id="sync">Loading…</span>
     </div>
-    <nav role="tablist" id="nav" hidden>
-      <button role="tab" id="tab-log" aria-selected="true" data-view="log">Workout</button>
-      <button role="tab" id="tab-days" aria-selected="false" data-view="days">Days</button>
-      <button role="tab" id="tab-body" aria-selected="false" data-view="body">Body</button>
-      <button role="tab" id="tab-coach" aria-selected="false" data-view="coach">Coach</button>
-      <button role="tab" id="tab-goals" aria-selected="false" data-view="goals">Goals</button>
-      <button role="tab" id="tab-progress" aria-selected="false" data-view="progress">Lifts</button>
-      <button role="tab" id="tab-history" aria-selected="false" data-view="history">History</button>
-    </nav>
   </div>
 </header>
 
@@ -287,6 +283,22 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
   </div>
 </div>
 <dialog id="exinfo" class="sheet" aria-labelledby="exinfo-title"></dialog>
+<dialog id="moresheet" class="sheet" aria-labelledby="more-title">
+  <div class="sheet-head"><h2 id="more-title">More</h2><button class="btn ghost small" data-act="more-close" aria-label="Close">✕</button></div>
+  <button class="more-row" data-act="more-go" data-view="days">Days<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+  <button class="more-row" data-act="more-go" data-view="progress">Lifts<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+  <button class="more-row" data-act="more-go" data-view="history">History &amp; backup<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+  <div class="stack" style="gap:6px;margin-top:14px"><span class="label">Theme</span>
+    <div class="seg" role="group" aria-label="Theme"><button data-act="theme-set" data-v="system">System</button><button data-act="theme-set" data-v="light">Light</button><button data-act="theme-set" data-v="dark">Dark</button></div></div>
+  <div class="row" style="margin-top:14px"><span class="prev grow" id="acct-user" hidden></span><button class="btn secondary small" id="signout" hidden>Sign out</button></div>
+</dialog>
+<nav class="tabbar" id="nav" aria-label="Sections" hidden>
+  <button data-act="tab" data-view="log"><svg aria-hidden="true"><use href="#i-workout"/></svg>Workout</button>
+  <button data-act="tab" data-view="coach"><svg aria-hidden="true"><use href="#i-coach"/></svg>Coach</button>
+  <button data-act="tab" data-view="body"><svg aria-hidden="true"><use href="#i-body"/></svg>Body</button>
+  <button data-act="tab" data-view="goals"><svg aria-hidden="true"><use href="#i-goals"/></svg>Goals</button>
+  <button data-act="more-open" data-view="more"><svg aria-hidden="true"><use href="#i-more"/></svg>More</button>
+</nav>
 <div class="toast" id="toast" hidden></div>
 <datalist id="ex-list"></datalist>
 
@@ -1134,7 +1146,22 @@ $("#exinfo").addEventListener("click",e=>{
   if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeExInfo(); // tap on the backdrop
 });
 window.addEventListener("popstate",closeExInfo);
-if(history.state&&history.state.exinfo) history.replaceState(null,""); // reloaded while the sheet was open
+const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History"};
+// More sheet: Days, Lifts, History & backup, theme, account. Same open/close pattern as the info sheet.
+function openMore(){
+  const d=$("#moresheet"), t=currentTheme();
+  d.querySelectorAll("[data-act=theme-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===t));
+  if(!d.open){ d.showModal(); history.pushState({more:1},""); }
+}
+function closeMore(){ const d=$("#moresheet"); if(d.open) d.close(); }
+$("#moresheet").addEventListener("close",()=>{ if(history.state&&history.state.more) history.back(); });
+$("#moresheet").addEventListener("click",e=>{
+  if(e.target!==e.currentTarget) return;
+  const r=e.currentTarget.getBoundingClientRect();
+  if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeMore();
+});
+window.addEventListener("popstate",closeMore);
+if(history.state&&(history.state.exinfo||history.state.more)) history.replaceState(null,""); // reloaded while a sheet was open
 
 /* ---------- SCREEN WAKE LOCK ---------- */
 const wake = createWakeLock();
@@ -1200,7 +1227,7 @@ function renderSignin(){
   const el=$("#view-signin");
   if(state.setup){ el.innerHTML=`<div class="card signin"><h2>Almost there</h2><p class="prev" style="margin:0">Paste your Firebase project's config into <b class="num">firebase-config.js</b>, then deploy again. The README walks through it step by step.</p></div>`; return; }
   el.innerHTML=`<div class="card signin" style="gap:16px">
-    <svg aria-hidden="true" width="72" height="72" style="border-radius:18px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" ><defs><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f74ea"/><stop offset="1" stop-color="#123c96"/></linearGradient></defs><rect  rx="112" fill="url(#lg2)"/><rect x="76" y="327" width="360" height="22" rx="11" fill="#fff"/><rect x="126" y="263" width="40" height="150" rx="12" fill="#fff"/><rect x="91" y="286" width="30" height="104" rx="12" fill="#fff"/><rect x="70" y="312" width="12" height="52" rx="6" fill="#fff"/><rect x="346" y="263" width="40" height="150" rx="12" fill="#fff"/><rect x="391" y="286" width="30" height="104" rx="12" fill="#fff"/><rect x="430" y="312" width="12" height="52" rx="6" fill="#fff"/><path d="M120 214 L204 160 L268 186 L378 102" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/><path d="M318 96 L384 96 L384 162" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg aria-hidden="true" width="72" height="72" style="border-radius:18px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" ><defs><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f74ea"/><stop offset="1" stop-color="#123c96"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="url(#lg2)"/><rect x="76" y="327" width="360" height="22" rx="11" fill="#fff"/><rect x="126" y="263" width="40" height="150" rx="12" fill="#fff"/><rect x="91" y="286" width="30" height="104" rx="12" fill="#fff"/><rect x="70" y="312" width="12" height="52" rx="6" fill="#fff"/><rect x="346" y="263" width="40" height="150" rx="12" fill="#fff"/><rect x="391" y="286" width="30" height="104" rx="12" fill="#fff"/><rect x="430" y="312" width="12" height="52" rx="6" fill="#fff"/><path d="M120 214 L204 160 L268 186 L378 102" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/><path d="M318 96 L384 96 L384 162" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <h2 style="font-size:30px">Iron Log</h2>
     <p class="prev" style="margin:0;font-size:15px">Log your sets, plan your training days, track body weight, measurements and InBody scans, and get coaching tips from your own data.</p>
     <button class="btn primary gbtn" data-act="signin"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Sign in with Google</button>
@@ -1210,15 +1237,15 @@ function render(){
   const authed=state.authed;
   $("#nav").hidden=!authed; $("#view-signin").hidden=authed;
   if(!authed){ VIEWS.forEach(v=>$("#view-"+v).hidden=true); renderSignin(); syncWake(); return; }
-  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.view===state.view));
+  const inMore=["days","progress","history"].includes(state.view);
+  document.querySelectorAll(".tabbar button").forEach(b=>{ if(b.dataset.view===state.view||(inMore&&b.dataset.view==="more")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+  $("#screen-title").textContent=SCREEN_TITLES[state.view]||"Iron Log";
   VIEWS.forEach(v=>$("#view-"+v).hidden=v!==state.view);
   ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory})[state.view]();
-  document.querySelector(`nav button[data-view="${state.view}"]`)?.scrollIntoView({block:"nearest",inline:"nearest"});
   syncWake();
 }
 function go(view){ state.view=view; try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
 
-document.querySelector("nav").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) go(b.dataset.view); });
 let renameTimer=null;
 document.addEventListener("input",e=>{
   const r=e.target; if(r.dataset&&r.dataset.actChange==="rename"){ clearTimeout(renameTimer); renameTimer=setTimeout(()=>{ const v=r.value.trim(); if(v&&dayById(r.dataset.id)&&dayById(r.dataset.id).name!==v) editDays(ds=>{ ds.find(d=>d.id===r.dataset.id).name=v; },{quiet:true}); },700); } const t=e.target; if(t.id==="meal-kcal") state.mealDraft.kcal=t.value; if(t.id==="meal-protein") state.mealDraft.protein=t.value; if(t.id==="meal-name") state.mealDraft.name=t.value; if(t.id==="cardio-min") state.cardioDraft.min=t.value; if(t.id==="cardio-kcal") state.cardioDraft.kcal=t.value; if(t.dataset.f&&t.dataset.ex!=null){ (ui[t.dataset.ex]||={w:"",r:""})[t.dataset.f]=t.value; } });
@@ -1294,6 +1321,11 @@ document.addEventListener("click",e=>{
     case "rest-adj": adjustRestBy(+b.dataset.d); break;
     case "rest-skip": clearRest(); break;
     case "ex-info": openExInfo(b.dataset.name); break;
+    case "tab": go(b.dataset.view); break;
+    case "more-open": openMore(); break;
+    case "more-close": closeMore(); break;
+    case "more-go": closeMore(); go(b.dataset.view); break;
+    case "theme-set": applyTheme(b.dataset.v); openMore(); break;
     case "set-goal": state.editProfile=true; go("body"); setTimeout(()=>document.getElementById("pf-goalw")?.focus(),0); break;
     case "meal-name": $("#meal-name").value=state.mealDraft.name=b.dataset.name; break;
     case "rm-meal":{ const d=state.cdate; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderCoach(); break; }
