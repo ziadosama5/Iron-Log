@@ -161,6 +161,17 @@ button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--acc
 .wd.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .dayhead{appearance:none;border:0;background:none;padding:0;margin:0;color:inherit;font:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
 .brand svg{width:30px;height:30px;flex:none;border-radius:8px}
+/* rest timer bar, pinned to the bottom on every tab */
+.restbar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgb(0 0 0 / .08);padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.restbar-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:8px}
+.restbar .rb-label{flex:1 1 auto;min-width:0;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.restbar .rb-clock{font-size:24px;font-weight:600;min-width:4.2ch;text-align:right}
+.restbar .btn{padding:9px 10px;font-size:13px}
+.restbar.go{background:var(--accent);border-top-color:var(--accent)}
+.restbar.go .rb-label,.restbar.go .rb-clock{color:var(--accent-ink)}
+.restbar.go .btn{background:transparent;border-color:var(--accent-ink);color:var(--accent-ink)}
+body.has-restbar main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+body.has-restbar .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 </style>
 </head>
 <body>
@@ -192,6 +203,15 @@ button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--acc
     <section id="view-progress" class="view" hidden></section>
     <section id="view-history" class="view" hidden></section>
   </main>
+</div>
+<div class="restbar" id="restbar" role="timer" aria-live="off" hidden>
+  <div class="restbar-in">
+    <span class="rb-label" id="rb-label">Rest</span>
+    <span class="rb-clock num" id="rb-clock">0:00</span>
+    <button class="btn" data-act="rest-adj" data-d="-15" aria-label="15 seconds less rest">−15s</button>
+    <button class="btn" data-act="rest-adj" data-d="15" aria-label="15 seconds more rest">+15s</button>
+    <button class="btn" data-act="rest-skip">Skip</button>
+  </div>
 </div>
 <div class="toast" id="toast" hidden></div>
 <datalist id="ex-list"></datalist>
@@ -902,6 +922,49 @@ async function importData(file){
   }catch(e){ console.error(e); toast(e.message==="format"?"That file isn't an Iron Log backup":"Couldn't restore that file"); }
 }
 
+/* ---------- REST TIMER ---------- */
+// state.rest = {ex, endsAt, total}. Time left is always computed from endsAt, so it stays right
+// after the browser throttles a background tab. Mirrored to localStorage to survive a reload.
+let restTick=null, restAlerted=false, restSaveTimer=null, audioCtx=null;
+function persistRest(){ try{ if(state.rest) localStorage.setItem("ironlog.rest",JSON.stringify(state.rest)); else localStorage.removeItem("ironlog.rest"); }catch(e){} }
+// Browsers only allow sound after a tap, so the audio context is created/resumed on "Add set".
+function unlockAudio(){ try{ audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==="suspended") audioCtx.resume(); }catch(e){} }
+function beep(){
+  try{ if(!audioCtx) return;
+    const t=audioCtx.currentTime, o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type="sine"; o.frequency.value=880;
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.3,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.25);
+    o.connect(g).connect(audioCtx.destination); o.start(t); o.stop(t+0.27);
+  }catch(e){}
+}
+function restAlert(){ try{ if(navigator.vibrate) navigator.vibrate([200,100,200]); }catch(e){} beep(); }
+function drawRest(){
+  const ph=restPhase(state.rest,Date.now());
+  if(ph==="none"||ph==="expired"){ clearRest(); return; }
+  const bar=$("#restbar");
+  bar.hidden=false; document.body.classList.add("has-restbar"); bar.classList.toggle("go",ph==="go");
+  $("#rb-label").textContent=(ph==="go"?"Rest over · ":"Rest · ")+state.rest.ex;
+  $("#rb-clock").textContent=ph==="go"?"Go":fmtClock(remaining(state.rest.endsAt,Date.now()));
+  if(ph==="go"&&!restAlerted){ restAlerted=true; restAlert(); }
+}
+function runRest(){ clearInterval(restTick); restTick=setInterval(drawRest,250); drawRest(); }
+function startRestFor(ex){ unlockAudio(); state.rest=startRest(ex,restFor(ex,state.settings),Date.now()); restAlerted=false; persistRest(); runRest(); }
+function clearRest(){ state.rest=null; restAlerted=false; persistRest(); clearInterval(restTick); restTick=null; $("#restbar").hidden=true; document.body.classList.remove("has-restbar"); }
+function adjustRestBy(d){
+  if(!state.rest) return;
+  const now=Date.now(); let r=state.rest;
+  if(restPhase(r,now)!=="resting") r=startRest(r.ex,r.total,now); // rest already over: start again from now
+  state.rest=adjustRest(r,d,now); restAlerted=false; persistRest(); drawRest();
+  const ex=state.rest.ex, total=state.rest.total;
+  // Several quick taps = one write.
+  clearTimeout(restSaveTimer); restSaveTimer=setTimeout(()=>store.saveSettings({rest:{...state.settings.rest,[ex]:total}}),1500);
+}
+function resumeRest(){
+  let r=null; try{ r=JSON.parse(localStorage.getItem("ironlog.rest")||"null"); }catch(e){}
+  const ph=restPhase(r,Date.now());
+  if(ph==="resting"||ph==="go"){ state.rest=r; restAlerted=ph==="go"; runRest(); } else clearRest();
+}
+
 /* ---------- render + events ---------- */
 const VIEWS=["log","days","body","coach","progress","history"];
 function renderSignin(){
@@ -975,10 +1038,12 @@ document.addEventListener("click",e=>{
       const w=ensureWorkout(), en=w.entries[ei];
       const wt=parseFloat(String(document.getElementById("w-"+ei).value).replace(",",".")), r=parseInt(document.getElementById("r-"+ei).value,10);
       if(!(wt>=0)||!(r>0)){ toast("Enter a weight (0 for bodyweight) and at least 1 rep"); return; }
-      en.sets.push({w:wt,r}); delete ui[en.ex]; store.save(w); renderLog();
+      en.sets.push({w:wt,r}); delete ui[en.ex]; store.save(w); renderLog(); startRestFor(en.ex);
       const best=bestBefore(en.ex,state.date);
       if(best>0&&e1rm(wt,r)>best&&en.sets.filter(s=>e1rm(s.w,s.r)>best).length===1) toast("New PR on "+en.ex+"!");
       break; }
+    case "rest-adj": adjustRestBy(+b.dataset.d); break;
+    case "rest-skip": clearRest(); break;
     case "rm-set":{ const w=ensureWorkout(); w.entries[ei].sets.splice(+b.dataset.si,1); store.save(w); renderLog(); break; }
     case "rm-ex":{ const w=ensureWorkout(); w.entries.splice(ei,1); state.openEx=undefined; store.save(w); renderLog(); break; }
     case "open-ex": state.openEx=b.dataset.name; renderLog(); scrollToOpen(); break;
@@ -1036,7 +1101,7 @@ document.addEventListener("click",e=>{
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"){ const c=e.target.closest?.("[data-open]"); if(c&&e.target===c){ state.date=c.dataset.open; go("log"); } } });
 
 try{ const v=localStorage.getItem("ironlog.view"); if(VIEWS.includes(v)) state.view=v; }catch(e){}
-$("#signout").addEventListener("click",()=>signOut(auth));
+$("#signout").addEventListener("click",()=>{ clearRest(); signOut(auth); });
 window.addEventListener("offline",()=>setSync("Offline · saving on this phone"));
 window.addEventListener("online",()=>setSync("Back online · syncing…"));
 if ("serviceWorker" in navigator) {
@@ -1044,6 +1109,7 @@ if ("serviceWorker" in navigator) {
 }
 if(!configured) $("#signout").hidden=true;
 render();
+resumeRest();
 store.init(()=>{ const a=document.activeElement; if(a&&a.matches("input:not([type=date]),select")) return; render(); });
 })();
 </script>
