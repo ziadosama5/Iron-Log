@@ -26,7 +26,7 @@ Tapping a "!" next to an exercise shows what the move looks like (start and fini
 - `public/exercises/LICENSE.md` states the drawings are adapted (recolored, minified) from Everkinetic under CC BY-SA 4.0.
 - The free-exercise-db photos were rejected (real models).
 
-**Coverage:** about 45 of the 55 library exercises have a good Everkinetic drawing. These have **no drawing** and show tips + muscles only: Face Pull, Hip Thrust, Hanging Leg Raise, Plank, Russian Twist, Arnold Press, One-arm Dumbbell Row, Bulgarian Split Squat. Where Everkinetic only has an approximate match, prefer no drawing over a misleading one. The exact name → id table is decided in the implementation plan and reviewed there.
+**Coverage:** 44 of the 55 library exercises have a good Everkinetic drawing. These 11 have **no drawing** and show tips + muscles only: Face Pull, Hip Thrust, Hanging Leg Raise, Plank, Russian Twist, Arnold Press, One-arm Dumbbell Row, Bulgarian Split Squat, Chin-up, Dumbbell Shoulder Press, Cable Lateral Raise. Where Everkinetic only has an approximate match, prefer no drawing over a misleading one. The exact name → id table is decided in the implementation plan and reviewed there.
 
 ## Architecture
 
@@ -49,7 +49,7 @@ Tapping a "!" next to an exercise shows what the move looks like (start and fini
 ## Recoloring
 
 `recolorSvg(text)`:
-- `fill="#333"` (and `#333333`, any case) → `fill="currentColor"`
+- any near-black fill (R, G and B all ≤ 0x60, e.g. `#333`, `#2e2e2c`, `#40413f`; two source files use the latter) → `fill="currentColor"`
 - `fill="#FFF"` (and `#FFFFFF`, `white`, any case) → `fill="var(--ex-bg)"`
 - Removes the root `width`/`height` attributes (keeps `viewBox`) so CSS sizes it; strips XML prolog, comments and editor metadata; collapses whitespace.
 - Throws if the input contains any other fill color, so a surprising source file is caught at import time rather than shipped.
