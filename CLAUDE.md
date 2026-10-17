@@ -22,6 +22,7 @@ tools/exercise-sources.json source of truth for exercise info: {ek id or null, s
 tools/import-exercises.mjs  dev script: downloads + recolors drawings, writes exercise-info.js (`node tools/import-exercises.mjs`)
 public/achievements.js      streaks, 24 badges (BADGES, earned dates by replaying history), XP/levels, goalProgress. Unit-tested
 public/energy.js            daily calories: weightOn, bmrFor, baselineBurn, liftMinutes/liftKcal, cardioKcal (MET table), exerciseKcal, dayEnergy. Unit-tested
+public/ui-helpers.js        themeAttr, sortTips (warn→info→good), withWeight (quick weight keeps other fields). Unit-tested
 public/backup.js            cleanBackupItems(): validates/cleans every item of a backup file before restore. Unit-tested
 public/workout-tools.js     pure helpers (rest defaults/timer math, set prefill, wake lock). No DOM/Firebase; unit-tested
 public/firebase-config.js   `export const firebaseConfig = {...}`. MUST keep the `export` keyword
@@ -60,12 +61,14 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
 - `LIB`, `TEMPLATES` (PPL, Upper/Lower, Full Body, Bro Split) are imported from `exercise-library.js`; a test checks every template day is tagged with each exercise's muscle group
 - `state` object: `workouts, days, body, profile, view, date, bdate, openEx, editDay, pickSplit, confirmTpl, authed, ...`
 - `/* ---------- storage: Firebase Auth + Firestore ... */`: `store` with `init, write, save, remove, saveDays, saveBody, removeBody, saveProfile, restore`. One `onSnapshot` on the collection rebuilds state, then `render()`.
+- Navigation: bottom `.tabbar` (Workout · Coach · Body · Goals · More); More = `#moresheet` dialog with Days, Lifts, History & backup, Theme (System/Light/Dark, localStorage `ironlog.theme`, applied by a tiny `<head>` script before first paint) and Sign out. Header = logo + screen title + sync status.
+- Sheets (`dialog.sheet`): `#exinfo`, `#moresheet`, `#exsheet` (+ Exercise), `#cardiosheet` (+ Cardio). Each pushes a history entry; its popstate handler closes it only when its own step was left (sheets can stack).
 - Views (each has a `render*()` writing `innerHTML` into `#view-*`): `log` (Workout), `days`, `body`, `coach`, `goals`, `progress` (tab label "Lifts"), `history`, plus `signin`.
 - Events: one delegated `click` handler with `switch` on `data-act`, plus delegated `input`/`change`/`submit` handlers.
 - Snapshot re-render is skipped while a text input/select is focused (so typing isn't interrupted).
 
 ## Features (current)
-- **Workout tab:** pick a training day (or free workout). Exercises are a checklist: only the open exercise is expanded; others are one-line rows (✓ done / started / not started). "Add set" with ± steppers (2.5 kg / 1 rep), last-session reference, PR badges (Epley e1RM), "✓ Done with X" collapses it and opens the next, progress bar, "Workout complete" banner.
+- **Workout tab (Focus mode):** pick a training day (or free workout). Header shows "N of M done · X min" (`elapsedMin`) + progress bar; an exercise chip row (✓ done / started / not started; tap = jump, any order); one focus card with big ± steppers (`.bigstep`, 2.5 kg / 1 rep), last-session reference, "Add set N", set table (tap to edit, PR badges, Epley e1RM), "Remove exercise"; then "✓ Done" and "Next: <name>" (`nextUnfinished`, wraps); "Workout complete" card when all done. "+ Exercise" / "+ Cardio" open bottom sheets.
   - **Prefill:** set N starts from last session's set N (`prefillFor`); beyond that it repeats today's last set.
   - **Rest timer:** "Add set" starts a countdown in a bar pinned to the bottom (every tab). Rest per exercise is remembered in `settings`; defaults 3:00 big compounds, 2:30 rows/pull-ups/dips/hip thrust/incline/split squat, 1:30 others (`defaultRest`). −15s/+15s/Skip; when over: vibrate + beep + "Go" state for 60 s. No alert while the phone is locked.
   - **Edit sets:** tap a logged set row → steppers load it, "Save set"/Cancel. Saving doesn't restart the timer.
@@ -73,19 +76,19 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
 - **Exercise info ("!"):** round "!" next to library exercises (Workout rows + open card, Days editor list, suggestion chips) opens a bottom-sheet `<dialog>`: Start/Finish line drawings (inlined SVG; lines = currentColor, white shapes = `.exbg` filled from CSS so they follow the theme), "Works:" muscles, 2–4 tips, credit line. 11 exercises have no drawing (tips only). Back gesture closes it (history entry). Drawings are cached by the service worker on first view.
   - Everkinetic pose names are relaxation/tension, not start/finish: exercises that start at the top (squat, bench...) set `"start": "tension"` in exercise-sources.json.
 - **Days tab:** templates, rename/reorder/add/remove exercises, muscle focus → exercise suggestions, weekday assignment (week strip; today's day auto-suggested), "Change split" with confirmation, move/delete days. Editing a day syncs into today's workout if it uses that day (`syncTodayWithDay`).
-- **Body tab:** profile (sex, height, birth year, goal), daily entry of weight, tape measurements, InBody values, trend chart per metric, recent entries table.
+- **Body tab:** latest weight in big numbers + quick weight entry (`withWeight`), profile line, "Add measurements / scan" opens the full entry form (weight, tape measurements, InBody), trend chart per metric, recent entries table.
 - **Cardio (Workout tab):** card under the exercises (also under the day picker): type, minutes ±5, intensity, optional machine kcal. A cardio-only day keeps showing the day picker.
 - **Today card (Coach tab, first):** date picker; Eaten / Target, Burned (Everyday · Lifting · Cardio), Balance (green when it matches the goal); meals quick add (kcal, optional protein + name chips); protein vs 1.6–2.2 g/kg.
   - Target model: burned = BMR×1.2 + that day's exercise; target = burned + goal adjustment. Estimates use MET−1 (resting part is already in the baseline); machine kcal used as typed. Lifting time = first→last set +2 min, else 2.5 min/set.
   - "Trained" (`trainedOn`) = sets or cardio, except training-day rotation (sets only).
 - **Goals tab:** level (XP: trained day 50, cardio 10+1/5min ≤30, meals day 10, PR 20, badge 100; level L at 50·L·(L−1)), target-weight card (calorie bank at 7,700 kcal/kg over days with meals + weight bar + finish estimate from last 14 logged days), streaks (weekly training Sat–Fri with target 2–6 from training days; daily food), 24 badges. All derived from data; badge toasts once via `settings.seenBadges`, only after a server (non-cache) snapshot; first run marks existing badges silently.
-- **Coach tab:** rule-based insights (weight-trend vs goal pace, body fat range by sex, visceral fat ≥10, muscle/fat change between scans, waist-to-height, weekly sets per muscle vs 10–20, stalled/progressing lifts). "Copy my summary" copies a coaching prompt + JSON data to paste into an AI chat (no API key in the app, to stay free).
+- **Coach tab:** Today card, then Tips (top 3 by `sortTips`, "Show all tips"), then "More from Coach" (sets per muscle + written review). Rule-based insights (weight-trend vs goal pace, body fat range by sex, visceral fat ≥10, muscle/fat change between scans, waist-to-height, weekly sets per muscle vs 10–20, stalled/progressing lifts). "Copy my summary" copies a coaching prompt + JSON data to paste into an AI chat (no API key in the app, to stay free).
 - **Lifts tab:** per-exercise e1RM + top-set chart (hand-written SVG `lineChart()`), stats, session table.
 - **History tab:** workouts list (tap to edit, delete with inline confirm), **Backup** (download JSON / restore from file, reminder when last backup > 30 days, stored in localStorage `ironlog.lastBackup`).
 - Offline: Firestore cache + service worker. Status text in header ("Synced", "Offline · saving on this phone"...).
 
 ## Design rules in use
-- Colors are CSS tokens on `:root` with dark-mode overrides (`prefers-color-scheme` + `[data-theme]`). Accent plate-blue `#1f5fd1` (light) / `#6c9cff` (dark).
+- "Clean plate" style: CSS tokens on `:root` with dark-mode overrides (`prefers-color-scheme` + `[data-theme]`): `--bg/--surface/--sunk/--line`, `--shadow`, `--card-border`, `--r-card` 18px, `--r-btn` 14px, `--tabbar` 64px. Accent plate-blue `#1f5fd1` (light) / `#6c9cff` (dark). Building blocks: `.card`, `.btn.primary/.secondary`, `.bigstep`, `.chip`, `.exchip`, `.ebar`, `dialog.sheet`. Icons: inline `<symbol>` sprite (`#i-workout`, `#i-coach`, `#i-body`, `#i-goals`, `#i-more`, `#i-chev`).
 - Mobile-first, max-width 640px, safe-area insets respected, no horizontal scroll.
 - Logo: blue rounded square, white loaded barbell with a rising trend arrow above it; wordmark "IRON LOG" in Barlow Condensed 800.
 - Copy style: plain, direct, short; units kg and cm.
@@ -111,7 +114,7 @@ firebase deploy --only hosting            # rules: firebase deploy --only firest
 
 ## Ideas not built yet
 - Bodyweight-exercise mode; set types (warm-up / drop set)
-- Planned sub-projects (done: faster logging, exercise info): full-app review, look & feel refresh, smarter coaching/progress, ready for more users
+- Planned sub-projects (done: faster logging, exercise info, full-app review, smarter coaching/progress, look & feel): ready for more users
 - Per-day target sets/reps in templates
 - CSV export for spreadsheets
 - GitHub Actions auto-deploy (`firebase init hosting:github`), offered but not set up
