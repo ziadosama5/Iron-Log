@@ -91,6 +91,8 @@ td,th{padding:7px 4px;text-align:left;border-bottom:1px solid var(--line)}
 th{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 tr:last-child td{border-bottom:0}
 td.r,th.r{text-align:right}
+tr.setrow{cursor:pointer}
+tr.setrow.editing td{background:var(--accent-soft)}
 .pr{display:inline-block;font:600 10px/1 var(--f-body);letter-spacing:.08em;background:var(--accent-soft);color:var(--accent);padding:3px 6px;border-radius:4px;margin-left:6px;vertical-align:2px}
 .adder{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
 @media (max-width:420px){.adder{grid-template-columns:1fr 1fr}.adder .btn{grid-column:1/-1}}
@@ -424,19 +426,23 @@ function renderLog(){
       return;
     }
     const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last));
+    const editSi = state.editSet && state.editSet.ex===e.ex && e.sets[state.editSet.si] ? state.editSet.si : -1;
     let runBest=best;
     h += `<div class="card open" id="open-card">
       <div class="ex-head"><button class="btn ghost small" data-act="close-ex" aria-label="Collapse ${esc(e.ex)}" style="padding:4px 6px 4px 0;text-align:left;white-space:normal"><span class="ex-name">${esc(e.ex)}</span></button><button class="btn ghost danger small" data-act="rm-ex" data-ei="${ei}" aria-label="Remove ${esc(e.ex)}">Remove</button></div>
       ${last?`<div class="prev">Last time (${fmtDate(last.date)}): <b class="num">${last.sets.map(s=>kg(s.w)+"×"+s.r).join(", ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
       ${e.sets.length?`<table><thead><tr><th>Set</th><th class="r">kg</th><th class="r">Reps</th><th class="r">e1RM</th><th></th></tr></thead><tbody>${
         e.sets.map((s,si)=>{ const est=e1rm(s.w,s.r); const isPr=est>0&&est>runBest&&best>0; if(est>runBest) runBest=est;
-          return `<tr><td class="num">${si+1}</td><td class="r num">${kg(s.w)}</td><td class="r num">${s.r}</td><td class="r num">${est?kg(Math.round(est*10)/10):"–"}${isPr?'<span class="pr">PR</span>':""}</td><td class="r"><button class="btn ghost small" data-act="rm-set" data-ei="${ei}" data-si="${si}" aria-label="Delete set ${si+1}">✕</button></td></tr>`;}).join("")
+          return `<tr class="setrow${si===editSi?" editing":""}" data-act="edit-set" data-ei="${ei}" data-si="${si}" tabindex="0" aria-label="Edit set ${si+1}"><td class="num">${si+1}</td><td class="r num">${kg(s.w)}</td><td class="r num">${s.r}</td><td class="r num">${est?kg(Math.round(est*10)/10):"–"}${isPr?'<span class="pr">PR</span>':""}</td><td class="r"><button class="btn ghost small" data-act="rm-set" data-ei="${ei}" data-si="${si}" aria-label="Delete set ${si+1}">✕</button></td></tr>`;}).join("")
       }</tbody></table>`:""}
       <div class="adder">
         <label><span class="label">Weight kg</span><div class="stepper"><button data-act="step" data-f="w" data-d="-2.5" data-ei="${ei}" aria-label="Minus 2.5 kg">−</button><input id="w-${ei}" inputmode="decimal" value="${d.w}" data-f="w" data-ex="${esc(e.ex)}"><button data-act="step" data-f="w" data-d="2.5" data-ei="${ei}" aria-label="Plus 2.5 kg">+</button></div></label>
         <label><span class="label">Reps</span><div class="stepper"><button data-act="step" data-f="r" data-d="-1" data-ei="${ei}" aria-label="Minus 1 rep">−</button><input id="r-${ei}" inputmode="numeric" value="${d.r}" data-f="r" data-ex="${esc(e.ex)}"><button data-act="step" data-f="r" data-d="1" data-ei="${ei}" aria-label="Plus 1 rep">+</button></div></label>
-        <button class="btn primary" data-act="add-set" data-ei="${ei}">Add set</button>
+        ${editSi>=0
+          ? `<button class="btn primary" data-act="save-set" data-ei="${ei}">Save set</button>`
+          : `<button class="btn primary" data-act="add-set" data-ei="${ei}">Add set</button>`}
       </div>
+      ${editSi>=0?`<div class="row"><span class="prev grow">Editing set ${editSi+1}</span><button class="btn ghost small" data-act="cancel-edit">Cancel</button></div>`:""}
       ${e.done
         ? `<button class="btn" data-act="undone-ex" data-ei="${ei}">Mark as not done</button>`
         : (e.sets.length ? `<button class="btn done" data-act="done-ex" data-ei="${ei}">✓ Done with ${esc(e.ex)}</button>` : "")}
@@ -472,6 +478,13 @@ function dayPicker(w){
   </div>`;
 }
 function fillDatalist(){ $("#ex-list").innerHTML=[...new Set([...exerciseNames(),...ALL_EX])].map(n=>`<option value="${esc(n)}">`).join(""); }
+// Reads the weight/reps inputs of exercise ei; shows a toast and returns null if invalid.
+function readSet(ei){
+  const w=parseFloat(String(document.getElementById("w-"+ei).value).replace(",",".")), r=parseInt(document.getElementById("r-"+ei).value,10);
+  if(!(w>=0)||!(r>0)){ toast("Enter a weight (0 for bodyweight) and at least 1 rep"); return null; }
+  return {w,r};
+}
+function stopEditing(){ if(state.editSet){ delete ui[state.editSet.ex]; state.editSet=null; } }
 function ensureWorkout(){ const w=workoutFor(state.date); return w?clone(w):{id:"w-"+state.date,date:state.date,dayId:null,dayName:null,entries:[]}; }
 function canonical(name){ return [...exerciseNames(),...ALL_EX].find(n=>same(n,name)) || name; }
 function startDay(day){
@@ -994,7 +1007,7 @@ document.addEventListener("input",e=>{
   const r=e.target; if(r.dataset&&r.dataset.actChange==="rename"){ clearTimeout(renameTimer); renameTimer=setTimeout(()=>{ const v=r.value.trim(); if(v&&dayById(r.dataset.id)&&dayById(r.dataset.id).name!==v) editDays(ds=>{ ds.find(d=>d.id===r.dataset.id).name=v; },{quiet:true}); },700); } const t=e.target; if(t.dataset.f&&t.dataset.ex!=null){ (ui[t.dataset.ex]||={w:"",r:""})[t.dataset.f]=t.value; } });
 document.addEventListener("change",e=>{
   const t=e.target;
-  if(t.id==="log-date"&&t.value){ state.date=t.value; state.pickDay=false; state.openEx=undefined; renderLog(); }
+  if(t.id==="log-date"&&t.value){ stopEditing(); state.date=t.value; state.pickDay=false; state.openEx=undefined; renderLog(); }
   if(t.id==="prog-ex"){ state.progressEx=t.value; renderProgress(); }
   if(t.id==="body-date"&&t.value){ state.bdate=t.value; renderBody(); }
   if(t.id==="restore-file"&&t.files&&t.files[0]){ importData(t.files[0]); t.value=""; }
@@ -1034,20 +1047,30 @@ document.addEventListener("click",e=>{
   const a=b.dataset.act, ei=+b.dataset.ei, id=b.dataset.id;
   switch(a){
     case "step":{ const inp=document.getElementById(b.dataset.f+"-"+ei); let v=Math.max(0,(parseFloat(inp.value)||0)+parseFloat(b.dataset.d)); inp.value=b.dataset.f==="r"?Math.round(v):kg(v); inp.dispatchEvent(new Event("input",{bubbles:true})); break; }
+    case "edit-set":{ const en=ensureWorkout().entries[ei], si=+b.dataset.si, s=en.sets[si];
+      state.editSet={ex:en.ex,si}; ui[en.ex]={w:kg(s.w),r:String(s.r)}; renderLog(); break; }
+    case "cancel-edit": stopEditing(); renderLog(); break;
+    case "save-set":{
+      const w=ensureWorkout(), en=w.entries[ei], v=readSet(ei), si=state.editSet&&state.editSet.si;
+      if(!v||!state.editSet||!en.sets[si]) return;
+      en.sets[si]={w:v.w,r:v.r}; stopEditing(); store.save(w); renderLog(); break; }
     case "add-set":{
-      const w=ensureWorkout(), en=w.entries[ei];
-      const wt=parseFloat(String(document.getElementById("w-"+ei).value).replace(",",".")), r=parseInt(document.getElementById("r-"+ei).value,10);
-      if(!(wt>=0)||!(r>0)){ toast("Enter a weight (0 for bodyweight) and at least 1 rep"); return; }
+      const w=ensureWorkout(), en=w.entries[ei], v=readSet(ei);
+      if(!v) return;
+      const wt=v.w, r=v.r;
       en.sets.push({w:wt,r}); delete ui[en.ex]; store.save(w); renderLog(); startRestFor(en.ex);
       const best=bestBefore(en.ex,state.date);
       if(best>0&&e1rm(wt,r)>best&&en.sets.filter(s=>e1rm(s.w,s.r)>best).length===1) toast("New PR on "+en.ex+"!");
       break; }
     case "rest-adj": adjustRestBy(+b.dataset.d); break;
     case "rest-skip": clearRest(); break;
-    case "rm-set":{ const w=ensureWorkout(); w.entries[ei].sets.splice(+b.dataset.si,1); store.save(w); renderLog(); break; }
-    case "rm-ex":{ const w=ensureWorkout(); w.entries.splice(ei,1); state.openEx=undefined; store.save(w); renderLog(); break; }
-    case "open-ex": state.openEx=b.dataset.name; renderLog(); scrollToOpen(); break;
-    case "close-ex": state.openEx=null; renderLog(); break;
+    case "rm-set":{ const w=ensureWorkout(), en=w.entries[ei], si=+b.dataset.si;
+      // Deleting the edited set or one before it would shift indexes, so leave edit mode.
+      if(state.editSet&&state.editSet.ex===en.ex&&si<=state.editSet.si) stopEditing();
+      en.sets.splice(si,1); store.save(w); renderLog(); break; }
+    case "rm-ex":{ const w=ensureWorkout(); w.entries.splice(ei,1); state.openEx=undefined; stopEditing(); store.save(w); renderLog(); break; }
+    case "open-ex": stopEditing(); state.openEx=b.dataset.name; renderLog(); scrollToOpen(); break;
+    case "close-ex": stopEditing(); state.openEx=null; renderLog(); break;
     case "done-ex":{
       const w=ensureWorkout(); w.entries[ei].done=true; store.save(w);
       const next=w.entries.slice(ei+1).concat(w.entries.slice(0,ei)).find(e=>!e.done);
@@ -1057,7 +1080,7 @@ document.addEventListener("click",e=>{
     case "undone-ex":{ const w=ensureWorkout(); w.entries[ei].done=false; state.openEx=w.entries[ei].ex; store.save(w); renderLog(); break; }
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
     case "free-focus":{ const m=b.dataset.m; const f=state.freeFocus||[]; state.freeFocus=f.includes(m)?f.filter(x=>x!==m):[...f,m]; renderLog(); break; }
-    case "change-day": state.pickDay=true; renderLog(); break;
+    case "change-day": stopEditing(); state.pickDay=true; renderLog(); break;
     case "cancel-pick": state.pickDay=false; renderLog(); break;
     case "start-day": startDay(dayById(id)); break;
     case "start-free": startDay(null); break;
@@ -1098,7 +1121,7 @@ document.addEventListener("click",e=>{
     case "del-w": store.remove(id); state.confirmDel=null; renderHistory(); toast("Workout deleted"); break;
   }
 });
-document.addEventListener("keydown",e=>{ if(e.key==="Enter"){ const c=e.target.closest?.("[data-open]"); if(c&&e.target===c){ state.date=c.dataset.open; go("log"); } } });
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.matches?.("tr[data-act]")){ e.target.click(); return; } if(e.key==="Enter"){ const c=e.target.closest?.("[data-open]"); if(c&&e.target===c){ state.date=c.dataset.open; go("log"); } } });
 
 try{ const v=localStorage.getItem("ironlog.view"); if(VIEWS.includes(v)) state.view=v; }catch(e){}
 $("#signout").addEventListener("click",()=>{ clearRest(); signOut(auth); });
