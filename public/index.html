@@ -78,6 +78,8 @@ main{padding-block:18px calc(var(--tabbar) + 24px + env(safe-area-inset-bottom,0
 .exchip[aria-current="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .exchip[aria-current="true"] .n{border-color:var(--accent-ink);color:var(--accent-ink);background:transparent}
 .card.focus .ex-name{font-size:26px}
+.bignum{font:600 34px/1.15 var(--f-num);font-variant-numeric:tabular-nums}
+.bignum small{font-size:14px;color:var(--muted);font-weight:500}
 .nextbtn{overflow:hidden;text-overflow:ellipsis}
 .complete-card .tick{width:34px;height:34px;border-radius:50%;background:var(--good);color:var(--surface);display:grid;place-items:center;font-weight:700}
 .sheet .card{box-shadow:none;border:0;padding:0;background:none}
@@ -795,9 +797,21 @@ function field(k, val){
   const f=BF[k];
   return `<label><span class="label">${esc(f.label)} · ${f.unit}</span><input id="bf-${k}" name="${k}" inputmode="decimal" value="${val??""}" placeholder="–"></label>`;
 }
+// Latest weight in big numbers + a one-field entry for the selected day (keeps that day's other values).
+function quickWeightCard(entry){
+  const s=bodySorted().filter(e=>typeof e.weight==="number"), lw=s[s.length-1];
+  const ago=lw?s.filter(e=>(new Date(lw.date)-new Date(e.date))/864e5>=28):[], ref=ago[ago.length-1];
+  const d=ref?Math.round((lw.weight-ref.weight)*10)/10:null;
+  const day=state.bdate===today()?"today":fmtDate(state.bdate);
+  return `<form class="card" id="quickw-form" autocomplete="off">
+    <div><span class="label">Latest weight</span><div class="bignum">${lw?kg(lw.weight):"–"} <small>kg</small></div>
+      <span class="prev">${lw?esc(fmtDate(lw.date))+(d!=null?` · ${d>0?"+":""}${d} kg vs 4 weeks ago`:""):"No weight logged yet"}</span></div>
+    <div class="row"><input id="quickw" inputmode="decimal" aria-label="Weight for ${day} in kg" placeholder="Weight for ${day} · kg" value="${entry.weight??""}" style="flex:1 1 140px"><button class="btn primary" type="submit">Save</button></div>
+  </form>`;
+}
 function renderBody(){
   const p=state.profile, entry=state.body.find(e=>e.date===state.bdate)||{date:state.bdate};
-  let h=`<h2>Body</h2>`;
+  let h=`<h2>Body</h2>`+quickWeightCard(entry);
   if(!profileReady()||state.editProfile){
     h+=`<form class="card" id="profile-form" autocomplete="off"><h3>About you</h3>
       <p class="prev" style="margin:0">Used to estimate calories, protein and healthy ranges on the Coach tab. Only you can see it.</p>
@@ -815,7 +829,9 @@ function renderBody(){
   }
 
   const hasM=["waist","chest","hips","neck","arm","thigh","calf"].some(k=>entry[k]!=null), hasI=["smm","bfm","pbf","vfl","bmr","tbw","score"].some(k=>entry[k]!=null);
-  h+=`<form class="card" id="body-form" autocomplete="off">
+  // Measurements and InBody open on request (or when the selected day already has them).
+  if(!(state.bodyFull||hasM||hasI)) h+=`<button class="btn secondary" data-act="body-full">Add measurements / scan</button>`;
+  else h+=`<form class="card" id="body-form" autocomplete="off">
     <div class="row"><h3 class="grow">${state.body.some(e=>e.date===state.bdate)?"Edit entry":"New entry"}</h3><input type="date" id="body-date" value="${state.bdate}" max="${today()}" style="width:auto"></div>
     <div class="fields">${field("weight",entry.weight)}</div>
     <details ${hasM?"open":""}><summary>Measurements</summary><div class="fields">${["waist","chest","hips","neck","arm","thigh","calf"].map(k=>field(k,entry[k])).join("")}</div>
@@ -989,24 +1005,25 @@ function todayCard(){
   </div>`;
 }
 function renderCoach(){
-  const list=insights();
-  let h=`<h2>Coach</h2>`+todayCard();
+  const list=sortTips(insights());
+  let h=`<h2>Coach</h2>`;
   if(!profileReady()) h+=`<div class="notice">Add your sex, height, birth year and goal on the Body tab for calorie targets and personalised ranges. <button class="btn small" data-act="goto-body" style="margin-left:6px">Go to Body</button></div>`;
+  h+=todayCard();
   if(!list.length){
     h+=`<div class="empty"><strong>Nothing to analyse yet</strong>Log a few workouts and your body weight, and suggestions will show up here.</div>`;
   } else {
-    ["Body","Nutrition","Training"].forEach(sec=>{
-      const items=list.filter(i=>i.sec===sec); if(!items.length) return;
-      h+=`<div class="card"><h3>${sec}</h3>${items.map(i=>`<div class="insight ${i.tone}"><b>${esc(i.title)}</b><span class="prev" style="color:var(--fg)">${i.text}</span>${
-        i.chips?`<div class="chips">${i.chips.map(c=>`<button class="chip add" data-act="coach-add" data-name="${esc(c)}">${esc(c)}</button>`).join("")}</div><span class="prev">Tap to add to today's workout.</span>`:""}</div>`).join("")}</div>`;
-      if(sec==="Training") h+=volumeBars();
-    });
+    // Warnings first; the first 3 are shown, the rest on request.
+    const shown=state.coachAllTips?list:list.slice(0,3);
+    h+=`<div class="card"><h3>Tips</h3>${shown.map(i=>`<div class="insight ${i.tone}"><span class="label">${esc(i.sec)}</span><b>${esc(i.title)}</b><span class="prev" style="color:var(--fg)">${i.text}</span>${
+      i.chips?`<div class="chips">${i.chips.map(c=>`<button class="chip add" data-act="coach-add" data-name="${esc(c)}">${esc(c)}</button>`).join("")}</div><span class="prev">Tap to add to today's workout.</span>`:""}</div>`).join("")}${
+      list.length>3?`<button class="btn ghost small" data-act="tips-all">${state.coachAllTips?"Show fewer":`Show all tips (${list.length})`}</button>`:""}</div>`;
   }
-  h+=`<div class="card"><h3>Get a written review</h3>
+  h+=`<button class="btn secondary" data-act="coach-more" aria-expanded="${!!state.coachMore}">${state.coachMore?"Hide sets per muscle and written review":"More from Coach"}</button>`;
+  if(state.coachMore) h+=volumeBars()+`<div class="card"><h3>Get a written review</h3>
     <p class="prev" style="margin:0">Copies a summary of your recent workouts, body data and goal (no name) with coaching instructions. Paste it into Claude or any AI chat for a personal review.</p>
     <div class="row"><button class="btn primary" data-act="copy-review" id="copy-review">Copy my summary</button></div>
-    <textarea id="review-text" readonly hidden style="width:100%;min-height:160px;font:12px/1.4 var(--f-num);background:var(--sunk);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px"></textarea></div>
-  <p class="prev">General fitness guidance based on common evidence-based ranges, not medical advice.</p>`;
+    <textarea id="review-text" readonly hidden style="width:100%;min-height:160px;font:12px/1.4 var(--f-num);background:var(--sunk);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px"></textarea></div>`;
+  h+=`<p class="prev">General fitness guidance based on common evidence-based ranges, not medical advice.</p>`;
   $("#view-coach").innerHTML=h;
 }
 function volumeBars(){
@@ -1323,6 +1340,12 @@ document.addEventListener("submit",e=>{
     const d=state.cdate, meals=[...((state.food[d]&&state.food[d].meals)||[]), {id:uid(), name:name||null, kcal:k, protein:p}];
     store.saveFood({date:d, meals}); state.mealDraft={kcal:"",protein:"",name:""}; renderCoach(); toast("Meal added"); return;
   }
+  if(f.id==="quickw-form"){
+    const n=parseFloat(String($("#quickw").value).trim().replace(",","."));
+    if(!(isFinite(n)&&n>0)){ toast("Body weight needs a number"); return; }
+    store.saveBody({...withWeight(state.body.find(e=>e.date===state.bdate),state.bdate,n), updated:Date.now()});
+    renderBody(); toast("Saved for "+fmtDate(state.bdate)); return;
+  }
   if(f.id==="add-ex-form"){ addExerciseToWorkout($("#new-ex").value); }
   if(f.id==="profile-form"){
     const fd=new FormData(f), num=v=>{ const n=parseFloat(String(v).replace(",",".")); return isFinite(n)?n:null; };
@@ -1376,6 +1399,9 @@ document.addEventListener("click",e=>{
     case "rest-skip": clearRest(); break;
     case "ex-info": openExInfo(b.dataset.name); break;
     case "tab": go(b.dataset.view); break;
+    case "tips-all": state.coachAllTips=!state.coachAllTips; renderCoach(); break;
+    case "coach-more": state.coachMore=!state.coachMore; renderCoach(); break;
+    case "body-full": state.bodyFull=true; renderBody(); break;
     case "jump-ex": stopEditing(); state.openEx=b.dataset.name; renderLog(); break;
     case "next-ex":{ const w=workoutFor(state.date); const nx=w?nextUnfinished(w.entries,ei):-1; if(nx>=0){ stopEditing(); state.openEx=w.entries[nx].ex; renderLog(); scrollToOpen(); } break; }
     case "open-exsheet": openSheet("#exsheet"); break;
