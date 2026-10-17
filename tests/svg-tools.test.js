@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { recolorSvg, slugify } from "../tools/svg-tools.mjs";
+import { recolorSvg, slugify, posesFor } from "../tools/svg-tools.mjs";
 
 const SRC = '<?xml version="1.0"?><!-- c --><svg width="268pt" height="275pt" viewBox="0 0 268 275" xmlns="http://www.w3.org/2000/svg"><g fill="#FFF"><path d="M0 0h1"/></g><g fill="#333"><path d="M1 1h1"/></g></svg>';
 
@@ -35,3 +35,10 @@ test("slugify", () => {
   assert.equal(slugify("Hamstrings & Glutes"), "hamstrings-glutes");
   assert.equal(slugify("  Push-up "), "push-up");
 });
+
+test("posesFor: relaxation is the start pose by default", () =>
+  assert.deepEqual(posesFor({ ek: "0018" }), [["relaxation", "start"], ["tension", "end"]]));
+test("posesFor: start:tension swaps the order (e.g. squat starts standing)", () =>
+  assert.deepEqual(posesFor({ ek: "0122", start: "tension" }), [["tension", "start"], ["relaxation", "end"]]));
+test("posesFor rejects unknown start values", () =>
+  assert.throws(() => posesFor({ ek: "0122", start: "top" }), /start/));

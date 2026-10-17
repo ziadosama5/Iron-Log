@@ -5,14 +5,14 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { recolorSvg, slugify } from "./svg-tools.mjs";
+import { recolorSvg, slugify, posesFor } from "./svg-tools.mjs";
 import { ALL_EX } from "../public/exercise-library.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = join(root, "public", "exercises");
 const infoFile = join(root, "public", "exercise-info.js");
 const EK = "https://raw.githubusercontent.com/everkinetic/data/main/dist/svg/";
-const POSES = [["relaxation", "start"], ["tension", "end"]];
+
 const force = process.argv.includes("--force");
 
 function fail(msg) { console.error("import-exercises: " + msg); process.exit(1); }
@@ -29,7 +29,7 @@ const info = {};
 for (const name of names.slice().sort((a, b) => a.localeCompare(b))) {
   const s = sources[name], slug = slugify(name);
   if (s.ek) {
-    for (const [pose, suffix] of POSES) {
+    for (const [pose, suffix] of posesFor(s)) {
       const file = `${slug}-${suffix}.svg`;
       wanted.add(file);
       if (!force && existsSync(join(outDir, file))) continue;

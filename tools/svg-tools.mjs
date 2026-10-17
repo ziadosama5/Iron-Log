@@ -36,3 +36,12 @@ export function recolorSvg(text, label = "svg") {
 export function slugify(name) {
   return String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 }
+
+// Everkinetic names poses by muscle state (relaxation/tension), not by movement order.
+// Most exercises start relaxed; ones that start at the top (squat, bench press...) set start:"tension".
+// Returns [[everkineticPose, "start"], [everkineticPose, "end"]].
+export function posesFor(source) {
+  const s = source.start || "relaxation";
+  if (s !== "relaxation" && s !== "tension") throw new Error(`unknown start pose "${s}" (use "relaxation" or "tension")`);
+  return s === "tension" ? [["tension", "start"], ["relaxation", "end"]] : [["relaxation", "start"], ["tension", "end"]];
+}
