@@ -285,7 +285,7 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
-let state = { workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), rest:null, editSet:null };
+let state = { workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -877,9 +877,9 @@ function todayCard(){
       <span class="label">Add a meal</span>
       <div class="chips">${["Breakfast","Lunch","Dinner","Snack"].map(n=>`<button type="button" class="chip" data-act="meal-name" data-name="${n}">${n}</button>`).join("")}</div>
       <div class="meal-fields">
-        <label><span class="label">kcal</span><input id="meal-kcal" inputmode="numeric"></label>
-        <label><span class="label">Protein g</span><input id="meal-protein" inputmode="numeric" placeholder="optional"></label>
-        <label class="meal-name"><span class="label">Name</span><input id="meal-name" maxlength="40" placeholder="optional"></label>
+        <label><span class="label">kcal</span><input id="meal-kcal" inputmode="numeric" value="${esc(state.mealDraft.kcal)}"></label>
+        <label><span class="label">Protein g</span><input id="meal-protein" inputmode="numeric" placeholder="optional" value="${esc(state.mealDraft.protein)}"></label>
+        <label class="meal-name"><span class="label">Name</span><input id="meal-name" maxlength="40" placeholder="optional" value="${esc(state.mealDraft.name)}"></label>
       </div>
       <button class="btn primary" type="submit">Add meal</button>
     </form>
@@ -1117,7 +1117,7 @@ function go(view){ state.view=view; try{localStorage.setItem("ironlog.view",view
 document.querySelector("nav").addEventListener("click",e=>{ const b=e.target.closest("button"); if(b) go(b.dataset.view); });
 let renameTimer=null;
 document.addEventListener("input",e=>{
-  const r=e.target; if(r.dataset&&r.dataset.actChange==="rename"){ clearTimeout(renameTimer); renameTimer=setTimeout(()=>{ const v=r.value.trim(); if(v&&dayById(r.dataset.id)&&dayById(r.dataset.id).name!==v) editDays(ds=>{ ds.find(d=>d.id===r.dataset.id).name=v; },{quiet:true}); },700); } const t=e.target; if(t.id==="cardio-min") state.cardioDraft.min=t.value; if(t.id==="cardio-kcal") state.cardioDraft.kcal=t.value; if(t.dataset.f&&t.dataset.ex!=null){ (ui[t.dataset.ex]||={w:"",r:""})[t.dataset.f]=t.value; } });
+  const r=e.target; if(r.dataset&&r.dataset.actChange==="rename"){ clearTimeout(renameTimer); renameTimer=setTimeout(()=>{ const v=r.value.trim(); if(v&&dayById(r.dataset.id)&&dayById(r.dataset.id).name!==v) editDays(ds=>{ ds.find(d=>d.id===r.dataset.id).name=v; },{quiet:true}); },700); } const t=e.target; if(t.id==="meal-kcal") state.mealDraft.kcal=t.value; if(t.id==="meal-protein") state.mealDraft.protein=t.value; if(t.id==="meal-name") state.mealDraft.name=t.value; if(t.id==="cardio-min") state.cardioDraft.min=t.value; if(t.id==="cardio-kcal") state.cardioDraft.kcal=t.value; if(t.dataset.f&&t.dataset.ex!=null){ (ui[t.dataset.ex]||={w:"",r:""})[t.dataset.f]=t.value; } });
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.id==="log-date"&&t.value){ stopEditing(); state.date=t.value; state.pickDay=false; state.openEx=undefined; renderLog(); }
@@ -1136,7 +1136,7 @@ document.addEventListener("submit",e=>{
     const k=Number(kRaw), p=pRaw===""?null:Number(pRaw);
     if(!(Number.isInteger(k)&&k>=1&&k<=5000) || (p!==null&&!(Number.isFinite(p)&&p>=0&&p<=500)) || name.length>40){ toast("Enter 1–5000 kcal (protein 0–500 g)"); return; }
     const d=state.cdate, meals=[...((state.food[d]&&state.food[d].meals)||[]), {id:uid(), name:name||null, kcal:k, protein:p}];
-    store.saveFood({date:d, meals}); renderCoach(); toast("Meal added"); return;
+    store.saveFood({date:d, meals}); state.mealDraft={kcal:"",protein:"",name:""}; renderCoach(); toast("Meal added"); return;
   }
   if(f.id==="add-ex-form"){ addExerciseToWorkout($("#new-ex").value); }
   if(f.id==="profile-form"){
@@ -1186,7 +1186,7 @@ document.addEventListener("click",e=>{
     case "rest-adj": adjustRestBy(+b.dataset.d); break;
     case "rest-skip": clearRest(); break;
     case "ex-info": openExInfo(b.dataset.name); break;
-    case "meal-name": $("#meal-name").value=b.dataset.name; break;
+    case "meal-name": $("#meal-name").value=state.mealDraft.name=b.dataset.name; break;
     case "rm-meal":{ const d=state.cdate; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderCoach(); break; }
     case "cardio-type": state.cardioDraft.type=b.dataset.v; renderLog(); break;
     case "cardio-int": state.cardioDraft.intensity=b.dataset.v; renderLog(); break;

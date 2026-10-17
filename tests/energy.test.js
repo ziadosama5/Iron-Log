@@ -70,3 +70,12 @@ test("dayEnergy with missing data", () => {
   assert.deepEqual(r, { baseline: null, lift: 0, cardio: 0, burned: null, target: null, eaten: 0, protein: null, balance: null });
   assert.equal(dayEnergy({ bmr: 1700, kg: 80, goal: undefined, workout: null, food: null }).target, 2040);
 });
+
+test("liftMinutes falls back when sets were logged after the workout (less than 1 min per set)", () => {
+  // 15 sets typed in within 2 minutes: the span says ~4 min, the 2.5 min/set fallback says 37.5
+  const quick = W(Array.from({ length: 15 }, (_, i) => i * 8000));
+  assert.equal(liftMinutes(quick), 37.5);
+});
+
+test("liftMinutes falls back when only some sets have times", () =>
+  assert.equal(liftMinutes(W([min(0), min(30), null, null])), 10));

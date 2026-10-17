@@ -30,7 +30,7 @@ Each day, show calories **eaten vs burned vs target**, where "burned" includes t
 |---|---|
 | `baselineBurn(bmr)` | `bmr × 1.2` (everyday life without workouts), rounded |
 | `bmrFor(profile, body, today)` | latest InBody `bmr` if < 120 days old; else Mifflin-St Jeor (`10·kg + 6.25·cm − 5·age + 5` male / `− 161` female) from profile + latest weight; else `null` |
-| `liftMinutes(workout)` | sets with `t`: (last t − first t)/60000 + 2; if that span > 180 min or fewer than 2 timed sets, fall back to `2.5 × total sets`; no sets → 0 |
+| `liftMinutes(workout)` | when every set has `t`: (last t − first t)/60000 + 2; if not every set is timed, fewer than 2 sets, the span is > 180 min or < 1 min per set (sets logged afterwards), fall back to `2.5 × total sets`; no sets → 0 |
 | `liftKcal(workout, kg)` | `(3.5 − 1) × kg × liftMinutes/60`, rounded |
 | `cardioKcal(c, kg)` | `c.kcal` when it is a number (machine), else `(MET − 1) × kg × c.min/60`, rounded, MET from the table below |
 | `exerciseKcal(workout, kg)` | `liftKcal + Σ cardioKcal` → `{lift, cardio, total}` |

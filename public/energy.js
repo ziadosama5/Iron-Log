@@ -18,6 +18,7 @@ const LIFT_MET = 3.5;          // moderate weight training, rests included
 const LIFT_TAIL_MIN = 2;       // time for the last set
 const MIN_PER_SET = 2.5;       // when set times are missing
 const MAX_LIFT_MIN = 180;      // longer spans are treated as missing times
+const MIN_PER_SET_FLOOR = 1;   // shorter than this per set means the sets were logged afterwards
 const INBODY_DAYS = 120;
 
 const days = (a, b) => (new Date(a) - new Date(b)) / 864e5;
@@ -46,9 +47,11 @@ export function liftMinutes(workout) {
   const all = sets(workout);
   if (!all.length) return 0;
   const t = all.map(s => s.t).filter(x => typeof x === "number" && x > 0).sort((a, b) => a - b);
-  if (t.length >= 2) {
+  // Trust the clock only when every set has a time and the span looks like a real session:
+  // sets typed in afterwards (under 1 min per set) or a half-timed day use the per-set estimate.
+  if (t.length >= 2 && t.length === all.length) {
     const span = (t[t.length - 1] - t[0]) / 60000 + LIFT_TAIL_MIN;
-    if (span <= MAX_LIFT_MIN) return span;
+    if (span <= MAX_LIFT_MIN && span >= all.length * MIN_PER_SET_FLOOR) return span;
   }
   return all.length * MIN_PER_SET;
 }
