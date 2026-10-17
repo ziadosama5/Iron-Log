@@ -43,3 +43,11 @@ export function restPhase(rest, now) {
 export function fmtClock(sec) {
   return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
 }
+
+// Values for the next set: last session's set at the same position, else repeat today's last set,
+// else last session's first set, else a starter value.
+export function prefillFor(entry, last) {
+  const n = entry.sets.length;
+  const s = (last && last.sets[n]) || entry.sets[n - 1] || (last && last.sets[0]);
+  return s ? { w: String(Math.round(s.w * 100) / 100), r: String(s.r) } : { w: "20", r: "8" };
+}

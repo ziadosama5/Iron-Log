@@ -201,6 +201,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
+import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock } from "./workout-tools.js";
 (function(){
 /* ---------- exercise library ---------- */
 const LIB = {
@@ -400,7 +401,7 @@ function renderLog(){
         <span class="meta"><span class="nm">${esc(e.ex)}</span><span class="sm num">${esc(sm)}</span></span><span class="chev" aria-hidden="true">›</span></button>`;
       return;
     }
-    const d = ui[e.ex] || (ui[e.ex]=defaults(e,last));
+    const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last));
     let runBest=best;
     h += `<div class="card open" id="open-card">
       <div class="ex-head"><button class="btn ghost small" data-act="close-ex" aria-label="Collapse ${esc(e.ex)}" style="padding:4px 6px 4px 0;text-align:left;white-space:normal"><span class="ex-name">${esc(e.ex)}</span></button><button class="btn ghost danger small" data-act="rm-ex" data-ei="${ei}" aria-label="Remove ${esc(e.ex)}">Remove</button></div>
@@ -449,7 +450,6 @@ function dayPicker(w){
   </div>`;
 }
 function fillDatalist(){ $("#ex-list").innerHTML=[...new Set([...exerciseNames(),...ALL_EX])].map(n=>`<option value="${esc(n)}">`).join(""); }
-function defaults(e,last){ const s=e.sets[e.sets.length-1]||(last&&last.sets[0]); return s?{w:kg(s.w),r:String(s.r)}:{w:"20",r:"8"}; }
 function ensureWorkout(){ const w=workoutFor(state.date); return w?clone(w):{id:"w-"+state.date,date:state.date,dayId:null,dayName:null,entries:[]}; }
 function canonical(name){ return [...exerciseNames(),...ALL_EX].find(n=>same(n,name)) || name; }
 function startDay(day){
@@ -972,7 +972,7 @@ document.addEventListener("click",e=>{
       const w=ensureWorkout(), en=w.entries[ei];
       const wt=parseFloat(String(document.getElementById("w-"+ei).value).replace(",",".")), r=parseInt(document.getElementById("r-"+ei).value,10);
       if(!(wt>=0)||!(r>0)){ toast("Enter a weight (0 for bodyweight) and at least 1 rep"); return; }
-      en.sets.push({w:wt,r}); ui[en.ex]={w:kg(wt),r:String(r)}; store.save(w); renderLog();
+      en.sets.push({w:wt,r}); delete ui[en.ex]; store.save(w); renderLog();
       const best=bestBefore(en.ex,state.date);
       if(best>0&&e1rm(wt,r)>best&&en.sets.filter(s=>e1rm(s.w,s.r)>best).length===1) toast("New PR on "+en.ex+"!");
       break; }

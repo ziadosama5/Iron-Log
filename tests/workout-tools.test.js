@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  defaultRest, restFor, startRest, adjustRest, remaining, restPhase, fmtClock
+  defaultRest, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, prefillFor
 } from "../public/workout-tools.js";
 
 test("defaultRest tiers", () => {
@@ -51,3 +51,15 @@ test("restPhase expired after 60s", () => assert.equal(restPhase(startRest("Dip"
 test("fmtClock", () => {
   assert.equal(fmtClock(84), "1:24"); assert.equal(fmtClock(5), "0:05"); assert.equal(fmtClock(600), "10:00");
 });
+
+const L = { sets: [{w:60,r:8},{w:62.5,r:6},{w:65,r:5}] };
+test("prefill: set N from last session set N", () =>
+  assert.deepEqual(prefillFor({ sets:[{w:60,r:8}] }, L), { w:"62.5", r:"6" }));
+test("prefill: beyond last session repeats today's last set", () =>
+  assert.deepEqual(prefillFor({ sets:[{w:60,r:8},{w:62.5,r:6},{w:65,r:5},{w:65,r:4}] }, L), { w:"65", r:"4" }));
+test("prefill: first set from last session set 0", () =>
+  assert.deepEqual(prefillFor({ sets:[] }, L), { w:"60", r:"8" }));
+test("prefill: no history", () =>
+  assert.deepEqual(prefillFor({ sets:[] }, null), { w:"20", r:"8" }));
+test("prefill: today's sets but no last session", () =>
+  assert.deepEqual(prefillFor({ sets:[{w:40,r:10}] }, null), { w:"40", r:"10" }));
