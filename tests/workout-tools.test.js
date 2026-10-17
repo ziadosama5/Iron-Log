@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  defaultRest, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, prefillFor, shouldWake, createWakeLock, editIndexFor
+  defaultRest, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, prefillFor, shouldWake, createWakeLock, editIndexFor, rolloverDate
 } from "../public/workout-tools.js";
 
 test("defaultRest tiers", () => {
@@ -124,3 +124,10 @@ test("editIndexFor: other exercise, missing set, or no edit", () => {
   assert.equal(editIndexFor({date:"2026-10-17", ex:"Bench Press", si:5}, "2026-10-17", "Bench Press", S3), -1);
   assert.equal(editIndexFor(null, "2026-10-17", "Bench Press", S3), -1);
 });
+
+test("rolloverDate moves 'today' forward after midnight", () =>
+  assert.equal(rolloverDate("2026-10-17", "2026-10-17", "2026-10-18"), "2026-10-18"));
+test("rolloverDate keeps a past date the user picked on purpose", () =>
+  assert.equal(rolloverDate("2026-10-10", "2026-10-17", "2026-10-18"), "2026-10-10"));
+test("rolloverDate does nothing on the same day", () =>
+  assert.equal(rolloverDate("2026-10-17", "2026-10-17", "2026-10-17"), "2026-10-17"));

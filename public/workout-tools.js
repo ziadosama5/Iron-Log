@@ -87,3 +87,9 @@ export function createWakeLock(env = globalThis) {
 export function editIndexFor(editSet, date, ex, sets) {
   return editSet && editSet.date === date && editSet.ex === ex && sets[editSet.si] ? editSet.si : -1;
 }
+
+// If the app was left open past midnight, "today" in the Workout tab must move to the new day.
+// A date the user picked on purpose (anything other than the old today) stays as it is.
+export function rolloverDate(current, lastToday, nowToday) {
+  return current === lastToday && nowToday !== lastToday ? nowToday : current;
+}

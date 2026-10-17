@@ -250,7 +250,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
-import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor } from "./workout-tools.js";
+import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate } from "./workout-tools.js";
+import { cleanBackupItems } from "./backup.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 (function(){
@@ -699,7 +700,7 @@ function renderBody(){
     </div>`;
     const rows=bodySorted().reverse().slice(0,12);
     h+=`<div class="card" style="overflow-x:auto"><h3>Recent entries</h3><table><thead><tr><th>Date</th><th class="r">Weight</th><th class="r">Waist</th><th class="r">Fat %</th><th class="r">Muscle</th></tr></thead><tbody>${
-      rows.map(e=>`<tr data-bdate="${e.date}" style="cursor:pointer"><td style="white-space:nowrap">${fmtDate(e.date)}</td>${["weight","waist","pbf","smm"].map(k=>`<td class="r num">${e[k]!=null?kg(e[k]):"–"}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+      rows.map(e=>`<tr data-bdate="${esc(e.date)}" style="cursor:pointer"><td style="white-space:nowrap">${fmtDate(e.date)}</td>${["weight","waist","pbf","smm"].map(k=>`<td class="r num">${e[k]!=null?kg(e[k]):"–"}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
   } else {
     h+=`<div class="empty"><strong>No body data yet</strong>Log your weight above. Add measurements or an InBody scan whenever you have them, and the Coach tab will start using them.</div>`;
   }
@@ -891,7 +892,7 @@ function renderHistory(){
     const done=w.entries.filter(e=>e.sets.length);
     const v=done.reduce((a,e)=>a+vol(e.sets),0), sets=done.reduce((a,e)=>a+e.sets.length,0);
     const day=dayById(w.dayId), dname=day?day.name:(w.dayName||"Free workout");
-    h+=`<div class="card" data-open="${w.date}" tabindex="0" style="cursor:pointer">
+    h+=`<div class="card" data-open="${esc(w.date)}" tabindex="0" style="cursor:pointer">
       <div class="ex-head"><div class="stack" style="gap:6px;min-width:0"><span class="prev">${fmtDateY(w.date)}</span><span class="daytag" style="align-self:flex-start">${esc(dname)}</span></div><span class="num prev" style="white-space:nowrap">${sets} sets · ${kg(v)} kg</span></div>
       <div class="chips">${done.map(e=>`<span class="chip">${esc(e.ex)} · ${e.sets.length}</span>`).join("")}</div>
       <div class="row" style="justify-content:flex-end">${state.confirmDel===w.id
@@ -930,8 +931,10 @@ async function importData(file){
   try{
     const j=JSON.parse(await file.text());
     if(j.app!=="iron-log"||!Array.isArray(j.items)) throw new Error("format");
-    const items=j.items.filter(it=>it&&typeof it.id==="string"&&/^(w-|b-)\d{4}-\d{2}-\d{2}$|^program$|^profile$|^settings$/.test(it.id)&&it.data&&typeof it.data==="object");
-    await store.restore(items); toast("Restored "+items.length+" items");
+    // Backup files can come from anywhere: clean every item, skip anything that looks wrong.
+    const {items, skipped}=cleanBackupItems(j.items,{bodyKeys:Object.keys(BF), goals:Object.keys(GOALS), muscles:MUSCLES});
+    if(!items.length) throw new Error("format");
+    await store.restore(items); toast("Restored "+items.length+" items"+(skipped?`, skipped ${skipped} that looked damaged`:""));
   }catch(e){ console.error(e); toast(e.message==="format"?"That file isn't an Iron Log backup":"Couldn't restore that file"); }
 }
 
@@ -1173,7 +1176,22 @@ if ("serviceWorker" in navigator) {
 if(!configured) $("#signout").hidden=true;
 render();
 resumeRest();
-store.init(()=>{ const a=document.activeElement; if(a&&a.matches("input:not([type=date]),select")) return; render(); });
+// Don't redraw under someone who is typing; redraw as soon as they leave the field instead.
+const typing=()=>{ const a=document.activeElement; return !!(a&&a.matches&&a.matches("input:not([type=date]),select,textarea")); };
+let renderPending=false;
+function renderSoon(){ if(typing()){ renderPending=true; return; } renderPending=false; render(); }
+// Wait a moment so a tap that moved focus (e.g. on "Add set") lands before the page is rebuilt.
+document.addEventListener("focusout",()=>{ if(renderPending) setTimeout(()=>{ if(renderPending&&!typing()) renderSoon(); },400); });
+// If the app stayed open past midnight, move "today" to the new day (dates picked on purpose stay).
+let lastToday=today();
+function checkNewDay(){
+  const t=today(); if(t===lastToday) return;
+  state.date=rolloverDate(state.date,lastToday,t); state.bdate=rolloverDate(state.bdate,lastToday,t);
+  lastToday=t; stopEditing(); renderSoon();
+}
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkNewDay(); });
+setInterval(checkNewDay,60000);
+store.init(renderSoon);
 })();
 </script>
 </body>
