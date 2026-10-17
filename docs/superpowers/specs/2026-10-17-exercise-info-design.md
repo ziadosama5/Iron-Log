@@ -9,7 +9,7 @@ Sub-project 2 of 5 in the "improve Iron Log" effort. Ships together with the day
 Tapping a "!" next to an exercise shows what the move looks like (start and finish drawings), which muscles it works, and a few form tips, so people can check an unfamiliar exercise without leaving the app.
 
 **Success criteria**
-- Every exercise in the built-in library (`LIB`, 60 names) has muscles and 2–4 form tips; about 50 also have start/finish drawings.
+- Every exercise in the built-in library (`LIB`, 55 names) has muscles and 2–4 form tips; about 45 also have start/finish drawings.
 - The panel opens from the Workout tab (collapsed rows and open card), the Days tab editor, and the "Add an exercise" suggestion chips.
 - Drawings use the app's colors in light and dark mode, and work offline after they have been viewed once.
 - No photos of real people.
@@ -26,7 +26,7 @@ Tapping a "!" next to an exercise shows what the move looks like (start and fini
 - `public/exercises/LICENSE.md` states the drawings are adapted (recolored, minified) from Everkinetic under CC BY-SA 4.0.
 - The free-exercise-db photos were rejected (real models).
 
-**Coverage:** about 50 of the 60 library exercises have a good Everkinetic drawing. These have **no drawing** and show tips + muscles only: Face Pull, Hip Thrust, Hanging Leg Raise, Plank, Russian Twist, Arnold Press, One-arm Dumbbell Row, Bulgarian Split Squat. Where Everkinetic only has an approximate match, prefer no drawing over a misleading one. The exact name → id table is decided in the implementation plan and reviewed there.
+**Coverage:** about 45 of the 55 library exercises have a good Everkinetic drawing. These have **no drawing** and show tips + muscles only: Face Pull, Hip Thrust, Hanging Leg Raise, Plank, Russian Twist, Arnold Press, One-arm Dumbbell Row, Bulgarian Split Squat. Where Everkinetic only has an approximate match, prefer no drawing over a misleading one. The exact name → id table is decided in the implementation plan and reviewed there.
 
 ## Architecture
 
@@ -36,7 +36,7 @@ Tapping a "!" next to an exercise shows what the move looks like (start and fini
 | `tools/import-exercises.mjs` | dev script: reads the sources, downloads each Everkinetic SVG pair, recolors + minifies, writes `public/exercises/<slug>-start.svg` / `-end.svg` and generates `public/exercise-info.js` |
 | `tools/svg-tools.mjs` | pure functions used by the script (`recolorSvg`, `slugify`), unit-tested |
 | `public/exercise-info.js` | generated ES module: `export const INFO = {"bench press": {name, slug, img:true/false, primary, secondary, tips}, ...}` keyed by lowercase name, plus `infoFor(name)` |
-| `public/exercises/*.svg` | about 100 recolored drawings (~25 KB each, ~2.5 MB total) |
+| `public/exercises/*.svg` | about 90 recolored drawings (~25 KB each, ~2.3 MB total) |
 | `public/index.html` | "!" buttons, the panel, SVG loading |
 | `public/sw.js` | caches `exercise-info.js` with the app shell; caches `/exercises/*.svg` on first view; VERSION bump |
 
