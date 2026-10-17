@@ -77,7 +77,8 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
   - Everkinetic pose names are relaxation/tension, not start/finish: exercises that start at the top (squat, bench...) set `"start": "tension"` in exercise-sources.json.
 - **Days tab:** templates, rename/reorder/add/remove exercises, muscle focus → exercise suggestions, weekday assignment (week strip; today's day auto-suggested), "Change split" with confirmation, move/delete days. Editing a day syncs into today's workout if it uses that day (`syncTodayWithDay`).
 - **Body tab:** latest weight in big numbers + quick weight entry (`withWeight`), profile line, "Add measurements / scan" opens the full entry form (weight, tape measurements, InBody), trend chart per metric, recent entries table.
-- **Cardio (Workout tab):** card under the exercises (also under the day picker): type, minutes ±5, intensity, optional machine kcal. A cardio-only day keeps showing the day picker.
+- **Cardio (Workout tab):** "+ Cardio" opens a sheet (inline card under the day picker): type, minutes ±5, intensity, optional machine kcal; logged sessions listed under the buttons. A cardio-only day keeps showing the day picker.
+- **Toasts** are a `popover="manual"` element so they show above open sheets (fallback: plain hidden element). `history.scrollRestoration="manual"` because sheets push history entries.
 - **Today card (Coach tab, first):** date picker; Eaten / Target, Burned (Everyday · Lifting · Cardio), Balance (green when it matches the goal); meals quick add (kcal, optional protein + name chips); protein vs 1.6–2.2 g/kg.
   - Target model: burned = BMR×1.2 + that day's exercise; target = burned + goal adjustment. Estimates use MET−1 (resting part is already in the baseline); machine kcal used as typed. Lifting time = first→last set +2 min, else 2.5 min/set.
   - "Trained" (`trainedOn`) = sets or cardio, except training-day rotation (sets only).

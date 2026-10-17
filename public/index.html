@@ -146,7 +146,7 @@ tr.setrow.editing td{background:var(--accent-soft)}
 button.chip{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:500 13px/1.2 var(--f-body);padding:7px 12px;cursor:pointer}
 button.chip.add::before{content:"+ ";color:var(--accent);font-weight:600}
 button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.toast{position:fixed;left:50%;bottom:calc(var(--tabbar) + 12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+.toast{inset:auto;margin:0;border:0;position:fixed;left:50%;bottom:calc(var(--tabbar) + 12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
 .notice{font-size:13px;color:var(--muted);background:var(--sunk);border-radius:12px;padding:10px 12px}
 .legend{display:flex;gap:16px;font-size:12px;color:var(--muted);flex-wrap:wrap}
 .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
@@ -317,7 +317,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
   <button data-act="tab" data-view="goals"><svg aria-hidden="true"><use href="#i-goals"/></svg>Goals</button>
   <button data-act="more-open" data-view="more"><svg aria-hidden="true"><use href="#i-more"/></svg>More</button>
 </nav>
-<div class="toast" id="toast" hidden></div>
+<div class="toast" id="toast" popover="manual"></div>
 <datalist id="ex-list"></datalist>
 
 <script type="module">
@@ -445,7 +445,15 @@ function showAccount(user){
   if(user){ el.textContent=""; const first=(user.displayName||user.email||"").split(" ")[0]; el.textContent=first; }
 }
 function setSync(t){ $("#sync").textContent=t; }
-let tt; function toast(t){ const el=$("#toast"); el.textContent=t; el.hidden=false; clearTimeout(tt); tt=setTimeout(()=>el.hidden=true,2400); }
+// Toasts are a popover so they show above open sheets (modal dialogs sit in the top layer).
+// Browsers without popover support fall back to a plain hidden/shown element.
+const toastPopover=!!HTMLElement.prototype.showPopover;
+if(!toastPopover){ const el=$("#toast"); el.removeAttribute("popover"); el.hidden=true; }
+let tt; function toast(t){
+  const el=$("#toast"); el.textContent=t; clearTimeout(tt);
+  if(toastPopover){ try{ if(el.matches(":popover-open")) el.hidePopover(); el.showPopover(); }catch(e){} tt=setTimeout(()=>{ try{ el.hidePopover(); }catch(e){} },2400); }
+  else { el.hidden=false; tt=setTimeout(()=>el.hidden=true,2400); }
+}
 
 /* ---------- derived ---------- */
 const sorted = () => [...state.workouts].sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
@@ -1485,7 +1493,10 @@ document.addEventListener("click",e=>{
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.matches?.("tr[data-act]")){ e.target.click(); return; } if(e.key==="Enter"){ const c=e.target.closest?.("[data-open]"); if(c&&e.target===c){ state.date=c.dataset.open; go("log"); } } });
 
 try{ const v=localStorage.getItem("ironlog.view"); if(VIEWS.includes(v)) state.view=v; }catch(e){}
-$("#signout").addEventListener("click",()=>{ clearRest(); signOut(auth); });
+$("#signout").addEventListener("click",()=>{ clearRest(); closeMore(); signOut(auth); });
+// Sheets add history entries; restoring the old scroll position when they close would undo
+// go()'s scroll-to-top (e.g. More → Lifts opening halfway down), so the app handles scrolling itself.
+try{ history.scrollRestoration="manual"; }catch(e){}
 window.addEventListener("offline",()=>setSync("Offline · saving on this phone"));
 window.addEventListener("online",()=>setSync("Back online · syncing…"));
 if ("serviceWorker" in navigator) {
