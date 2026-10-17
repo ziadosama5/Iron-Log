@@ -174,6 +174,20 @@ button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--acc
 .restbar.go .btn{background:transparent;border-color:var(--accent-ink);color:var(--accent-ink)}
 body.has-restbar main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 body.has-restbar .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+/* exercise info bottom sheet */
+dialog.sheet{position:fixed;inset:auto 0 0 0;margin:0 auto;width:100%;max-width:640px;max-height:85vh;overflow:auto;border:0;border-radius:16px 16px 0 0;background:var(--surface);color:var(--fg);box-shadow:0 -8px 32px rgb(0 0 0 / .2);padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
+.ex-head{display:flex;align-items:flex-start;gap:8px}
+.ex-head h2{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;padding-top:4px}
+.ex-figs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 6px}
+.ex-figs figure{margin:0;display:flex;flex-direction:column;gap:4px;min-width:0}
+.ex-fig{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--fg);display:grid;place-items:center;overflow:hidden;padding:6px;text-align:center}
+.ex-fig svg{width:100%;height:100%;display:block}
+.ex-fig .exbg{fill:var(--surface)}
+.ex-works{margin:10px 0 4px}
+.ex-tips{margin:6px 0 10px;padding-left:20px}
+.ex-tips li{margin:3px 0}
+.ex-credit{margin:0;font-size:12px}
 </style>
 </head>
 <body>
@@ -215,6 +229,7 @@ body.has-restbar .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
     <button class="btn" data-act="rest-skip">Skip</button>
   </div>
 </div>
+<dialog id="exinfo" class="sheet" aria-labelledby="exinfo-title"></dialog>
 <div class="toast" id="toast" hidden></div>
 <datalist id="ex-list"></datalist>
 
@@ -225,6 +240,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor } from "./workout-tools.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION } from "./exercise-library.js";
+import { infoFor } from "./exercise-info.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
 
@@ -904,6 +920,39 @@ async function importData(file){
   }catch(e){ console.error(e); toast(e.message==="format"?"That file isn't an Iron Log backup":"Couldn't restore that file"); }
 }
 
+/* ---------- EXERCISE INFO ---------- */
+// Bottom sheet with drawings, muscles and tips. Drawings are inlined (not <img>) so the
+// app's CSS colors apply. exInfoToken drops late fetches from a previously opened exercise.
+let exInfoToken=0;
+function openExInfo(name){
+  const info=infoFor(name); if(!info) return;
+  const dlg=$("#exinfo"), token=++exInfoToken;
+  const figs = info.img ? `<div class="ex-figs">${[["start","Start"],["end","Finish"]].map(([p,l])=>
+      `<figure><div class="ex-fig" data-src="/exercises/${info.slug}-${p}.svg" aria-hidden="true"></div><figcaption class="label">${l}</figcaption></figure>`).join("")}</div>` : "";
+  dlg.innerHTML = `<div class="ex-head"><h2 id="exinfo-title">${esc(info.name)}</h2><button class="btn ghost small" data-act="exinfo-close" aria-label="Close">✕</button></div>
+    ${figs}
+    <p class="ex-works">Works: <b>${info.primary.map(esc).join(", ")}</b>${info.secondary.length?` <span class="prev">· ${info.secondary.map(esc).join(", ")}</span>`:""}</p>
+    <ul class="ex-tips">${info.tips.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>
+    ${info.img?`<p class="prev ex-credit">Illustrations: Everkinetic, CC BY-SA 4.0</p>`:""}`;
+  if(!dlg.open){ dlg.showModal(); history.pushState({exinfo:1},""); }
+  dlg.querySelectorAll(".ex-fig").forEach(box=>{
+    fetch(box.dataset.src).then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
+      .then(svg=>{ if(token===exInfoToken) box.innerHTML=svg; })
+      .catch(()=>{ if(token===exInfoToken) box.innerHTML=`<span class="prev">Drawing not available offline yet</span>`; });
+  });
+}
+function closeExInfo(){ const d=$("#exinfo"); if(d.open) d.close(); }
+// Every way of closing (✕, backdrop, Esc, back gesture) ends in the dialog's "close" event.
+// Opening pushed a history entry so the phone's back gesture closes the sheet; remove it here.
+$("#exinfo").addEventListener("close",()=>{ exInfoToken++; if(history.state&&history.state.exinfo) history.back(); });
+$("#exinfo").addEventListener("click",e=>{
+  if(e.target!==e.currentTarget) return;
+  const r=e.currentTarget.getBoundingClientRect();
+  if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeExInfo(); // tap on the backdrop
+});
+window.addEventListener("popstate",closeExInfo);
+if(history.state&&history.state.exinfo) history.replaceState(null,""); // reloaded while the sheet was open
+
 /* ---------- SCREEN WAKE LOCK ---------- */
 const wake = createWakeLock();
 function syncWake(){ wake.want(state.authed && shouldWake({view:state.view, date:state.date, today:today(), exerciseCount:(workoutFor(state.date)?.entries.length)||0})); }
@@ -1038,6 +1087,8 @@ document.addEventListener("click",e=>{
       break; }
     case "rest-adj": adjustRestBy(+b.dataset.d); break;
     case "rest-skip": clearRest(); break;
+    case "ex-info": openExInfo(b.dataset.name); break;
+    case "exinfo-close": closeExInfo(); break;
     case "rm-set":{ const w=ensureWorkout(), en=w.entries[ei], si=+b.dataset.si;
       // Deleting the edited set or one before it would shift indexes, so leave edit mode.
       if(state.editSet&&state.editSet.ex===en.ex&&si<=state.editSet.si) stopEditing();
