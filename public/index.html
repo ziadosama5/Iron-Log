@@ -223,7 +223,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
-import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock } from "./workout-tools.js";
+import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor } from "./workout-tools.js";
 (function(){
 /* ---------- exercise library ---------- */
 const LIB = {
@@ -426,7 +426,7 @@ function renderLog(){
       return;
     }
     const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last));
-    const editSi = state.editSet && state.editSet.ex===e.ex && e.sets[state.editSet.si] ? state.editSet.si : -1;
+    const editSi = editIndexFor(state.editSet, state.date, e.ex, e.sets);
     let runBest=best;
     h += `<div class="card open" id="open-card">
       <div class="ex-head"><button class="btn ghost small" data-act="close-ex" aria-label="Collapse ${esc(e.ex)}" style="padding:4px 6px 4px 0;text-align:left;white-space:normal"><span class="ex-name">${esc(e.ex)}</span></button><button class="btn ghost danger small" data-act="rm-ex" data-ei="${ei}" aria-label="Remove ${esc(e.ex)}">Remove</button></div>
@@ -1053,11 +1053,11 @@ document.addEventListener("click",e=>{
   switch(a){
     case "step":{ const inp=document.getElementById(b.dataset.f+"-"+ei); let v=Math.max(0,(parseFloat(inp.value)||0)+parseFloat(b.dataset.d)); inp.value=b.dataset.f==="r"?Math.round(v):kg(v); inp.dispatchEvent(new Event("input",{bubbles:true})); break; }
     case "edit-set":{ const en=ensureWorkout().entries[ei], si=+b.dataset.si, s=en.sets[si];
-      state.editSet={ex:en.ex,si}; ui[en.ex]={w:kg(s.w),r:String(s.r)}; renderLog(); break; }
+      state.editSet={date:state.date,ex:en.ex,si}; ui[en.ex]={w:kg(s.w),r:String(s.r)}; renderLog(); break; }
     case "cancel-edit": stopEditing(); renderLog(); break;
     case "save-set":{
-      const w=ensureWorkout(), en=w.entries[ei], v=readSet(ei), si=state.editSet&&state.editSet.si;
-      if(!v||!state.editSet||!en.sets[si]) return;
+      const w=ensureWorkout(), en=w.entries[ei], v=readSet(ei), si=editIndexFor(state.editSet, state.date, en.ex, en.sets);
+      if(!v||si<0) return;
       en.sets[si]={w:v.w,r:v.r}; stopEditing(); store.save(w); renderLog(); break; }
     case "add-set":{
       const w=ensureWorkout(), en=w.entries[ei], v=readSet(ei);
@@ -1077,12 +1077,12 @@ document.addEventListener("click",e=>{
     case "open-ex": stopEditing(); state.openEx=b.dataset.name; renderLog(); scrollToOpen(); break;
     case "close-ex": stopEditing(); state.openEx=null; renderLog(); break;
     case "done-ex":{
-      const w=ensureWorkout(); w.entries[ei].done=true; store.save(w);
+      stopEditing(); const w=ensureWorkout(); w.entries[ei].done=true; store.save(w);
       const next=w.entries.slice(ei+1).concat(w.entries.slice(0,ei)).find(e=>!e.done);
       state.openEx=next?next.ex:undefined; renderLog();
       if(next){ scrollToOpen(); toast("Next up: "+next.ex); } else { window.scrollTo({top:0,behavior:"smooth"}); toast("Workout complete. Nice work!"); }
       break; }
-    case "undone-ex":{ const w=ensureWorkout(); w.entries[ei].done=false; state.openEx=w.entries[ei].ex; store.save(w); renderLog(); break; }
+    case "undone-ex":{ stopEditing(); const w=ensureWorkout(); w.entries[ei].done=false; state.openEx=w.entries[ei].ex; store.save(w); renderLog(); break; }
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
     case "free-focus":{ const m=b.dataset.m; const f=state.freeFocus||[]; state.freeFocus=f.includes(m)?f.filter(x=>x!==m):[...f,m]; renderLog(); break; }
     case "change-day": stopEditing(); state.pickDay=true; renderLog(); break;

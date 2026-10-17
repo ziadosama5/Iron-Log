@@ -81,3 +81,9 @@ export function createWakeLock(env = globalThis) {
   env.document.addEventListener("visibilitychange", acquire);
   return { want(on) { wanted = !!on; if (wanted) acquire(); else release(); } };
 }
+
+// Index of the set being edited for this date + exercise, or -1. Checking the date means an
+// edit started on one day can never save over a set on another day.
+export function editIndexFor(editSet, date, ex, sets) {
+  return editSet && editSet.date === date && editSet.ex === ex && sets[editSet.si] ? editSet.si : -1;
+}

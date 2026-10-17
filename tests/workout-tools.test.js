@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
-  defaultRest, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, prefillFor, shouldWake, createWakeLock
+  defaultRest, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, prefillFor, shouldWake, createWakeLock, editIndexFor
 } from "../public/workout-tools.js";
 
 test("defaultRest tiers", () => {
@@ -112,4 +112,15 @@ test("createWakeLock swallows request errors", async () => {
 });
 test("createWakeLock no-op without API", () => {
   assert.doesNotThrow(() => createWakeLock({ navigator:{}, document:{ addEventListener(){} } }).want(true));
+});
+
+const S3 = [{w:60,r:8},{w:62.5,r:6},{w:65,r:5}];
+test("editIndexFor: matching date, exercise and set", () =>
+  assert.equal(editIndexFor({date:"2026-10-17", ex:"Bench Press", si:1}, "2026-10-17", "Bench Press", S3), 1));
+test("editIndexFor: edit from another day does not apply", () =>
+  assert.equal(editIndexFor({date:"2026-10-17", ex:"Bench Press", si:1}, "2026-10-10", "Bench Press", S3), -1));
+test("editIndexFor: other exercise, missing set, or no edit", () => {
+  assert.equal(editIndexFor({date:"2026-10-17", ex:"Bench Press", si:1}, "2026-10-17", "Squat", S3), -1);
+  assert.equal(editIndexFor({date:"2026-10-17", ex:"Bench Press", si:5}, "2026-10-17", "Bench Press", S3), -1);
+  assert.equal(editIndexFor(null, "2026-10-17", "Bench Press", S3), -1);
 });
