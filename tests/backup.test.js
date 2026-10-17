@@ -89,3 +89,23 @@ test("food docs are cleaned; doc without valid meals is skipped", () => {
   assert.equal(cleanBackupItems([{ id: "f-2026-10-17", data: { date: "2026-10-17", meals: [] } }], OPTS).skipped, 1);
   assert.equal(cleanBackupItems([{ id: "f-2026-10-17", data: { date: "2026-10-16", meals: f.data.meals } }], OPTS).skipped, 1);
 });
+
+test("profile goal fields are kept when valid", () => {
+  const r = cleanBackupItems([{ id: "profile", data: { sex: "male", height: 180, birthYear: 1998, goal: "muscle", goalWeight: 75, goalStart: "2026-10-01" } }], OPTS);
+  assert.equal(r.items[0].data.goalWeight, 75);
+  assert.equal(r.items[0].data.goalStart, "2026-10-01");
+  const bad = cleanBackupItems([{ id: "profile", data: { goalWeight: 500, goalStart: "<b>" } }], OPTS).items[0].data;
+  assert.equal(bad.goalWeight, null);
+  assert.equal(bad.goalStart, null);
+});
+
+test("profile without goal fields is unchanged", () => {
+  const p = { id: "profile", data: { sex: "male", height: 180, birthYear: 1998, goal: "muscle" } };
+  assert.deepEqual(cleanBackupItems([p], OPTS).items, [p]);
+});
+
+test("settings seenBadges keeps short strings only", () => {
+  const r = cleanBackupItems([{ id: "settings", data: { rest: {}, seenBadges: ["workouts-1", 5, "x".repeat(50), "pr-1"] } }], OPTS);
+  assert.deepEqual(r.items[0].data.seenBadges, ["workouts-1", "pr-1"]);
+  assert.equal("seenBadges" in cleanBackupItems([{ id: "settings", data: { rest: {} } }], OPTS).items[0].data, false);
+});

@@ -311,7 +311,7 @@ const store = {
       this.unsub = onSnapshot(this.col, { includeMetadataChanges:true }, snap=>{
         const ws=[], bs=[], food={}; let prog={}, prof={}, settings={rest:{}};
         snap.docs.forEach(d=>{ const v=d.data();
-          if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("f-")) food[d.id.slice(2)]={date:d.id.slice(2),meals:v.meals||[]}; else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
+          if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}, ...(Array.isArray(v.seenBadges)?{seenBadges:v.seenBadges}:{})}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("f-")) food[d.id.slice(2)]={date:d.id.slice(2),meals:v.meals||[]}; else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
         // One-time fix for days missing muscle tags. Only on server data, so a stale offline copy never overwrites newer edits.
         const mp=migrateProgram(prog), days=mp.days;
         state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings; state.food=food;
@@ -349,7 +349,9 @@ const store = {
   saveFood(doc){ const meals=doc.meals||[];
     if(meals.length){ state.food[doc.date]={date:doc.date,meals}; this.write("f-"+doc.date,{date:doc.date,meals,updated:Date.now()}); }
     else { delete state.food[doc.date]; this.write("f-"+doc.date,null); } },
-  saveSettings(s){ state.settings={rest:s.rest}; this.write("settings",{rest:s.rest,updated:Date.now()}); },
+  // Merges a partial change (rest times or seen badges) so neither field drops the other.
+  saveSettings(patch){ const s={...state.settings,...patch}; state.settings=s;
+    this.write("settings",{rest:s.rest||{}, ...(s.seenBadges?{seenBadges:s.seenBadges}:{}), updated:Date.now()}); },
   async restore(items){
     // items: [{id, data}] ; Firestore batches hold up to 500 writes
     for (let i=0;i<items.length;i+=450){
@@ -705,6 +707,7 @@ function renderBody(){
         <label><span class="label">Height · cm</span><input id="pf-height" name="height" inputmode="decimal" value="${p.height??""}"></label>
         <label><span class="label">Birth year</span><input id="pf-birth" name="birthYear" inputmode="numeric" value="${p.birthYear??""}" placeholder="1998"></label>
         <label><span class="label">Main goal</span><select id="pf-goal" name="goal"><option value="">Choose</option>${Object.entries(GOALS).map(([k,v])=>`<option value="${k}" ${p.goal===k?"selected":""}>${v}</option>`).join("")}</select></label>
+        <label><span class="label">Target weight · kg</span><input id="pf-goalw" name="goalWeight" inputmode="decimal" value="${p.goalWeight??""}" placeholder="optional"></label>
       </div>
       <div class="row"><button class="btn primary" type="submit">Save</button>${profileReady()?`<button class="btn ghost" type="button" data-act="cancel-profile">Cancel</button>`:""}</div>
     </form>`;
@@ -990,7 +993,7 @@ function exportData(){
     ...state.body.map(b=>({id:"b-"+b.date,data:b})),
     {id:"program",data:{days:state.days,v:PROGRAM_VERSION,updated:Date.now()}},
     {id:"profile",data:state.profile},
-    {id:"settings",data:{rest:state.settings.rest,updated:Date.now()}},
+    {id:"settings",data:{rest:state.settings.rest, ...(state.settings.seenBadges?{seenBadges:state.settings.seenBadges}:{}), updated:Date.now()}},
     ...Object.values(state.food).map(fd=>({id:"f-"+fd.date,data:{date:fd.date,meals:fd.meals,updated:Date.now()}}))
   ];
   const blob=new Blob([JSON.stringify({app:"iron-log",version:1,exported:new Date().toISOString(),items},null,1)],{type:"application/json"});
@@ -1142,6 +1145,10 @@ document.addEventListener("submit",e=>{
   if(f.id==="profile-form"){
     const fd=new FormData(f), num=v=>{ const n=parseFloat(String(v).replace(",",".")); return isFinite(n)?n:null; };
     const p={sex:fd.get("sex")||null, height:num(fd.get("height")), birthYear:num(fd.get("birthYear")), goal:fd.get("goal")||null};
+    // Target weight is optional; changing it restarts the goal from today.
+    const gw=String(fd.get("goalWeight")||"").trim()===""?null:num(fd.get("goalWeight"));
+    if(String(fd.get("goalWeight")||"").trim()!==""&&!(gw>=30&&gw<=300)){ toast("Target weight must be 30–300 kg"); return; }
+    p.goalWeight=gw; p.goalStart=gw==null?null:(gw===state.profile.goalWeight&&state.profile.goalStart?state.profile.goalStart:today());
     const yr=new Date().getFullYear();
     if(!p.sex||!p.goal||!p.height||p.height<100||p.height>250||!p.birthYear||p.birthYear<yr-100||p.birthYear>yr-10){ toast("Fill in all four fields: height in cm (100–250) and a 4-digit birth year"); return; }
     store.saveProfile(p); state.editProfile=false; renderBody(); toast("Saved");

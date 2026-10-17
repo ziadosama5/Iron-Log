@@ -57,18 +57,24 @@ function cleanProgram(d, muscles) {
 }
 
 function cleanProfile(d, goals) {
-  return {
+  const out = {
     sex: d.sex === "male" || d.sex === "female" ? d.sex : null,
     height: num(d.height, 50, 300) ? d.height : null,
     birthYear: Number.isInteger(d.birthYear) && d.birthYear >= 1900 && d.birthYear <= 2100 ? d.birthYear : null,
     goal: goals.includes(d.goal) ? d.goal : null
   };
+  // Target weight fields only when the backup has them, so older profiles come back unchanged.
+  if ("goalWeight" in d) out.goalWeight = num(d.goalWeight, 30, 300) ? d.goalWeight : null;
+  if ("goalStart" in d) out.goalStart = typeof d.goalStart === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d.goalStart) ? d.goalStart : null;
+  return out;
 }
 
 function cleanSettings(d) {
   const rest = {};
   if (isObj(d.rest)) Object.entries(d.rest).forEach(([k, v]) => { const n = text(k, 80); if (n && num(v, 15, 600)) rest[n] = v; });
-  return withUpdated({ rest }, d);
+  const out = { rest };
+  if (Array.isArray(d.seenBadges)) out.seenBadges = d.seenBadges.filter(s => typeof s === "string" && s.length <= 40).slice(0, 200);
+  return withUpdated(out, d);
 }
 
 // items: [{id, data}] from the file. opts: {bodyKeys, goals, muscles} from the app.
