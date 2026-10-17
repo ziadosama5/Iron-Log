@@ -2,7 +2,7 @@
 // Keeps the app itself on the device so it opens with no signal.
 // Your workout data is cached separately by Firestore and syncs when you're back online.
 // Bump VERSION whenever you deploy changes, so phones pick up the new files.
-const VERSION = "iron-log-v6";
+const VERSION = "iron-log-v7";
 const FIREBASE_SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
 
 const APP_SHELL = [
@@ -11,6 +11,7 @@ const APP_SHELL = [
   "/firebase-config.js",
   "/workout-tools.js",
   "/exercise-library.js",
+  "/exercise-info.js",
   "/manifest.webmanifest",
   "/icon-192.png",
   "/icon-512.png",
@@ -75,7 +76,11 @@ self.addEventListener("fetch", event => {
   // Never touch sign-in or database traffic; Firebase handles those itself.
   if (url.pathname.startsWith("/__/")) return;
 
-  if (url.origin === self.location.origin) {
+  // Exercise drawings never change at the same address within a VERSION, so serve them from
+  // the cache once seen (they are saved on first view, not at install, to keep install light).
+  if (url.origin === self.location.origin && url.pathname.startsWith("/exercises/")) {
+    event.respondWith(cacheFirst(req));
+  } else if (url.origin === self.location.origin) {
     event.respondWith(networkFirst(req));
   } else if (url.href.startsWith(FIREBASE_SDK) || url.host === "fonts.googleapis.com" || url.host === "fonts.gstatic.com") {
     event.respondWith(cacheFirst(req));

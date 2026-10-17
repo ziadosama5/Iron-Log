@@ -73,3 +73,18 @@ On the **History** tab, use **Download backup** to save everything as a file, an
 - **"This website isn't allowed to sign in yet":** if you later host the app on another domain (for example GitHub Pages), add that domain under **Authentication › Settings › Authorized domains**.
 - **Security:** the values in `firebase-config.js` are public identifiers, not passwords. `firestore.rules` is what keeps each person's data private. Always deploy it with `firebase deploy`.
 - **AI review:** the Coach tab's **Copy my summary** button copies your data with coaching instructions. Paste it into Claude (or any AI chat) for a written review. Calling an AI directly from the app would need a paid API key, so it's left out to keep the app free.
+
+## Exercise drawings
+
+The start/finish drawings in the exercise info panel ("!" next to an exercise) are adapted from
+[Everkinetic](https://github.com/everkinetic/data), licensed
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). They were recolored to follow the
+app's light/dark theme; the adapted files in `public/exercises/` are shared under the same license.
+
+Muscles, form tips and which drawing each exercise uses live in `tools/exercise-sources.json`.
+After editing it, regenerate the drawings and `public/exercise-info.js` (needs Node 18+, no packages):
+
+```
+node tools/import-exercises.mjs          # add --force to re-download every drawing
+npm test
+```
