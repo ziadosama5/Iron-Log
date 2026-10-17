@@ -67,6 +67,20 @@ main{padding-block:18px calc(var(--tabbar) + 24px + env(safe-area-inset-bottom,0
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:14;display:flex;justify-content:space-around;align-items:stretch;background:var(--surface);border-top:1px solid var(--line);height:calc(var(--tabbar) + env(safe-area-inset-bottom,0px));padding:0 max(8px,env(safe-area-inset-right,0px)) env(safe-area-inset-bottom,0px) max(8px,env(safe-area-inset-left,0px))}
 .tabbar button{appearance:none;border:0;background:none;color:var(--muted);flex:1;max-width:128px;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 11px/1 var(--f-body);cursor:pointer}
 .tabbar svg{width:24px;height:24px}
+/* Workout focus mode */
+.exchips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px;margin:0 -2px}
+.exchips::-webkit-scrollbar{display:none}
+.exchip{flex:none;display:flex;align-items:center;gap:6px;min-height:40px;padding:4px 12px 4px 6px;border-radius:999px;border:1px solid var(--card-border);background:var(--surface);box-shadow:var(--shadow);color:var(--fg);font:600 13px/1 var(--f-body);cursor:pointer}
+.exchip .t{max-width:14ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exchip .n{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:700}
+.exchip.done .n{background:var(--good);border-color:var(--good);color:var(--surface)}
+.exchip.started .n{border-color:var(--accent);color:var(--accent)}
+.exchip[aria-current="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.exchip[aria-current="true"] .n{border-color:var(--accent-ink);color:var(--accent-ink);background:transparent}
+.card.focus .ex-name{font-size:26px}
+.nextbtn{overflow:hidden;text-overflow:ellipsis}
+.complete-card .tick{width:34px;height:34px;border-radius:50%;background:var(--good);color:var(--surface);display:grid;place-items:center;font-weight:700}
+.sheet .card{box-shadow:none;border:0;padding:0;background:none}
 .tabbar button[aria-current="page"]{color:var(--accent)}
 .more-row{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 4px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:600 16px/1 var(--f-body);cursor:pointer;text-align:left}
 .more-row svg{width:20px;height:20px;color:var(--muted)}
@@ -283,6 +297,8 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
   </div>
 </div>
 <dialog id="exinfo" class="sheet" aria-labelledby="exinfo-title"></dialog>
+<dialog id="exsheet" class="sheet" aria-label="Add an exercise"></dialog>
+<dialog id="cardiosheet" class="sheet" aria-label="Cardio"></dialog>
 <dialog id="moresheet" class="sheet" aria-labelledby="more-title">
   <div class="sheet-head"><h2 id="more-title">More</h2><button class="btn ghost small" data-act="more-close" aria-label="Close">✕</button></div>
   <button class="more-row" data-act="more-go" data-view="days">Days<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
@@ -307,7 +323,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
-import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn } from "./workout-tools.js";
+import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
 import { themeAttr, sortTips, withWeight } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
@@ -458,80 +474,117 @@ function suggestionsFor(focus, exclude){
 /* ---------- WORKOUT ---------- */
 function renderLog(){
   const w = workoutFor(state.date);
+  const dateLabel = state.date===today()?"Today":fmtDate(state.date);
   let h = `<div class="row">
-    <div class="grow"><div class="label">Workout date</div><h2>${state.date===today()?"Today":fmtDate(state.date)}</h2></div>
+    <div class="grow"><div class="label">Workout date</div><h2>${dateLabel}</h2></div>
     <input type="date" id="log-date" value="${state.date}" max="${today()}" style="width:auto">
   </div>`;
 
   // A day with only cardio still asks which training day it is (the cardio is kept when one is picked).
   const cardioOnly = w && !w.dayId && !w.entries.length && w.dayName==="Cardio";
-  if (!w || state.pickDay || cardioOnly){ $("#view-log").innerHTML = h + dayPicker(cardioOnly&&!state.pickDay?null:w) + cardioCard(); fillDatalist(); syncWake(); return; }
+  if (!w || state.pickDay || cardioOnly){ $("#view-log").innerHTML = h + dayPicker(cardioOnly&&!state.pickDay?null:w) + cardioCard(); fillDatalist(); refreshSheets(); syncWake(); return; }
 
-  const day = dayById(w.dayId);
-  const entries = w.entries;
-  const logged = entries.filter(e=>e.sets.length);
-  const total = entries.reduce((a,e)=>a+vol(e.sets),0);
-  h += `<div class="row">
-      <span class="daytag">${w.dayId&&day?`<span class="num" style="font-size:12px">Day ${dayIndex(w.dayId)+1}</span>`:""}${esc(day?day.name:(w.dayName||"Free workout"))}</span>
-      <button class="btn ghost small" data-act="change-day">Change day</button>
-    </div>`;
+  const day = dayById(w.dayId), entries = w.entries, M = entries.length;
   const doneN = entries.filter(e=>e.done).length;
-  if (entries.length) h += `<div class="progress"><div class="row label" style="gap:16px"><span>${doneN}/${entries.length} exercises done</span><span>${entries.reduce((a,e)=>a+e.sets.length,0)} sets</span><span class="num">${kg(total)} kg volume</span></div>
-    <div class="track"><div class="fill" style="width:${entries.length?doneN/entries.length*100:0}%"></div></div></div>`;
+  const mins = state.date===today() ? elapsedMin(w, Date.now()) : null;
+  h += `<div class="row"><div class="grow"><span class="daytag">${w.dayId&&day?`<span class="num" style="font-size:12px">Day ${dayIndex(w.dayId)+1}</span>`:""}${esc(day?day.name:(w.dayName||"Free workout"))}</span></div>
+      <button class="btn ghost small" data-act="change-day">Change day</button></div>`;
+  if (M) h += `<div class="stack" style="gap:6px"><span class="label">${doneN} of ${M} done${mins!=null?` · ${mins} min`:""}</span>
+      <div class="ebar" role="progressbar" aria-label="Exercises done" aria-valuemin="0" aria-valuemax="${M}" aria-valuenow="${doneN}"><i style="width:${doneN/M*100}%"></i></div></div>`;
 
-  // Which exercise is expanded: the one the user tapped, else the first not marked done.
-  let openName = state.openEx && entries.some(e=>e.ex===state.openEx) ? state.openEx : (entries.find(e=>!e.done)||{}).ex;
-  if (state.openEx===null) openName = null;
-  if (entries.length && doneN===entries.length && !state.openEx) h += `<div class="complete"><span class="tick" style="width:34px;height:34px;border-radius:50%;background:var(--good);color:var(--surface);display:grid;place-items:center;font-weight:700">✓</span><div class="stack" style="gap:2px"><b>Workout complete</b><span class="prev">${entries.reduce((a,e)=>a+e.sets.length,0)} sets · ${kg(total)} kg moved. Tap any exercise to edit it.</span></div></div>`;
-
-  entries.forEach((e,ei)=>{
-    const last=lastBefore(e.ex,state.date), best=bestBefore(e.ex,state.date);
-    if (e.ex!==openName){
+  // Focus mode: the exercise the user picked (any order), else the first one not done.
+  const picked = entries.findIndex(e=>e.ex===state.openEx);
+  const ei = picked>=0 ? picked : nextUnfinished(entries,-1);
+  if (M) h += `<div class="exchips" id="exchips">${entries.map((e,i)=>{
       const cls = e.done?"done":(e.sets.length?"started":"");
-      const sm = e.sets.length ? `${e.sets.length} set${e.sets.length>1?"s":""} · ${e.sets.map(s=>kg(s.w)+"×"+s.r).join(", ")}` : (last?`Last: ${last.sets.map(s=>kg(s.w)+"×"+s.r).join(", ")}`:"Not started");
-      h += `<div class="exrow-wrap"><button class="exrow ${cls}" data-act="open-ex" data-name="${esc(e.ex)}" aria-label="${esc(e.ex)}${e.done?", done":""}. Open to log sets">
-        <span class="tick" aria-hidden="true">${e.done?"✓":ei+1}</span>
-        <span class="meta"><span class="nm">${esc(e.ex)}</span><span class="sm num">${esc(sm)}</span></span><span class="chev" aria-hidden="true">›</span></button>${infoBtn(e.ex)}</div>`;
-      return;
-    }
-    const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last));
-    const editSi = editIndexFor(state.editSet, state.date, e.ex, e.sets);
-    let runBest=best;
-    h += `<div class="card open" id="open-card">
-      <div class="ex-head"><button class="btn ghost small" data-act="close-ex" aria-label="Collapse ${esc(e.ex)}" style="padding:4px 6px 4px 0;text-align:left;white-space:normal"><span class="ex-name">${esc(e.ex)}</span></button>${infoBtn(e.ex)}<button class="btn ghost danger small" data-act="rm-ex" data-ei="${ei}" aria-label="Remove ${esc(e.ex)}">Remove</button></div>
-      ${last?`<div class="prev">Last time (${fmtDate(last.date)}): <b class="num">${last.sets.map(s=>kg(s.w)+"×"+s.r).join(", ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
+      return `<button class="exchip ${cls}" data-act="jump-ex" data-name="${esc(e.ex)}" aria-current="${i===ei}" aria-label="${esc(e.ex)}${e.done?", done":""}"><span class="n" aria-hidden="true">${e.done?"✓":i+1}</span><span class="t">${esc(e.ex)}</span></button>`;
+    }).join("")}</div>`;
+
+  if (!M) h += `<div class="empty"><strong>No exercises yet</strong>Tap "+ Exercise" to add one.</div>`;
+  else if (ei<0) h += completeCard(w);
+  else h += focusCard(w, ei);
+
+  h += `<div class="row"><button class="btn secondary grow" data-act="open-exsheet">+ Exercise</button><button class="btn secondary grow" data-act="open-cardiosheet">+ Cardio</button></div>`;
+  const cardio=(w.cardio||[]), kgNow=weightOn(state.body,state.date);
+  if (cardio.length) h += `<ul class="cardio-list">${cardio.map(c=>`<li><span class="grow">${CARDIO_LABEL[c.type]||"Cardio"} · ${c.min} min · ${cardioText(c,kgNow)}</span><button class="btn ghost small danger" data-act="rm-cardio" data-id="${esc(c.id)}" aria-label="Delete ${CARDIO_LABEL[c.type]||"cardio"} session">✕</button></li>`).join("")}</ul>`;
+
+  $("#view-log").innerHTML = h; fillDatalist(); refreshSheets(); syncWake();
+  // keep the open exercise's chip in view without scrolling the page
+  const c=$("#exchips"), on=c&&c.querySelector('[aria-current="true"]');
+  if(on) c.scrollLeft=on.offsetLeft-(c.clientWidth-on.offsetWidth)/2;
+}
+function focusCard(w, ei){
+  const entries=w.entries, e=entries[ei];
+  const last=lastBefore(e.ex,state.date), best=bestBefore(e.ex,state.date);
+  const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last));
+  const editSi = editIndexFor(state.editSet, state.date, e.ex, e.sets);
+  let runBest=best;
+  const nx = nextUnfinished(entries, ei);
+  return `<div class="card focus" id="open-card">
+      <div class="row"><span class="label grow">Exercise ${ei+1} of ${entries.length}</span>${infoBtn(e.ex)}</div>
+      <div class="ex-name">${esc(e.ex)}</div>
+      ${last?`<div class="prev">Last time (${fmtDate(last.date)}): <b class="num">${last.sets.map(s=>kg(s.w)+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
+      <div class="stack" style="gap:4px"><span class="label">Weight · kg</span>
+        <div class="bigstep"><button data-act="step" data-f="w" data-d="-2.5" data-ei="${ei}" aria-label="Minus 2.5 kg">−</button><input id="w-${ei}" inputmode="decimal" value="${d.w}" data-f="w" data-ex="${esc(e.ex)}" aria-label="Weight in kg"><button data-act="step" data-f="w" data-d="2.5" data-ei="${ei}" aria-label="Plus 2.5 kg">+</button></div></div>
+      <div class="stack" style="gap:4px"><span class="label">Reps</span>
+        <div class="bigstep"><button data-act="step" data-f="r" data-d="-1" data-ei="${ei}" aria-label="Minus 1 rep">−</button><input id="r-${ei}" inputmode="numeric" value="${d.r}" data-f="r" data-ex="${esc(e.ex)}" aria-label="Reps"><button data-act="step" data-f="r" data-d="1" data-ei="${ei}" aria-label="Plus 1 rep">+</button></div></div>
+      ${editSi>=0
+        ? `<button class="btn primary" data-act="save-set" data-ei="${ei}">Save set ${editSi+1}</button><div class="row"><span class="prev grow">Editing set ${editSi+1}</span><button class="btn ghost small" data-act="cancel-edit">Cancel</button></div>`
+        : `<button class="btn primary" data-act="add-set" data-ei="${ei}">Add set ${e.sets.length+1}</button>`}
       ${e.sets.length?`<table><thead><tr><th>Set</th><th class="r">kg</th><th class="r">Reps</th><th class="r">e1RM</th><th></th></tr></thead><tbody>${
         e.sets.map((s,si)=>{ const est=e1rm(s.w,s.r); const isPr=est>0&&est>runBest&&best>0; if(est>runBest) runBest=est;
           return `<tr class="setrow${si===editSi?" editing":""}" data-act="edit-set" data-ei="${ei}" data-si="${si}" tabindex="0" aria-label="Edit set ${si+1}"><td class="num">${si+1}</td><td class="r num">${kg(s.w)}</td><td class="r num">${s.r}</td><td class="r num">${est?kg(Math.round(est*10)/10):"–"}${isPr?'<span class="pr">PR</span>':""}</td><td class="r"><button class="btn ghost small" data-act="rm-set" data-ei="${ei}" data-si="${si}" aria-label="Delete set ${si+1}">✕</button></td></tr>`;}).join("")
       }</tbody></table>`:""}
-      <div class="adder">
-        <label><span class="label">Weight kg</span><div class="stepper"><button data-act="step" data-f="w" data-d="-2.5" data-ei="${ei}" aria-label="Minus 2.5 kg">−</button><input id="w-${ei}" inputmode="decimal" value="${d.w}" data-f="w" data-ex="${esc(e.ex)}"><button data-act="step" data-f="w" data-d="2.5" data-ei="${ei}" aria-label="Plus 2.5 kg">+</button></div></label>
-        <label><span class="label">Reps</span><div class="stepper"><button data-act="step" data-f="r" data-d="-1" data-ei="${ei}" aria-label="Minus 1 rep">−</button><input id="r-${ei}" inputmode="numeric" value="${d.r}" data-f="r" data-ex="${esc(e.ex)}"><button data-act="step" data-f="r" data-d="1" data-ei="${ei}" aria-label="Plus 1 rep">+</button></div></label>
-        ${editSi>=0
-          ? `<button class="btn primary" data-act="save-set" data-ei="${ei}">Save set</button>`
-          : `<button class="btn primary" data-act="add-set" data-ei="${ei}">Add set</button>`}
-      </div>
-      ${editSi>=0?`<div class="row"><span class="prev grow">Editing set ${editSi+1}</span><button class="btn ghost small" data-act="cancel-edit">Cancel</button></div>`:""}
-      ${e.done
-        ? `<button class="btn" data-act="undone-ex" data-ei="${ei}">Mark as not done</button>`
-        : (e.sets.length ? `<button class="btn done" data-act="done-ex" data-ei="${ei}">✓ Done with ${esc(e.ex)}</button>` : "")}
-    </div>`;
-  });
-  if (!entries.length) h += `<div class="empty"><strong>No exercises yet</strong>Tap a suggestion below or type any exercise.</div>`;
-
-  const focus = day ? day.focus : [];
-  const sugg = suggestionsFor(focus, entries.map(e=>e.ex));
-  h += `<div class="card"><h3>Add an exercise</h3>`;
-  if (sugg.length) h += sugg.map(g=>`<div class="stack" style="gap:6px"><span class="label">${esc(g.muscle)}</span><div class="chips">${g.items.slice(0,6).map(n=>`${chipInfo(`<button class="chip add" data-act="add-ex" data-name="${esc(n)}">${esc(n)}</button>`,n)}`).join("")}</div></div>`).join("");
-  else if (!day) h += `<div class="chips">${MUSCLES.map(m=>`<button class="chip" data-act="free-focus" data-m="${esc(m)}" aria-pressed="${(state.freeFocus||[]).includes(m)}">${esc(m)}</button>`).join("")}</div>${
-      (state.freeFocus||[]).length ? suggestionsFor(state.freeFocus, entries.map(e=>e.ex)).map(g=>`<div class="chips">${g.items.slice(0,6).map(n=>`${chipInfo(`<button class="chip add" data-act="add-ex" data-name="${esc(n)}">${esc(n)}</button>`,n)}`).join("")}</div>`).join("") : `<span class="prev">Pick a muscle group to see suggestions.</span>`}`;
-  h += `<form class="row" id="add-ex-form" autocomplete="off">
-      <input id="new-ex" list="ex-list" placeholder="Or type any exercise" style="flex:1 1 180px">
-      <button class="btn" type="submit">Add</button>
-    </form></div>`;
-  h += cardioCard();
-  $("#view-log").innerHTML = h; fillDatalist(); syncWake();
+      <div class="row"><button class="btn ghost small danger" data-act="rm-ex" data-ei="${ei}">Remove exercise</button></div>
+    </div>
+    <div class="row">${e.done
+      ? `<button class="btn secondary grow" data-act="undone-ex" data-ei="${ei}">Mark as not done</button>`
+      : `<button class="btn secondary grow" data-act="done-ex" data-ei="${ei}">✓ Done</button>`}${
+      nx>=0?`<button class="btn secondary grow nextbtn" data-act="next-ex" data-ei="${ei}">Next: ${esc(entries[nx].ex)} ›</button>`:""}</div>`;
 }
+function completeCard(w){
+  const sets=w.entries.reduce((a,e)=>a+e.sets.length,0), volume=w.entries.reduce((a,e)=>a+vol(e.sets),0);
+  const ek=exerciseKcal(w, weightOn(state.body,w.date)).total;
+  return `<div class="card complete-card"><div class="row"><span class="tick" aria-hidden="true">✓</span><b class="grow">Workout complete</b></div>
+    <span class="prev">${sets} sets · ${kg(volume)} kg moved${ek?` · ${ek.toLocaleString()} kcal exercise`:""}</span>
+    <span class="prev">Tap any exercise above to edit it.</span></div>`;
+}
+// "+ Exercise" sheet: today's suggestions, free-workout muscle chips and the type-any-exercise form.
+function exSheetHtml(){
+  const w=workoutFor(state.date), day=w&&dayById(w.dayId), names=(w?w.entries:[]).map(e=>e.ex);
+  const chips=list=>`<div class="chips">${list.slice(0,6).map(n=>`${chipInfo(`<button class="chip add" data-act="add-ex" data-name="${esc(n)}">${esc(n)}</button>`,n)}`).join("")}</div>`;
+  const sugg=suggestionsFor(day?day.focus:[], names);
+  let h=`<div class="sheet-head"><h2>Add an exercise</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div><div class="stack">`;
+  if (sugg.length) h += sugg.map(g=>`<div class="stack" style="gap:6px"><span class="label">${esc(g.muscle)}</span>${chips(g.items)}</div>`).join("");
+  else if (!day) h += `<div class="chips">${MUSCLES.map(m=>`<button class="chip" data-act="free-focus" data-m="${esc(m)}" aria-pressed="${(state.freeFocus||[]).includes(m)}">${esc(m)}</button>`).join("")}</div>${
+      (state.freeFocus||[]).length ? suggestionsFor(state.freeFocus, names).map(g=>chips(g.items)).join("") : `<span class="prev">Pick a muscle group to see suggestions.</span>`}`;
+  return h + `<form class="row" id="add-ex-form" autocomplete="off"><input id="new-ex" list="ex-list" placeholder="Or type any exercise" style="flex:1 1 180px"><button class="btn primary" type="submit">Add</button></form></div>`;
+}
+function cardioSheetHtml(){
+  return `<div class="sheet-head"><h2>Cardio</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div>${cardioCard()}`;
+}
+// Bottom sheets for adding an exercise or cardio. Content is cleared on close (no duplicate ids)
+// and refreshed after each Workout render while open.
+function openSheet(id){
+  const d=$(id); d.innerHTML=id==="#exsheet"?exSheetHtml():cardioSheetHtml();
+  if(!d.open){ d.showModal(); history.pushState({sheet:id},""); }
+}
+function closeSheet(id){ const d=$(id); if(d&&d.open) d.close(); }
+function refreshSheets(){
+  if($("#exsheet").open) $("#exsheet").innerHTML=exSheetHtml();
+  if($("#cardiosheet").open) $("#cardiosheet").innerHTML=cardioSheetHtml();
+}
+["#exsheet","#cardiosheet"].forEach(id=>{
+  const d=$(id);
+  d.addEventListener("close",()=>{ d.innerHTML=""; if(history.state&&history.state.sheet===id) history.back(); });
+  d.addEventListener("click",e=>{
+    if(e.target!==e.currentTarget) return;
+    const r=e.currentTarget.getBoundingClientRect();
+    if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeSheet(id);
+  });
+});
+// Back gesture: close only the sheet whose history step was just left (the info panel can sit on top of a sheet).
+window.addEventListener("popstate",()=>{ ["#exsheet","#cardiosheet"].forEach(id=>{ if(!(history.state&&history.state.sheet===id)) closeSheet(id); }); });
 function dayPicker(w){
   if (!state.days.length) return `<div class="empty"><strong>Set up your training days</strong>Split your week into days like Push, Pull and Legs. Each day keeps its own exercise list, so starting a workout is one tap.
       <div class="row" style="justify-content:center"><button class="btn primary" data-act="goto-days">Set up days</button><button class="btn" data-act="start-free">Log a free workout</button></div></div>`;
@@ -586,6 +639,7 @@ function startDay(day){
 }
 function scrollToOpen(){ setTimeout(()=>{ const el=document.getElementById("open-card"); if(el) el.scrollIntoView({block:"start",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); },0); }
 function addExerciseToWorkout(name){
+  closeSheet("#exsheet");
   name=canonical(name.trim()); if(!name) return;
   const w=ensureWorkout();
   if(w.entries.some(x=>same(x.ex,name))){ toast(name+" is already in this workout"); return; }
@@ -1145,7 +1199,7 @@ $("#exinfo").addEventListener("click",e=>{
   const r=e.currentTarget.getBoundingClientRect();
   if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeExInfo(); // tap on the backdrop
 });
-window.addEventListener("popstate",closeExInfo);
+window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.exinfo)) closeExInfo(); });
 const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History"};
 // More sheet: Days, Lifts, History & backup, theme, account. Same open/close pattern as the info sheet.
 function openMore(){
@@ -1160,8 +1214,8 @@ $("#moresheet").addEventListener("click",e=>{
   const r=e.currentTarget.getBoundingClientRect();
   if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeMore();
 });
-window.addEventListener("popstate",closeMore);
-if(history.state&&(history.state.exinfo||history.state.more)) history.replaceState(null,""); // reloaded while a sheet was open
+window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.more)) closeMore(); });
+if(history.state&&(history.state.exinfo||history.state.more||history.state.sheet)) history.replaceState(null,""); // reloaded while a sheet was open
 
 /* ---------- SCREEN WAKE LOCK ---------- */
 const wake = createWakeLock();
@@ -1322,6 +1376,11 @@ document.addEventListener("click",e=>{
     case "rest-skip": clearRest(); break;
     case "ex-info": openExInfo(b.dataset.name); break;
     case "tab": go(b.dataset.view); break;
+    case "jump-ex": stopEditing(); state.openEx=b.dataset.name; renderLog(); break;
+    case "next-ex":{ const w=workoutFor(state.date); const nx=w?nextUnfinished(w.entries,ei):-1; if(nx>=0){ stopEditing(); state.openEx=w.entries[nx].ex; renderLog(); scrollToOpen(); } break; }
+    case "open-exsheet": openSheet("#exsheet"); break;
+    case "open-cardiosheet": openSheet("#cardiosheet"); break;
+    case "sheet-close": closeSheet("#exsheet"); closeSheet("#cardiosheet"); break;
     case "more-open": openMore(); break;
     case "more-close": closeMore(); break;
     case "more-go": closeMore(); go(b.dataset.view); break;
