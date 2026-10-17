@@ -188,6 +188,16 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .ex-tips{margin:6px 0 10px;padding-left:20px}
 .ex-tips li{margin:3px 0}
 .ex-credit{margin:0;font-size:12px}
+.stat .v.good{color:var(--good)}
+.today .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.today .stat{padding:10px}
+.today .stat .v{font-size:19px}
+.today .stat .v small{display:block;margin-top:2px}
+.ebar{height:8px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.ebar>i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.meal-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.meal-fields label{display:flex;flex-direction:column;gap:4px;min-width:0}
+.meal-fields .meal-name{grid-column:1/-1}
 .cardio-adder{grid-template-columns:1fr 1fr}
 .cardio-adder .btn{grid-column:1/-1}
 .cardio-list{list-style:none;margin:0;padding:0}
@@ -275,7 +285,7 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
-let state = { workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, rest:null, editSet:null };
+let state = { workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -760,18 +770,6 @@ function weightTrend(){
   const slope=xs.reduce((a,x,i)=>a+(x-mx)*(ys[i]-my),0)/xs.reduce((a,x)=>a+(x-mx)**2,0);
   const perWeek=slope*7; return {perWeek, pct:perWeek/ys[ys.length-1]*100, n:s.length};
 }
-function nutrition(){
-  const p=state.profile, wE=latestWith("weight"); if(!wE) return null;
-  const w=wE.weight, ib=latestWith("bmr");
-  let bmr=null, src="";
-  if(ib && daysAgo(ib.date)<120){ bmr=ib.bmr; src="your InBody scan"; }
-  else if(p.sex&&p.height&&p.birthYear){ const age=new Date().getFullYear()-p.birthYear; bmr=10*w+6.25*p.height-5*age+(p.sex==="male"?5:-161); src="the Mifflin-St Jeor formula"; }
-  const perWeek=state.workouts.filter(x=>daysAgo(x.date)<14&&x.entries.some(e=>e.sets.length)).length/2;
-  const mult=perWeek<1?1.3:perWeek<=3?1.45:perWeek<=5?1.6:1.75;
-  const adj={"fat-loss":-450,"muscle":250,"recomp":-150,"strength":150,"maintain":0}[p.goal]??0;
-  const tdee=bmr?bmr*mult:null;
-  return {w, bmr, src, tdee, target:tdee?tdee+adj:null, adj, perWeek, protein:[Math.round(w*1.6),Math.round(w*2.2)]};
-}
 function insights(){
   const out=[], p=state.profile, goal=p.goal;
   const add=(sec,tone,title,text,chips)=>out.push({sec,tone,title,text,chips});
@@ -821,14 +819,7 @@ function insights(){
   if(wa && p.height){ const r=wa.waist/p.height;
     add("Body", r<0.5?"good":"info", `Waist-to-height ratio ${r.toFixed(2)}`, r<0.5?"Under 0.5, the commonly used healthy cut-off.":"0.5 or above. Bringing the waist down usually tracks with less visceral fat, so it's a good number to watch alongside the scale."); }
 
-  // Nutrition
-  const n=nutrition();
-  if(n){
-    let txt=`Protein: <b>${n.protein[0]}–${n.protein[1]} g a day</b> (1.6–2.2 g per kg of body weight), spread over 3–5 meals.`;
-    if(n.target) txt+=` Calories: maintenance is roughly <b>${Math.round(n.tdee/50)*50} kcal</b> (from ${n.src}, at ${n.perWeek} workouts/week). For your goal, start near <b>${Math.round(n.target/50)*50} kcal</b> and adjust by the weight trend.`;
-    else txt+=" Fill in About you on the Body tab to get a calorie estimate.";
-    add("Nutrition","info","Daily targets",txt);
-  }
+  // Calories and protein targets live on the Today card (energy.js), not here.
 
   // Training volume per muscle
   const wk=state.workouts.filter(w=>daysAgo(w.date)<7&&trainedOn(w));
@@ -853,9 +844,51 @@ function insights(){
   if(wins.length) add("Training","good",`Progressing: ${wins.slice(0,3).join(", ")}`,"New bests recently. Keep adding small amounts of weight or reps each week.");
   return out;
 }
+/* Today card (Coach tab): eaten vs burned vs target, from energy.js */
+// Balance is "good" when it points the way the goal needs.
+function balanceGood(goal,bal){
+  if(bal==null) return false;
+  if(goal==="fat-loss"||goal==="recomp") return bal<0;
+  if(goal==="muscle"||goal==="strength") return bal>0;
+  if(goal==="maintain") return Math.abs(bal)<=200;
+  return false;
+}
+const kcalTxt=v=>v==null?"–":Math.round(v).toLocaleString();
+const signedTxt=v=>v==null?"–":(v>0?"+":v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString();
+function todayCard(){
+  const d=state.cdate, p=state.profile, kg=weightOn(state.body,d), b=bmrFor(p,state.body,d);
+  const e=dayEnergy({bmr:b?b.bmr:null, kg, goal:p.goal, workout:workoutFor(d)||null, food:state.food[d]||null});
+  const meals=(state.food[d]&&state.food[d].meals)||[];
+  const missing = kg==null ? "Log your weight on the Body tab to see calories burned and your target."
+    : !b ? "Fill in About you on the Body tab to see calories burned and your target." : "";
+  const pct=e.target?Math.min(100,e.eaten/e.target*100):0, over=e.target!=null&&e.eaten>e.target?e.eaten-e.target:0;
+  return `<div class="card today">
+    <div class="row"><h3 class="grow">${d===today()?"Today":esc(fmtDate(d))}</h3><input type="date" id="coach-date" value="${esc(d)}" max="${today()}" style="width:auto"></div>
+    <div class="stats">
+      <div class="stat"><div class="label">Eaten</div><div class="v">${kcalTxt(e.eaten)} <small>/ ${kcalTxt(e.target)} kcal</small></div></div>
+      <div class="stat"><div class="label">Burned</div><div class="v">${kcalTxt(e.burned)} <small>kcal</small></div></div>
+      <div class="stat"><div class="label">Balance</div><div class="v ${balanceGood(p.goal,e.balance)?"good":""}">${signedTxt(e.balance)} <small>kcal</small></div></div>
+    </div>
+    ${e.burned!=null?`<p class="prev" style="margin:0">Everyday ${kcalTxt(e.baseline)} · Lifting ${kcalTxt(e.lift)} · Cardio ${kcalTxt(e.cardio)}</p>`:""}
+    ${e.target!=null?`<div class="ebar" role="progressbar" aria-label="Eaten vs target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}"><i style="width:${pct}%"></i></div>${over?`<span class="prev">Over by ${over.toLocaleString()} kcal</span>`:""}`:""}
+    ${missing?`<p class="prev" style="margin:0">${missing}</p>`:""}
+    ${e.protein!=null?`<p style="margin:0">Protein <b>${Math.round(e.protein)} g</b>${kg?` of ${Math.round(kg*1.6)}–${Math.round(kg*2.2)} g`:""}</p>`:""}
+    <form id="meal-form" class="stack" autocomplete="off" style="gap:8px">
+      <span class="label">Add a meal</span>
+      <div class="chips">${["Breakfast","Lunch","Dinner","Snack"].map(n=>`<button type="button" class="chip" data-act="meal-name" data-name="${n}">${n}</button>`).join("")}</div>
+      <div class="meal-fields">
+        <label><span class="label">kcal</span><input id="meal-kcal" inputmode="numeric"></label>
+        <label><span class="label">Protein g</span><input id="meal-protein" inputmode="numeric" placeholder="optional"></label>
+        <label class="meal-name"><span class="label">Name</span><input id="meal-name" maxlength="40" placeholder="optional"></label>
+      </div>
+      <button class="btn primary" type="submit">Add meal</button>
+    </form>
+    ${meals.length?`<ul class="cardio-list">${meals.map(m=>`<li><span class="grow">${esc(m.name||"Meal")} · ${m.kcal.toLocaleString()} kcal${m.protein!=null?` · ${m.protein} g`:""}</span><button class="btn ghost small danger" data-act="rm-meal" data-id="${esc(m.id)}" aria-label="Delete ${esc(m.name||"meal")}">✕</button></li>`).join("")}</ul>`:""}
+  </div>`;
+}
 function renderCoach(){
   const list=insights();
-  let h=`<h2>Coach</h2>`;
+  let h=`<h2>Coach</h2>`+todayCard();
   if(!profileReady()) h+=`<div class="notice">Add your sex, height, birth year and goal on the Body tab for calorie targets and personalised ranges. <button class="btn small" data-act="goto-body" style="margin-left:6px">Go to Body</button></div>`;
   if(!list.length){
     h+=`<div class="empty"><strong>Nothing to analyse yet</strong>Log a few workouts and your body weight, and suggestions will show up here.</div>`;
@@ -887,7 +920,8 @@ function reviewPrompt(){
   const summary={
     profile:{sex:p.sex||null, age:p.birthYear?new Date().getFullYear()-p.birthYear:null, heightCm:p.height||null, goal:GOALS[p.goal]||null},
     trainingDays:state.days.map(d=>({name:d.name,exercises:d.exercises})),
-    workoutsLast28Days:state.workouts.filter(w=>daysAgo(w.date)<28).sort((a,b)=>a.date<b.date?-1:1).map(w=>({date:w.date,day:w.dayName,exercises:w.entries.filter(e=>e.sets.length).map(e=>({name:e.ex,sets:e.sets.map(s=>`${s.w}kg x ${s.r}`)}))})),
+    workoutsLast28Days:state.workouts.filter(w=>daysAgo(w.date)<28).sort((a,b)=>a.date<b.date?-1:1).map(w=>({date:w.date,day:w.dayName,exercises:w.entries.filter(e=>e.sets.length).map(e=>({name:e.ex,sets:e.sets.map(s=>`${s.w}kg x ${s.r}`)})),cardio:(w.cardio||[]).map(c=>({type:c.type,min:c.min,kcal:cardioKcal(c,weightOn(state.body,w.date))}))})),
+    foodLast28Days:Object.values(state.food).filter(fd=>daysAgo(fd.date)<28).sort((a,b)=>a.date<b.date?-1:1).map(fd=>{ const ps=fd.meals.filter(m=>typeof m.protein==="number"); return {date:fd.date, kcal:fd.meals.reduce((a,m)=>a+m.kcal,0), protein:ps.length?ps.reduce((a,m)=>a+m.protein,0):null}; }),
     setsPerMuscleLast7Days:weeklySets(),
     bodyEntries:bodySorted().slice(-10),
     weightTrend:weightTrend(),
@@ -1090,12 +1124,20 @@ document.addEventListener("change",e=>{
   if(t.id==="prog-ex"){ state.progressEx=t.value; renderProgress(); }
   if(t.id==="body-date"&&t.value){ state.bdate=t.value; renderBody(); }
   if(t.id==="restore-file"&&t.files&&t.files[0]){ importData(t.files[0]); t.value=""; }
+  if(t.id==="coach-date"&&t.value){ state.cdate=t.value; renderCoach(); }
   if(t.id==="body-metric"){ state.metric=t.value; renderBody(); }
   if(t.dataset.actChange==="rename"){ clearTimeout(renameTimer); const v=t.value.trim(); if(!v||dayById(t.dataset.id)?.name===v) return; editDays(ds=>{ ds.find(d=>d.id===t.dataset.id).name=v; },{quiet:true}); }
 });
 document.addEventListener("submit",e=>{
   e.preventDefault();
   const f=e.target;
+  if(f.id==="meal-form"){
+    const kRaw=$("#meal-kcal").value.trim(), pRaw=$("#meal-protein").value.trim().replace(",","."), name=$("#meal-name").value.trim();
+    const k=Number(kRaw), p=pRaw===""?null:Number(pRaw);
+    if(!(Number.isInteger(k)&&k>=1&&k<=5000) || (p!==null&&!(Number.isFinite(p)&&p>=0&&p<=500)) || name.length>40){ toast("Enter 1–5000 kcal (protein 0–500 g)"); return; }
+    const d=state.cdate, meals=[...((state.food[d]&&state.food[d].meals)||[]), {id:uid(), name:name||null, kcal:k, protein:p}];
+    store.saveFood({date:d, meals}); renderCoach(); toast("Meal added"); return;
+  }
   if(f.id==="add-ex-form"){ addExerciseToWorkout($("#new-ex").value); }
   if(f.id==="profile-form"){
     const fd=new FormData(f), num=v=>{ const n=parseFloat(String(v).replace(",",".")); return isFinite(n)?n:null; };
@@ -1144,6 +1186,8 @@ document.addEventListener("click",e=>{
     case "rest-adj": adjustRestBy(+b.dataset.d); break;
     case "rest-skip": clearRest(); break;
     case "ex-info": openExInfo(b.dataset.name); break;
+    case "meal-name": $("#meal-name").value=b.dataset.name; break;
+    case "rm-meal":{ const d=state.cdate; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderCoach(); break; }
     case "cardio-type": state.cardioDraft.type=b.dataset.v; renderLog(); break;
     case "cardio-int": state.cardioDraft.intensity=b.dataset.v; renderLog(); break;
     case "cardio-step":{ const d=state.cardioDraft; d.min=String(Math.max(1,Math.min(600,(parseInt(d.min,10)||0)+(+b.dataset.d)))); renderLog(); break; }
@@ -1234,7 +1278,7 @@ document.addEventListener("focusout",()=>{ if(renderPending) setTimeout(()=>{ if
 let lastToday=today();
 function checkNewDay(){
   const t=today(); if(t===lastToday) return;
-  state.date=rolloverDate(state.date,lastToday,t); state.bdate=rolloverDate(state.bdate,lastToday,t);
+  state.date=rolloverDate(state.date,lastToday,t); state.bdate=rolloverDate(state.bdate,lastToday,t); state.cdate=rolloverDate(state.cdate,lastToday,t);
   lastToday=t; stopEditing(); renderSoon();
 }
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkNewDay(); });
