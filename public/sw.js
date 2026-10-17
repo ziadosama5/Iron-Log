@@ -2,7 +2,7 @@
 // Keeps the app itself on the device so it opens with no signal.
 // Your workout data is cached separately by Firestore and syncs when you're back online.
 // Bump VERSION whenever you deploy changes, so phones pick up the new files.
-const VERSION = "iron-log-v8";
+const VERSION = "iron-log-v9";
 const FIREBASE_SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
 
 const APP_SHELL = [
@@ -13,6 +13,7 @@ const APP_SHELL = [
   "/exercise-library.js",
   "/exercise-info.js",
   "/backup.js",
+  "/energy.js",
   "/manifest.webmanifest",
   "/icon-192.png",
   "/icon-512.png",
