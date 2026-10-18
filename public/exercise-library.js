@@ -1,16 +1,25 @@
 // Exercise library and split templates. Shared by the app and the unit tests.
 
 export const LIB = {
-  "Chest":     ["Bench Press","Incline Barbell Press","Incline Dumbbell Press","Dumbbell Bench Press","Machine Chest Press","Dumbbell Fly","Cable Crossover","Push-up"],
-  "Back":      ["Pull-up","Lat Pulldown","Barbell Row","One-arm Dumbbell Row","Seated Cable Row","T-bar Row","Chin-up","Deadlift"],
-  "Shoulders": ["Overhead Press","Dumbbell Shoulder Press","Arnold Press","Lateral Raise","Cable Lateral Raise","Rear Delt Fly","Face Pull","Upright Row"],
-  "Biceps":    ["Barbell Curl","Dumbbell Curl","Hammer Curl","Preacher Curl","Incline Dumbbell Curl","Cable Curl"],
-  "Triceps":   ["Tricep Pushdown","Skull Crusher","Overhead Tricep Extension","Close-grip Bench Press","Dip"],
-  "Quads":     ["Squat","Front Squat","Leg Press","Hack Squat","Bulgarian Split Squat","Walking Lunge","Leg Extension"],
-  "Hamstrings & Glutes": ["Romanian Deadlift","Lying Leg Curl","Seated Leg Curl","Hip Thrust","Good Morning","Glute Bridge"],
-  "Calves":    ["Standing Calf Raise","Seated Calf Raise"],
-  "Core":      ["Plank","Hanging Leg Raise","Cable Crunch","Ab Wheel Rollout","Russian Twist"]
+  "Chest":     ["Bench Press","Incline Barbell Press","Incline Dumbbell Press","Dumbbell Bench Press","Machine Chest Press","Dumbbell Fly","Cable Crossover","Push-up","Decline Bench Press","Pec Deck","Chest Dip"],
+  "Back":      ["Pull-up","Lat Pulldown","Barbell Row","One-arm Dumbbell Row","Seated Cable Row","T-bar Row","Chin-up","Deadlift","Barbell Shrug","Dumbbell Shrug","Straight-arm Pulldown","Back Extension","Close-grip Pulldown"],
+  "Shoulders": ["Overhead Press","Arnold Press","Lateral Raise","Rear Delt Fly","Face Pull","Upright Row","Machine Shoulder Press","Reverse Pec Deck"],
+  "Biceps":    ["Barbell Curl","Dumbbell Curl","Hammer Curl","Preacher Curl","Incline Dumbbell Curl","Cable Curl","EZ-bar Curl","Concentration Curl"],
+  "Triceps":   ["Tricep Pushdown","Skull Crusher","Overhead Tricep Extension","Close-grip Bench Press","Dip","Overhead Cable Extension","Triceps Kickback"],
+  "Quads":     ["Squat","Front Squat","Leg Press","Hack Squat","Bulgarian Split Squat","Walking Lunge","Leg Extension","Lunge","Step-up","Smith Machine Squat"],
+  "Hamstrings & Glutes": ["Romanian Deadlift","Lying Leg Curl","Hip Thrust","Good Morning","Stiff-leg Deadlift","Hip Abduction"],
+  "Calves":    ["Standing Calf Raise","Seated Calf Raise","Donkey Calf Raise"],
+  "Core":      ["Plank","Hanging Leg Raise","Cable Crunch","Ab Wheel Rollout","Russian Twist","Crunch","Side Plank","Lying Leg Raise"]
 };
+// Exercises merged into another one. Saved days and workouts keep the old name; these only decide
+// which info/muscle to show for it and what a typed old name turns into.
+export const ALIASES = {
+  "dumbbell shoulder press": "Overhead Press",
+  "cable lateral raise": "Lateral Raise",
+  "glute bridge": "Hip Thrust",
+  "seated leg curl": "Lying Leg Curl"
+};
+export const resolveAlias = name => ALIASES[String(name).toLowerCase()] || name;
 export const MUSCLES = Object.keys(LIB);
 export const ALL_EX = [...new Set(Object.values(LIB).flat())];
 
@@ -22,7 +31,7 @@ export const TEMPLATES = [
   { name:"Upper / Lower", note:"4 days · strength + size", days:[
     {name:"Upper A", focus:["Chest","Back","Shoulders","Biceps","Triceps"], exercises:["Bench Press","Barbell Row","Overhead Press","Lat Pulldown","Barbell Curl","Tricep Pushdown"]},
     {name:"Lower A", focus:["Quads","Hamstrings & Glutes","Calves"], exercises:["Squat","Romanian Deadlift","Leg Press","Standing Calf Raise"]},
-    {name:"Upper B", focus:["Chest","Back","Shoulders","Biceps","Triceps"], exercises:["Incline Dumbbell Press","Pull-up","Dumbbell Shoulder Press","Seated Cable Row","Hammer Curl","Skull Crusher"]},
+    {name:"Upper B", focus:["Chest","Back","Shoulders","Biceps","Triceps"], exercises:["Incline Dumbbell Press","Pull-up","Overhead Press","Seated Cable Row","Hammer Curl","Skull Crusher"]},
     {name:"Lower B", focus:["Back","Quads","Hamstrings & Glutes","Core"], exercises:["Deadlift","Front Squat","Hip Thrust","Lying Leg Curl","Hanging Leg Raise"]}]},
   { name:"Full Body", note:"3 days · A / B / C", days:[
     {name:"Full Body A", focus:["Chest","Back","Quads","Core"], exercises:["Squat","Bench Press","Barbell Row","Plank"]},
@@ -38,7 +47,7 @@ export const TEMPLATES = [
 
 // Muscle group an exercise belongs to (first group listing it), or null for custom exercises.
 export function muscleOf(name) {
-  const n = String(name).toLowerCase();
+  const n = String(resolveAlias(name)).toLowerCase();
   return MUSCLES.find(m => LIB[m].some(x => x.toLowerCase() === n)) || null;
 }
 

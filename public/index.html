@@ -330,7 +330,7 @@ import { cleanBackupItems } from "./backup.js";
 import { themeAttr, sortTips, withWeight } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
-import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION } from "./exercise-library.js";
+import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION, resolveAlias } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
@@ -639,7 +639,7 @@ function readSet(ei){
 }
 function stopEditing(){ if(state.editSet){ delete ui[state.editSet.ex]; state.editSet=null; } }
 function ensureWorkout(){ const w=workoutFor(state.date); return w?clone(w):{id:"w-"+state.date,date:state.date,dayId:null,dayName:null,entries:[]}; }
-function canonical(name){ return [...exerciseNames(),...ALL_EX].find(n=>same(n,name)) || name; }
+function canonical(name){ name=resolveAlias(name); return [...exerciseNames(),...ALL_EX].find(n=>same(n,name)) || name; }
 function startDay(day){
   const w = ensureWorkout();
   const kept = w.entries.filter(e=>e.sets.length);

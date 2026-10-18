@@ -34,6 +34,22 @@ export const INFO = {
    "Reverse the rotation on the way down"
   ]
  },
+ "back extension": {
+  "name": "Back Extension",
+  "slug": "back-extension",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Set the pad just below the hips",
+   "Lift until the body is in a straight line",
+   "Don't over-arch at the top"
+  ]
+ },
  "barbell curl": {
   "name": "Barbell Curl",
   "slug": "barbell-curl",
@@ -65,6 +81,22 @@ export const INFO = {
    "Pull the bar to the lower ribs",
    "Squeeze shoulder blades at the top",
    "Keep the torso still, no jerking"
+  ]
+ },
+ "barbell shrug": {
+  "name": "Barbell Shrug",
+  "slug": "barbell-shrug",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Shoulders"
+  ],
+  "tips": [
+   "Lift the shoulders straight up toward the ears",
+   "Pause at the top, then lower slowly",
+   "Keep the arms straight, don't roll the shoulders"
   ]
  },
  "bench press": {
@@ -147,25 +179,27 @@ export const INFO = {
    "Squeeze at the top, lower slowly"
   ]
  },
- "cable lateral raise": {
-  "name": "Cable Lateral Raise",
-  "slug": "cable-lateral-raise",
+ "chest dip": {
+  "name": "Chest Dip",
+  "slug": "chest-dip",
   "img": false,
   "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Triceps",
    "Shoulders"
   ],
-  "secondary": [],
   "tips": [
-   "Stand side-on to the cable, handle low",
-   "Raise the arm out to shoulder height",
-   "Keep the torso still",
-   "Lower slowly against the cable"
+   "Lean the torso forward and flare the elbows slightly",
+   "Lower until you feel a stretch in the chest",
+   "Press up without locking out hard"
   ]
  },
  "chin-up": {
   "name": "Chin-up",
   "slug": "chin-up",
-  "img": false,
+  "img": true,
   "primary": [
    "Back"
   ],
@@ -196,6 +230,50 @@ export const INFO = {
    "Lower the bar to the lower chest"
   ]
  },
+ "close-grip pulldown": {
+  "name": "Close-grip Pulldown",
+  "slug": "close-grip-pulldown",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Biceps"
+  ],
+  "tips": [
+   "Grip the V-handle and lean back slightly",
+   "Pull the handle to the upper chest",
+   "Squeeze the shoulder blades together"
+  ]
+ },
+ "concentration curl": {
+  "name": "Concentration Curl",
+  "slug": "concentration-curl",
+  "img": true,
+  "primary": [
+   "Biceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Sit and brace the elbow against the inner thigh",
+   "Curl up and squeeze at the top",
+   "Lower slowly through the full range"
+  ]
+ },
+ "crunch": {
+  "name": "Crunch",
+  "slug": "crunch",
+  "img": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [],
+  "tips": [
+   "Curl the ribs toward the hips",
+   "Keep the lower back on the floor",
+   "Don't pull on your neck"
+  ]
+ },
  "deadlift": {
   "name": "Deadlift",
   "slug": "deadlift",
@@ -214,6 +292,23 @@ export const INFO = {
    "Stand tall at the top, don't lean back"
   ]
  },
+ "decline bench press": {
+  "name": "Decline Bench Press",
+  "slug": "decline-bench-press",
+  "img": true,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Triceps",
+   "Shoulders"
+  ],
+  "tips": [
+   "Set the bench to a slight decline and hook your feet",
+   "Lower the bar to the lower chest",
+   "Press up without bouncing off the chest"
+  ]
+ },
  "dip": {
   "name": "Dip",
   "slug": "dip",
@@ -230,6 +325,20 @@ export const INFO = {
    "Lower until upper arms are parallel",
    "Stay upright to focus on triceps",
    "Press up to straight arms"
+  ]
+ },
+ "donkey calf raise": {
+  "name": "Donkey Calf Raise",
+  "slug": "donkey-calf-raise",
+  "img": true,
+  "primary": [
+   "Calves"
+  ],
+  "secondary": [],
+  "tips": [
+   "Hinge at the hips with the balls of the feet on the edge",
+   "Rise as high as you can and pause",
+   "Lower into a full stretch"
   ]
  },
  "dumbbell bench press": {
@@ -279,20 +388,34 @@ export const INFO = {
    "Bring the dumbbells up in a wide arc"
   ]
  },
- "dumbbell shoulder press": {
-  "name": "Dumbbell Shoulder Press",
-  "slug": "dumbbell-shoulder-press",
-  "img": false,
+ "dumbbell shrug": {
+  "name": "Dumbbell Shrug",
+  "slug": "dumbbell-shrug",
+  "img": true,
   "primary": [
-   "Shoulders"
+   "Back"
   ],
   "secondary": [
-   "Triceps"
+   "Shoulders"
   ],
   "tips": [
-   "Start with dumbbells at ear height",
-   "Press up until arms are straight",
-   "Keep your back against the bench"
+   "Hold the dumbbells at your sides, arms straight",
+   "Shrug straight up and pause at the top",
+   "Don't roll or bend the elbows"
+  ]
+ },
+ "ez-bar curl": {
+  "name": "EZ-bar Curl",
+  "slug": "ez-bar-curl",
+  "img": true,
+  "primary": [
+   "Biceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Hold the bar on the angled grips",
+   "Keep elbows pinned to your sides",
+   "Lower slowly, don't swing the body"
   ]
  },
  "face pull": {
@@ -328,22 +451,6 @@ export const INFO = {
    "Keep elbows high the whole time",
    "Stay upright as you sit down",
    "Drive up through the whole foot"
-  ]
- },
- "glute bridge": {
-  "name": "Glute Bridge",
-  "slug": "glute-bridge",
-  "img": true,
-  "primary": [
-   "Hamstrings & Glutes"
-  ],
-  "secondary": [
-   "Core"
-  ],
-  "tips": [
-   "Lie on your back, feet flat near hips",
-   "Drive the hips up through the heels",
-   "Squeeze glutes at the top"
   ]
  },
  "good morning": {
@@ -406,6 +513,20 @@ export const INFO = {
    "Raise the legs without swinging",
    "Curl the pelvis up at the top",
    "Lower slowly"
+  ]
+ },
+ "hip abduction": {
+  "name": "Hip Abduction",
+  "slug": "hip-abduction",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [],
+  "tips": [
+   "Sit with your back against the pad",
+   "Push the legs outward and pause",
+   "Return slowly, don't let the plates slam"
   ]
  },
  "hip thrust": {
@@ -536,6 +657,22 @@ export const INFO = {
    "Don't lock the knees at the top"
   ]
  },
+ "lunge": {
+  "name": "Lunge",
+  "slug": "lunge",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Step forward and lower the back knee toward the floor",
+   "Keep the front knee over the ankle",
+   "Push through the front heel to stand"
+  ]
+ },
  "lying leg curl": {
   "name": "Lying Leg Curl",
   "slug": "lying-leg-curl",
@@ -550,6 +687,22 @@ export const INFO = {
    "Pad just above the heels",
    "Keep hips pressed into the bench",
    "Curl up fully, lower slowly"
+  ]
+ },
+ "lying leg raise": {
+  "name": "Lying Leg Raise",
+  "slug": "lying-leg-raise",
+  "img": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Keep the lower back pressed into the floor",
+   "Raise the legs until they point at the ceiling",
+   "Lower slowly without touching the floor"
   ]
  },
  "machine chest press": {
@@ -569,6 +722,22 @@ export const INFO = {
    "Control the weight on the way back"
   ]
  },
+ "machine shoulder press": {
+  "name": "Machine Shoulder Press",
+  "slug": "machine-shoulder-press",
+  "img": false,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Triceps"
+  ],
+  "tips": [
+   "Adjust the seat so the handles start at shoulder height",
+   "Press up without locking the elbows",
+   "Keep your back against the pad"
+  ]
+ },
  "one-arm dumbbell row": {
   "name": "One-arm Dumbbell Row",
   "slug": "one-arm-dumbbell-row",
@@ -584,6 +753,20 @@ export const INFO = {
    "Keep your back flat and level",
    "Pull the dumbbell toward your hip",
    "Lower until the arm is straight"
+  ]
+ },
+ "overhead cable extension": {
+  "name": "Overhead Cable Extension",
+  "slug": "overhead-cable-extension",
+  "img": false,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Face away from the cable with a rope overhead",
+   "Keep elbows close to your head",
+   "Extend until the arms are straight"
   ]
  },
  "overhead press": {
@@ -616,6 +799,22 @@ export const INFO = {
    "Lower the weight behind your head",
    "Extend until arms are straight",
    "Brace your core, don't arch"
+  ]
+ },
+ "pec deck": {
+  "name": "Pec Deck",
+  "slug": "pec-deck",
+  "img": false,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Shoulders"
+  ],
+  "tips": [
+   "Adjust the seat so the handles are at chest height",
+   "Squeeze the chest as the arms come together",
+   "Return slowly, don't let the plates slam"
   ]
  },
  "plank": {
@@ -701,6 +900,22 @@ export const INFO = {
    "Use a light weight and control it"
   ]
  },
+ "reverse pec deck": {
+  "name": "Reverse Pec Deck",
+  "slug": "reverse-pec-deck",
+  "img": false,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Back"
+  ],
+  "tips": [
+   "Sit facing the pad with the handles at shoulder height",
+   "Open the arms out to the sides, elbows slightly bent",
+   "Squeeze the rear shoulders, don't swing"
+  ]
+ },
  "romanian deadlift": {
   "name": "Romanian Deadlift",
   "slug": "romanian-deadlift",
@@ -764,20 +979,20 @@ export const INFO = {
    "Rise up and pause at the top"
   ]
  },
- "seated leg curl": {
-  "name": "Seated Leg Curl",
-  "slug": "seated-leg-curl",
+ "side plank": {
+  "name": "Side Plank",
+  "slug": "side-plank",
   "img": true,
   "primary": [
-   "Hamstrings & Glutes"
+   "Core"
   ],
   "secondary": [
-   "Calves"
+   "Shoulders"
   ],
   "tips": [
-   "Lock the thigh pad down snugly",
-   "Curl the heels toward the seat",
-   "Let the legs straighten slowly"
+   "Stack the feet and lift the hips",
+   "Keep a straight line from head to feet",
+   "Breathe steadily and hold"
   ]
  },
  "skull crusher": {
@@ -792,6 +1007,22 @@ export const INFO = {
    "Upper arms stay pointed at the ceiling",
    "Lower the bar toward your forehead",
    "Extend the arms without flaring elbows"
+  ]
+ },
+ "smith machine squat": {
+  "name": "Smith Machine Squat",
+  "slug": "smith-machine-squat",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Place the feet slightly in front of the bar",
+   "Lower until the thighs are parallel",
+   "Keep your heels flat and chest up"
   ]
  },
  "squat": {
@@ -826,6 +1057,54 @@ export const INFO = {
    "Rise as high as you can, pause"
   ]
  },
+ "step-up": {
+  "name": "Step-up",
+  "slug": "step-up",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Put the whole foot on the box",
+   "Drive through the heel to stand tall",
+   "Lower slowly, don't drop down"
+  ]
+ },
+ "stiff-leg deadlift": {
+  "name": "Stiff-leg Deadlift",
+  "slug": "stiff-leg-deadlift",
+  "img": false,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Back"
+  ],
+  "tips": [
+   "Keep the legs nearly straight, knees slightly soft",
+   "Push the hips back and lower the bar along the legs",
+   "Stop when you feel the hamstrings stretch"
+  ]
+ },
+ "straight-arm pulldown": {
+  "name": "Straight-arm Pulldown",
+  "slug": "straight-arm-pulldown",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Triceps"
+  ],
+  "tips": [
+   "Keep the arms nearly straight the whole time",
+   "Pull the bar down to the thighs using the lats",
+   "Hinge slightly forward and brace your core"
+  ]
+ },
  "t-bar row": {
   "name": "T-bar Row",
   "slug": "t-bar-row",
@@ -855,6 +1134,20 @@ export const INFO = {
    "Elbows pinned to your sides",
    "Push down until arms are straight",
    "Let it rise only to forearms parallel"
+  ]
+ },
+ "triceps kickback": {
+  "name": "Triceps Kickback",
+  "slug": "triceps-kickback",
+  "img": true,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Hinge forward with the upper arm parallel to the floor",
+   "Extend the forearm back until straight",
+   "Keep the upper arm still"
   ]
  },
  "upright row": {
@@ -893,4 +1186,5 @@ export const INFO = {
  }
 };
 
-export function infoFor(name) { return INFO[String(name).toLowerCase()] || null; }
+const ALIASES = {"dumbbell shoulder press":"overhead press","cable lateral raise":"lateral raise","glute bridge":"hip thrust","seated leg curl":"lying leg curl"};
+export function infoFor(name) { const k = String(name).toLowerCase(); return INFO[k] || INFO[ALIASES[k]] || null; }

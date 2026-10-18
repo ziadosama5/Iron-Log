@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { LIB, MUSCLES, TEMPLATES, muscleOf, fillFocus, fillAllFocus, migrateProgram, PROGRAM_VERSION } from "../public/exercise-library.js";
+import { LIB, MUSCLES, ALL_EX, ALIASES, resolveAlias, TEMPLATES, muscleOf, fillFocus, fillAllFocus, migrateProgram, PROGRAM_VERSION } from "../public/exercise-library.js";
 
 test("every template day is tagged with the muscle group of each exercise", () => {
   for (const t of TEMPLATES) for (const d of t.days) for (const ex of d.exercises) {
@@ -56,3 +56,18 @@ test("migrateProgram stamps old docs even when nothing changes, and skips empty 
   assert.equal(migrateProgram({}).needsSave, false);
 });
 test("PROGRAM_VERSION is 2", () => assert.equal(PROGRAM_VERSION, 2));
+
+test("library names are unique ignoring case, and each is in one group", () => {
+  const all = Object.values(LIB).flat().map(n => n.toLowerCase());
+  assert.equal(new Set(all).size, all.length);
+});
+
+test("merged exercises are gone from the library but resolve to the one that stays", () => {
+  for (const [old, keep] of Object.entries(ALIASES)) {
+    assert.ok(!ALL_EX.some(n => n.toLowerCase() === old), `${old} should not be listed`);
+    assert.ok(ALL_EX.includes(keep), `${keep} must exist`);
+    assert.equal(muscleOf(old), muscleOf(keep));
+    assert.equal(resolveAlias(old.toUpperCase()), keep);
+  }
+  assert.equal(resolveAlias("Bench Press"), "Bench Press");
+});

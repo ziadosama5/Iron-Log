@@ -29,7 +29,7 @@ test("drawing files exist for img:true and none are unreferenced", () => {
   assert.deepEqual([...files].sort(), [...want].sort());
 });
 
-test("44 exercises have drawings", () => assert.equal(Object.values(INFO).filter(e => e.img).length, 44));
+test("60 exercises have drawings", () => assert.equal(Object.values(INFO).filter(e => e.img).length, 60));
 
 test("slugs are unique", () => {
   const s = Object.values(INFO).map(e => e.slug);
@@ -40,4 +40,9 @@ test("infoFor is case-insensitive", () => {
   assert.equal(infoFor("bench press").name, "Bench Press");
   assert.equal(infoFor("BENCH PRESS").name, "Bench Press");
   assert.equal(infoFor("My Custom Thing"), null);
+});
+
+test("merged names still show the info of the exercise they were merged into", () => {
+  assert.equal(infoFor("Dumbbell Shoulder Press").name, "Overhead Press");
+  assert.equal(infoFor("glute bridge").name, "Hip Thrust");
 });
