@@ -9,7 +9,7 @@
 // Only template literals and strings that contain an HTML tag are read as markup.
 
 export const LABEL_ALLOW = new Set([
-  "Iron Log", "English", "العربية", "firebase-config.js", "kg", "cm", "kcal", "g", "min", "s", "%", "PR", "e1RM", "1RM", "RPE"
+  "Iron Log", "English", "العربية", "firebase-config.js", "XP", "kg", "cm", "kcal", "g", "min", "s", "%", "PR", "e1RM", "1RM", "RPE"
 ]);
 
 const SENT = "\u0001";
@@ -77,7 +77,7 @@ function readTemplate(s, i) {
 
 // Arguments of the call whose "(" is at s[i], split on top-level commas.
 function parseArgs(s, i) {
-  const args = []; let depth = 0, start = i + 1, prev = "(";
+  const args = [], starts = [i + 1]; args.starts = starts; let depth = 0, start = i + 1, prev = "(";
   for (i; i < s.length; ) {
     const c = s[i];
     if (c === "/" && s[i + 1] === "/") { i = skipLine(s, i); continue; }
@@ -89,7 +89,7 @@ function parseArgs(s, i) {
     else if (c === ")" || c === "]" || c === "}") {
       depth--;
       if (depth === 0) { args.push(s.slice(start, i)); args.end = i + 1; return args; }
-    } else if (c === "," && depth === 1) { args.push(s.slice(start, i)); start = i + 1; }
+    } else if (c === "," && depth === 1) { args.push(s.slice(start, i)); start = i + 1; starts.push(start); }
     if (!/\s/.test(c)) prev = c;
     i++;
   }
@@ -173,12 +173,15 @@ export function scanSource(source, { kind = "js" } = {}) {
 
   function handleCall(name, s, parenIdx, base) {
     const args = parseArgs(s, parenIdx), off = base + parenIdx;
-    if (name === "t") { if (args[0] != null) checkKey(args[0], off); }
-    else if (name === "tn") { [0, 1].forEach(k => args[k] != null && checkKey(args[k], off)); }
+    // The key text (including any HTML in it) belongs to t()/tn(); it must not be read again as markup.
+    const markKey = k => { const raw = args[k]; if (raw != null) keyLits.add(base + args.starts[k] + (raw.length - raw.trimStart().length)); };
+    if (name === "t") { markKey(0); if (args[0] != null) checkKey(args[0], off); }
+    else if (name === "tn") { [0, 1].forEach(k => { markKey(k); if (args[k] != null) checkKey(args[k], off); }); }
     else if (name === "toast" || name === "setSync") { if (args[0] != null) checkMessage(args[0], off); }
     else if (name === "add" && args.length >= 4) { [2, 3].forEach(k => checkMessage(args[k], off)); }
   }
 
+  const keyLits = new Set();
   const CALLS = new Set(["t", "tn", "toast", "setSync", "add"]);
   const HAS_TAG = /<[a-zA-Z/]/;
 
@@ -190,13 +193,13 @@ export function scanSource(source, { kind = "js" } = {}) {
       if (c === "/" && s[i + 1] === "*") { i = skipBlock(s, i); continue; }
       if (c === '"' || c === "'") {
         const e = skipQuoted(s, i), lit = s.slice(i + 1, e - 1);
-        if (HAS_TAG.test(lit)) analyzeMarkup(lit, base + i + 1);
+        if (HAS_TAG.test(lit) && !keyLits.has(base + i)) analyzeMarkup(lit, base + i + 1);
         i = e; prev = "a"; continue;
       }
       if (c === "`") {
         const r = readTemplate(s, i);
         const markup = r.parts.map(p => (p.expr !== undefined ? SENT : p.text)).join("");
-        if (HAS_TAG.test(r.parts.map(p => p.text || "").join(""))) analyzeMarkup(markup, base + i + 1);
+        if (HAS_TAG.test(r.parts.map(p => p.text || "").join("")) && !keyLits.has(base + i)) analyzeMarkup(markup, base + i + 1);
         for (const p of r.parts) if (p.expr !== undefined) scanJs(p.expr, base + p.at);
         i = r.end; prev = "a"; continue;
       }

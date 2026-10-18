@@ -98,3 +98,13 @@ test("trDom matches text split over lines by collapsing inner whitespace", () =>
   setLang("ar"); trDom(el("p", {}, [n]));
   assert.equal(n.nodeValue, "\n   إضافة مجموعة\n ");
 });
+
+test("withLang runs a function in another language and restores the current one", async () => {
+  const { withLang } = await import("../public/i18n.js");
+  setLang("ar");
+  assert.equal(withLang("en", () => t("Skip")), "Skip");
+  assert.equal(t("Skip"), "تخطي");
+  assert.equal(withLang("zz", () => getLang()), "ar");
+  assert.throws(() => withLang("en", () => { throw new Error("x"); }));
+  assert.equal(getLang(), "ar");
+});

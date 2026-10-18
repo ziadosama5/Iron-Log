@@ -92,3 +92,9 @@ test("string literals used only in comparisons are not messages", () => {
   assert.deepEqual(js('toast(e.code==="denied" ? t("A") : e.code!=="x" ? t("B") : t("C"));').violations, []);
   assert.equal(js('toast(e.code==="denied" ? "Not allowed" : t("C"));').violations.length, 1);
 });
+
+test("HTML inside a t() string is part of the key, not separate labels", () => {
+  const r = js('const a = t("Over <b>{wk} kg</b> now"); const b = tn("{n} <i>set</i>", "{n} <i>sets</i>", n);');
+  assert.deepEqual(r.labels.sort(), ["Over <b>{wk} kg</b> now", "{n} <i>set</i>", "{n} <i>sets</i>"]);
+  assert.deepEqual(r.violations, []);
+});

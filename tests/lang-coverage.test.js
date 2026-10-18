@@ -6,10 +6,7 @@ import { AR } from "../public/lang-ar.js";
 
 // Sections still being translated. Tasks 5-7 of docs/superpowers/plans/2026-10-18-arabic-language.md
 // remove names from this list; it must end up empty.
-const PENDING = [
-  "derived", "BODY", "COACH", "GOALS",
-  "SCREEN WAKE LOCK", "THEME"
-];
+const PENDING = [];
 
 const read = f => readFileSync(new URL("../public/" + f, import.meta.url), "utf8");
 const MARK = '<script type="module">';
@@ -60,4 +57,48 @@ test("Arabic entries keep the same {placeholders} as their English key and are n
 
 test("translation is finished when I18N_DONE=1", { skip: process.env.I18N_DONE !== "1" }, () => {
   assert.deepEqual(PENDING, []);
+});
+
+// ---- names of library things (Task 7) ----
+import { ALL_EX, MUSCLES, TEMPLATES } from "../public/exercise-library.js";
+import { BADGES } from "../public/achievements.js";
+import { CARDIO_TYPES, INTENSITIES } from "../public/energy.js";
+
+const needNames = (kind, list) => {
+  const table = AR.names[kind] || {};
+  const missing = list.filter(n => !table[n] || !String(table[n]).trim());
+  assert.deepEqual(missing, [], `AR.names.${kind} is missing entries`);
+};
+
+test("every exercise, muscle, template, day and badge has an Arabic name", () => {
+  needNames("ex", ALL_EX);
+  needNames("muscle", MUSCLES);
+  needNames("template", TEMPLATES.map(t => t.name));
+  needNames("tplnote", TEMPLATES.map(t => t.note));
+  needNames("day", [...new Set(TEMPLATES.flatMap(t => t.days.map(d => d.name))), "Free workout", "Cardio"]);
+  needNames("badge", BADGES.map(b => b.name));
+});
+
+test("cardio, intensity, goal, weekday, meal and level names exist", () => {
+  const labels = { treadmill: "Treadmill", elliptical: "Elliptical", bike: "Bike", other: "Other" };
+  needNames("cardio", [...CARDIO_TYPES.map(c => labels[c]), "Cardio"]);
+  needNames("intensity", INTENSITIES.map(i => i[0].toUpperCase() + i.slice(1)));
+  needNames("goal", ["Lose fat", "Build muscle", "Lose fat and build muscle", "Get stronger", "Stay in shape"]);
+  needNames("weekday", ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
+  needNames("meal", ["Breakfast", "Lunch", "Dinner", "Snack"]);
+  needNames("level", ["Rookie", "Regular", "Committed", "Iron"]);
+});
+
+test("Arabic exercise names are unique", () => {
+  const v = ALL_EX.map(n => AR.names.ex[n]);
+  assert.equal(new Set(v).size, v.length);
+});
+
+test("labels kept in index.html constants (body fields, screen titles) have Arabic", () => {
+  const src = read("index.html");
+  const block = (start, end) => src.slice(src.indexOf(start), src.indexOf(end, src.indexOf(start)));
+  const labels = [...block("const BF = {", "};").matchAll(/label:"([^"]+)"/g)].map(m => m[1]);
+  labels.push(...[...block("const SCREEN_TITLES={", "}").matchAll(/:"([^"]+)"/g)].map(m => m[1]));
+  assert.ok(labels.length >= 20, "found the constants");
+  assert.deepEqual([...new Set(labels)].filter(l => AR.ui[l] == null), []);
 });

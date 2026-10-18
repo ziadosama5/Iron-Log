@@ -8,6 +8,12 @@ export function registerLang(code, dict) { dicts[code] = { ui: dict.ui || {}, na
 export function setLang(code) { if (!dicts[code]) return false; current = code; return true; }
 export function getLang() { return current; }
 export function isRtl() { return current === "ar"; }
+// Runs fn with another language active (unknown code = no change), then restores the current one.
+export function withLang(code, fn) {
+  const prev = current;
+  if (dicts[code]) current = code;
+  try { return fn(); } finally { current = prev; }
+}
 export function locale() { return current === "ar" ? "ar-EG-u-nu-latn" : undefined; }
 
 export function detectLang(saved, navLang) {

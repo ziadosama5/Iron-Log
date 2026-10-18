@@ -345,7 +345,7 @@ import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, 
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION, resolveAlias } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
-import { registerLang, setLang, isRtl, detectLang, t, tn, nameOf, locale, trDom } from "./i18n.js";
+import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
@@ -814,24 +814,25 @@ const BF = {
   score:{label:"InBody score",unit:"pts",g:"ib"}
 };
 const GOALS = {"fat-loss":"Lose fat","muscle":"Build muscle","recomp":"Lose fat and build muscle","strength":"Get stronger","maintain":"Stay in shape"};
+const bfLabel = k => t(BF[k].label);
 const bodySorted = () => [...state.body].sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
 const latestWith = k => { const s=bodySorted().filter(e=>typeof e[k]==="number"); return s[s.length-1]||null; };
 const profileReady = () => { const p=state.profile; return p.sex && p.height && p.birthYear && p.goal; };
 
 function field(k, val){
   const f=BF[k];
-  return `<label><span class="label">${esc(f.label)} · ${f.unit}</span><input id="bf-${k}" name="${k}" inputmode="decimal" value="${val??""}" placeholder="–"></label>`;
+  return `<label><span class="label">${esc(bfLabel(k))} · ${f.unit}</span><input id="bf-${k}" name="${k}" inputmode="decimal" value="${val??""}" placeholder="–"></label>`;
 }
 // Latest weight in big numbers + a one-field entry for the selected day (keeps that day's other values).
 function quickWeightCard(entry){
   const s=bodySorted().filter(e=>typeof e.weight==="number"), lw=s[s.length-1];
   const ago=lw?s.filter(e=>(new Date(lw.date)-new Date(e.date))/864e5>=28):[], ref=ago[ago.length-1];
   const d=ref?Math.round((lw.weight-ref.weight)*10)/10:null;
-  const day=state.bdate===today()?"today":fmtDate(state.bdate);
+  const day=state.bdate===today()?t("today"):fmtDate(state.bdate);
   return `<form class="card" id="quickw-form" autocomplete="off">
     <div><span class="label">Latest weight</span><div class="bignum">${lw?kg(lw.weight):"–"} <small>kg</small></div>
-      <span class="prev">${lw?esc(fmtDate(lw.date))+(d!=null?` · ${d>0?"+":""}${d} kg vs 4 weeks ago`:""):"No weight logged yet"}</span></div>
-    <div class="row"><input id="quickw" inputmode="decimal" aria-label="Weight for ${day} in kg" placeholder="Weight for ${day} · kg" value="${entry.weight??""}" style="flex:1 1 140px"><button class="btn primary" type="submit">Save</button></div>
+      <span class="prev">${lw?esc(fmtDate(lw.date))+(d!=null?` · ${t("{d} kg vs 4 weeks ago",{d:(d>0?"+":"")+d})}`:""):t("No weight logged yet")}</span></div>
+    <div class="row"><input id="quickw" inputmode="decimal" aria-label="${esc(t("Weight for {day} in kg",{day}))}" placeholder="${esc(t("Weight for {day} · kg",{day}))}" value="${entry.weight??""}" style="flex:1 1 140px"><button class="btn primary" type="submit">Save</button></div>
   </form>`;
 }
 function renderBody(){
@@ -844,20 +845,20 @@ function renderBody(){
         <label><span class="label">Sex</span><select id="pf-sex" name="sex"><option value="">Choose</option><option value="male" ${p.sex==="male"?"selected":""}>Male</option><option value="female" ${p.sex==="female"?"selected":""}>Female</option></select></label>
         <label><span class="label">Height · cm</span><input id="pf-height" name="height" inputmode="decimal" value="${p.height??""}"></label>
         <label><span class="label">Birth year</span><input id="pf-birth" name="birthYear" inputmode="numeric" value="${p.birthYear??""}" placeholder="1998"></label>
-        <label><span class="label">Main goal</span><select id="pf-goal" name="goal"><option value="">Choose</option>${Object.entries(GOALS).map(([k,v])=>`<option value="${k}" ${p.goal===k?"selected":""}>${v}</option>`).join("")}</select></label>
+        <label><span class="label">Main goal</span><select id="pf-goal" name="goal"><option value="">Choose</option>${Object.entries(GOALS).map(([k,v])=>`<option value="${k}" ${p.goal===k?"selected":""}>${esc(nameOf("goal",v))}</option>`).join("")}</select></label>
         <label><span class="label">Target weight · kg</span><input id="pf-goalw" name="goalWeight" inputmode="decimal" value="${p.goalWeight??""}" placeholder="optional"></label>
       </div>
       <div class="row"><button class="btn primary" type="submit">Save</button>${profileReady()?`<button class="btn ghost" type="button" data-act="cancel-profile">Cancel</button>`:""}</div>
     </form>`;
   } else {
-    h+=`<div class="row prev"><span class="grow">${p.sex==="male"?"Male":"Female"} · ${p.height} cm · ${new Date().getFullYear()-p.birthYear} yrs · Goal: <b>${esc(GOALS[p.goal])}</b>${p.goalWeight!=null?` · Target ${kg(p.goalWeight)} kg`:""}</span><button class="btn ghost small" data-act="edit-profile">Edit</button></div>`;
+    h+=`<div class="row prev"><span class="grow">${t(p.sex==="male"?"Male":"Female")} · ${p.height} cm · ${t("{n} yrs",{n:new Date().getFullYear()-p.birthYear})} · ${t("Goal: {goal}",{goal:"<b>"+esc(nameOf("goal",GOALS[p.goal]))+"</b>"})}${p.goalWeight!=null?` · ${t("Target {n} kg",{n:kg(p.goalWeight)})}`:""}</span><button class="btn ghost small" data-act="edit-profile">Edit</button></div>`;
   }
 
   const hasM=["waist","chest","hips","neck","arm","thigh","calf"].some(k=>entry[k]!=null), hasI=["smm","bfm","pbf","vfl","bmr","tbw","score"].some(k=>entry[k]!=null);
   // Measurements and InBody open on request (or when the selected day already has them).
   if(!(state.bodyFull||hasM||hasI)) h+=`<button class="btn secondary" data-act="body-full">Add measurements / scan</button>`;
   else h+=`<form class="card" id="body-form" autocomplete="off">
-    <div class="row"><h3 class="grow">${state.body.some(e=>e.date===state.bdate)?"Edit entry":"New entry"}</h3><input type="date" id="body-date" value="${state.bdate}" max="${today()}" style="width:auto"></div>
+    <div class="row"><h3 class="grow">${state.body.some(e=>e.date===state.bdate)?t("Edit entry"):t("New entry")}</h3><input type="date" id="body-date" value="${state.bdate}" max="${today()}" style="width:auto"></div>
     <div class="fields">${field("weight",entry.weight)}</div>
     <details ${hasM?"open":""}><summary>Measurements</summary><div class="fields">${["waist","chest","hips","neck","arm","thigh","calf"].map(k=>field(k,entry[k])).join("")}</div>
       <p class="prev" style="margin:8px 0 0">Measure in the morning, tape snug but not tight. Waist at the navel.</p></details>
@@ -874,14 +875,14 @@ function renderBody(){
     const ago30=s.filter(e=>(new Date(last.date)-new Date(e.date))/864e5>=28); const ref30=ago30[ago30.length-1];
     const dlt=(a,b)=>{ const d=Math.round((a-b)*10)/10; return (d>0?"+":"")+d; };
     h+=`<div class="card">
-      <div class="row"><h3 class="grow">Trend</h3><select id="body-metric" style="width:auto">${metrics.map(m=>`<option value="${m}" ${m===k?"selected":""}>${esc(BF[m].label)}</option>`).join("")}</select></div>
+      <div class="row"><h3 class="grow">Trend</h3><select id="body-metric" style="width:auto">${metrics.map(m=>`<option value="${m}" ${m===k?"selected":""}>${esc(bfLabel(m))}</option>`).join("")}</select></div>
       <div class="stats">
         <div class="stat"><div class="label">Latest</div><div class="v">${kg(last[k])} <small>${f.unit}</small></div></div>
         <div class="stat"><div class="label">vs. 4 weeks ago</div><div class="v">${ref30?dlt(last[k],ref30[k]):"–"} <small>${ref30?f.unit:""}</small></div></div>
         <div class="stat"><div class="label">Since start</div><div class="v">${s.length>1?dlt(last[k],first[k]):"–"} <small>${s.length>1?f.unit:""}</small></div></div>
         <div class="stat"><div class="label">Entries</div><div class="v">${s.length}</div></div>
       </div>
-      ${lineChart(s,[{k,c:"var(--accent)",main:true}],f.label+" over time","Add a second entry to see the trend.")}
+      ${lineChart(s,[{k,c:"var(--accent)",main:true}],t("{label} over time",{label:bfLabel(k)}),t("Add a second entry to see the trend."))}
     </div>`;
     const rows=bodySorted().reverse().slice(0,12);
     h+=`<div class="card" style="overflow-x:auto"><h3>Recent entries</h3><table><thead><tr><th>Date</th><th class="r">Weight</th><th class="r">Waist</th><th class="r">Fat %</th><th class="r">Muscle</th></tr></thead><tbody>${
@@ -916,25 +917,26 @@ function weightTrend(){
 function insights(){
   const out=[], p=state.profile, goal=p.goal;
   const add=(sec,tone,title,text,chips)=>out.push({sec,tone,title,text,chips});
+  const names=(list,kind)=>list.map(n=>nameOf(kind,n)).join(isRtl()?"، ":", ");
 
   // Body weight trend vs goal
-  const t=weightTrend();
-  if(t){
-    const pct=r1(t.pct), wk=r1(t.perWeek);
-    const desc=`Over the last few weeks your weight is changing by about <b>${wk>0?"+":""}${wk} kg/week</b> (${pct>0?"+":""}${pct}% of body weight).`;
+  const tr=weightTrend();
+  if(tr){
+    const pct=r1(tr.pct), wk=r1(tr.perWeek);
+    const desc=t("Over the last few weeks your weight is changing by about <b>{wk} kg/week</b> ({pct}% of body weight).",{wk:(wk>0?"+":"")+wk,pct:(pct>0?"+":"")+pct});
     if(goal==="fat-loss"){
-      if(t.pct>-0.25) add("Body","warn","Fat loss has stalled",desc+" For steady fat loss, aim for 0.5–1% per week. Cut about 200–300 kcal a day or add 2–3k daily steps.");
-      else if(t.pct<-1.1) add("Body","warn","You're losing weight quickly",desc+" Faster than about 1% a week makes it harder to keep muscle. Add roughly 200 kcal a day and keep protein high.");
-      else add("Body","good","Fat loss is on pace",desc+" That's in the 0.5–1% per week sweet spot. Keep doing what you're doing.");
+      if(tr.pct>-0.25) add("Body","warn",t("Fat loss has stalled"),desc+" "+t("For steady fat loss, aim for 0.5–1% per week. Cut about 200–300 kcal a day or add 2–3k daily steps."));
+      else if(tr.pct<-1.1) add("Body","warn",t("You're losing weight quickly"),desc+" "+t("Faster than about 1% a week makes it harder to keep muscle. Add roughly 200 kcal a day and keep protein high."));
+      else add("Body","good",t("Fat loss is on pace"),desc+" "+t("That's in the 0.5–1% per week sweet spot. Keep doing what you're doing."));
     } else if(goal==="muscle"){
-      if(t.pct<0.1) add("Body","warn","Not gaining enough to build muscle",desc+" A lean bulk works best at about 0.25–0.5% per week. Add roughly 200–250 kcal a day.");
-      else if(t.pct>0.6) add("Body","warn","Gaining faster than needed",desc+" Above about 0.5% a week most of the extra is fat. Pull back about 150–200 kcal a day.");
-      else add("Body","good","Lean bulk is on pace",desc+" That's a good rate for adding muscle while limiting fat gain.");
+      if(tr.pct<0.1) add("Body","warn",t("Not gaining enough to build muscle"),desc+" "+t("A lean bulk works best at about 0.25–0.5% per week. Add roughly 200–250 kcal a day."));
+      else if(tr.pct>0.6) add("Body","warn",t("Gaining faster than needed"),desc+" "+t("Above about 0.5% a week most of the extra is fat. Pull back about 150–200 kcal a day."));
+      else add("Body","good",t("Lean bulk is on pace"),desc+" "+t("That's a good rate for adding muscle while limiting fat gain."));
     } else if(goal){
-      if(Math.abs(t.pct)<=0.3) add("Body","good","Weight is stable",desc+" That fits a "+GOALS[goal].toLowerCase()+" goal.");
-      else add("Body","info","Weight is drifting",desc+` For a "${GOALS[goal]}" goal you'd expect roughly stable weight. Check if that's intentional.`);
+      if(Math.abs(tr.pct)<=0.3) add("Body","good",t("Weight is stable"),desc+" "+t("That fits a {goal} goal.",{goal:nameOf("goal",GOALS[goal]).toLowerCase()}));
+      else add("Body","info",t("Weight is drifting"),desc+" "+t("For a \"{goal}\" goal you'd expect roughly stable weight. Check if that's intentional.",{goal:nameOf("goal",GOALS[goal])}));
     }
-  } else if(!state.body.some(e=>typeof e.weight==="number")) add("Body","info","Start tracking body weight","Weigh yourself 2–4 times a week, in the morning after the bathroom. After about a week the Coach can tell whether you're on pace for your goal.");
+  } else if(!state.body.some(e=>typeof e.weight==="number")) add("Body","info",t("Start tracking body weight"),t("Weigh yourself 2–4 times a week, in the morning after the bathroom. After about a week the Coach can tell whether you're on pace for your goal."));
 
   // InBody composition
   const scans=bodySorted().filter(e=>typeof e.smm==="number"||typeof e.pbf==="number");
@@ -942,25 +944,25 @@ function insights(){
     const s=scans[scans.length-1];
     if(typeof s.pbf==="number" && p.sex){
       const [lo,hi]=p.sex==="male"?[10,20]:[18,28];
-      if(s.pbf>hi) add("Body","info",`Body fat ${s.pbf}% is above the typical ${lo}–${hi}% range`,`Your latest scan (${fmtDate(s.date)}) puts you above the usual range for ${p.sex==="male"?"men":"women"}. A modest calorie deficit with heavy lifting and high protein brings this down while keeping muscle.`);
-      else if(s.pbf<lo) add("Body","info",`Body fat ${s.pbf}% is below the typical ${lo}–${hi}% range`,"Very lean. If energy, sleep or strength are dropping, eat closer to maintenance.");
-      else add("Body","good",`Body fat ${s.pbf}% is in the typical ${lo}–${hi}% range`,`Based on your scan from ${fmtDate(s.date)}.`);
+      if(s.pbf>hi) add("Body","info",t("Body fat {n}% is above the typical {lo}–{hi}% range",{n:s.pbf,lo,hi}),t("Your latest scan ({d}) puts you above the usual range for {who}. A modest calorie deficit with heavy lifting and high protein brings this down while keeping muscle.",{d:fmtDate(s.date),who:p.sex==="male"?t("men"):t("women")}));
+      else if(s.pbf<lo) add("Body","info",t("Body fat {n}% is below the typical {lo}–{hi}% range",{n:s.pbf,lo,hi}),t("Very lean. If energy, sleep or strength are dropping, eat closer to maintenance."));
+      else add("Body","good",t("Body fat {n}% is in the typical {lo}–{hi}% range",{n:s.pbf,lo,hi}),t("Based on your scan from {d}.",{d:fmtDate(s.date)}));
     }
-    if(typeof s.vfl==="number" && s.vfl>=10) add("Body","warn",`Visceral fat level ${s.vfl} is elevated`,"InBody flags 10 or higher. Regular cardio (about 150 minutes a week), a small calorie deficit and fewer sugary drinks help most. Worth mentioning to a doctor at your next check-up.");
+    if(typeof s.vfl==="number" && s.vfl>=10) add("Body","warn",t("Visceral fat level {n} is elevated",{n:s.vfl}),t("InBody flags 10 or higher. Regular cardio (about 150 minutes a week), a small calorie deficit and fewer sugary drinks help most. Worth mentioning to a doctor at your next check-up."));
     const prev=scans.slice(0,-1).reverse().find(e=>typeof e.smm==="number"&&typeof e.bfm==="number");
     if(prev && typeof s.smm==="number" && typeof s.bfm==="number"){
       const dm=r1(s.smm-prev.smm), df=r1(s.bfm-prev.bfm);
-      const txt=`Since your scan on ${fmtDate(prev.date)}: muscle <b>${dm>0?"+":""}${dm} kg</b>, fat <b>${df>0?"+":""}${df} kg</b>.`;
-      if(dm>=0 && df<0) add("Body","good","Recomposition is working",txt+" You're losing fat while keeping or adding muscle.");
-      else if(dm<-0.4) add("Body","warn","You lost some muscle",txt+" Keep lifting heavy, hit your protein target every day, and avoid cutting calories too fast.");
-      else if(dm>0 && df>dm) add("Body","info","Gaining more fat than muscle",txt+" Trim the surplus a little and make sure training volume is progressing.");
-      else add("Body","info","Scan comparison",txt);
+      const txt=t("Since your scan on {d}: muscle <b>{dm} kg</b>, fat <b>{df} kg</b>.",{d:fmtDate(prev.date),dm:(dm>0?"+":"")+dm,df:(df>0?"+":"")+df});
+      if(dm>=0 && df<0) add("Body","good",t("Recomposition is working"),txt+" "+t("You're losing fat while keeping or adding muscle."));
+      else if(dm<-0.4) add("Body","warn",t("You lost some muscle"),txt+" "+t("Keep lifting heavy, hit your protein target every day, and avoid cutting calories too fast."));
+      else if(dm>0 && df>dm) add("Body","info",t("Gaining more fat than muscle"),txt+" "+t("Trim the surplus a little and make sure training volume is progressing."));
+      else add("Body","info",t("Scan comparison"),txt);
     }
   }
   // Waist to height
   const wa=latestWith("waist");
   if(wa && p.height){ const r=wa.waist/p.height;
-    add("Body", r<0.5?"good":"info", `Waist-to-height ratio ${r.toFixed(2)}`, r<0.5?"Under 0.5, the commonly used healthy cut-off.":"0.5 or above. Bringing the waist down usually tracks with less visceral fat, so it's a good number to watch alongside the scale."); }
+    add("Body", r<0.5?"good":"info", t("Waist-to-height ratio {r}",{r:r.toFixed(2)}), r<0.5?t("Under 0.5, the commonly used healthy cut-off."):t("0.5 or above. Bringing the waist down usually tracks with less visceral fat, so it's a good number to watch alongside the scale.")); }
 
   // Calories and protein targets live on the Today card (energy.js), not here.
 
@@ -969,9 +971,9 @@ function insights(){
   if(state.workouts.some(trainedOn)){
     const sets=weeklySets();
     const lows=MUSCLES.filter(m=>m!=="Core"&&m!=="Calves"&&sets[m]<6).sort((a,b)=>sets[a]-sets[b]).slice(0,3);
-    if(wk.length<2) add("Training","warn",`${wk.length} workout${wk.length===1?"":"s"} in the last 7 days`,"Training each muscle about twice a week gives the best results for most people. Aim for 3–4 sessions a week.");
-    else add("Training","good",`${wk.length} workouts in the last 7 days`,"Good consistency.");
-    if(lows.length) add("Training","warn","Under-trained muscle groups",`These got fewer than 6 hard sets this week: <b>${lows.join(", ")}</b>. About 10–20 sets per muscle per week works best for growth.`,
+    if(wk.length<2) add("Training","warn",tn("{n} workout in the last 7 days","{n} workouts in the last 7 days",wk.length),t("Training each muscle about twice a week gives the best results for most people. Aim for 3–4 sessions a week."));
+    else add("Training","good",tn("{n} workout in the last 7 days","{n} workouts in the last 7 days",wk.length),t("Good consistency."));
+    if(lows.length) add("Training","warn",t("Under-trained muscle groups"),t("These got fewer than 6 hard sets this week: <b>{list}</b>. About 10–20 sets per muscle per week works best for growth.",{list:names(lows,"muscle")}),
       lows.flatMap(m=>LIB[m].slice(0,2)));
   }
 
@@ -983,8 +985,8 @@ function insights(){
     const before=Math.max(...s.slice(0,-3).map(x=>x.b)), recent=Math.max(...s.slice(-3).map(x=>x.b));
     if(recent<=before*1.005) stalls.push(ex); else if(s[s.length-1].b>=recent) wins.push(ex);
   });
-  if(stalls.length) add("Training","warn",`Stalled: ${stalls.slice(0,3).join(", ")}`,"No new best in the last 3 sessions. Try dropping the weight about 10% and building back up, switching rep range (for example from 5s to 8s), or adding a set. Sleep and calories matter too.");
-  if(wins.length) add("Training","good",`Progressing: ${wins.slice(0,3).join(", ")}`,"New bests recently. Keep adding small amounts of weight or reps each week.");
+  if(stalls.length) add("Training","warn",t("Stalled: {list}",{list:names(stalls.slice(0,3),"ex")}),t("No new best in the last 3 sessions. Try dropping the weight about 10% and building back up, switching rep range (for example from 5s to 8s), or adding a set. Sleep and calories matter too."));
+  if(wins.length) add("Training","good",t("Progressing: {list}",{list:names(wins.slice(0,3),"ex")}),t("New bests recently. Keep adding small amounts of weight or reps each week."));
   return out;
 }
 /* Today card (Coach tab): eaten vs burned vs target, from energy.js */
@@ -1002,23 +1004,23 @@ function todayCard(){
   const d=state.cdate, p=state.profile, kg=weightOn(state.body,d), b=bmrFor(p,state.body,d);
   const e=dayEnergy({bmr:b?b.bmr:null, kg, goal:p.goal, workout:workoutFor(d)||null, food:state.food[d]||null});
   const meals=(state.food[d]&&state.food[d].meals)||[];
-  const missing = kg==null ? "Log your weight on the Body tab to see calories burned and your target."
-    : !b ? "Fill in About you on the Body tab to see calories burned and your target." : "";
+  const missing = kg==null ? t("Log your weight on the Body tab to see calories burned and your target.")
+    : !b ? t("Fill in About you on the Body tab to see calories burned and your target.") : "";
   const pct=e.target?Math.min(100,e.eaten/e.target*100):0, over=e.target!=null&&e.eaten>e.target?e.eaten-e.target:0;
   return `<div class="card today">
-    <div class="row"><h3 class="grow">${d===today()?"Today":esc(fmtDate(d))}</h3><input type="date" id="coach-date" value="${esc(d)}" max="${today()}" style="width:auto"></div>
+    <div class="row"><h3 class="grow">${d===today()?t("Today"):esc(fmtDate(d))}</h3><input type="date" id="coach-date" value="${esc(d)}" max="${today()}" style="width:auto"></div>
     <div class="stats">
       <div class="stat"><div class="label">Eaten</div><div class="v">${kcalTxt(e.eaten)} <small>/ ${kcalTxt(e.target)} kcal</small></div></div>
       <div class="stat"><div class="label">Burned</div><div class="v">${kcalTxt(e.burned)} <small>kcal</small></div></div>
       <div class="stat"><div class="label">Balance</div><div class="v ${balanceGood(p.goal,e.balance)?"good":""}">${signedTxt(e.balance)} <small>kcal</small></div></div>
     </div>
-    ${e.burned!=null?`<p class="prev" style="margin:0">Everyday ${kcalTxt(e.baseline)} · Lifting ${kcalTxt(e.lift)} · Cardio ${kcalTxt(e.cardio)}</p>`:""}
-    ${e.target!=null?`<div class="ebar" role="progressbar" aria-label="Eaten vs target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}"><i style="width:${pct}%"></i></div>${over?`<span class="prev">Over by ${over.toLocaleString("en-US")} kcal</span>`:""}`:""}
+    ${e.burned!=null?`<p class="prev" style="margin:0">${t("Everyday {a} · Lifting {b} · Cardio {c}",{a:kcalTxt(e.baseline),b:kcalTxt(e.lift),c:kcalTxt(e.cardio)})}</p>`:""}
+    ${e.target!=null?`<div class="ebar" role="progressbar" aria-label="Eaten vs target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}"><i style="width:${pct}%"></i></div>${over?`<span class="prev">${t("Over by {n} kcal",{n:over.toLocaleString("en-US")})}</span>`:""}`:""}
     ${missing?`<p class="prev" style="margin:0">${missing}</p>`:""}
-    ${e.protein!=null?`<p style="margin:0">Protein <b>${Math.round(e.protein)} g</b>${kg?` of ${Math.round(kg*1.6)}–${Math.round(kg*2.2)} g`:""}</p>`:""}
+    ${e.protein!=null?`<p style="margin:0">${kg?t("Protein <b>{a} g</b> of {b}–{c} g",{a:Math.round(e.protein),b:Math.round(kg*1.6),c:Math.round(kg*2.2)}):t("Protein <b>{a} g</b>",{a:Math.round(e.protein)})}</p>`:""}
     <form id="meal-form" class="stack" autocomplete="off" style="gap:8px">
       <span class="label">Add a meal</span>
-      <div class="chips">${["Breakfast","Lunch","Dinner","Snack"].map(n=>`<button type="button" class="chip" data-act="meal-name" data-name="${n}">${n}</button>`).join("")}</div>
+      <div class="chips">${["Breakfast","Lunch","Dinner","Snack"].map(n=>`<button type="button" class="chip" data-act="meal-name" data-name="${esc(nameOf("meal",n))}">${esc(nameOf("meal",n))}</button>`).join("")}</div>
       <div class="meal-fields">
         <label><span class="label">kcal</span><input id="meal-kcal" inputmode="numeric" value="${esc(state.mealDraft.kcal)}"></label>
         <label><span class="label">Protein g</span><input id="meal-protein" inputmode="numeric" placeholder="optional" value="${esc(state.mealDraft.protein)}"></label>
@@ -1026,7 +1028,7 @@ function todayCard(){
       </div>
       <button class="btn primary" type="submit">Add meal</button>
     </form>
-    ${meals.length?`<ul class="cardio-list">${meals.map(m=>`<li><span class="grow">${esc(m.name||"Meal")} · ${m.kcal.toLocaleString("en-US")} kcal${m.protein!=null?` · ${m.protein} g`:""}</span><button class="btn ghost small danger" data-act="rm-meal" data-id="${esc(m.id)}" aria-label="Delete ${esc(m.name||"meal")}">✕</button></li>`).join("")}</ul>`:""}
+    ${meals.length?`<ul class="cardio-list">${meals.map(m=>`<li><span class="grow">${esc(m.name?nameOf("meal",m.name):t("Meal"))} · ${m.kcal.toLocaleString("en-US")} kcal${m.protein!=null?` · ${m.protein} g`:""}</span><button class="btn ghost small danger" data-act="rm-meal" data-id="${esc(m.id)}" aria-label="${esc(t("Delete {name}",{name:m.name?nameOf("meal",m.name):t("meal")}))}">✕</button></li>`).join("")}</ul>`:""}
   </div>`;
 }
 function renderCoach(){
@@ -1039,11 +1041,11 @@ function renderCoach(){
   } else {
     // Warnings first; the first 3 are shown, the rest on request.
     const shown=state.coachAllTips?list:list.slice(0,3);
-    h+=`<div class="card"><h3>Tips</h3>${shown.map(i=>`<div class="insight ${i.tone}"><span class="label">${esc(i.sec)}</span><b>${esc(i.title)}</b><span class="prev" style="color:var(--fg)">${i.text}</span>${
-      i.chips?`<div class="chips">${i.chips.map(c=>`<button class="chip add" data-act="coach-add" data-name="${esc(c)}">${esc(c)}</button>`).join("")}</div><span class="prev">Tap to add to today's workout.</span>`:""}</div>`).join("")}${
-      list.length>3?`<button class="btn ghost small" data-act="tips-all">${state.coachAllTips?"Show fewer":`Show all tips (${list.length})`}</button>`:""}</div>`;
+    h+=`<div class="card"><h3>Tips</h3>${shown.map(i=>`<div class="insight ${i.tone}"><span class="label">${esc(t(i.sec))}</span><b>${esc(i.title)}</b><span class="prev" style="color:var(--fg)">${i.text}</span>${
+      i.chips?`<div class="chips">${i.chips.map(c=>`<button class="chip add" data-act="coach-add" data-name="${esc(c)}">${esc(nameOf("ex",c))}</button>`).join("")}</div><span class="prev">Tap to add to today's workout.</span>`:""}</div>`).join("")}${
+      list.length>3?`<button class="btn ghost small" data-act="tips-all">${state.coachAllTips?t("Show fewer"):t("Show all tips ({n})",{n:list.length})}</button>`:""}</div>`;
   }
-  h+=`<button class="btn secondary" data-act="coach-more" aria-expanded="${!!state.coachMore}">${state.coachMore?"Hide sets per muscle and written review":"More from Coach"}</button>`;
+  h+=`<button class="btn secondary" data-act="coach-more" aria-expanded="${!!state.coachMore}">${state.coachMore?t("Hide sets per muscle and written review"):t("More from Coach")}</button>`;
   if(state.coachMore) h+=volumeBars()+`<div class="card"><h3>Get a written review</h3>
     <p class="prev" style="margin:0">Copies a summary of your recent workouts, body data and goal (no name) with coaching instructions. Paste it into Claude or any AI chat for a personal review.</p>
     <div class="row"><button class="btn primary" data-act="copy-review" id="copy-review">Copy my summary</button></div>
@@ -1056,7 +1058,7 @@ function volumeBars(){
   const s=weeklySets(), max=Math.max(24,...Object.values(s));
   return `<div class="card"><h3>Sets per muscle · last 7 days</h3><div class="bars">${MUSCLES.map(m=>{
     const v=s[m], cls=v<6?"low":v<=20?"ok":"";
-    return `<span>${esc(m)}</span><span class="track"><span class="zone" style="inset-inline-start:${10/max*100}%;width:${10/max*100}%"></span><span class="fill ${cls}" style="width:${Math.min(100,v/max*100)}%"></span></span><span class="num">${v}</span>`;}).join("")}</div>
+    return `<span>${esc(nameOf("muscle",m))}</span><span class="track"><span class="zone" style="inset-inline-start:${10/max*100}%;width:${10/max*100}%"></span><span class="fill ${cls}" style="width:${Math.min(100,v/max*100)}%"></span></span><span class="num">${v}</span>`;}).join("")}</div>
     <span class="prev">Dashed band marks 10–20 sets, a common target for growth.</span></div>`;
 }
 function reviewPrompt(){
@@ -1069,7 +1071,7 @@ function reviewPrompt(){
     setsPerMuscleLast7Days:weeklySets(),
     bodyEntries:bodySorted().slice(-10),
     weightTrend:weightTrend(),
-    automaticFindings:insights().map(i=>i.title)
+    automaticFindings:withLang("en",()=>insights().map(i=>i.title))
   };
   const prompt=`You are an experienced strength and nutrition coach. Review this person's gym log and body data and give a short, personal review.
 
@@ -1087,8 +1089,8 @@ ${JSON.stringify(summary)}`;
 }
 async function copyReview(){
   const text=reviewPrompt(), ta=$("#review-text");
-  try{ await navigator.clipboard.writeText(text); toast("Copied. Paste it into Claude for your review."); }
-  catch(e){ ta.hidden=false; ta.value=text; ta.focus(); ta.select(); toast("Select all and copy the text below"); }
+  try{ await navigator.clipboard.writeText(text); toast(t("Copied. Paste it into Claude for your review.")); }
+  catch(e){ ta.hidden=false; ta.value=text; ta.focus(); ta.select(); toast(t("Select all and copy the text below")); }
 }
 
 /* ---------- GOALS ---------- */
@@ -1096,14 +1098,14 @@ async function copyReview(){
 function goalsInput(){ return {workouts:state.workouts, body:state.body, food:state.food, days:state.days, profile:state.profile, today:today()}; }
 const RATIO_BADGE={"bench-bw":"Bench Press","squat-1.5":"Squat","deadlift-2":"Deadlift"};
 function badgeProgress(b){
-  if(b.earned) return "Earned "+fmtDate(b.earned);
+  if(b.earned) return t("Earned {d}",{d:fmtDate(b.earned)});
   const n=v=>Math.floor(v).toLocaleString("en-US"), id=b.id;
-  if(RATIO_BADGE[id]) return b.value?`Best ${b.value.toFixed(2)}× of ${b.target}×`:`Log a ${RATIO_BADGE[id]} set and your weight`;
+  if(RATIO_BADGE[id]) return b.value?t("Best {a}× of {b}×",{a:b.value.toFixed(2),b:b.target}):t("Log a {name} set and your weight",{name:nameOf("ex",RATIO_BADGE[id])});
   if(id.startsWith("volume")) return `${n(b.value/1000)} / ${n(b.target/1000)} t`;
   if(id==="goal-first-kg") return `${Math.max(0,b.value).toFixed(1)} / 1 kg`;
-  if(id==="goal-reached") return "Reach your target weight";
-  if(id.startsWith("streak")) return `${b.value} / ${b.target} weeks`;
-  if(id.startsWith("food")) return `${b.value} / ${b.target} days`;
+  if(id==="goal-reached") return t("Reach your target weight");
+  if(id.startsWith("streak")) return t("{a} / {b} weeks",{a:b.value,b:b.target});
+  if(id.startsWith("food")) return t("{a} / {b} days",{a:b.value,b:b.target});
   if(id.startsWith("kcal")) return `${n(b.value)} / ${n(b.target)} kcal`;
   if(id.startsWith("cardio")) return `${n(b.value)} / ${n(b.target)} min`;
   return `${n(b.value)} / ${n(b.target)}`;
@@ -1118,20 +1120,20 @@ function renderGoals(){
   else if(g.needsStartWeight) goal=`<p style="margin:0">Log your weight to start tracking this goal.</p>`;
   else goal=`<div class="gbar"><div class="row label"><span class="grow">Calorie bank</span><span class="num">${signed(g.bank)} / ${signed(g.target)} kcal</span></div><div class="ebar"><i style="width:${g.bankPct*100}%"></i></div></div>
     <div class="gbar"><div class="row label"><span class="grow">Weight</span><span class="num">${kg(g.start)} → ${kg(g.goalWeight)} kg · ${Math.round(g.weightPct*100)}%</span></div><div class="ebar"><i style="width:${g.weightPct*100}%"></i></div></div>
-    <p class="prev" style="margin:0">Based on ${g.loggedDays} of ${g.totalDays} days with meals logged.</p>
-    <p style="margin:0">${g.bankReached?"Calorie target reached. Keep logging until the scale catches up.":g.finish?`Estimated finish: <b>${esc(fmtDateY(g.finish))}</b>`:g.awayFromGoal?"At this pace you're moving away from your goal.":"Log meals for a few days to estimate a finish date."}</p>`;
+    <p class="prev" style="margin:0">${t("Based on {a} of {b} days with meals logged.",{a:g.loggedDays,b:g.totalDays})}</p>
+    <p style="margin:0">${g.bankReached?t("Calorie target reached. Keep logging until the scale catches up."):g.finish?t("Estimated finish: {d}",{d:"<b>"+esc(fmtDateY(g.finish))+"</b>"}):g.awayFromGoal?t("At this pace you're moving away from your goal."):t("Log meals for a few days to estimate a finish date.")}</p>`;
   const dots=Array.from({length:ts.target},(_,i)=>i<ts.thisWeek?"●":"○").join("");
   const earned=list.filter(b=>b.earned).sort((a,b)=>a.earned<b.earned?1:a.earned>b.earned?-1:0), locked=list.filter(b=>!b.earned);
-  const tile=b=>`<div class="ach ${b.earned?"on":""}"><span class="medal" aria-hidden="true"></span><span class="bname">${esc(b.name)}</span><span class="prev bsub">${esc(badgeProgress(b))}</span></div>`;
+  const tile=b=>`<div class="ach ${b.earned?"on":""}"><span class="medal" aria-hidden="true"></span><span class="bname">${esc(nameOf("badge",b.name))}</span><span class="prev bsub">${esc(badgeProgress(b))}</span></div>`;
   $("#view-goals").innerHTML=`<h2>Goals</h2>
-    <div class="card"><div class="row"><h3 class="grow">Level ${xp.level} · ${xp.title}</h3><span class="num prev">${xp.xp.toLocaleString("en-US")} XP</span></div>
+    <div class="card"><div class="row"><h3 class="grow">${t("Level {n}",{n:xp.level})} · ${nameOf("level",xp.title)}</h3><span class="num prev">${xp.xp.toLocaleString("en-US")} XP</span></div>
       <div class="ebar" role="progressbar" aria-label="XP to next level" aria-valuemin="0" aria-valuemax="${xp.needed}" aria-valuenow="${xp.into}"><i style="width:${xp.into/xp.needed*100}%"></i></div>
-      <p class="prev" style="margin:0">${xp.into.toLocaleString("en-US")} / ${xp.needed.toLocaleString("en-US")} XP to level ${xp.level+1} · +${xp.weekXp.toLocaleString("en-US")} XP this week</p></div>
+      <p class="prev" style="margin:0">${t("{a} / {b} XP to level {c} · +{d} XP this week",{a:xp.into.toLocaleString("en-US"),b:xp.needed.toLocaleString("en-US"),c:xp.level+1,d:xp.weekXp.toLocaleString("en-US")})}</p></div>
     <div class="card"><h3>Target weight</h3>${goal}</div>
     <div class="card"><h3>Streaks</h3>
-      <div class="row"><span class="grow">Training: <b>${ts.weeks} week${ts.weeks===1?"":"s"}</b></span><span class="dots" role="img" aria-label="${ts.thisWeek} of ${ts.target} this week">${dots}</span><span class="prev">${ts.thisWeek} of ${ts.target} this week</span></div>
-      <div class="row"><span class="grow">Food log: <b>${fdays} day${fdays===1?"":"s"}</b></span></div></div>
-    <div class="card"><h3>Badges · ${earned.length} of ${list.length}</h3><div class="achs">${earned.map(tile).join("")}${locked.map(tile).join("")}</div></div>`;
+      <div class="row"><span class="grow">${t("Training: {x}",{x:"<b>"+tn("{n} week","{n} weeks",ts.weeks)+"</b>"})}</span><span class="dots" role="img" aria-label="${esc(t("{a} of {b} this week",{a:ts.thisWeek,b:ts.target}))}">${dots}</span><span class="prev">${t("{a} of {b} this week",{a:ts.thisWeek,b:ts.target})}</span></div>
+      <div class="row"><span class="grow">${t("Food log: {x}",{x:"<b>"+tn("{n} day","{n} days",fdays)+"</b>"})}</span></div></div>
+    <div class="card"><h3>${t("Badges · {a} of {b}",{a:earned.length,b:list.length})}</h3><div class="achs">${earned.map(tile).join("")}${locked.map(tile).join("")}</div></div>`;
 }
 // New badges toast once (across devices). Runs only on server-confirmed data, so an empty offline
 // cache on a new device can't overwrite the saved list. First run marks existing badges silently.
@@ -1145,7 +1147,7 @@ function checkBadges(){
   const fresh=earned.filter(b=>!seen.includes(b.id));
   if(!fresh.length) return;
   store.saveSettings({seenBadges:[...seen,...fresh.map(b=>b.id)]});
-  fresh.forEach((b,i)=>setTimeout(()=>toast("Badge earned: "+b.name),i*2600));
+  fresh.forEach((b,i)=>setTimeout(()=>toast(t("Badge earned: {name}",{name:nameOf("badge",b.name)})),i*2600));
 }
 
 /* ---------- HISTORY ---------- */
