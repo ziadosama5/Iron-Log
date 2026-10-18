@@ -98,6 +98,27 @@ export const INFO = {
    ]
   }
  },
+ "barbell calf raise": {
+  "name": "Barbell Calf Raise",
+  "slug": "barbell-calf-raise",
+  "img": true,
+  "primary": [
+   "Calves"
+  ],
+  "secondary": [],
+  "tips": [
+   "Bar on the upper back, toes on a step",
+   "Rise as high as you can, pause",
+   "Lower the heels for a full stretch"
+  ],
+  "ar": {
+   "tips": [
+    "البار على أعلى الظهر وأصابع القدمين على درجة",
+    "ارتفع قدر ما تستطيع وتوقف قليلاً",
+    "أنزل الكعبين لتمدد كامل"
+   ]
+  }
+ },
  "barbell curl": {
   "name": "Barbell Curl",
   "slug": "barbell-curl",
@@ -310,6 +331,28 @@ export const INFO = {
     "انحنِ من الوركين وظهرك مستقيم",
     "اسحب الدمبل إلى أسفل الأضلاع",
     "أبقِ الجذع ثابتاً دون ارتجاج"
+   ]
+  }
+ },
+ "bicycle crunch": {
+  "name": "Bicycle Crunch",
+  "slug": "bicycle-crunch",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [],
+  "tips": [
+   "Hands light behind the head, shoulders off the floor",
+   "Bring one elbow toward the opposite knee",
+   "Switch sides in a slow pedalling motion"
+  ],
+  "ar": {
+   "tips": [
+    "اليدان خلف الرأس بخفة والكتفان عن الأرض",
+    "قرّب مرفقاً من الركبة المقابلة",
+    "بدّل الجانبين بحركة دواسة بطيئة"
    ]
   }
  },
@@ -678,6 +721,73 @@ export const INFO = {
    ]
   }
  },
+ "cable woodchop": {
+  "name": "Cable Woodchop",
+  "slug": "cable-woodchop",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [
+   "Shoulders"
+  ],
+  "tips": [
+   "Set the cable high and stand side-on",
+   "Pull the handle diagonally down across the body",
+   "Rotate from the torso and keep the arms long"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط الكابل عالياً وقف جانبياً",
+    "اسحب المقبض قطرياً للأسفل عبر الجسم",
+    "أدر الجذع وأبقِ الذراعين ممدودتين"
+   ]
+  }
+ },
+ "calf press (leg press)": {
+  "name": "Calf Press (Leg Press)",
+  "slug": "calf-press-leg-press",
+  "img": true,
+  "primary": [
+   "Calves"
+  ],
+  "secondary": [],
+  "tips": [
+   "Balls of the feet on the bottom of the platform",
+   "Push through the toes, knees almost straight",
+   "Lower the heels for a full stretch"
+  ],
+  "ar": {
+   "tips": [
+    "مشطا القدمين أسفل المنصة",
+    "ادفع بأصابع القدمين والركبتان شبه مستقيمتين",
+    "أنزل الكعبين لتمدد كامل"
+   ]
+  }
+ },
+ "captain's chair leg raise": {
+  "name": "Captain's Chair Leg Raise",
+  "slug": "hanging-leg-raise",
+  "img": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [],
+  "tips": [
+   "Forearms on the pads, back against the support",
+   "Raise the legs until level with the hips or higher",
+   "Lower slowly, don't swing"
+  ],
+  "ar": {
+   "tips": [
+    "الساعدان على الوسادتين وظهرك على الدعامة",
+    "ارفع الساقين حتى مستوى الوركين أو أعلى",
+    "انزل ببطء ولا تتأرجح"
+   ]
+  },
+  "own": true
+ },
  "chest dip": {
   "name": "Chest Dip",
   "slug": "chest-dip",
@@ -863,6 +973,28 @@ export const INFO = {
    ]
   }
  },
+ "dead bug": {
+  "name": "Dead Bug",
+  "slug": "dead-bug",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [],
+  "tips": [
+   "Lie on your back, arms up, knees at 90 degrees",
+   "Lower the opposite arm and leg slowly",
+   "Keep the lower back pressed into the floor"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ على ظهرك والذراعان للأعلى والركبتان بزاوية 90",
+    "أنزل الذراع والساق المتقابلتين ببطء",
+    "أبقِ أسفل ظهرك ملتصقاً بالأرض"
+   ]
+  }
+ },
  "deadlift": {
   "name": "Deadlift",
   "slug": "deadlift",
@@ -959,6 +1091,27 @@ export const INFO = {
     "القدمان على البنش واليدان على الأرض",
     "أبقِ جسمك في خط مستقيم",
     "انزل حتى يكاد صدرك يلمس الأرض"
+   ]
+  }
+ },
+ "decline sit-up": {
+  "name": "Decline Sit-up",
+  "slug": "decline-sit-up",
+  "img": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [],
+  "tips": [
+   "Hook your feet under the pads",
+   "Curl up until the torso is upright",
+   "Lower slowly without dropping"
+  ],
+  "ar": {
+   "tips": [
+    "ثبّت قدميك تحت الوسادتين",
+    "ارفع جذعك حتى يصبح منتصباً",
+    "انزل ببطء دون سقوط"
    ]
   }
  },
@@ -1076,6 +1229,27 @@ export const INFO = {
     "ادفع الدمبل بركبتيك للأعلى للبدء",
     "أنزل حتى يصبح المرفقان أسفل الكرسي قليلاً",
     "أبقِ الرسغين فوق المرفقين"
+   ]
+  }
+ },
+ "dumbbell calf raise": {
+  "name": "Dumbbell Calf Raise",
+  "slug": "standing-calf-raise",
+  "img": true,
+  "primary": [
+   "Calves"
+  ],
+  "secondary": [],
+  "tips": [
+   "Hold a dumbbell at your side, toes on a step",
+   "Rise as high as you can, pause",
+   "Lower the heels for a full stretch"
+  ],
+  "ar": {
+   "tips": [
+    "أمسك دمبلاً بجانبك وأصابع القدمين على درجة",
+    "ارتفع قدر ما تستطيع وتوقف قليلاً",
+    "أنزل الكعبين لتمدد كامل"
    ]
   }
  },
@@ -1287,6 +1461,27 @@ export const INFO = {
    ]
   }
  },
+ "dumbbell side bend": {
+  "name": "Dumbbell Side Bend",
+  "slug": "dumbbell-side-bend",
+  "img": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [],
+  "tips": [
+   "Hold a dumbbell in one hand at your side",
+   "Bend straight to the side, not forward",
+   "Come back up using the side of the waist"
+  ],
+  "ar": {
+   "tips": [
+    "أمسك دمبلاً بيد واحدة بجانبك",
+    "انحنِ للجانب مباشرة لا للأمام",
+    "ارجع للأعلى بعضلات جانب الخصر"
+   ]
+  }
+ },
  "dumbbell skull crusher": {
   "name": "Dumbbell Skull Crusher",
   "slug": "skull-crusher",
@@ -1444,6 +1639,27 @@ export const INFO = {
     "اسحب الحبل نحو جبهتك",
     "افصل طرفي الحبل والمرفقان مرتفعان",
     "اعصر مؤخرة الكتفين في النهاية"
+   ]
+  }
+ },
+ "flutter kick": {
+  "name": "Flutter Kick",
+  "slug": "flutter-kick",
+  "img": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [],
+  "tips": [
+   "Lie on your back, lower back pressed down",
+   "Lift the legs a few centimetres off the floor",
+   "Kick up and down in small quick motions"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ على ظهرك وأسفل ظهرك ملتصق بالأرض",
+    "ارفع الساقين بضعة سنتيمترات عن الأرض",
+    "اركل للأعلى والأسفل بحركات صغيرة سريعة"
    ]
   }
  },
@@ -1654,6 +1870,28 @@ export const INFO = {
     "انزل ببطء حتى استقامة الذراعين"
    ]
   }
+ },
+ "hanging knee raise": {
+  "name": "Hanging Knee Raise",
+  "slug": "hanging-leg-raise",
+  "img": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [],
+  "tips": [
+   "Hang from the bar with straight arms",
+   "Raise the knees toward the chest",
+   "Lower slowly without swinging"
+  ],
+  "ar": {
+   "tips": [
+    "تعلّق بالعمود والذراعان مستقيمتان",
+    "ارفع الركبتين نحو الصدر",
+    "انزل ببطء دون تأرجح"
+   ]
+  },
+  "own": true
  },
  "hanging leg raise": {
   "name": "Hanging Leg Raise",
@@ -2259,6 +2497,27 @@ export const INFO = {
    ]
   }
  },
+ "machine crunch": {
+  "name": "Machine Crunch",
+  "slug": "cable-crunch",
+  "img": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [],
+  "tips": [
+   "Adjust the seat so the pivot lines up with your waist",
+   "Crunch down by curling the spine",
+   "Return slowly under control"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط المقعد ليكون المحور بمحاذاة خصرك",
+    "اطوِ جذعك للأسفل بتدوير العمود الفقري",
+    "عد ببطء وتحكم"
+   ]
+  }
+ },
  "machine dip": {
   "name": "Machine Dip",
   "slug": "machine-dip",
@@ -2370,6 +2629,31 @@ export const INFO = {
     "اضبط المقعد ليكون المرفقان بمحاذاة المحور",
     "مدّد الذراعين حتى تستقيما",
     "عد ببطء ولا تدع الأثقال تصطدم"
+   ]
+  }
+ },
+ "mountain climber": {
+  "name": "Mountain Climber",
+  "slug": "mountain-climber",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [
+   "Shoulders",
+   "Quads"
+  ],
+  "tips": [
+   "Start in a high plank, hands under the shoulders",
+   "Drive one knee toward the chest",
+   "Switch legs quickly, keep the hips low"
+  ],
+  "ar": {
+   "tips": [
+    "ابدأ بوضع البلانك المرتفع واليدان أسفل الكتفين",
+    "اسحب ركبة نحو صدرك",
+    "بدّل الساقين بسرعة وأبقِ الوركين منخفضين"
    ]
   }
  },
@@ -2533,6 +2817,30 @@ export const INFO = {
     "أنزل الوزن خلف رأسك",
     "مدّد حتى استقامة الذراعين",
     "شد بطنك ولا تقوّس ظهرك"
+   ]
+  }
+ },
+ "pallof press": {
+  "name": "Pallof Press",
+  "slug": "pallof-press",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [
+   "Shoulders"
+  ],
+  "tips": [
+   "Stand side-on to the cable, handle at the chest",
+   "Press the handle straight out and hold",
+   "Don't let the cable twist your torso"
+  ],
+  "ar": {
+   "tips": [
+    "قف جانبياً أمام الكابل والمقبض عند الصدر",
+    "ادفع المقبض للأمام مباشرة وثبّت",
+    "لا تدع الكابل يلفّ جذعك"
    ]
   }
  },
@@ -2726,6 +3034,28 @@ export const INFO = {
     "ارفع الذراعين للجانبين بمرفقين مرنين",
     "اعصر مؤخرة الكتفين",
     "استخدم وزناً خفيفاً وتحكم فيه"
+   ]
+  }
+ },
+ "reverse crunch": {
+  "name": "Reverse Crunch",
+  "slug": "reverse-crunch",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [],
+  "tips": [
+   "Lie on your back with knees over the hips",
+   "Curl the hips off the floor toward the chest",
+   "Lower slowly, don't swing the legs"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ على ظهرك والركبتان فوق الوركين",
+    "ارفع الوركين عن الأرض نحو الصدر",
+    "انزل ببطء ولا تتأرجح بالساقين"
    ]
   }
  },
@@ -3097,6 +3427,27 @@ export const INFO = {
    ]
   }
  },
+ "single-leg calf raise": {
+  "name": "Single-leg Calf Raise",
+  "slug": "standing-calf-raise",
+  "img": true,
+  "primary": [
+   "Calves"
+  ],
+  "secondary": [],
+  "tips": [
+   "Stand on one foot with a hand on a wall",
+   "Rise as high as you can, pause",
+   "Lower the heel below the step"
+  ],
+  "ar": {
+   "tips": [
+    "قف على قدم واحدة ويد على الحائط",
+    "ارتفع قدر ما تستطيع وتوقف قليلاً",
+    "أنزل الكعب أسفل مستوى الدرجة"
+   ]
+  }
+ },
  "single-leg leg press": {
   "name": "Single-leg Leg Press",
   "slug": "leg-press",
@@ -3164,6 +3515,28 @@ export const INFO = {
    ]
   }
  },
+ "sit-up": {
+  "name": "Sit-up",
+  "slug": "sit-up",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [],
+  "tips": [
+   "Lie on your back with knees bent",
+   "Curl up until the torso is upright",
+   "Lower slowly, don't pull on your neck"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ على ظهرك وركبتاك مثنيتان",
+    "ارفع جذعك حتى يصبح منتصباً",
+    "انزل ببطء ولا تسحب رقبتك"
+   ]
+  }
+ },
  "skull crusher": {
   "name": "Skull Crusher",
   "slug": "skull-crusher",
@@ -3182,6 +3555,27 @@ export const INFO = {
     "أبقِ العضدين موجهين نحو السقف",
     "أنزل البار نحو جبهتك",
     "مدّد الذراعين دون فتح المرفقين"
+   ]
+  }
+ },
+ "smith calf raise": {
+  "name": "Smith Calf Raise",
+  "slug": "smith-calf-raise",
+  "img": true,
+  "primary": [
+   "Calves"
+  ],
+  "secondary": [],
+  "tips": [
+   "Balls of the feet on a plate or step",
+   "Rise as high as you can, pause",
+   "Lower the heels for a full stretch"
+  ],
+  "ar": {
+   "tips": [
+    "مشطا القدمين على قرص أو درجة",
+    "ارتفع قدر ما تستطيع وتوقف قليلاً",
+    "أنزل الكعبين لتمدد كامل"
    ]
   }
  },
@@ -3693,6 +4087,28 @@ export const INFO = {
     "قبضة أضيق من الكتفين قليلاً",
     "اسحب البار للأعلى بمحاذاة الجسم",
     "ارفع المرفقين إلى مستوى الكتفين لا أعلى"
+   ]
+  }
+ },
+ "v-up": {
+  "name": "V-up",
+  "slug": "v-up",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Core"
+  ],
+  "secondary": [],
+  "tips": [
+   "Lie flat with arms overhead",
+   "Raise the legs and torso to meet in a V",
+   "Lower slowly with control"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ منبسطاً والذراعان فوق الرأس",
+    "ارفع الساقين والجذع ليلتقيا على شكل V",
+    "انزل ببطء وتحكم"
    ]
   }
  },

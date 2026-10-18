@@ -363,6 +363,101 @@ const donkeyKick = finish => {
   });
 };
 
+// ---------- Sit-up (lie back, curl up to sitting) ----------
+const sitUp = finish => {
+  const sh = finish ? [132, 178] : [56, 252], hip = finish ? [118, 254] : [124, 254], knee = [168, 214], ank = [176, 262];
+  const elbow = finish ? [152, 206] : [78, 244], wrist = finish ? [166, 212] : [98, 238];
+  return fig({
+    ...head(finish ? [142, 154] : [32, 252]),
+    parts: [...body({ sh, hip, chest: 32, waist: 26 }), ...leg(hip, knee, ank, [196, 266], [26, 18, 11]), ...arm(sh, elbow, wrist), delt(sh, 11)],
+    gear: floor(268)
+  });
+};
+
+// ---------- Reverse Crunch (curl the hips up toward the chest) ----------
+const reverseCrunch = finish => {
+  const sh = [54, 250], hip = finish ? [112, 236] : [116, 252], knee = finish ? [138, 184] : [128, 200], ank = finish ? [176, 192] : [170, 196];
+  return fig({
+    ...head([30, 252]),
+    parts: [...body({ sh, hip, chest: 32, waist: 26 }), ...chain([hip, knee, ank], [26, 18, 11]), ...arm(sh, [84, 258], [112, 262]), delt(sh, 11)],
+    gear: floor(268)
+  });
+};
+
+// ---------- Bicycle Crunch (elbow to the opposite knee, pedalling) ----------
+const bicycleCrunch = finish => {
+  const sh = [76, 228], hip = [122, 252];
+  const bent = finish ? [[136, 252], [176, 252]] : [[134, 208], [166, 222]], straight = finish ? [[134, 208], [166, 222]] : [[166, 238], [206, 252]];
+  const elbow = [60, 196], wrist = [80, 198];
+  return fig({
+    ...head([56, 206]),
+    parts: [...body({ sh, hip, chest: 32, waist: 26 }), ...chain([hip, bent[0], bent[1]], [26, 18, 11]), ...chain([hip, straight[0], straight[1]], [26, 18, 11]), ...arm(sh, elbow, wrist), delt(sh, 11)],
+    gear: floor(268)
+  });
+};
+
+// ---------- V-up (reach for the toes, body folds into a V) ----------
+const vUp = finish => {
+  const sh = finish ? [100, 186] : [52, 254], hip = finish ? [118, 254] : [120, 256], knee = finish ? [156, 210] : [158, 258], ank = finish ? [190, 168] : [198, 260];
+  const elbow = finish ? [140, 184] : [30, 258], wrist = finish ? [176, 178] : [10, 262];
+  return fig({
+    ...head(finish ? [88, 160] : [28, 250]),
+    parts: [...body({ sh, hip, chest: 32, waist: 26 }), ...chain([hip, knee, ank], [26, 18, 11]), ...arm(sh, elbow, wrist), delt(sh, 11)],
+    gear: floor(268)
+  });
+};
+
+// ---------- Mountain Climber (high plank, drive the knees in turn) ----------
+const mountainClimber = finish => {
+  const sh = [150, 198], hip = [94, 218];
+  const fwd = finish ? [[66, 236], [38, 254]] : [[132, 214], [112, 246]], back = finish ? [[132, 214], [112, 246]] : [[66, 236], [38, 254]];
+  return fig({
+    ...head([176, 184]),
+    parts: [...body({ sh, hip, chest: 32, waist: 24 }), ...chain([hip, fwd[0], fwd[1]], [24, 17, 11]), ...chain([hip, back[0], back[1]], [24, 17, 11]), ...arm(sh, [152, 232], [152, 262]), delt(sh, 11)],
+    gear: floor(268) + hand([152, 262], 5)
+  });
+};
+
+// ---------- Dead Bug (on the back, lower the opposite arm and leg) ----------
+const deadBug = finish => {
+  const sh = [52, 252], hip = [118, 252];
+  const armA = [[52, 214], [52, 184]], legA = [[118, 206], [160, 206]];
+  const armB = finish ? [[30, 250], [8, 254]] : [[52, 214], [52, 184]], legB = finish ? [[158, 236], [196, 252]] : [[118, 206], [160, 206]];
+  return fig({
+    ...head([28, 250]),
+    parts: [...body({ sh, hip, chest: 32, waist: 26 }), ...chain([hip, ...legA], [26, 18, 11]), ...chain([hip, ...legB], [26, 18, 11]), ...chain([sh, ...armA], [18, 14, 10]), ...chain([sh, ...armB], [18, 14, 10]), delt(sh, 11)],
+    gear: floor(268)
+  });
+};
+
+// ---------- Cable Woodchop (front view, high to low across the body) ----------
+const cableWoodchop = finish => {
+  const H = finish ? [62, 196] : [156, 58];
+  const sh = finish ? [112, 98] : [104, 92];
+  return fig({
+    ...head(finish ? [114, 56] : [106, 52]),
+    parts: [tap(sh, [108, 172], 70, 46),
+      tap([sh[0] - 28, sh[1] + 6], [(sh[0] - 28 + H[0]) / 2, (sh[1] + 6 + H[1]) / 2], 18, 13), tap([(sh[0] - 28 + H[0]) / 2, (sh[1] + 6 + H[1]) / 2], H, 13, 10),
+      tap([sh[0] + 28, sh[1] + 6], [(sh[0] + 28 + H[0]) / 2, (sh[1] + 6 + H[1]) / 2], 18, 13), tap([(sh[0] + 28 + H[0]) / 2, (sh[1] + 6 + H[1]) / 2], H, 13, 10),
+      delt([sh[0] - 28, sh[1] + 6], 12), delt([sh[0] + 28, sh[1] + 6], 12),
+      tap([94, 176], [92, 222], 26, 19), tap([92, 222], [90, 262], 19, 12), tap([122, 176], [124, 222], 26, 19), tap([124, 222], [126, 262], 19, 12)],
+    behind: rect(196, 30, 14, 240, 3) + circle([203, 52], 7),
+    gear: floor() + cable([203, 52], H) + hand(H, 5)
+  });
+};
+
+// ---------- Pallof Press (side-on to the cable, press out and resist the twist) ----------
+const pallofPress = finish => {
+  const sh = [106, 94], hip = [104, 162], knee = [108, 216], ank = [108, 262];
+  const elbow = finish ? [140, 106] : [122, 126], wrist = finish ? [176, 108] : [130, 112];
+  return fig({
+    ...head([108, 56]),
+    parts: [...body({ sh, hip }), ...leg(hip, knee, ank, [130, 266]), ...arm(sh, elbow, wrist), delt(sh, 12)],
+    behind: rect(10, 40, 14, 230, 3) + circle([17, 108], 7),
+    gear: floor() + cable([17, 108], wrist) + hand(wrist, 5)
+  });
+};
+
 export const DRAWINGS = {
   "face-pull": { start: facePull(false), end: facePull(true) },
   "hip-thrust": { start: hipThrust(false), end: hipThrust(true) },
@@ -391,7 +486,15 @@ export const DRAWINGS = {
   "cable-glute-kickback": { start: cableGluteKickback(false), end: cableGluteKickback(true) },
   "cable-hip-abduction": { start: cableHipAbduction(false), end: cableHipAbduction(true) },
   "kettlebell-swing": { start: kettlebellSwing(false), end: kettlebellSwing(true) },
-  "donkey-kick": { start: donkeyKick(false), end: donkeyKick(true) }
+  "donkey-kick": { start: donkeyKick(false), end: donkeyKick(true) },
+  "sit-up": { start: sitUp(false), end: sitUp(true) },
+  "reverse-crunch": { start: reverseCrunch(false), end: reverseCrunch(true) },
+  "bicycle-crunch": { start: bicycleCrunch(false), end: bicycleCrunch(true) },
+  "v-up": { start: vUp(false), end: vUp(true) },
+  "mountain-climber": { start: mountainClimber(false), end: mountainClimber(true) },
+  "dead-bug": { start: deadBug(false), end: deadBug(true) },
+  "cable-woodchop": { start: cableWoodchop(false), end: cableWoodchop(true) },
+  "pallof-press": { start: pallofPress(false), end: pallofPress(true) }
 };
 
 // Contact sheet for looking at the drawings.

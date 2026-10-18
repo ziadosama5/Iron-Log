@@ -102,10 +102,14 @@ export const EXERCISES = [
     ["Cable Glute Kickback", "cable"], ["Cable Hip Abduction", "cable"], ["Hip Adduction", "hip-adduction"], ["Kettlebell Swing", "kettlebell"],
     ["Dumbbell Sumo Squat", "dumbbell"], ["Glute-Ham Raise", "hyper-bench"], ["Donkey Kick"]]),
   ...X("Calves", [
-    ["Standing Calf Raise", "standing-calf-machine"], ["Seated Calf Raise", "seated-calf-machine"], ["Donkey Calf Raise", "box"]]),
+    ["Standing Calf Raise", "standing-calf-machine"], ["Seated Calf Raise", "seated-calf-machine"], ["Donkey Calf Raise", "box"],
+    ["Calf Press (Leg Press)", "leg-press"], ["Smith Calf Raise", "smith"], ["Dumbbell Calf Raise", "dumbbell"], ["Barbell Calf Raise", "barbell"],
+    ["Single-leg Calf Raise"]]),
   ...X("Core", [
     ["Plank"], ["Hanging Leg Raise", "pullup-bar"], ["Cable Crunch", "cable"], ["Ab Wheel Rollout", "ab-wheel"], ["Russian Twist"], ["Crunch"],
-    ["Side Plank"], ["Lying Leg Raise"]])
+    ["Side Plank"], ["Lying Leg Raise"], ["Hanging Knee Raise", "pullup-bar"], ["Captain's Chair Leg Raise", "captains-chair"],
+    ["Machine Crunch", "ab-crunch-machine"], ["Decline Sit-up", "decline-bench"], ["Sit-up"], ["Reverse Crunch"], ["Bicycle Crunch"], ["V-up"],
+    ["Flutter Kick"], ["Mountain Climber"], ["Dead Bug"], ["Cable Woodchop", "cable"], ["Pallof Press", "cable"], ["Dumbbell Side Bend", "dumbbell"]])
 ];
 export const LIB = Object.fromEntries(GROUPS.map(g => [g, EXERCISES.filter(e => e.group === g).map(e => e.name)]));
 // Exercises merged into another one. Saved days and workouts keep the old name; these only decide
