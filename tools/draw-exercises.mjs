@@ -291,6 +291,78 @@ const wallSit = finish => {
   });
 };
 
+// ---------- Glute Bridge (on the floor, lift the hips) ----------
+const gluteBridge = finish => {
+  const sh = [50, 250], hip = finish ? [120, 206] : [118, 250], knee = [164, 216], ank = [172, 262];
+  return fig({
+    ...head([28, 252]),
+    parts: [...body({ sh, hip, chest: 32, waist: 26 }), ...leg(hip, knee, ank, [194, 266], [26, 18, 11]), ...arm(sh, [82, 258], [112, 262]), delt(sh, 11)],
+    gear: floor(268)
+  });
+};
+
+// ---------- Cable Pull-through (facing away from a low cable) ----------
+const cablePullThrough = finish => {
+  const sh = finish ? [108, 92] : [150, 150], hip = finish ? [104, 160] : [96, 170], knee = finish ? [108, 216] : [100, 214], ank = finish ? [108, 262] : [104, 262];
+  const wrist = finish ? [114, 172] : [106, 206], elbow = finish ? [112, 130] : [134, 186];
+  return fig({
+    ...head(finish ? [108, 54] : [172, 134]),
+    parts: [...body({ sh, hip }), ...leg(hip, knee, ank, [130, 266]), ...arm(sh, elbow, wrist), delt(sh, 12)],
+    behind: rect(10, 60, 14, 210, 3) + circle([17, 250], 7),
+    gear: floor() + cable([17, 250], wrist) + hand(wrist, 5)
+  });
+};
+
+// ---------- Cable Glute Kickback (lean on the frame, kick one leg straight back) ----------
+const cableGluteKickback = finish => {
+  const sh = [140, 112], hip = [112, 172], knee = [118, 218], ank = [118, 262];
+  const wKnee = finish ? [78, 208] : [106, 220], wAnk = finish ? [44, 232] : [98, 262];
+  return fig({
+    ...head([158, 92]),
+    parts: [...body({ sh, hip }), ...leg(hip, knee, ank, [138, 266]), ...chain([hip, wKnee, wAnk], [26, 18, 11]), ...arm(sh, [166, 118], [190, 126]), delt(sh, 12)],
+    behind: line([190, 70], [190, 270], 5),
+    gear: floor() + cable([20, 262], wAnk) + hand([190, 126], 5)
+  });
+};
+
+// ---------- Cable Hip Abduction (front view, ankle strap, leg out to the side) ----------
+const cableHipAbduction = finish => {
+  const hip = [108, 172];
+  const rKnee = finish ? [148, 218] : [124, 222], rAnk = finish ? [170, 254] : [126, 262];
+  return fig({
+    ...head([108, 52]),
+    parts: [tap([108, 92], hip, 70, 46),
+      tap([94, 176], [92, 222], 26, 19), tap([92, 222], [90, 262], 19, 12), tap([122, 176], rKnee, 26, 19), tap(rKnee, rAnk, 19, 12),
+      tap([78, 98], [72, 134], 18, 13), tap([72, 134], [92, 168], 13, 10), tap([138, 98], [144, 134], 18, 13), tap([144, 134], [124, 168], 13, 10),
+      delt([78, 98], 12), delt([138, 98], 12)],
+    behind: rect(196, 60, 14, 210, 3),
+    gear: floor() + cable([203, 262], rAnk)
+  });
+};
+
+// ---------- Kettlebell Swing (hinge, snap the hips) ----------
+const kettlebellSwing = finish => {
+  const sh = finish ? [106, 92] : [150, 128], hip = finish ? [106, 160] : [92, 172], knee = finish ? [108, 216] : [100, 216], ank = finish ? [108, 262] : [104, 262];
+  const wrist = finish ? [170, 98] : [112, 198], elbow = finish ? [140, 96] : [132, 168];
+  const bell = finish ? [184, 102] : [112, 212];
+  return fig({
+    ...head(finish ? [108, 54] : [172, 110]),
+    parts: [...body({ sh, hip }), ...leg(hip, knee, ank, [130, 266]), ...arm(sh, elbow, wrist), delt(sh, 12)],
+    gear: floor() + circle(bell, 12) + line([bell[0] - 7, bell[1] - 10], [bell[0] + 7, bell[1] - 10], 4) + hand(wrist, 5)
+  });
+};
+
+// ---------- Donkey Kick (on hands and knees, kick one leg back and up) ----------
+const donkeyKick = finish => {
+  const sh = [150, 196], hip = [92, 198];
+  const wKnee = finish ? [52, 200] : [96, 262], wAnk = finish ? [52, 152] : [56, 264];
+  return fig({
+    ...head([180, 184]),
+    parts: [...body({ sh, hip, chest: 32, waist: 26 }), tap(hip, [96, 262], 26, 18), tap([96, 262], [52, 264], 18, 11), ...chain([hip, wKnee, wAnk], [26, 18, 11]), ...arm(sh, [152, 232], [152, 262]), delt(sh, 11)],
+    gear: floor(268) + hand([152, 262], 5)
+  });
+};
+
 export const DRAWINGS = {
   "face-pull": { start: facePull(false), end: facePull(true) },
   "hip-thrust": { start: hipThrust(false), end: hipThrust(true) },
@@ -313,7 +385,13 @@ export const DRAWINGS = {
   "machine-row": { start: machineRow(false), end: machineRow(true) },
   "side-lunge": { start: sideLunge(false), end: sideLunge(true) },
   "bodyweight-squat": { start: bodyweightSquat(false), end: bodyweightSquat(true) },
-  "wall-sit": { start: wallSit(false), end: wallSit(true) }
+  "wall-sit": { start: wallSit(false), end: wallSit(true) },
+  "glute-bridge": { start: gluteBridge(false), end: gluteBridge(true) },
+  "cable-pull-through": { start: cablePullThrough(false), end: cablePullThrough(true) },
+  "cable-glute-kickback": { start: cableGluteKickback(false), end: cableGluteKickback(true) },
+  "cable-hip-abduction": { start: cableHipAbduction(false), end: cableHipAbduction(true) },
+  "kettlebell-swing": { start: kettlebellSwing(false), end: kettlebellSwing(true) },
+  "donkey-kick": { start: donkeyKick(false), end: donkeyKick(true) }
 };
 
 // Contact sheet for looking at the drawings.

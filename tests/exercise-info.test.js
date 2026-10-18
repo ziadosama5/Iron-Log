@@ -51,8 +51,6 @@ test("infoFor is case-insensitive", () => {
 });
 
 test("merged names still show the info of the exercise they were merged into", () => {
-  assert.equal(infoFor("seated leg curl").name, "Lying Leg Curl");
-  assert.equal(infoFor("glute bridge").name, "Hip Thrust");
 });
 
 test("every exercise has Arabic tips: same count, short, no trailing period", () => {
@@ -72,4 +70,8 @@ test("restored exercises are their own entries, no longer redirected", () => {
   assert.equal(infoFor("cable lateral raise").name, "Cable Lateral Raise");
   assert.equal(muscleOf("Dumbbell Shoulder Press"), "Shoulders");
   assert.equal(muscleOf("Cable Lateral Raise"), "Shoulders");
+});
+
+test("infoFor ignores inherited object keys (a custom exercise named constructor has no info)", () => {
+  for (const n of ["constructor", "toString", "__proto__"]) assert.equal(infoFor(n), null, n);
 });

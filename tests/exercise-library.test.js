@@ -117,3 +117,8 @@ test("exercisesFor: only exercises whose every required item is in the gym", () 
   assert.ok(!bb.includes("Dumbbell Bench Press") && !bb.includes("Squat"));
   assert.deepEqual(exercisesFor(EQUIPMENT.map(e => e.id)), ALL_EX);
 });
+
+test("ALIASES is empty and resolveAlias leaves every name alone, even names like constructor", () => {
+  assert.deepEqual(ALIASES, {});
+  for (const n of ["Squat", "constructor", "toString", "__proto__", "My Custom Thing"]) assert.equal(resolveAlias(n), n);
+});

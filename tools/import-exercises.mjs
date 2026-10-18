@@ -65,5 +65,6 @@ writeFileSync(infoFile,
   "// Drawings: /exercises/<slug>-start.svg and -end.svg (adapted from Everkinetic, CC BY-SA 4.0).\n" +
   "export const INFO = " + JSON.stringify(info, null, 1) + ";\n\n" +
   "const ALIASES = " + JSON.stringify(Object.fromEntries(Object.entries(ALIASES).map(([k, v]) => [k, v.toLowerCase()]))) + ";\n" +
-  "export function infoFor(name) { const k = String(name).toLowerCase(); return INFO[k] || INFO[ALIASES[k]] || null; }\n");
+  "const own = (o, k) => (Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined);\n" +
+  "export function infoFor(name) { const k = String(name).toLowerCase(); return own(INFO, k) || own(INFO, own(ALIASES, k)) || null; }\n");
 console.log(`exercise-info.js: ${names.length} exercises, ${Object.values(info).filter(e => e.img).length} with drawings`);

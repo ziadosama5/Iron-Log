@@ -95,7 +95,12 @@ export const EXERCISES = [
     ["Dumbbell Step-up", "dumbbell", "box"], ["Bodyweight Squat"], ["Sissy Squat"], ["Wall Sit"]]),
   ...X("Hamstrings & Glutes", [
     ["Romanian Deadlift", "barbell"], ["Lying Leg Curl", "leg-curl"], ["Hip Thrust", "barbell", "bench"], ["Good Morning", "barbell", "rack"],
-    ["Stiff-leg Deadlift", "barbell"], ["Hip Abduction", "hip-abduction"]]),
+    ["Stiff-leg Deadlift", "barbell"], ["Hip Abduction", "hip-abduction"], ["Dumbbell Romanian Deadlift", "dumbbell"],
+    ["Single-leg Romanian Deadlift", "dumbbell"], ["Sumo Deadlift", "barbell"], ["Kettlebell Deadlift", "kettlebell"],
+    ["Seated Leg Curl", "seated-leg-curl"], ["Dumbbell Hip Thrust", "dumbbell", "bench"], ["Smith Machine Hip Thrust", "smith", "bench"],
+    ["Glute Bridge"], ["Barbell Glute Bridge", "barbell"], ["Cable Pull-through", "cable"], ["Glute Kickback Machine", "glute-kickback"],
+    ["Cable Glute Kickback", "cable"], ["Cable Hip Abduction", "cable"], ["Hip Adduction", "hip-adduction"], ["Kettlebell Swing", "kettlebell"],
+    ["Dumbbell Sumo Squat", "dumbbell"], ["Glute-Ham Raise", "hyper-bench"], ["Donkey Kick"]]),
   ...X("Calves", [
     ["Standing Calf Raise", "standing-calf-machine"], ["Seated Calf Raise", "seated-calf-machine"], ["Donkey Calf Raise", "box"]]),
   ...X("Core", [
@@ -105,11 +110,8 @@ export const EXERCISES = [
 export const LIB = Object.fromEntries(GROUPS.map(g => [g, EXERCISES.filter(e => e.group === g).map(e => e.name)]));
 // Exercises merged into another one. Saved days and workouts keep the old name; these only decide
 // which info/muscle to show for it and what a typed old name turns into.
-export const ALIASES = {
-  "glute bridge": "Hip Thrust",
-  "seated leg curl": "Lying Leg Curl"
-};
-export const resolveAlias = name => ALIASES[String(name).toLowerCase()] || name;
+export const ALIASES = {};
+export const resolveAlias = name => { const k = String(name).toLowerCase(); return Object.prototype.hasOwnProperty.call(ALIASES, k) ? ALIASES[k] : name; };
 export const MUSCLES = Object.keys(LIB);
 export const ALL_EX = [...new Set(Object.values(LIB).flat())];
 

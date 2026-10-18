@@ -121,6 +121,30 @@ export const INFO = {
    ]
   }
  },
+ "barbell glute bridge": {
+  "name": "Barbell Glute Bridge",
+  "slug": "glute-bridge",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Quads"
+  ],
+  "tips": [
+   "Roll the bar over your hips on the floor",
+   "Drive the hips up until the body is straight",
+   "Squeeze the glutes and lower slowly"
+  ],
+  "ar": {
+   "tips": [
+    "ضع البار فوق وركيك وأنت على الأرض",
+    "ادفع الوركين للأعلى حتى يستقيم جسمك",
+    "اعصر الأرداف وانزل ببطء"
+   ]
+  },
+  "own": true
+ },
  "barbell lunge": {
   "name": "Barbell Lunge",
   "slug": "lunge",
@@ -475,6 +499,50 @@ export const INFO = {
    ]
   }
  },
+ "cable glute kickback": {
+  "name": "Cable Glute Kickback",
+  "slug": "cable-glute-kickback",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [],
+  "tips": [
+   "Ankle strap on the working leg",
+   "Kick straight back and squeeze the glute",
+   "Keep your torso still, don't arch"
+  ],
+  "ar": {
+   "tips": [
+    "رباط الكاحل على الساق العاملة",
+    "اركل للخلف مباشرة واعصر الأرداف",
+    "أبقِ جذعك ثابتاً ولا تقوّس ظهرك"
+   ]
+  }
+ },
+ "cable hip abduction": {
+  "name": "Cable Hip Abduction",
+  "slug": "cable-hip-abduction",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [],
+  "tips": [
+   "Ankle strap on the outside leg",
+   "Lift the leg out to the side",
+   "Control it back, don't lean"
+  ],
+  "ar": {
+   "tips": [
+    "رباط الكاحل على الساق الخارجية",
+    "ارفع الساق للجانب",
+    "أعدها بتحكم ولا تمل بجسمك"
+   ]
+  }
+ },
  "cable kickback": {
   "name": "Cable Kickback",
   "slug": "triceps-kickback",
@@ -514,6 +582,30 @@ export const INFO = {
     "قف جانبياً أمام البكرة السفلية",
     "ارفع الذراع للجانب إلى مستوى الكتف",
     "قُد الحركة بالمرفق وانزل ببطء"
+   ]
+  }
+ },
+ "cable pull-through": {
+  "name": "Cable Pull-through",
+  "slug": "cable-pull-through",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Back"
+  ],
+  "tips": [
+   "Face away from a low cable with a rope between the legs",
+   "Push the hips back with soft knees",
+   "Drive the hips forward and squeeze the glutes"
+  ],
+  "ar": {
+   "tips": [
+    "أعطِ ظهرك للكابل السفلي والحبل بين الساقين",
+    "ادفع الوركين للخلف بركبتين مرنتين",
+    "ادفع الوركين للأمام واعصر الأرداف"
    ]
   }
  },
@@ -941,6 +1033,28 @@ export const INFO = {
    ]
   }
  },
+ "donkey kick": {
+  "name": "Donkey Kick",
+  "slug": "donkey-kick",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [],
+  "tips": [
+   "On hands and knees, back flat",
+   "Kick one leg up with the knee bent",
+   "Squeeze the glute at the top"
+  ],
+  "ar": {
+   "tips": [
+    "على اليدين والركبتين وظهرك مستقيم",
+    "اركل ساقاً للأعلى والركبة مثنية",
+    "اعصر الأرداف في الأعلى"
+   ]
+  }
+ },
  "dumbbell bench press": {
   "name": "Dumbbell Bench Press",
   "slug": "dumbbell-bench-press",
@@ -1034,6 +1148,30 @@ export const INFO = {
    ]
   }
  },
+ "dumbbell hip thrust": {
+  "name": "Dumbbell Hip Thrust",
+  "slug": "hip-thrust",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Quads"
+  ],
+  "tips": [
+   "Upper back on a bench, dumbbell on the hips",
+   "Drive the hips up until level",
+   "Squeeze the glutes hard at the top"
+  ],
+  "ar": {
+   "tips": [
+    "أعلى الظهر على المقعد والدمبل فوق الوركين",
+    "ادفع الوركين للأعلى حتى يستويا",
+    "اعصر الأرداف بقوة في الأعلى"
+   ]
+  },
+  "own": true
+ },
  "dumbbell preacher curl": {
   "name": "Dumbbell Preacher Curl",
   "slug": "dumbbell-preacher-curl",
@@ -1076,6 +1214,29 @@ export const INFO = {
     "استلقِ عرضياً على البنش ممسكاً دمبل",
     "أنزله خلف رأسك بمرفقين مرنين",
     "اسحبه عائداً فوق الصدر"
+   ]
+  }
+ },
+ "dumbbell romanian deadlift": {
+  "name": "Dumbbell Romanian Deadlift",
+  "slug": "dumbbell-romanian-deadlift",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Back"
+  ],
+  "tips": [
+   "Soft knees, push the hips back",
+   "Keep the dumbbells close to your legs",
+   "Lower until you feel a hamstring stretch"
+  ],
+  "ar": {
+   "tips": [
+    "ركبتان مرنتان وادفع الوركين للخلف",
+    "أبقِ الدمبل قريباً من ساقيك",
+    "انزل حتى تشعر بتمدد الفخذ الخلفي"
    ]
   }
  },
@@ -1190,6 +1351,29 @@ export const INFO = {
     "أمسك دمبلاً في كل يد",
     "ضع القدم كاملة على الصندوق",
     "ادفع بالكعب وانزل ببطء"
+   ]
+  }
+ },
+ "dumbbell sumo squat": {
+  "name": "Dumbbell Sumo Squat",
+  "slug": "goblet-squat",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Quads"
+  ],
+  "tips": [
+   "Wide stance, toes turned out",
+   "Hold one dumbbell between your legs",
+   "Sit down and drive up through the heels"
+  ],
+  "ar": {
+   "tips": [
+    "وقفة واسعة وأصابع القدمين للخارج",
+    "أمسك دمبلاً واحداً بين ساقيك",
+    "اجلس وادفع للأعلى عبر الكعبين"
    ]
   }
  },
@@ -1309,6 +1493,73 @@ export const INFO = {
     "أبقِ المرفقين مرتفعين طوال الوقت",
     "ابقَ منتصباً أثناء الجلوس",
     "ادفع للأعلى بكامل القدم"
+   ]
+  }
+ },
+ "glute bridge": {
+  "name": "Glute Bridge",
+  "slug": "glute-bridge",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [],
+  "tips": [
+   "Lie on your back with knees bent",
+   "Drive the hips up until the body is straight",
+   "Squeeze the glutes and lower slowly"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ على ظهرك وركبتاك مثنيتان",
+    "ادفع الوركين للأعلى حتى يستقيم جسمك",
+    "اعصر الأرداف وانزل ببطء"
+   ]
+  }
+ },
+ "glute kickback machine": {
+  "name": "Glute Kickback Machine",
+  "slug": "cable-glute-kickback",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [],
+  "tips": [
+   "Lean on the support and place the foot on the pad",
+   "Push the leg back and squeeze the glute",
+   "Return slowly without swinging"
+  ],
+  "ar": {
+   "tips": [
+    "استند على الدعامة وضع القدم على الوسادة",
+    "ادفع الساق للخلف واعصر الأرداف",
+    "عد ببطء دون تأرجح"
+   ]
+  },
+  "own": true
+ },
+ "glute-ham raise": {
+  "name": "Glute-Ham Raise",
+  "slug": "back-extension",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Back"
+  ],
+  "tips": [
+   "Lock your heels and set the pad at the hips",
+   "Lower the torso with a straight back",
+   "Pull up with the hamstrings and glutes"
+  ],
+  "ar": {
+   "tips": [
+    "ثبّت كعبيك واضبط الوسادة عند الوركين",
+    "أنزل الجذع بظهر مستقيم",
+    "ارتفع بالفخذ الخلفي والأرداف"
    ]
   }
  },
@@ -1466,6 +1717,27 @@ export const INFO = {
    "tips": [
     "اجلس وظهرك على الوسادة",
     "ادفع الساقين للخارج وتوقف قليلاً",
+    "عد ببطء ولا تدع الأثقال تصطدم"
+   ]
+  }
+ },
+ "hip adduction": {
+  "name": "Hip Adduction",
+  "slug": "hip-adduction",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [],
+  "tips": [
+   "Sit with your back against the pad",
+   "Squeeze the legs together and pause",
+   "Return slowly, don't let the plates slam"
+  ],
+  "ar": {
+   "tips": [
+    "اجلس وظهرك على الوسادة",
+    "اضمم الساقين معاً وتوقف قليلاً",
     "عد ببطء ولا تدع الأثقال تصطدم"
    ]
   }
@@ -1681,6 +1953,55 @@ export const INFO = {
     "قبضة ضيقة، أنزل البار نحو أعلى الصدر",
     "دع المرفقين يتحركان للأمام أثناء النزول",
     "ادفع للأعلى بتمديد المرفقين"
+   ]
+  }
+ },
+ "kettlebell deadlift": {
+  "name": "Kettlebell Deadlift",
+  "slug": "deadlift",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Back",
+   "Quads"
+  ],
+  "tips": [
+   "Kettlebell between your feet",
+   "Hinge at the hips with a flat back",
+   "Stand tall and squeeze the glutes"
+  ],
+  "ar": {
+   "tips": [
+    "الكيتل بيل بين قدميك",
+    "انحنِ من الوركين وظهرك مستقيم",
+    "قف منتصباً واعصر الأرداف"
+   ]
+  }
+ },
+ "kettlebell swing": {
+  "name": "Kettlebell Swing",
+  "slug": "kettlebell-swing",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Back",
+   "Shoulders"
+  ],
+  "tips": [
+   "Hinge at the hips and swing the bell back",
+   "Snap the hips forward to send it up",
+   "Arms stay relaxed, the hips do the work"
+  ],
+  "ar": {
+   "tips": [
+    "انحنِ من الوركين وأرجح الكيتل بيل للخلف",
+    "ادفع الوركين للأمام لإرساله للأعلى",
+    "أبقِ الذراعين مرتخيتين والوركان يعملان"
    ]
   }
  },
@@ -2706,6 +3027,29 @@ export const INFO = {
   },
   "own": true
  },
+ "seated leg curl": {
+  "name": "Seated Leg Curl",
+  "slug": "seated-leg-curl",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Calves"
+  ],
+  "tips": [
+   "Pad just above the heels",
+   "Keep your back against the seat",
+   "Curl down fully, return slowly"
+  ],
+  "ar": {
+   "tips": [
+    "الوسادة فوق الكعبين مباشرة",
+    "أبقِ ظهرك ملاصقاً للمقعد",
+    "اثنِ بالكامل وعد ببطء"
+   ]
+  }
+ },
  "side lunge": {
   "name": "Side Lunge",
   "slug": "side-lunge",
@@ -2773,6 +3117,29 @@ export const INFO = {
     "قدم واحدة في منتصف المنصة",
     "انزل حتى تصل الركبة إلى 90 درجة تقريباً",
     "أبقِ وركيك ملاصقين للمقعد"
+   ]
+  }
+ },
+ "single-leg romanian deadlift": {
+  "name": "Single-leg Romanian Deadlift",
+  "slug": "romanian-deadlift",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Back"
+  ],
+  "tips": [
+   "Stand on one leg with a soft knee",
+   "Hinge forward as the other leg goes back",
+   "Keep the hips square and the back flat"
+  ],
+  "ar": {
+   "tips": [
+    "قف على ساق واحدة وركبة مرنة",
+    "انحنِ للأمام بينما ترتفع الساق الأخرى للخلف",
+    "أبقِ الوركين متعامدين وظهرك مستقيماً"
    ]
   }
  },
@@ -2865,6 +3232,30 @@ export const INFO = {
     "ادفع للأعلى بمحاذاة المسارات"
    ]
   }
+ },
+ "smith machine hip thrust": {
+  "name": "Smith Machine Hip Thrust",
+  "slug": "hip-thrust",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Quads"
+  ],
+  "tips": [
+   "Upper back on a bench, bar over the hips",
+   "Drive the hips up until level",
+   "Keep the chin tucked"
+  ],
+  "ar": {
+   "tips": [
+    "أعلى الظهر على المقعد والبار فوق الوركين",
+    "ادفع الوركين للأعلى حتى يستويا",
+    "أبقِ ذقنك للداخل"
+   ]
+  },
+  "own": true
  },
  "smith machine incline press": {
   "name": "Smith Machine Incline Press",
@@ -3144,6 +3535,30 @@ export const INFO = {
    ]
   }
  },
+ "sumo deadlift": {
+  "name": "Sumo Deadlift",
+  "slug": "deadlift",
+  "img": true,
+  "primary": [
+   "Hamstrings & Glutes"
+  ],
+  "secondary": [
+   "Back",
+   "Quads"
+  ],
+  "tips": [
+   "Wide stance, toes turned out, grip inside the knees",
+   "Chest up and back flat before you pull",
+   "Push the floor apart and stand tall"
+  ],
+  "ar": {
+   "tips": [
+    "وقفة واسعة وأصابع القدمين للخارج والقبضة داخل الركبتين",
+    "صدر مرفوع وظهر مستقيم قبل السحب",
+    "باعد الأرض بقدميك وقف منتصباً"
+   ]
+  }
+ },
  "t-bar row": {
   "name": "T-bar Row",
   "slug": "t-bar-row",
@@ -3402,5 +3817,6 @@ export const INFO = {
  }
 };
 
-const ALIASES = {"glute bridge":"hip thrust","seated leg curl":"lying leg curl"};
-export function infoFor(name) { const k = String(name).toLowerCase(); return INFO[k] || INFO[ALIASES[k]] || null; }
+const ALIASES = {};
+const own = (o, k) => (Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined);
+export function infoFor(name) { const k = String(name).toLowerCase(); return own(INFO, k) || own(INFO, own(ALIASES, k)) || null; }
