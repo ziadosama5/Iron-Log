@@ -75,10 +75,17 @@ export const EXERCISES = [
     ["Lying Rear Lateral Raise", "dumbbell", "bench"]]),
   ...X("Biceps", [
     ["Barbell Curl", "barbell"], ["Dumbbell Curl", "dumbbell"], ["Hammer Curl", "dumbbell"], ["Preacher Curl", "ez-bar", "preacher-bench"],
-    ["Incline Dumbbell Curl", "dumbbell", "bench"], ["Cable Curl", "cable"], ["EZ-bar Curl", "ez-bar"], ["Concentration Curl", "dumbbell"]]),
+    ["Incline Dumbbell Curl", "dumbbell", "bench"], ["Cable Curl", "cable"], ["EZ-bar Curl", "ez-bar"], ["Concentration Curl", "dumbbell"],
+    ["Cross-body Hammer Curl", "dumbbell"], ["Dumbbell Preacher Curl", "dumbbell", "preacher-bench"], ["Machine Biceps Curl", "biceps-curl-machine"],
+    ["High Cable Curl", "cable"], ["Rope Hammer Curl", "cable"], ["Spider Curl", "barbell", "bench"], ["Reverse Curl", "ez-bar"],
+    ["Zottman Curl", "dumbbell"]]),
   ...X("Triceps", [
     ["Tricep Pushdown", "cable"], ["Skull Crusher", "ez-bar", "bench"], ["Overhead Tricep Extension", "dumbbell"],
-    ["Close-grip Bench Press", "barbell", "bench"], ["Dip", "dip-station"], ["Overhead Cable Extension", "cable"], ["Triceps Kickback", "dumbbell"]]),
+    ["Close-grip Bench Press", "barbell", "bench"], ["Dip", "dip-station"], ["Overhead Cable Extension", "cable"], ["Triceps Kickback", "dumbbell"],
+    ["Rope Pushdown", "cable"], ["Reverse-grip Pushdown", "cable"], ["One-arm Cable Pushdown", "cable"],
+    ["Dumbbell Skull Crusher", "dumbbell", "bench"], ["Smith Close-grip Press", "smith", "bench"], ["JM Press", "barbell", "bench"],
+    ["Bench Dip", "bench"], ["Machine Dip", "triceps-machine"], ["Machine Triceps Extension", "triceps-machine"], ["Cable Kickback", "cable"],
+    ["Diamond Push-up"]]),
   ...X("Quads", [
     ["Squat", "barbell", "rack"], ["Front Squat", "barbell", "rack"], ["Leg Press", "leg-press"], ["Hack Squat", "hack-squat"],
     ["Bulgarian Split Squat", "dumbbell", "bench"], ["Walking Lunge", "dumbbell"], ["Leg Extension", "leg-extension"], ["Lunge", "dumbbell"],

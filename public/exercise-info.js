@@ -193,6 +193,30 @@ export const INFO = {
    ]
   }
  },
+ "bench dip": {
+  "name": "Bench Dip",
+  "slug": "bench-dip",
+  "img": true,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [
+   "Chest",
+   "Shoulders"
+  ],
+  "tips": [
+   "Hands on the bench behind you",
+   "Lower until the elbows reach about 90 degrees",
+   "Press up without shrugging"
+  ],
+  "ar": {
+   "tips": [
+    "اليدان على البنش خلفك",
+    "انزل حتى يصبح المرفقان بزاوية 90 درجة تقريباً",
+    "ادفع للأعلى دون رفع الكتفين"
+   ]
+  }
+ },
  "bench press": {
   "name": "Bench Press",
   "slug": "bench-press",
@@ -378,6 +402,27 @@ export const INFO = {
     "أعطِ ظهرك للبكرة السفلية",
     "ارفع المقبض إلى مستوى الكتف",
     "انزل ببطء وتحكم"
+   ]
+  }
+ },
+ "cable kickback": {
+  "name": "Cable Kickback",
+  "slug": "triceps-kickback",
+  "img": true,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Hinge forward with the upper arm parallel to the floor",
+   "Extend the forearm back until straight",
+   "Keep the upper arm still"
+  ],
+  "ar": {
+   "tips": [
+    "انحنِ للأمام والعضد موازٍ للأرض",
+    "مدّد الساعد للخلف حتى يستقيم",
+    "أبقِ العضد ثابتاً"
    ]
   }
  },
@@ -614,6 +659,27 @@ export const INFO = {
    ]
   }
  },
+ "cross-body hammer curl": {
+  "name": "Cross-body Hammer Curl",
+  "slug": "cross-body-hammer-curl",
+  "img": true,
+  "primary": [
+   "Biceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Curl the dumbbell across toward the opposite shoulder",
+   "Keep the elbow pinned to your side",
+   "Lower slowly to a straight arm"
+  ],
+  "ar": {
+   "tips": [
+    "اثنِ الدمبل عبر الجسم نحو الكتف المقابل",
+    "ثبّت المرفق على جانبك",
+    "انزل ببطء حتى تستقيم الذراع"
+   ]
+  }
+ },
  "crunch": {
   "name": "Crunch",
   "slug": "crunch",
@@ -731,6 +797,30 @@ export const INFO = {
     "القدمان على البنش واليدان على الأرض",
     "أبقِ جسمك في خط مستقيم",
     "انزل حتى يكاد صدرك يلمس الأرض"
+   ]
+  }
+ },
+ "diamond push-up": {
+  "name": "Diamond Push-up",
+  "slug": "push-up",
+  "img": true,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [
+   "Chest",
+   "Shoulders"
+  ],
+  "tips": [
+   "Hands close together under the chest",
+   "Keep a straight line from head to heels",
+   "Keep the elbows close as you lower"
+  ],
+  "ar": {
+   "tips": [
+    "اليدان متقاربتان أسفل الصدر",
+    "أبقِ خطاً مستقيماً من الرأس إلى الكعبين",
+    "أبقِ المرفقين قريبين أثناء النزول"
    ]
   }
  },
@@ -874,6 +964,27 @@ export const INFO = {
    ]
   }
  },
+ "dumbbell preacher curl": {
+  "name": "Dumbbell Preacher Curl",
+  "slug": "dumbbell-preacher-curl",
+  "img": true,
+  "primary": [
+   "Biceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Armpit snug on top of the pad",
+   "Lower until the arm is almost straight",
+   "Curl up without lifting off the pad"
+  ],
+  "ar": {
+   "tips": [
+    "الإبط ملاصق لأعلى الوسادة",
+    "انزل حتى تكاد الذراع تستقيم",
+    "اثنِ للأعلى دون رفع صدرك عن الوسادة"
+   ]
+  }
+ },
  "dumbbell pullover": {
   "name": "Dumbbell Pullover",
   "slug": "dumbbell-pullover",
@@ -942,6 +1053,27 @@ export const INFO = {
     "أمسك الدمبل بجانبيك والذراعان مستقيمتان",
     "ارفع الكتفين للأعلى وتوقف قليلاً",
     "لا تدر الكتفين ولا تثنِ المرفقين"
+   ]
+  }
+ },
+ "dumbbell skull crusher": {
+  "name": "Dumbbell Skull Crusher",
+  "slug": "skull-crusher",
+  "img": true,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Upper arms stay pointed at the ceiling",
+   "Lower the dumbbells beside your head",
+   "Extend the arms without flaring elbows"
+  ],
+  "ar": {
+   "tips": [
+    "أبقِ العضدين موجهين نحو السقف",
+    "أنزل الدمبل بجانب رأسك",
+    "مدّد الذراعين دون فتح المرفقين"
    ]
   }
  },
@@ -1157,6 +1289,27 @@ export const INFO = {
    ]
   }
  },
+ "high cable curl": {
+  "name": "High Cable Curl",
+  "slug": "high-cable-curl",
+  "img": true,
+  "primary": [
+   "Biceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Set both pulleys high and stand between them",
+   "Arms out to the sides, curl the handles to your head",
+   "Squeeze the biceps at the top"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط البكرتين في الأعلى وقف بينهما",
+    "الذراعان للجانبين، اثنِ المقبضين نحو رأسك",
+    "اعصر البايسبس في الأعلى"
+   ]
+  }
+ },
  "hip abduction": {
   "name": "Hip Abduction",
   "slug": "hip-abduction",
@@ -1369,6 +1522,29 @@ export const INFO = {
    ]
   }
  },
+ "jm press": {
+  "name": "JM Press",
+  "slug": "close-grip-bench-press",
+  "img": true,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [
+   "Chest"
+  ],
+  "tips": [
+   "Close grip, lower the bar toward the upper chest",
+   "Let the elbows travel forward as you lower",
+   "Press back up by extending the elbows"
+  ],
+  "ar": {
+   "tips": [
+    "قبضة ضيقة، أنزل البار نحو أعلى الصدر",
+    "دع المرفقين يتحركان للأمام أثناء النزول",
+    "ادفع للأعلى بتمديد المرفقين"
+   ]
+  }
+ },
  "lat pulldown": {
   "name": "Lat Pulldown",
   "slug": "lat-pulldown",
@@ -1578,6 +1754,27 @@ export const INFO = {
    ]
   }
  },
+ "machine biceps curl": {
+  "name": "Machine Biceps Curl",
+  "slug": "machine-biceps-curl",
+  "img": true,
+  "primary": [
+   "Biceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Adjust the seat so the elbows line up with the pivot",
+   "Curl the handles up and squeeze",
+   "Lower slowly, don't let the plates slam"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط المقعد ليكون المرفقان بمحاذاة المحور",
+    "اثنِ المقبضين للأعلى واعصر",
+    "انزل ببطء ولا تدع الأثقال تصطدم"
+   ]
+  }
+ },
  "machine chest press": {
   "name": "Machine Chest Press",
   "slug": "machine-chest-press",
@@ -1599,6 +1796,29 @@ export const INFO = {
     "اضبط المقعد ليكون المقبضان عند منتصف الصدر",
     "أبقِ ظهرك ملاصقاً للوسادة",
     "تحكم في الوزن أثناء العودة"
+   ]
+  }
+ },
+ "machine dip": {
+  "name": "Machine Dip",
+  "slug": "machine-dip",
+  "img": true,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [
+   "Chest"
+  ],
+  "tips": [
+   "Adjust the seat so the handles are at your sides",
+   "Press down until the arms are straight",
+   "Return slowly under control"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط المقعد ليكون المقبضان بجانبيك",
+    "ادفع للأسفل حتى تستقيم الذراعان",
+    "عد ببطء وتحكم"
    ]
   }
  },
@@ -1669,6 +1889,48 @@ export const INFO = {
     "اضبط المقعد ليبدأ المقبضان عند مستوى الكتفين",
     "ادفع للأعلى دون قفل المرفقين",
     "أبقِ ظهرك ملاصقاً للوسادة"
+   ]
+  }
+ },
+ "machine triceps extension": {
+  "name": "Machine Triceps Extension",
+  "slug": "machine-triceps-extension",
+  "img": true,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Set the seat so the elbows line up with the pivot",
+   "Extend the arms until straight",
+   "Return slowly, don't let the plates slam"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط المقعد ليكون المرفقان بمحاذاة المحور",
+    "مدّد الذراعين حتى تستقيما",
+    "عد ببطء ولا تدع الأثقال تصطدم"
+   ]
+  }
+ },
+ "one-arm cable pushdown": {
+  "name": "One-arm Cable Pushdown",
+  "slug": "tricep-pushdown",
+  "img": true,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Single handle on a high pulley",
+   "Elbow pinned to your side",
+   "Push down until the arm is straight"
+  ],
+  "ar": {
+   "tips": [
+    "مقبض واحد على بكرة عالية",
+    "ثبّت المرفق على جانبك",
+    "ادفع للأسفل حتى تستقيم الذراع"
    ]
   }
  },
@@ -1984,6 +2246,27 @@ export const INFO = {
    ]
   }
  },
+ "reverse curl": {
+  "name": "Reverse Curl",
+  "slug": "ez-bar-curl",
+  "img": true,
+  "primary": [
+   "Biceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Overhand grip, hands shoulder width",
+   "Keep the elbows pinned to your sides",
+   "Lower slowly, don't swing the body"
+  ],
+  "ar": {
+   "tips": [
+    "قبضة علوية بعرض الكتفين",
+    "ثبّت المرفقين على جانبيك",
+    "انزل ببطء ولا تهز جسمك"
+   ]
+  }
+ },
  "reverse pec deck": {
   "name": "Reverse Pec Deck",
   "slug": "reverse-pec-deck",
@@ -2031,6 +2314,29 @@ export const INFO = {
    ]
   }
  },
+ "reverse-grip pushdown": {
+  "name": "Reverse-grip Pushdown",
+  "slug": "reverse-grip-pushdown",
+  "img": true,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [
+   "Biceps"
+  ],
+  "tips": [
+   "Underhand grip, elbows pinned to your sides",
+   "Push down until the arms are straight",
+   "Control the bar on the way up"
+  ],
+  "ar": {
+   "tips": [
+    "قبضة سفلية والمرفقان ثابتان على جانبيك",
+    "ادفع للأسفل حتى تستقيم الذراعان",
+    "تحكم في البار أثناء الصعود"
+   ]
+  }
+ },
  "romanian deadlift": {
   "name": "Romanian Deadlift",
   "slug": "romanian-deadlift",
@@ -2053,6 +2359,48 @@ export const INFO = {
     "أبقِ البار قريباً من ساقيك",
     "انزل حتى تشعر بتمدد الفخذ الخلفي",
     "أبقِ ظهرك مستقيماً طوال الوقت"
+   ]
+  }
+ },
+ "rope hammer curl": {
+  "name": "Rope Hammer Curl",
+  "slug": "rope-hammer-curl",
+  "img": true,
+  "primary": [
+   "Biceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Hold the rope with palms facing each other",
+   "Keep the elbows pinned to your sides",
+   "Pull the rope ends apart at the top"
+  ],
+  "ar": {
+   "tips": [
+    "أمسك الحبل والكفان متقابلان",
+    "ثبّت المرفقين على جانبيك",
+    "باعد طرفي الحبل في الأعلى"
+   ]
+  }
+ },
+ "rope pushdown": {
+  "name": "Rope Pushdown",
+  "slug": "rope-pushdown",
+  "img": true,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Elbows pinned to your sides",
+   "Push down and pull the rope ends apart",
+   "Let it rise only to forearms parallel"
+  ],
+  "ar": {
+   "tips": [
+    "ثبّت المرفقين على جانبيك",
+    "ادفع للأسفل وباعد طرفي الحبل",
+    "دعه يصعد حتى يصبح الساعدان أفقيين فقط"
    ]
   }
  },
@@ -2217,6 +2565,30 @@ export const INFO = {
    ]
   }
  },
+ "smith close-grip press": {
+  "name": "Smith Close-grip Press",
+  "slug": "smith-close-grip-press",
+  "img": true,
+  "primary": [
+   "Triceps"
+  ],
+  "secondary": [
+   "Chest",
+   "Shoulders"
+  ],
+  "tips": [
+   "Hands about shoulder width",
+   "Keep the elbows close to your body",
+   "Press straight up along the rails"
+  ],
+  "ar": {
+   "tips": [
+    "اليدان بعرض الكتفين تقريباً",
+    "أبقِ المرفقين قريبين من جسمك",
+    "ادفع للأعلى بمحاذاة المسارات"
+   ]
+  }
+ },
  "smith machine bench press": {
   "name": "Smith Machine Bench Press",
   "slug": "smith-machine-bench-press",
@@ -2354,6 +2726,27 @@ export const INFO = {
     "ضع القدمين أمام البار قليلاً",
     "انزل حتى يصبح الفخذان أفقيين",
     "أبقِ كعبيك على الأرض وصدرك مرفوعاً"
+   ]
+  }
+ },
+ "spider curl": {
+  "name": "Spider Curl",
+  "slug": "spider-curl",
+  "img": true,
+  "primary": [
+   "Biceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Lie face down on an incline bench",
+   "Let the arms hang straight down",
+   "Curl up without swinging"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ على بطنك على بنش مائل",
+    "دع الذراعين تتدليان للأسفل مستقيمتين",
+    "اثنِ للأعلى دون تأرجح"
    ]
   }
  },
@@ -2682,6 +3075,27 @@ export const INFO = {
     "ابدأ من التعلق الكامل",
     "اسحب حتى يتجاوز ذقنك العمود",
     "تجنب التأرجح والركل"
+   ]
+  }
+ },
+ "zottman curl": {
+  "name": "Zottman Curl",
+  "slug": "zottman-curl",
+  "img": true,
+  "primary": [
+   "Biceps"
+  ],
+  "secondary": [],
+  "tips": [
+   "Curl up with palms facing up",
+   "Turn the palms down at the top",
+   "Lower slowly with an overhand grip"
+  ],
+  "ar": {
+   "tips": [
+    "اثنِ للأعلى والكفان لأعلى",
+    "أدر الكفين للأسفل في القمة",
+    "انزل ببطء بقبضة علوية"
    ]
   }
  }
