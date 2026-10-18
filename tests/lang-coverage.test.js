@@ -114,3 +114,14 @@ test("every equipment item has a unique Arabic name", () => {
   assert.deepEqual(EQUIPMENT.filter((e, i) => !names[i] || !String(names[i]).trim()).map(e => e.id), []);
   assert.equal(new Set(names).size, names.length);
 });
+
+test("profile screen: messages built from dynamic keys and constants have Arabic", () => {
+  const src = read("index.html");
+  const msgLine = src.split("\n").find(l => l.startsWith("const USERNAME_MSG="));
+  assert.ok(msgLine, "found USERNAME_MSG");
+  const msgs = [...msgLine.matchAll(/:"([^"]+)"/g)].map(m => m[1]);
+  assert.equal(msgs.length, 6);
+  const keys = [...msgs, "That username is taken", "You're offline. Try again when you're back online.", "Your Google account has no verified e-mail.",
+    "Couldn't save. Check your connection.", "Profile deleted", "Saved", "Private", "Friends", "Public", "Profile", "Username", "Choose a username"];
+  assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
+});
