@@ -41,7 +41,7 @@ for (const name of names.slice().sort((a, b) => a.localeCompare(b))) {
       console.log("wrote", file);
     }
   }
-  info[name.toLowerCase()] = { name, slug, img: !!s.ek, primary: s.primary, secondary: s.secondary, tips: s.tips };
+  info[name.toLowerCase()] = { name, slug, img: !!s.ek, primary: s.primary, secondary: s.secondary, tips: s.tips, ...(s.ar ? { ar: s.ar } : {}) };
 }
 
 for (const f of readdirSync(outDir)) {

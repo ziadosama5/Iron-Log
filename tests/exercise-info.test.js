@@ -46,3 +46,15 @@ test("merged names still show the info of the exercise they were merged into", (
   assert.equal(infoFor("Dumbbell Shoulder Press").name, "Overhead Press");
   assert.equal(infoFor("glute bridge").name, "Hip Thrust");
 });
+
+test("every exercise has Arabic tips: same count, short, no trailing period", () => {
+  for (const e of Object.values(INFO)) {
+    assert.ok(e.ar && Array.isArray(e.ar.tips), `${e.name}: missing ar.tips`);
+    assert.equal(e.ar.tips.length, e.tips.length, `${e.name}: tip count differs`);
+    for (const t of e.ar.tips) {
+      assert.ok(t.trim().length > 0 && t.length <= 80, `${e.name}: bad length: ${t}`);
+      assert.ok(!t.endsWith("."), `${e.name}: trailing period: ${t}`);
+      assert.ok(/[؀-ۿ]/.test(t), `${e.name}: not Arabic: ${t}`);
+    }
+  }
+});

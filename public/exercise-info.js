@@ -16,7 +16,15 @@ export const INFO = {
    "Roll out slowly, keep the back flat",
    "Go only as far as you can control",
    "Pull back with your abs"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ابدأ على ركبتيك والعجلة أسفل الكتفين",
+    "تدحرج ببطء وظهرك مستقيم",
+    "امضِ بقدر ما تستطيع التحكم",
+    "ارجع بعضلات بطنك"
+   ]
+  }
  },
  "arnold press": {
   "name": "Arnold Press",
@@ -32,7 +40,14 @@ export const INFO = {
    "Start with palms facing you at chin height",
    "Rotate palms forward as you press up",
    "Reverse the rotation on the way down"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ابدأ والكفان نحوك عند مستوى الذقن",
+    "أدر الكفين للأمام أثناء الضغط",
+    "اعكس الدوران أثناء النزول"
+   ]
+  }
  },
  "back extension": {
   "name": "Back Extension",
@@ -48,7 +63,14 @@ export const INFO = {
    "Set the pad just below the hips",
    "Lift until the body is in a straight line",
    "Don't over-arch at the top"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اضبط الوسادة أسفل الوركين مباشرة",
+    "ارتفع حتى يصبح جسمك خطاً مستقيماً",
+    "لا تقوّس ظهرك كثيراً في الأعلى"
+   ]
+  }
  },
  "barbell curl": {
   "name": "Barbell Curl",
@@ -63,7 +85,15 @@ export const INFO = {
    "Curl the bar up to the shoulders",
    "Lower slowly to straight arms",
    "Don't swing your back"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ثبّت المرفقين على جانبيك",
+    "اثنِ البار حتى الكتفين",
+    "انزل ببطء حتى استقامة الذراعين",
+    "لا تهز ظهرك"
+   ]
+  }
  },
  "barbell row": {
   "name": "Barbell Row",
@@ -81,7 +111,15 @@ export const INFO = {
    "Pull the bar to the lower ribs",
    "Squeeze shoulder blades at the top",
    "Keep the torso still, no jerking"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "انحنِ من الوركين وظهرك مستقيم",
+    "اسحب البار إلى أسفل الأضلاع",
+    "اعصر لوحي الكتف في الأعلى",
+    "أبقِ الجذع ثابتاً دون ارتجاج"
+   ]
+  }
  },
  "barbell shrug": {
   "name": "Barbell Shrug",
@@ -97,7 +135,14 @@ export const INFO = {
    "Lift the shoulders straight up toward the ears",
    "Pause at the top, then lower slowly",
    "Keep the arms straight, don't roll the shoulders"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ارفع الكتفين مباشرة نحو الأذنين",
+    "توقف في الأعلى ثم انزل ببطء",
+    "أبقِ الذراعين مستقيمتين ولا تدر الكتفين"
+   ]
+  }
  },
  "bench press": {
   "name": "Bench Press",
@@ -115,7 +160,15 @@ export const INFO = {
    "Feet flat, slight arch in the upper back",
    "Lower the bar to mid-chest",
    "Press up and slightly back over the shoulders"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اضغط لوحي الكتف معاً وللأسفل",
+    "القدمان ثابتتان وقوس خفيف في أعلى الظهر",
+    "أنزل البار إلى منتصف الصدر",
+    "ادفع للأعلى وقليلاً للخلف فوق الكتفين"
+   ]
+  }
  },
  "bulgarian split squat": {
   "name": "Bulgarian Split Squat",
@@ -132,7 +185,15 @@ export const INFO = {
    "Drop the back knee straight down",
    "Keep the front knee over the foot",
    "Push up through the front heel"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "القدم الخلفية على الكرسي خلفك",
+    "أنزل الركبة الخلفية للأسفل مباشرة",
+    "أبقِ الركبة الأمامية فوق القدم",
+    "ادفع للأعلى عبر الكعب الأمامي"
+   ]
+  }
  },
  "cable crossover": {
   "name": "Cable Crossover",
@@ -149,7 +210,15 @@ export const INFO = {
    "Keep a soft bend in the elbows",
    "Bring hands together in front of the chest",
    "Let the arms open slowly under control"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "تقدّم خطوة مع ميل خفيف للأمام",
+    "أبقِ ثنية خفيفة في المرفقين",
+    "قرّب اليدين أمام الصدر",
+    "دع الذراعين تنفتحان ببطء وتحكم"
+   ]
+  }
  },
  "cable crunch": {
   "name": "Cable Crunch",
@@ -163,7 +232,14 @@ export const INFO = {
    "Hold the rope beside your head",
    "Crunch down by rounding your spine",
    "Keep the hips still"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أمسك الحبل بجانب رأسك",
+    "اطوِ جذعك للأسفل بتدوير العمود الفقري",
+    "أبقِ الوركين ثابتين"
+   ]
+  }
  },
  "cable curl": {
   "name": "Cable Curl",
@@ -177,7 +253,14 @@ export const INFO = {
    "Stand close to the low pulley",
    "Elbows pinned to your sides",
    "Squeeze at the top, lower slowly"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "قف قريباً من البكرة السفلية",
+    "ثبّت المرفقين على جانبيك",
+    "اعصر في الأعلى وانزل ببطء"
+   ]
+  }
  },
  "chest dip": {
   "name": "Chest Dip",
@@ -194,7 +277,14 @@ export const INFO = {
    "Lean the torso forward and flare the elbows slightly",
    "Lower until you feel a stretch in the chest",
    "Press up without locking out hard"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أمِل الجذع للأمام وافتح المرفقين قليلاً",
+    "انزل حتى تشعر بتمدد في الصدر",
+    "ادفع للأعلى دون قفل المرفقين بقوة"
+   ]
+  }
  },
  "chin-up": {
   "name": "Chin-up",
@@ -211,7 +301,15 @@ export const INFO = {
    "Start from a full hang",
    "Pull until your chin clears the bar",
    "Lower slowly to a full stretch"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "قبضة سفلية بعرض الكتفين",
+    "ابدأ من التعلق الكامل",
+    "اسحب حتى يتجاوز ذقنك العمود",
+    "انزل ببطء حتى التمدد الكامل"
+   ]
+  }
  },
  "close-grip bench press": {
   "name": "Close-grip Bench Press",
@@ -228,7 +326,14 @@ export const INFO = {
    "Hands about shoulder width",
    "Keep elbows close to your body",
    "Lower the bar to the lower chest"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اليدان بعرض الكتفين تقريباً",
+    "أبقِ المرفقين قريبين من جسمك",
+    "أنزل البار إلى أسفل الصدر"
+   ]
+  }
  },
  "close-grip pulldown": {
   "name": "Close-grip Pulldown",
@@ -244,7 +349,14 @@ export const INFO = {
    "Grip the V-handle and lean back slightly",
    "Pull the handle to the upper chest",
    "Squeeze the shoulder blades together"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أمسك مقبض V وأمِل للخلف قليلاً",
+    "اسحب المقبض إلى أعلى الصدر",
+    "اعصر لوحي الكتف معاً"
+   ]
+  }
  },
  "concentration curl": {
   "name": "Concentration Curl",
@@ -258,7 +370,14 @@ export const INFO = {
    "Sit and brace the elbow against the inner thigh",
    "Curl up and squeeze at the top",
    "Lower slowly through the full range"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اجلس وأسند المرفق على باطن الفخذ",
+    "اثنِ للأعلى واعصر في الأعلى",
+    "انزل ببطء عبر المدى الكامل"
+   ]
+  }
  },
  "crunch": {
   "name": "Crunch",
@@ -272,7 +391,14 @@ export const INFO = {
    "Curl the ribs toward the hips",
    "Keep the lower back on the floor",
    "Don't pull on your neck"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اطوِ الأضلاع نحو الوركين",
+    "أبقِ أسفل ظهرك على الأرض",
+    "لا تسحب رقبتك"
+   ]
+  }
  },
  "deadlift": {
   "name": "Deadlift",
@@ -290,7 +416,15 @@ export const INFO = {
    "Flat back, chest up before you pull",
    "Push the floor away, bar close to legs",
    "Stand tall at the top, don't lean back"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "البار فوق منتصف القدم والساقان قريبتان منه",
+    "ظهر مستقيم وصدر مرفوع قبل السحب",
+    "ادفع الأرض بعيداً والبار قريب من ساقيك",
+    "قف منتصباً في الأعلى دون الميل للخلف"
+   ]
+  }
  },
  "decline bench press": {
   "name": "Decline Bench Press",
@@ -307,7 +441,14 @@ export const INFO = {
    "Set the bench to a slight decline and hook your feet",
    "Lower the bar to the lower chest",
    "Press up without bouncing off the chest"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اضبط الكرسي على انحدار خفيف وثبّت قدميك",
+    "أنزل البار إلى أسفل الصدر",
+    "ادفع للأعلى دون ارتداد البار عن الصدر"
+   ]
+  }
  },
  "dip": {
   "name": "Dip",
@@ -325,7 +466,15 @@ export const INFO = {
    "Lower until upper arms are parallel",
    "Stay upright to focus on triceps",
    "Press up to straight arms"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ابدأ والذراعان مقفلتان في الأعلى",
+    "انزل حتى يصبح العضدان أفقيين",
+    "ابقَ منتصباً للتركيز على الترايسبس",
+    "ادفع حتى استقامة الذراعين"
+   ]
+  }
  },
  "donkey calf raise": {
   "name": "Donkey Calf Raise",
@@ -339,7 +488,14 @@ export const INFO = {
    "Hinge at the hips with the balls of the feet on the edge",
    "Rise as high as you can and pause",
    "Lower into a full stretch"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "انحنِ من الوركين ومشطا القدمين على الحافة",
+    "ارتفع قدر ما تستطيع وتوقف قليلاً",
+    "انزل إلى تمدد كامل"
+   ]
+  }
  },
  "dumbbell bench press": {
   "name": "Dumbbell Bench Press",
@@ -356,7 +512,14 @@ export const INFO = {
    "Kick the dumbbells up with your knees to start",
    "Lower until elbows are just below the bench",
    "Keep wrists stacked over elbows"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ادفع الدمبل بركبتيك للأعلى للبدء",
+    "أنزل حتى يصبح المرفقان أسفل الكرسي قليلاً",
+    "أبقِ الرسغين فوق المرفقين"
+   ]
+  }
  },
  "dumbbell curl": {
   "name": "Dumbbell Curl",
@@ -370,7 +533,14 @@ export const INFO = {
    "Keep elbows at your sides",
    "Turn palms up as you curl",
    "Lower slowly to straight arms"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أبقِ المرفقين بجانبيك",
+    "أدر الكفين للأعلى أثناء الثني",
+    "انزل ببطء حتى استقامة الذراعين"
+   ]
+  }
  },
  "dumbbell fly": {
   "name": "Dumbbell Fly",
@@ -386,7 +556,14 @@ export const INFO = {
    "Keep a soft bend in the elbows",
    "Open the arms until you feel a chest stretch",
    "Bring the dumbbells up in a wide arc"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أبقِ ثنية خفيفة في المرفقين",
+    "افتح الذراعين حتى تشعر بتمدد الصدر",
+    "ارفع الدمبل في قوس واسع"
+   ]
+  }
  },
  "dumbbell shrug": {
   "name": "Dumbbell Shrug",
@@ -402,7 +579,14 @@ export const INFO = {
    "Hold the dumbbells at your sides, arms straight",
    "Shrug straight up and pause at the top",
    "Don't roll or bend the elbows"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أمسك الدمبل بجانبيك والذراعان مستقيمتان",
+    "ارفع الكتفين للأعلى وتوقف قليلاً",
+    "لا تدر الكتفين ولا تثنِ المرفقين"
+   ]
+  }
  },
  "ez-bar curl": {
   "name": "EZ-bar Curl",
@@ -416,7 +600,14 @@ export const INFO = {
    "Hold the bar on the angled grips",
    "Keep elbows pinned to your sides",
    "Lower slowly, don't swing the body"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أمسك البار من المقابض المائلة",
+    "ثبّت المرفقين على جانبيك",
+    "انزل ببطء ولا تهز جسمك"
+   ]
+  }
  },
  "face pull": {
   "name": "Face Pull",
@@ -433,7 +624,15 @@ export const INFO = {
    "Pull the rope toward your forehead",
    "Pull the ends apart, elbows high",
    "Squeeze the rear shoulders at the end"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "الحبل عند أعلى الصدر أو أعلى",
+    "اسحب الحبل نحو جبهتك",
+    "افصل طرفي الحبل والمرفقان مرتفعان",
+    "اعصر مؤخرة الكتفين في النهاية"
+   ]
+  }
  },
  "front squat": {
   "name": "Front Squat",
@@ -451,7 +650,15 @@ export const INFO = {
    "Keep elbows high the whole time",
    "Stay upright as you sit down",
    "Drive up through the whole foot"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "البار على مقدمة الكتفين",
+    "أبقِ المرفقين مرتفعين طوال الوقت",
+    "ابقَ منتصباً أثناء الجلوس",
+    "ادفع للأعلى بكامل القدم"
+   ]
+  }
  },
  "good morning": {
   "name": "Good Morning",
@@ -468,7 +675,15 @@ export const INFO = {
    "Soft knees, push the hips back",
    "Keep your back flat",
    "Use a light weight"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "البار على أعلى الظهر كالسكوات",
+    "ركبتان مرنتان وادفع الوركين للخلف",
+    "أبقِ ظهرك مستقيماً",
+    "استخدم وزناً خفيفاً"
+   ]
+  }
  },
  "hack squat": {
   "name": "Hack Squat",
@@ -484,7 +699,14 @@ export const INFO = {
    "Back and shoulders flat on the pad",
    "Lower until thighs are parallel",
    "Push through the whole foot"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ظهرك وكتفاك ملاصقان للوسادة",
+    "انزل حتى يصبح الفخذان أفقيين",
+    "ادفع بكامل القدم"
+   ]
+  }
  },
  "hammer curl": {
   "name": "Hammer Curl",
@@ -498,7 +720,14 @@ export const INFO = {
    "Palms face each other the whole time",
    "Keep elbows at your sides",
    "Lower slowly to straight arms"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "الكفان متقابلان طوال الوقت",
+    "أبقِ المرفقين بجانبيك",
+    "انزل ببطء حتى استقامة الذراعين"
+   ]
+  }
  },
  "hanging leg raise": {
   "name": "Hanging Leg Raise",
@@ -513,7 +742,15 @@ export const INFO = {
    "Raise the legs without swinging",
    "Curl the pelvis up at the top",
    "Lower slowly"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "تعلّق بالعمود والذراعان مستقيمتان",
+    "ارفع الساقين دون تأرجح",
+    "لفّ الحوض للأعلى في القمة",
+    "انزل ببطء"
+   ]
+  }
  },
  "hip abduction": {
   "name": "Hip Abduction",
@@ -527,7 +764,14 @@ export const INFO = {
    "Sit with your back against the pad",
    "Push the legs outward and pause",
    "Return slowly, don't let the plates slam"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اجلس وظهرك على الوسادة",
+    "ادفع الساقين للخارج وتوقف قليلاً",
+    "عد ببطء ولا تدع الأثقال تصطدم"
+   ]
+  }
  },
  "hip thrust": {
   "name": "Hip Thrust",
@@ -544,7 +788,15 @@ export const INFO = {
    "Drive the hips up until level",
    "Squeeze glutes hard at the top",
    "Keep the chin tucked"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أعلى الظهر على الكرسي والبار فوق الوركين",
+    "ادفع الوركين للأعلى حتى يستويا",
+    "اعصر الأرداف بقوة في الأعلى",
+    "أبقِ ذقنك للداخل"
+   ]
+  }
  },
  "incline barbell press": {
   "name": "Incline Barbell Press",
@@ -561,7 +813,14 @@ export const INFO = {
    "Set the bench to about 30 degrees",
    "Lower the bar to the upper chest",
    "Keep elbows slightly tucked, not flared"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اضبط الكرسي على زاوية 30 درجة تقريباً",
+    "أنزل البار إلى أعلى الصدر",
+    "أبقِ المرفقين قريبين قليلاً من الجسم"
+   ]
+  }
  },
  "incline dumbbell curl": {
   "name": "Incline Dumbbell Curl",
@@ -575,7 +834,14 @@ export const INFO = {
    "Bench at about 45 degrees",
    "Let the arms hang straight down",
    "Curl without moving the upper arms"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "الكرسي بزاوية 45 درجة تقريباً",
+    "دع الذراعين تتدليان للأسفل مستقيمتين",
+    "اثنِ دون تحريك العضدين"
+   ]
+  }
  },
  "incline dumbbell press": {
   "name": "Incline Dumbbell Press",
@@ -592,7 +858,14 @@ export const INFO = {
    "Set the bench to about 30 degrees",
    "Lower the dumbbells to the sides of the chest",
    "Press up and slightly together"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اضبط الكرسي على زاوية 30 درجة تقريباً",
+    "أنزل الدمبل إلى جانبي الصدر",
+    "ادفع للأعلى مع تقريبهما قليلاً"
+   ]
+  }
  },
  "lat pulldown": {
   "name": "Lat Pulldown",
@@ -609,7 +882,15 @@ export const INFO = {
    "Pull the bar to the upper chest",
    "Drive the elbows down and back",
    "Let the bar rise slowly to full stretch"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ثبّت فخذيك تحت الوسادة",
+    "اسحب البار إلى أعلى الصدر",
+    "اسحب المرفقين للأسفل والخلف",
+    "دع البار يصعد ببطء حتى التمدد الكامل"
+   ]
+  }
  },
  "lateral raise": {
   "name": "Lateral Raise",
@@ -624,7 +905,15 @@ export const INFO = {
    "Raise the arms out to shoulder height",
    "Lead with the elbows, not the hands",
    "Lower slowly, no swinging"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ثنية خفيفة في المرفقين",
+    "ارفع الذراعين إلى مستوى الكتفين",
+    "قُد الحركة بالمرفقين لا باليدين",
+    "انزل ببطء دون تأرجح"
+   ]
+  }
  },
  "leg extension": {
   "name": "Leg Extension",
@@ -638,7 +927,14 @@ export const INFO = {
    "Line your knees up with the machine pivot",
    "Extend until legs are straight",
    "Lower slowly, don't drop it"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "حاذِ ركبتيك مع محور الجهاز",
+    "مدّد حتى تستقيم الساقان",
+    "انزل ببطء ولا تُسقط الوزن"
+   ]
+  }
  },
  "leg press": {
   "name": "Leg Press",
@@ -655,7 +951,15 @@ export const INFO = {
    "Lower until knees reach about 90 degrees",
    "Keep your lower back on the pad",
    "Don't lock the knees at the top"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "القدمان بعرض الكتفين في منتصف المنصة",
+    "انزل حتى تصل الركبتان إلى 90 درجة تقريباً",
+    "أبقِ أسفل ظهرك على الوسادة",
+    "لا تقفل الركبتين في الأعلى"
+   ]
+  }
  },
  "lunge": {
   "name": "Lunge",
@@ -671,7 +975,14 @@ export const INFO = {
    "Step forward and lower the back knee toward the floor",
    "Keep the front knee over the ankle",
    "Push through the front heel to stand"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "تقدّم خطوة وأنزل الركبة الخلفية نحو الأرض",
+    "أبقِ الركبة الأمامية فوق الكاحل",
+    "ادفع بالكعب الأمامي للوقوف"
+   ]
+  }
  },
  "lying leg curl": {
   "name": "Lying Leg Curl",
@@ -687,7 +998,14 @@ export const INFO = {
    "Pad just above the heels",
    "Keep hips pressed into the bench",
    "Curl up fully, lower slowly"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "الوسادة فوق الكعبين مباشرة",
+    "أبقِ وركيك ملاصقين للكرسي",
+    "اثنِ بالكامل وانزل ببطء"
+   ]
+  }
  },
  "lying leg raise": {
   "name": "Lying Leg Raise",
@@ -703,7 +1021,14 @@ export const INFO = {
    "Keep the lower back pressed into the floor",
    "Raise the legs until they point at the ceiling",
    "Lower slowly without touching the floor"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أبقِ أسفل ظهرك ملتصقاً بالأرض",
+    "ارفع الساقين حتى تشيرا نحو السقف",
+    "انزل ببطء دون لمس الأرض"
+   ]
+  }
  },
  "machine chest press": {
   "name": "Machine Chest Press",
@@ -720,7 +1045,14 @@ export const INFO = {
    "Set the seat so handles line up with mid-chest",
    "Keep your back against the pad",
    "Control the weight on the way back"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اضبط المقعد ليكون المقبضان عند منتصف الصدر",
+    "أبقِ ظهرك ملاصقاً للوسادة",
+    "تحكم في الوزن أثناء العودة"
+   ]
+  }
  },
  "machine shoulder press": {
   "name": "Machine Shoulder Press",
@@ -736,7 +1068,14 @@ export const INFO = {
    "Adjust the seat so the handles start at shoulder height",
    "Press up without locking the elbows",
    "Keep your back against the pad"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اضبط المقعد ليبدأ المقبضان عند مستوى الكتفين",
+    "ادفع للأعلى دون قفل المرفقين",
+    "أبقِ ظهرك ملاصقاً للوسادة"
+   ]
+  }
  },
  "one-arm dumbbell row": {
   "name": "One-arm Dumbbell Row",
@@ -753,7 +1092,15 @@ export const INFO = {
    "Keep your back flat and level",
    "Pull the dumbbell toward your hip",
    "Lower until the arm is straight"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "استند بيد وركبة على الكرسي",
+    "أبقِ ظهرك مستقيماً ومستوياً",
+    "اسحب الدمبل نحو وركك",
+    "انزل حتى تستقيم الذراع"
+   ]
+  }
  },
  "overhead cable extension": {
   "name": "Overhead Cable Extension",
@@ -767,7 +1114,14 @@ export const INFO = {
    "Face away from the cable with a rope overhead",
    "Keep elbows close to your head",
    "Extend until the arms are straight"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أعطِ ظهرك للكابل والحبل فوق رأسك",
+    "أبقِ المرفقين قريبين من رأسك",
+    "مدّد حتى استقامة الذراعين"
+   ]
+  }
  },
  "overhead press": {
   "name": "Overhead Press",
@@ -784,7 +1138,15 @@ export const INFO = {
    "Press the bar straight up past your face",
    "Finish with the bar over mid-foot",
    "Don't lean back to push it up"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "شد الأرداف وبطنك",
+    "ادفع البار للأعلى بمحاذاة وجهك",
+    "أنهِ الحركة والبار فوق منتصف القدم",
+    "لا تميل للخلف لتدفعه"
+   ]
+  }
  },
  "overhead tricep extension": {
   "name": "Overhead Tricep Extension",
@@ -799,7 +1161,15 @@ export const INFO = {
    "Lower the weight behind your head",
    "Extend until arms are straight",
    "Brace your core, don't arch"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أبقِ المرفقين قريبين من رأسك",
+    "أنزل الوزن خلف رأسك",
+    "مدّد حتى استقامة الذراعين",
+    "شد بطنك ولا تقوّس ظهرك"
+   ]
+  }
  },
  "pec deck": {
   "name": "Pec Deck",
@@ -815,7 +1185,14 @@ export const INFO = {
    "Adjust the seat so the handles are at chest height",
    "Squeeze the chest as the arms come together",
    "Return slowly, don't let the plates slam"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اضبط المقعد ليكون المقبضان بمستوى الصدر",
+    "اعصر الصدر عند تقارب الذراعين",
+    "عد ببطء ولا تدع الأثقال تصطدم"
+   ]
+  }
  },
  "plank": {
   "name": "Plank",
@@ -832,7 +1209,15 @@ export const INFO = {
    "Straight line from head to heels",
    "Squeeze glutes and brace your abs",
    "Don't let the hips sag"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "المرفقان أسفل الكتفين",
+    "خط مستقيم من الرأس إلى الكعبين",
+    "اشدد الأرداف وعضلات البطن",
+    "لا تدع الوركين يهبطان"
+   ]
+  }
  },
  "preacher curl": {
   "name": "Preacher Curl",
@@ -846,7 +1231,14 @@ export const INFO = {
    "Armpits snug on top of the pad",
    "Lower until arms are almost straight",
    "Curl up without lifting off the pad"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "الإبطان ملاصقان لأعلى الوسادة",
+    "انزل حتى تكاد الذراعان تستقيمان",
+    "اثنِ للأعلى دون رفع صدرك عن الوسادة"
+   ]
+  }
  },
  "pull-up": {
   "name": "Pull-up",
@@ -863,7 +1255,15 @@ export const INFO = {
    "Start from a full hang",
    "Pull until your chin clears the bar",
    "Avoid swinging or kicking"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "قبضة علوية أعرض من الكتفين قليلاً",
+    "ابدأ من التعلق الكامل",
+    "اسحب حتى يتجاوز ذقنك العمود",
+    "تجنب التأرجح والركل"
+   ]
+  }
  },
  "push-up": {
   "name": "Push-up",
@@ -881,7 +1281,14 @@ export const INFO = {
    "Hands just wider than shoulders",
    "Keep a straight line from head to heels",
    "Lower until your chest nearly touches the floor"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اليدان أعرض من الكتفين قليلاً",
+    "أبقِ خطاً مستقيماً من الرأس إلى الكعبين",
+    "انزل حتى يكاد صدرك يلمس الأرض"
+   ]
+  }
  },
  "rear delt fly": {
   "name": "Rear Delt Fly",
@@ -898,7 +1305,15 @@ export const INFO = {
    "Raise the arms out wide with soft elbows",
    "Squeeze the back of the shoulders",
    "Use a light weight and control it"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "انحنِ للأمام وظهرك مستقيم",
+    "ارفع الذراعين للجانبين بمرفقين مرنين",
+    "اعصر مؤخرة الكتفين",
+    "استخدم وزناً خفيفاً وتحكم فيه"
+   ]
+  }
  },
  "reverse pec deck": {
   "name": "Reverse Pec Deck",
@@ -914,7 +1329,14 @@ export const INFO = {
    "Sit facing the pad with the handles at shoulder height",
    "Open the arms out to the sides, elbows slightly bent",
    "Squeeze the rear shoulders, don't swing"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اجلس مواجهاً للوسادة والمقبضان بمستوى الكتفين",
+    "افتح الذراعين للجانبين والمرفقان مثنيان قليلاً",
+    "اعصر مؤخرة الكتفين ولا تتأرجح"
+   ]
+  }
  },
  "romanian deadlift": {
   "name": "Romanian Deadlift",
@@ -931,7 +1353,15 @@ export const INFO = {
    "Keep the bar close to your legs",
    "Lower until you feel a hamstring stretch",
    "Keep your back flat throughout"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ركبتان مرنتان وادفع الوركين للخلف",
+    "أبقِ البار قريباً من ساقيك",
+    "انزل حتى تشعر بتمدد الفخذ الخلفي",
+    "أبقِ ظهرك مستقيماً طوال الوقت"
+   ]
+  }
  },
  "russian twist": {
   "name": "Russian Twist",
@@ -946,7 +1376,15 @@ export const INFO = {
    "Keep your chest up",
    "Rotate the torso side to side",
    "Move slowly, don't just swing the arms"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اجلس وركبتاك مثنيتان وأمِل للخلف قليلاً",
+    "أبقِ صدرك مرفوعاً",
+    "أدر الجذع من جانب لآخر",
+    "تحرك ببطء ولا تكتفِ بتأرجح الذراعين"
+   ]
+  }
  },
  "seated cable row": {
   "name": "Seated Cable Row",
@@ -963,7 +1401,15 @@ export const INFO = {
    "Pull the handle to your lower ribs",
    "Squeeze shoulder blades together",
    "Don't rock the torso back and forth"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "اجلس منتصباً مع ثنية خفيفة في الركبتين",
+    "اسحب المقبض إلى أسفل الأضلاع",
+    "اعصر لوحي الكتف معاً",
+    "لا تهز جذعك للأمام والخلف"
+   ]
+  }
  },
  "seated calf raise": {
   "name": "Seated Calf Raise",
@@ -977,7 +1423,14 @@ export const INFO = {
    "Pad snug on the lower thighs",
    "Lower the heels for a full stretch",
    "Rise up and pause at the top"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "الوسادة ملاصقة لأسفل الفخذين",
+    "أنزل الكعبين لتمدد كامل",
+    "ارتفع وتوقف في الأعلى"
+   ]
+  }
  },
  "side plank": {
   "name": "Side Plank",
@@ -993,7 +1446,14 @@ export const INFO = {
    "Stack the feet and lift the hips",
    "Keep a straight line from head to feet",
    "Breathe steadily and hold"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ضع القدمين فوق بعضهما وارفع الوركين",
+    "أبقِ خطاً مستقيماً من الرأس إلى القدمين",
+    "تنفّس بانتظام وثبّت الوضع"
+   ]
+  }
  },
  "skull crusher": {
   "name": "Skull Crusher",
@@ -1007,7 +1467,14 @@ export const INFO = {
    "Upper arms stay pointed at the ceiling",
    "Lower the bar toward your forehead",
    "Extend the arms without flaring elbows"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أبقِ العضدين موجهين نحو السقف",
+    "أنزل البار نحو جبهتك",
+    "مدّد الذراعين دون فتح المرفقين"
+   ]
+  }
  },
  "smith machine squat": {
   "name": "Smith Machine Squat",
@@ -1023,7 +1490,14 @@ export const INFO = {
    "Place the feet slightly in front of the bar",
    "Lower until the thighs are parallel",
    "Keep your heels flat and chest up"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ضع القدمين أمام البار قليلاً",
+    "انزل حتى يصبح الفخذان أفقيين",
+    "أبقِ كعبيك على الأرض وصدرك مرفوعاً"
+   ]
+  }
  },
  "squat": {
   "name": "Squat",
@@ -1041,7 +1515,15 @@ export const INFO = {
    "Knees track over your toes",
    "Hit at least parallel depth",
    "Drive up through the whole foot"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "شد بطنك قبل كل تكرار",
+    "الركبتان باتجاه أصابع القدمين",
+    "انزل إلى مستوى التوازي على الأقل",
+    "ادفع للأعلى بكامل القدم"
+   ]
+  }
  },
  "standing calf raise": {
   "name": "Standing Calf Raise",
@@ -1055,7 +1537,14 @@ export const INFO = {
    "Balls of the feet on the edge",
    "Lower the heels for a full stretch",
    "Rise as high as you can, pause"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "مشطا القدمين على الحافة",
+    "أنزل الكعبين لتمدد كامل",
+    "ارتفع قدر ما تستطيع وتوقف قليلاً"
+   ]
+  }
  },
  "step-up": {
   "name": "Step-up",
@@ -1071,7 +1560,14 @@ export const INFO = {
    "Put the whole foot on the box",
    "Drive through the heel to stand tall",
    "Lower slowly, don't drop down"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ضع القدم كاملة على الصندوق",
+    "ادفع بالكعب لتقف منتصباً",
+    "انزل ببطء ولا تسقط"
+   ]
+  }
  },
  "stiff-leg deadlift": {
   "name": "Stiff-leg Deadlift",
@@ -1087,7 +1583,14 @@ export const INFO = {
    "Keep the legs nearly straight, knees slightly soft",
    "Push the hips back and lower the bar along the legs",
    "Stop when you feel the hamstrings stretch"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أبقِ الساقين شبه مستقيمتين وركبتان مرنتان",
+    "ادفع الوركين للخلف وأنزل البار على ساقيك",
+    "توقف عندما تشعر بتمدد الفخذ الخلفي"
+   ]
+  }
  },
  "straight-arm pulldown": {
   "name": "Straight-arm Pulldown",
@@ -1103,7 +1606,14 @@ export const INFO = {
    "Keep the arms nearly straight the whole time",
    "Pull the bar down to the thighs using the lats",
    "Hinge slightly forward and brace your core"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "أبقِ الذراعين شبه مستقيمتين طوال الوقت",
+    "اسحب البار إلى الفخذين بعضلات الظهر",
+    "أمِل قليلاً للأمام وشد بطنك"
+   ]
+  }
  },
  "t-bar row": {
   "name": "T-bar Row",
@@ -1120,7 +1630,14 @@ export const INFO = {
    "Hinge forward with a flat back",
    "Pull the handle to your chest",
    "Keep the elbows close to the body"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "انحنِ للأمام بظهر مستقيم",
+    "اسحب المقبض إلى صدرك",
+    "أبقِ المرفقين قريبين من الجسم"
+   ]
+  }
  },
  "tricep pushdown": {
   "name": "Tricep Pushdown",
@@ -1134,7 +1651,14 @@ export const INFO = {
    "Elbows pinned to your sides",
    "Push down until arms are straight",
    "Let it rise only to forearms parallel"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "ثبّت المرفقين على جانبيك",
+    "ادفع للأسفل حتى استقامة الذراعين",
+    "دعه يصعد حتى يصبح الساعدان أفقيين فقط"
+   ]
+  }
  },
  "triceps kickback": {
   "name": "Triceps Kickback",
@@ -1148,7 +1672,14 @@ export const INFO = {
    "Hinge forward with the upper arm parallel to the floor",
    "Extend the forearm back until straight",
    "Keep the upper arm still"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "انحنِ للأمام والعضد موازٍ للأرض",
+    "مدّد الساعد للخلف حتى يستقيم",
+    "أبقِ العضد ثابتاً"
+   ]
+  }
  },
  "upright row": {
   "name": "Upright Row",
@@ -1165,7 +1696,14 @@ export const INFO = {
    "Grip a bit narrower than shoulders",
    "Pull the bar up along the body",
    "Lift the elbows to shoulder height, not higher"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "قبضة أضيق من الكتفين قليلاً",
+    "اسحب البار للأعلى بمحاذاة الجسم",
+    "ارفع المرفقين إلى مستوى الكتفين لا أعلى"
+   ]
+  }
  },
  "walking lunge": {
   "name": "Walking Lunge",
@@ -1182,7 +1720,15 @@ export const INFO = {
    "Lower until the back knee nearly touches",
    "Keep the torso upright",
    "Push off and step through"
-  ]
+  ],
+  "ar": {
+   "tips": [
+    "خذ خطوة طويلة للأمام",
+    "انزل حتى تكاد الركبة الخلفية تلمس الأرض",
+    "أبقِ جذعك منتصباً",
+    "ادفع وتقدّم بالخطوة التالية"
+   ]
+  }
  }
 };
 
