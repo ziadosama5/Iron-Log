@@ -7,8 +7,8 @@ import { AR } from "../public/lang-ar.js";
 // Sections still being translated. Tasks 5-7 of docs/superpowers/plans/2026-10-18-arabic-language.md
 // remove names from this list; it must end up empty.
 const PENDING = [
-  "static", "start", "storage", "derived", "WORKOUT", "DAYS", "PROGRESS", "BODY", "COACH", "GOALS",
-  "HISTORY", "EXERCISE INFO", "SCREEN WAKE LOCK", "REST TIMER", "THEME", "render + events"
+  "storage", "derived", "DAYS", "PROGRESS", "BODY", "COACH", "GOALS",
+  "HISTORY", "EXERCISE INFO", "SCREEN WAKE LOCK", "THEME", "render + events"
 ];
 
 const read = f => readFileSync(new URL("../public/" + f, import.meta.url), "utf8");

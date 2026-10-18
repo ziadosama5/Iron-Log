@@ -79,3 +79,11 @@ test("doctype is not text; units next to interpolations are not violations", () 
   assert.deepEqual(js("const a = `<span>${w} kg × ${r} · ${m} min</span>`;").violations, []);
   assert.equal(js("const a = `<span>${n} of ${m} done</span>`;").violations.length, 1);
 });
+
+test("a message built from a variable plus English text is a violation unless the text is inside t()", () => {
+  assert.equal(js('toast(name+" is already in this workout");').violations.length, 1);
+  assert.equal(js("toast(`${name} is saved`);").violations.length, 1);
+  assert.deepEqual(js('toast(ok ? t("Saved") : t("Not saved"));').violations, []);
+  assert.deepEqual(js("toast(e.message);").violations, []);
+  assert.deepEqual(js('toast(t("{n} saved",{n:name+"x"}));').violations, []);
+});

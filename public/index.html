@@ -140,6 +140,10 @@ tr.setrow.editing td{background:var(--accent-soft)}
 .stat .v{font:600 22px/1.2 var(--f-num);font-variant-numeric:tabular-nums}
 .stat .v small{font-size:12px;color:var(--muted);font-weight:500}
 .chart{width:100%;height:auto;display:block}
+.nextbtn::after{content:" ›"}
+[dir="rtl"] .nextbtn::after{content:" ‹"}
+[dir="rtl"] b.num,[dir="rtl"] span.num{direction:ltr;unicode-bidi:isolate}
+[dir="rtl"] .daytag .num{direction:rtl;unicode-bidi:normal;font-family:var(--f-body)}
 /* right-to-left (Arabic): mirror arrows; keep steppers, charts and numeric fields left-to-right */
 [dir="rtl"] .more-row svg{transform:scaleX(-1)}
 [dir="rtl"] .bigstep,[dir="rtl"] .stepper,[dir="rtl"] .chart,[dir="rtl"] .bars .track{direction:ltr}
@@ -496,7 +500,7 @@ function suggestionsFor(focus, exclude){
 /* ---------- WORKOUT ---------- */
 function renderLog(){
   const w = workoutFor(state.date);
-  const dateLabel = state.date===today()?"Today":fmtDate(state.date);
+  const dateLabel = state.date===today()?t("Today"):fmtDate(state.date);
   let h = `<div class="row">
     <div class="grow"><div class="label">Workout date</div><h2>${dateLabel}</h2></div>
     <input type="date" id="log-date" value="${state.date}" max="${today()}" style="width:auto">
@@ -509,9 +513,9 @@ function renderLog(){
   const day = dayById(w.dayId), entries = w.entries, M = entries.length;
   const doneN = entries.filter(e=>e.done).length;
   const mins = state.date===today() ? elapsedMin(w, Date.now()) : null;
-  h += `<div class="row"><div class="grow"><span class="daytag">${w.dayId&&day?`<span class="num" style="font-size:12px">Day ${dayIndex(w.dayId)+1}</span>`:""}${esc(day?day.name:(w.dayName||"Free workout"))}</span></div>
+  h += `<div class="row"><div class="grow"><span class="daytag">${w.dayId&&day?`<span class="num" style="font-size:12px">${t("Day {n}",{n:dayIndex(w.dayId)+1})}</span>`:""}${esc(day?nameOf("day",day.name):nameOf("day",w.dayName||"Free workout"))}</span></div>
       <button class="btn ghost small" data-act="change-day">Change day</button></div>`;
-  if (M) h += `<div class="stack" style="gap:6px"><span class="label">${doneN} of ${M} done${mins!=null?` · ${mins} min`:""}</span>
+  if (M) h += `<div class="stack" style="gap:6px"><span class="label">${t("{n} of {m} done",{n:doneN,m:M})}${mins!=null?` · ${mins} min`:""}</span>
       <div class="ebar" role="progressbar" aria-label="Exercises done" aria-valuemin="0" aria-valuemax="${M}" aria-valuenow="${doneN}"><i style="width:${doneN/M*100}%"></i></div></div>`;
 
   // Focus mode: the exercise the user picked (any order), else the first one not done.
@@ -519,7 +523,7 @@ function renderLog(){
   const ei = picked>=0 ? picked : nextUnfinished(entries,-1);
   if (M) h += `<div class="exchips" id="exchips">${entries.map((e,i)=>{
       const cls = e.done?"done":(e.sets.length?"started":"");
-      return `<button class="exchip ${cls}" data-act="jump-ex" data-name="${esc(e.ex)}" aria-current="${i===ei}" aria-label="${esc(e.ex)}${e.done?", done":""}"><span class="n" aria-hidden="true">${e.done?"✓":i+1}</span><span class="t">${esc(e.ex)}</span></button>`;
+      return `<button class="exchip ${cls}" data-act="jump-ex" data-name="${esc(e.ex)}" aria-current="${i===ei}" aria-label="${esc(nameOf("ex",e.ex))}${e.done?", "+t("done"):""}"><span class="n" aria-hidden="true">${e.done?"✓":i+1}</span><span class="t">${esc(nameOf("ex",e.ex))}</span></button>`;
     }).join("")}</div>`;
 
   if (!M) h += `<div class="empty"><strong>No exercises yet</strong>Tap "+ Exercise" to add one.</div>`;
@@ -528,12 +532,12 @@ function renderLog(){
 
   h += `<div class="row"><button class="btn secondary grow" data-act="open-exsheet">+ Exercise</button><button class="btn secondary grow" data-act="open-cardiosheet">+ Cardio</button></div>`;
   const cardio=(w.cardio||[]), kgNow=weightOn(state.body,state.date);
-  if (cardio.length) h += `<ul class="cardio-list">${cardio.map(c=>`<li><span class="grow">${CARDIO_LABEL[c.type]||"Cardio"} · ${c.min} min · ${cardioText(c,kgNow)}</span><button class="btn ghost small danger" data-act="rm-cardio" data-id="${esc(c.id)}" aria-label="Delete ${CARDIO_LABEL[c.type]||"cardio"} session">✕</button></li>`).join("")}</ul>`;
+  if (cardio.length) h += `<ul class="cardio-list">${cardio.map(c=>`<li><span class="grow">${cardioLabel(c.type)} · ${c.min} min · ${cardioText(c,kgNow)}</span><button class="btn ghost small danger" data-act="rm-cardio" data-id="${esc(c.id)}" aria-label="${esc(t("Delete {name} session",{name:cardioLabel(c.type)}))}">✕</button></li>`).join("")}</ul>`;
 
   $("#view-log").innerHTML = h; fillDatalist(); refreshSheets(); syncWake();
   // keep the open exercise's chip in view without scrolling the page
   const c=$("#exchips"), on=c&&c.querySelector('[aria-current="true"]');
-  if(on) c.scrollLeft=on.offsetLeft-(c.clientWidth-on.offsetWidth)/2;
+  if(on){ const a=on.getBoundingClientRect(), b=c.getBoundingClientRect(); c.scrollLeft+=(a.left+a.width/2)-(b.left+b.width/2); }
 }
 function focusCard(w, ei){
   const entries=w.entries, e=entries[ei];
@@ -543,42 +547,42 @@ function focusCard(w, ei){
   let runBest=best;
   const nx = nextUnfinished(entries, ei);
   return `<div class="card focus" id="open-card">
-      <div class="row"><span class="label grow">Exercise ${ei+1} of ${entries.length}</span>${infoBtn(e.ex)}</div>
-      <div class="ex-name">${esc(e.ex)}</div>
-      ${last?`<div class="prev">Last time (${fmtDate(last.date)}): <b class="num">${last.sets.map(s=>kg(s.w)+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
+      <div class="row"><span class="label grow">${t("Exercise {n} of {m}",{n:ei+1,m:entries.length})}</span>${infoBtn(e.ex)}</div>
+      <div class="ex-name">${esc(nameOf("ex",e.ex))}</div>
+      ${last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>kg(s.w)+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
       <div class="stack" style="gap:4px"><span class="label">Weight · kg</span>
         <div class="bigstep"><button data-act="step" data-f="w" data-d="-2.5" data-ei="${ei}" aria-label="Minus 2.5 kg">−</button><input id="w-${ei}" inputmode="decimal" value="${d.w}" data-f="w" data-ex="${esc(e.ex)}" aria-label="Weight in kg"><button data-act="step" data-f="w" data-d="2.5" data-ei="${ei}" aria-label="Plus 2.5 kg">+</button></div></div>
       <div class="stack" style="gap:4px"><span class="label">Reps</span>
         <div class="bigstep"><button data-act="step" data-f="r" data-d="-1" data-ei="${ei}" aria-label="Minus 1 rep">−</button><input id="r-${ei}" inputmode="numeric" value="${d.r}" data-f="r" data-ex="${esc(e.ex)}" aria-label="Reps"><button data-act="step" data-f="r" data-d="1" data-ei="${ei}" aria-label="Plus 1 rep">+</button></div></div>
       ${editSi>=0
-        ? `<button class="btn primary" data-act="save-set" data-ei="${ei}">Save set ${editSi+1}</button><div class="row"><span class="prev grow">Editing set ${editSi+1}</span><button class="btn ghost small" data-act="cancel-edit">Cancel</button></div>`
-        : `<button class="btn primary" data-act="add-set" data-ei="${ei}">Add set ${e.sets.length+1}</button>`}
+        ? `<button class="btn primary" data-act="save-set" data-ei="${ei}">${t("Save set {n}",{n:editSi+1})}</button><div class="row"><span class="prev grow">${t("Editing set {n}",{n:editSi+1})}</span><button class="btn ghost small" data-act="cancel-edit">Cancel</button></div>`
+        : `<button class="btn primary" data-act="add-set" data-ei="${ei}">${t("Add set {n}",{n:e.sets.length+1})}</button>`}
       ${e.sets.length?`<table><thead><tr><th>Set</th><th class="r">kg</th><th class="r">Reps</th><th class="r">e1RM</th><th></th></tr></thead><tbody>${
         e.sets.map((s,si)=>{ const est=e1rm(s.w,s.r); const isPr=est>0&&est>runBest&&best>0; if(est>runBest) runBest=est;
-          return `<tr class="setrow${si===editSi?" editing":""}" data-act="edit-set" data-ei="${ei}" data-si="${si}" tabindex="0" aria-label="Edit set ${si+1}"><td class="num">${si+1}</td><td class="r num">${kg(s.w)}</td><td class="r num">${s.r}</td><td class="r num">${est?kg(Math.round(est*10)/10):"–"}${isPr?'<span class="pr">PR</span>':""}</td><td class="r"><button class="btn ghost small" data-act="rm-set" data-ei="${ei}" data-si="${si}" aria-label="Delete set ${si+1}">✕</button></td></tr>`;}).join("")
+          return `<tr class="setrow${si===editSi?" editing":""}" data-act="edit-set" data-ei="${ei}" data-si="${si}" tabindex="0" aria-label="${esc(t("Edit set {n}",{n:si+1}))}"><td class="num">${si+1}</td><td class="r num">${kg(s.w)}</td><td class="r num">${s.r}</td><td class="r num">${est?kg(Math.round(est*10)/10):"–"}${isPr?'<span class="pr">PR</span>':""}</td><td class="r"><button class="btn ghost small" data-act="rm-set" data-ei="${ei}" data-si="${si}" aria-label="${esc(t("Delete set {n}",{n:si+1}))}">✕</button></td></tr>`;}).join("")
       }</tbody></table>`:""}
       <div class="row"><button class="btn ghost small danger" data-act="rm-ex" data-ei="${ei}">Remove exercise</button></div>
     </div>
     <div class="row">${e.done
       ? `<button class="btn secondary grow" data-act="undone-ex" data-ei="${ei}">Mark as not done</button>`
       : `<button class="btn secondary grow" data-act="done-ex" data-ei="${ei}">✓ Done</button>`}${
-      nx>=0?`<button class="btn secondary grow nextbtn" data-act="next-ex" data-ei="${ei}">Next: ${esc(entries[nx].ex)} ›</button>`:""}</div>`;
+      nx>=0?`<button class="btn secondary grow nextbtn" data-act="next-ex" data-ei="${ei}">${esc(t("Next: {name}",{name:nameOf("ex",entries[nx].ex)}))}</button>`:""}</div>`;
 }
 function completeCard(w){
   const sets=w.entries.reduce((a,e)=>a+e.sets.length,0), volume=w.entries.reduce((a,e)=>a+vol(e.sets),0);
   const ek=exerciseKcal(w, weightOn(state.body,w.date)).total;
   return `<div class="card complete-card"><div class="row"><span class="tick" aria-hidden="true">✓</span><b class="grow">Workout complete</b></div>
-    <span class="prev">${sets} sets · ${kg(volume)} kg moved${ek?` · ${ek.toLocaleString("en-US")} kcal exercise`:""}</span>
+    <span class="prev">${tn("{n} set","{n} sets",sets)} · ${t("{n} kg moved",{n:kg(volume)})}${ek?` · ${t("{n} kcal exercise",{n:ek.toLocaleString("en-US")})}`:""}</span>
     <span class="prev">Tap any exercise above to edit it.</span></div>`;
 }
 // "+ Exercise" sheet: today's suggestions, free-workout muscle chips and the type-any-exercise form.
 function exSheetHtml(){
   const w=workoutFor(state.date), day=w&&dayById(w.dayId), names=(w?w.entries:[]).map(e=>e.ex);
-  const chips=list=>`<div class="chips">${list.slice(0,6).map(n=>`${chipInfo(`<button class="chip add" data-act="add-ex" data-name="${esc(n)}">${esc(n)}</button>`,n)}`).join("")}</div>`;
+  const chips=list=>`<div class="chips">${list.slice(0,6).map(n=>`${chipInfo(`<button class="chip add" data-act="add-ex" data-name="${esc(n)}">${esc(nameOf("ex",n))}</button>`,n)}`).join("")}</div>`;
   const sugg=suggestionsFor(day?day.focus:[], names);
   let h=`<div class="sheet-head"><h2>Add an exercise</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div><div class="stack">`;
-  if (sugg.length) h += sugg.map(g=>`<div class="stack" style="gap:6px"><span class="label">${esc(g.muscle)}</span>${chips(g.items)}</div>`).join("");
-  else if (!day) h += `<div class="chips">${MUSCLES.map(m=>`<button class="chip" data-act="free-focus" data-m="${esc(m)}" aria-pressed="${(state.freeFocus||[]).includes(m)}">${esc(m)}</button>`).join("")}</div>${
+  if (sugg.length) h += sugg.map(g=>`<div class="stack" style="gap:6px"><span class="label">${esc(nameOf("muscle",g.muscle))}</span>${chips(g.items)}</div>`).join("");
+  else if (!day) h += `<div class="chips">${MUSCLES.map(m=>`<button class="chip" data-act="free-focus" data-m="${esc(m)}" aria-pressed="${(state.freeFocus||[]).includes(m)}">${esc(nameOf("muscle",m))}</button>`).join("")}</div>${
       (state.freeFocus||[]).length ? suggestionsFor(state.freeFocus, names).map(g=>chips(g.items)).join("") : `<span class="prev">Pick a muscle group to see suggestions.</span>`}`;
   return h + `<form class="row" id="add-ex-form" autocomplete="off"><input id="new-ex" list="ex-list" placeholder="Or type any exercise" style="flex:1 1 180px"><button class="btn primary" type="submit">Add</button></form></div>`;
 }
@@ -611,29 +615,30 @@ function dayPicker(w){
   if (!state.days.length) return `<div class="empty"><strong>Set up your training days</strong>Split your week into days like Push, Pull and Legs. Each day keeps its own exercise list, so starting a workout is one tap.
       <div class="row" style="justify-content:center"><button class="btn primary" data-act="goto-days">Set up days</button><button class="btn" data-act="start-free">Log a free workout</button></div></div>`;
   const nd = nextDay(), sched = !!dayForWeekday(weekdayOf(state.date));
-  return `<div class="stack"><h3>${w?"Switch to another day":"Which day are you training?"}</h3>
+  return `<div class="stack"><h3>${w?t("Switch to another day"):t("Which day are you training?")}</h3>
     <div class="days">${state.days.map((d,i)=>{ const lt=lastTrained(d.id);
       return `<button class="daypick ${nd&&nd.id===d.id?"next":""}" data-act="start-day" data-id="${d.id}">
-        ${nd&&nd.id===d.id?`<span class="badge">${sched?(state.date===today()?"Today":WD[weekdayOf(state.date)]):"Up next"}</span>`:""}
-        <span class="daynum">DAY ${i+1}</span><span class="dayname">${esc(d.name)}</span>
-        <span class="prev">${d.exercises.length} exercises${lt?` · last ${fmtDate(lt)}`:""}</span></button>`;}).join("")}
+        ${nd&&nd.id===d.id?`<span class="badge">${sched?(state.date===today()?t("Today"):nameOf("weekday",WD[weekdayOf(state.date)])):t("Up next")}</span>`:""}
+        <span class="daynum">${t("DAY {n}",{n:i+1})}</span><span class="dayname">${esc(nameOf("day",d.name))}</span>
+        <span class="prev">${tn("{n} exercise","{n} exercises",d.exercises.length)}${lt?` · ${t("last {d}",{d:fmtDate(lt)})}`:""}</span></button>`;}).join("")}
       <button class="daypick" data-act="start-free"><span class="daynum">ANY</span><span class="dayname">Free workout</span><span class="prev">Pick exercises as you go</span></button>
     </div>
-    ${w?`<div class="row"><button class="btn ghost" data-act="cancel-pick">Keep ${esc(w.dayName||"current workout")}</button></div>`:""}
+    ${w?`<div class="row"><button class="btn ghost" data-act="cancel-pick">${esc(t("Keep {name}",{name:w.dayName?nameOf("day",w.dayName):t("current workout")}))}</button></div>`:""}
   </div>`;
 }
 function fillDatalist(){ $("#ex-list").innerHTML=[...new Set([...exerciseNames(),...ALL_EX])].map(n=>`<option value="${esc(n)}">`).join(""); }
 /* cardio card (Workout tab) */
 const CARDIO_LABEL={treadmill:"Treadmill",elliptical:"Elliptical",bike:"Bike",other:"Other"};
 const INT_LABEL={easy:"Easy",moderate:"Moderate",hard:"Hard"};
-function cardioText(c,kg){ const k=cardioKcal(c,kg); return c.kcal!=null?`${k} kcal`:k!=null?`~${k} kcal est.`:"log weight for kcal"; }
+const cardioLabel=ty=>nameOf("cardio",CARDIO_LABEL[ty]||"Cardio");
+function cardioText(c,kg){ const k=cardioKcal(c,kg); return c.kcal!=null?`${k} kcal`:k!=null?t("~{k} kcal est.",{k}):t("log weight for kcal"); }
 function cardioCard(){
   const w=workoutFor(state.date), list=(w&&w.cardio)||[], kg=weightOn(state.body,state.date), d=state.cardioDraft;
-  const rows=list.map(c=>`<li><span class="grow">${CARDIO_LABEL[c.type]||"Cardio"} · ${c.min} min · ${cardioText(c,kg)}</span><button class="btn ghost small danger" data-act="rm-cardio" data-id="${esc(c.id)}" aria-label="Delete ${CARDIO_LABEL[c.type]||"cardio"} session">✕</button></li>`).join("");
+  const rows=list.map(c=>`<li><span class="grow">${cardioLabel(c.type)} · ${c.min} min · ${cardioText(c,kg)}</span><button class="btn ghost small danger" data-act="rm-cardio" data-id="${esc(c.id)}" aria-label="${esc(t("Delete {name} session",{name:cardioLabel(c.type)}))}">✕</button></li>`).join("");
   return `<div class="card" id="cardio-card"><h3>Cardio</h3>
     ${rows?`<ul class="cardio-list">${rows}</ul>`:""}
-    <div class="stack" style="gap:6px"><span class="label">Type</span><div class="chips">${CARDIO_TYPES.map(t=>`<button class="chip" data-act="cardio-type" data-v="${t}" aria-pressed="${d.type===t}">${CARDIO_LABEL[t]}</button>`).join("")}</div></div>
-    <div class="stack" style="gap:6px"><span class="label">Intensity · used when kcal is blank</span><div class="chips">${INTENSITIES.map(i=>`<button class="chip" data-act="cardio-int" data-v="${i}" aria-pressed="${d.intensity===i}">${INT_LABEL[i]}</button>`).join("")}</div></div>
+    <div class="stack" style="gap:6px"><span class="label">Type</span><div class="chips">${CARDIO_TYPES.map(ty=>`<button class="chip" data-act="cardio-type" data-v="${ty}" aria-pressed="${d.type===ty}">${cardioLabel(ty)}</button>`).join("")}</div></div>
+    <div class="stack" style="gap:6px"><span class="label">Intensity · used when kcal is blank</span><div class="chips">${INTENSITIES.map(i=>`<button class="chip" data-act="cardio-int" data-v="${i}" aria-pressed="${d.intensity===i}">${nameOf("intensity",INT_LABEL[i])}</button>`).join("")}</div></div>
     <div class="adder cardio-adder">
       <label><span class="label">Minutes</span><div class="stepper"><button data-act="cardio-step" data-d="-5" aria-label="Minus 5 minutes">−</button><input id="cardio-min" inputmode="numeric" value="${esc(d.min)}"><button data-act="cardio-step" data-d="5" aria-label="Plus 5 minutes">+</button></div></label>
       <label><span class="label">Machine kcal</span><input id="cardio-kcal" inputmode="numeric" placeholder="optional" value="${esc(d.kcal)}"></label>
@@ -641,12 +646,12 @@ function cardioCard(){
     </div></div>`;
 }
 // "!" button that opens the exercise info sheet; nothing for exercises without info.
-function infoBtn(name){ return infoFor(name) ? `<button class="infobtn" data-act="ex-info" data-name="${esc(name)}" aria-label="About ${esc(name)}"><span class="ib" aria-hidden="true">!</span></button>` : ""; }
+function infoBtn(name){ return infoFor(name) ? `<button class="infobtn" data-act="ex-info" data-name="${esc(name)}" aria-label="${esc(t("About {name}",{name:nameOf("ex",name)}))}"><span class="ib" aria-hidden="true">!</span></button>` : ""; }
 function chipInfo(chip,name){ const i=infoBtn(name); return i ? `<span class="chipgrp">${chip}${i}</span>` : chip; }
 // Reads the weight/reps inputs of exercise ei; shows a toast and returns null if invalid.
 function readSet(ei){
   const w=parseFloat(String(document.getElementById("w-"+ei).value).replace(",",".")), r=parseInt(document.getElementById("r-"+ei).value,10);
-  if(!(w>=0)||!(r>0)){ toast("Enter a weight (0 for bodyweight) and at least 1 rep"); return null; }
+  if(!(w>=0)||!(r>0)){ toast(t("Enter a weight (0 for bodyweight) and at least 1 rep")); return null; }
   return {w,r};
 }
 function stopEditing(){ if(state.editSet){ delete ui[state.editSet.ex]; state.editSet=null; } }
@@ -664,7 +669,7 @@ function addExerciseToWorkout(name){
   closeSheet("#exsheet");
   name=canonical(name.trim()); if(!name) return;
   const w=ensureWorkout();
-  if(w.entries.some(x=>same(x.ex,name))){ toast(name+" is already in this workout"); return; }
+  if(w.entries.some(x=>same(x.ex,name))){ toast(t("{name} is already in this workout",{name:nameOf("ex",name)})); return; }
   w.entries.push({ex:name,sets:[]}); delete ui[name]; state.openEx=name; store.save(w); renderLog(); scrollToOpen();
 }
 
@@ -1280,8 +1285,8 @@ function drawRest(){
   if(ph==="none"||ph==="expired"){ clearRest(); return; }
   const bar=$("#restbar");
   bar.hidden=false; document.body.classList.add("has-restbar"); bar.classList.toggle("go",ph==="go");
-  $("#rb-label").textContent=(ph==="go"?"Rest over · ":"Rest · ")+state.rest.ex;
-  $("#rb-clock").textContent=ph==="go"?"Go":fmtClock(remaining(state.rest.endsAt,Date.now()));
+  $("#rb-label").textContent=t(ph==="go"?"Rest over · {name}":"Rest · {name}",{name:nameOf("ex",state.rest.ex)});
+  $("#rb-clock").textContent=ph==="go"?t("Go"):fmtClock(remaining(state.rest.endsAt,Date.now()));
   if(ph==="go"&&!restAlerted){ restAlerted=true; restAlert(); }
 }
 function runRest(){ clearInterval(restTick); restTick=setInterval(drawRest,250); drawRest(); }

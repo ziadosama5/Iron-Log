@@ -88,7 +88,7 @@ function parseArgs(s, i) {
     if (c === "(" || c === "[" || c === "{") depth++;
     else if (c === ")" || c === "]" || c === "}") {
       depth--;
-      if (depth === 0) { args.push(s.slice(start, i)); return args; }
+      if (depth === 0) { args.push(s.slice(start, i)); args.end = i + 1; return args; }
     } else if (c === "," && depth === 1) { args.push(s.slice(start, i)); start = i + 1; }
     if (!/\s/.test(c)) prev = c;
     i++;
@@ -147,9 +147,24 @@ export function scanSource(source, { kind = "js" } = {}) {
     if (!LABEL_ALLOW.has(lit)) labels.add(unescape(lit));
   }
 
+  // Text of every string/template literal in an expression, ignoring anything inside t()/tn() calls.
+  function literalsOutsideT(expr) {
+    let e = expr, m;
+    while ((m = /\btn?\(/.exec(e))) { const args = parseArgs(e, m.index + m[0].length - 1); e = e.slice(0, m.index) + " " + e.slice(args.end ?? e.length); }
+    const out = [];
+    (function walk(str) {
+      for (let i = 0; i < str.length; ) {
+        const c = str[i];
+        if (c === '"' || c === "'") { const end = skipQuoted(str, i); out.push(str.slice(i + 1, end - 1)); i = end; }
+        else if (c === "`") { const r = readTemplate(str, i); r.parts.forEach(p => (p.expr !== undefined ? walk(p.expr) : out.push(p.text))); i = r.end; }
+        else i++;
+      }
+    })(e);
+    return out;
+  }
   function checkMessage(arg, off) {
-    const a = arg.trim(), q = a[0];
-    if ((q === '"' || q === "'" || q === "`") && /[A-Za-z]/.test(a)) violate(off, a, "untranslated message");
+    const a = arg.trim();
+    if (literalsOutsideT(a).some(x => /[A-Za-z]/.test(x))) violate(off, a, "untranslated message");
   }
 
   function handleCall(name, s, parenIdx, base) {
