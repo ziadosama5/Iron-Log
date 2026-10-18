@@ -16,6 +16,8 @@ const APP_SHELL = [
   "/energy.js",
   "/achievements.js",
   "/ui-helpers.js",
+  "/i18n.js",
+  "/lang-ar.js",
   "/manifest.webmanifest",
   "/icon-192.png",
   "/icon-512.png",

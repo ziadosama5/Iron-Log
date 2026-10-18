@@ -13,6 +13,7 @@
 <link rel="icon" type="image/svg+xml" href="/logo-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <script>/* apply the saved theme before the page draws */try{var t=localStorage.getItem("ironlog.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script>/* language + direction before the page draws */try{var l=localStorage.getItem("ironlog.lang");if(l!=="ar"&&l!=="en")l=/^ar/i.test(navigator.language||"")?"ar":"en";document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
 <style>
@@ -306,6 +307,8 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
   <button class="more-row" data-act="more-go" data-view="days">Days<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="progress">Lifts<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="history">History &amp; backup<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+  <div class="stack" style="gap:6px;margin-top:14px"><span class="label">Language</span>
+    <div class="seg" role="group" aria-label="Language" data-no-tr><button data-act="lang-set" data-v="en">English</button><button data-act="lang-set" data-v="ar">العربية</button></div></div>
   <div class="stack" style="gap:6px;margin-top:14px"><span class="label">Theme</span>
     <div class="seg" role="group" aria-label="Theme"><button data-act="theme-set" data-v="system">System</button><button data-act="theme-set" data-v="light">Light</button><button data-act="theme-set" data-v="dark">Dark</button></div></div>
   <div class="row" style="margin-top:14px"><span class="prev grow" id="acct-user" hidden></span><button class="btn secondary small" id="signout" hidden>Sign out</button></div>
@@ -332,14 +335,17 @@ import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, 
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION, resolveAlias } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
+import { registerLang, setLang, isRtl, detectLang, t, tn, nameOf, locale, trDom } from "./i18n.js";
+import { AR } from "./lang-ar.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
 
+registerLang("ar",AR);
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const today = () => new Date().toLocaleDateString("en-CA");
-const fmtDate = d => new Date(d+"T12:00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
-const fmtDateY = d => new Date(d+"T12:00:00").toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"});
+const fmtDate = d => new Date(d+"T12:00:00").toLocaleDateString(locale(),{weekday:"short",day:"numeric",month:"short"});
+const fmtDateY = d => new Date(d+"T12:00:00").toLocaleDateString(locale(),{day:"numeric",month:"short",year:"numeric"});
 const kg = n => (Math.round(n*100)/100).toString();
 const e1rm = (w,r) => r<=0||w<=0 ? 0 : (r===1 ? w : w*(1+r/30));
 const vol = sets => sets.reduce((a,s)=>a+s.w*s.r,0);
@@ -556,7 +562,7 @@ function completeCard(w){
   const sets=w.entries.reduce((a,e)=>a+e.sets.length,0), volume=w.entries.reduce((a,e)=>a+vol(e.sets),0);
   const ek=exerciseKcal(w, weightOn(state.body,w.date)).total;
   return `<div class="card complete-card"><div class="row"><span class="tick" aria-hidden="true">✓</span><b class="grow">Workout complete</b></div>
-    <span class="prev">${sets} sets · ${kg(volume)} kg moved${ek?` · ${ek.toLocaleString()} kcal exercise`:""}</span>
+    <span class="prev">${sets} sets · ${kg(volume)} kg moved${ek?` · ${ek.toLocaleString("en-US")} kcal exercise`:""}</span>
     <span class="prev">Tap any exercise above to edit it.</span></div>`;
 }
 // "+ Exercise" sheet: today's suggestions, free-workout muscle chips and the type-any-exercise form.
@@ -979,8 +985,8 @@ function balanceGood(goal,bal){
   if(goal==="maintain") return Math.abs(bal)<=200;
   return false;
 }
-const kcalTxt=v=>v==null?"–":Math.round(v).toLocaleString();
-const signedTxt=v=>v==null?"–":(v>0?"+":v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString();
+const kcalTxt=v=>v==null?"–":Math.round(v).toLocaleString("en-US");
+const signedTxt=v=>v==null?"–":(v>0?"+":v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString("en-US");
 function todayCard(){
   const d=state.cdate, p=state.profile, kg=weightOn(state.body,d), b=bmrFor(p,state.body,d);
   const e=dayEnergy({bmr:b?b.bmr:null, kg, goal:p.goal, workout:workoutFor(d)||null, food:state.food[d]||null});
@@ -996,7 +1002,7 @@ function todayCard(){
       <div class="stat"><div class="label">Balance</div><div class="v ${balanceGood(p.goal,e.balance)?"good":""}">${signedTxt(e.balance)} <small>kcal</small></div></div>
     </div>
     ${e.burned!=null?`<p class="prev" style="margin:0">Everyday ${kcalTxt(e.baseline)} · Lifting ${kcalTxt(e.lift)} · Cardio ${kcalTxt(e.cardio)}</p>`:""}
-    ${e.target!=null?`<div class="ebar" role="progressbar" aria-label="Eaten vs target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}"><i style="width:${pct}%"></i></div>${over?`<span class="prev">Over by ${over.toLocaleString()} kcal</span>`:""}`:""}
+    ${e.target!=null?`<div class="ebar" role="progressbar" aria-label="Eaten vs target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(pct)}"><i style="width:${pct}%"></i></div>${over?`<span class="prev">Over by ${over.toLocaleString("en-US")} kcal</span>`:""}`:""}
     ${missing?`<p class="prev" style="margin:0">${missing}</p>`:""}
     ${e.protein!=null?`<p style="margin:0">Protein <b>${Math.round(e.protein)} g</b>${kg?` of ${Math.round(kg*1.6)}–${Math.round(kg*2.2)} g`:""}</p>`:""}
     <form id="meal-form" class="stack" autocomplete="off" style="gap:8px">
@@ -1009,7 +1015,7 @@ function todayCard(){
       </div>
       <button class="btn primary" type="submit">Add meal</button>
     </form>
-    ${meals.length?`<ul class="cardio-list">${meals.map(m=>`<li><span class="grow">${esc(m.name||"Meal")} · ${m.kcal.toLocaleString()} kcal${m.protein!=null?` · ${m.protein} g`:""}</span><button class="btn ghost small danger" data-act="rm-meal" data-id="${esc(m.id)}" aria-label="Delete ${esc(m.name||"meal")}">✕</button></li>`).join("")}</ul>`:""}
+    ${meals.length?`<ul class="cardio-list">${meals.map(m=>`<li><span class="grow">${esc(m.name||"Meal")} · ${m.kcal.toLocaleString("en-US")} kcal${m.protein!=null?` · ${m.protein} g`:""}</span><button class="btn ghost small danger" data-act="rm-meal" data-id="${esc(m.id)}" aria-label="Delete ${esc(m.name||"meal")}">✕</button></li>`).join("")}</ul>`:""}
   </div>`;
 }
 function renderCoach(){
@@ -1080,7 +1086,7 @@ function goalsInput(){ return {workouts:state.workouts, body:state.body, food:st
 const RATIO_BADGE={"bench-bw":"Bench Press","squat-1.5":"Squat","deadlift-2":"Deadlift"};
 function badgeProgress(b){
   if(b.earned) return "Earned "+fmtDate(b.earned);
-  const n=v=>Math.floor(v).toLocaleString(), id=b.id;
+  const n=v=>Math.floor(v).toLocaleString("en-US"), id=b.id;
   if(RATIO_BADGE[id]) return b.value?`Best ${b.value.toFixed(2)}× of ${b.target}×`:`Log a ${RATIO_BADGE[id]} set and your weight`;
   if(id.startsWith("volume")) return `${n(b.value/1000)} / ${n(b.target/1000)} t`;
   if(id==="goal-first-kg") return `${Math.max(0,b.value).toFixed(1)} / 1 kg`;
@@ -1094,7 +1100,7 @@ function badgeProgress(b){
 function renderGoals(){
   const input=goalsInput(), list=badges(input), xp=xpSummary(input,list), g=goalProgress(input);
   const ts=trainingStreak(state.workouts,state.days,today()), fdays=foodStreak(state.food,today());
-  const signed=v=>(v>0?"+":v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString();
+  const signed=v=>(v>0?"+":v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString("en-US");
   let goal;
   if(!g) goal=`<p class="prev" style="margin:0">Set a target weight to track your progress.</p><div class="row"><button class="btn primary small" data-act="set-goal">Set a target weight</button></div>`;
   else if(g.hold) goal=`<p style="margin:0">Your target is your current weight: hold within ±1 kg.</p>`;
@@ -1107,9 +1113,9 @@ function renderGoals(){
   const earned=list.filter(b=>b.earned).sort((a,b)=>a.earned<b.earned?1:a.earned>b.earned?-1:0), locked=list.filter(b=>!b.earned);
   const tile=b=>`<div class="ach ${b.earned?"on":""}"><span class="medal" aria-hidden="true"></span><span class="bname">${esc(b.name)}</span><span class="prev bsub">${esc(badgeProgress(b))}</span></div>`;
   $("#view-goals").innerHTML=`<h2>Goals</h2>
-    <div class="card"><div class="row"><h3 class="grow">Level ${xp.level} · ${xp.title}</h3><span class="num prev">${xp.xp.toLocaleString()} XP</span></div>
+    <div class="card"><div class="row"><h3 class="grow">Level ${xp.level} · ${xp.title}</h3><span class="num prev">${xp.xp.toLocaleString("en-US")} XP</span></div>
       <div class="ebar" role="progressbar" aria-label="XP to next level" aria-valuemin="0" aria-valuemax="${xp.needed}" aria-valuenow="${xp.into}"><i style="width:${xp.into/xp.needed*100}%"></i></div>
-      <p class="prev" style="margin:0">${xp.into.toLocaleString()} / ${xp.needed.toLocaleString()} XP to level ${xp.level+1} · +${xp.weekXp.toLocaleString()} XP this week</p></div>
+      <p class="prev" style="margin:0">${xp.into.toLocaleString("en-US")} / ${xp.needed.toLocaleString("en-US")} XP to level ${xp.level+1} · +${xp.weekXp.toLocaleString("en-US")} XP this week</p></div>
     <div class="card"><h3>Target weight</h3>${goal}</div>
     <div class="card"><h3>Streaks</h3>
       <div class="row"><span class="grow">Training: <b>${ts.weeks} week${ts.weeks===1?"":"s"}</b></span><span class="dots" role="img" aria-label="${ts.thisWeek} of ${ts.target} this week">${dots}</span><span class="prev">${ts.thisWeek} of ${ts.target} this week</span></div>
@@ -1153,7 +1159,7 @@ function renderHistory(){
 }
 function historySummary(w,sets,v){
   const parts=[]; if(sets) parts.push(`${sets} sets · ${kg(v)} kg`);
-  const ek=exerciseKcal(w,weightOn(state.body,w.date)).total; if(ek) parts.push(`${ek.toLocaleString()} kcal exercise`);
+  const ek=exerciseKcal(w,weightOn(state.body,w.date)).total; if(ek) parts.push(`${ek.toLocaleString("en-US")} kcal exercise`);
   return parts.join(" · ");
 }
 function backupCard(){
@@ -1230,6 +1236,7 @@ const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:
 function openMore(){
   const d=$("#moresheet"), t=currentTheme();
   d.querySelectorAll("[data-act=theme-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===t));
+  d.querySelectorAll("[data-act=lang-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===currentLang()));
   if(!d.open){ d.showModal(); history.pushState({more:1},""); }
 }
 function closeMore(){ const d=$("#moresheet"); if(d.open) d.close(); }
@@ -1299,6 +1306,21 @@ function applyTheme(setting){
   const m=document.querySelector('meta[name="theme-color"]');
   if(m) m.content=getComputedStyle(document.documentElement).getPropertyValue("--surface").trim()||"#ffffff";
 }
+
+/* ---------- LANGUAGE ---------- */
+// English / Arabic. Plain labels are swapped by trDom (also for everything drawn later, via the observer below);
+// text with numbers or names goes through t()/tn() while drawing. The <head> script sets lang/dir before first paint.
+function currentLang(){ try{ return detectLang(localStorage.getItem("ironlog.lang"),navigator.language); }catch(e){ return "en"; } }
+function applyLang(code,quiet){
+  if(!setLang(code)) return;
+  try{ localStorage.setItem("ironlog.lang",code); }catch(e){}
+  const de=document.documentElement; de.lang=code; de.dir=isRtl()?"rtl":"ltr";
+  trDom(document.body);
+  document.querySelectorAll("[data-act=lang-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===code));
+  if(!quiet&&state.authed){ renderSoon(); refreshSheets(); }
+}
+// Content drawn after a language change (innerHTML in views and sheets) is translated as it is added.
+new MutationObserver(ms=>{ if(isRtl()) for(const m of ms) m.addedNodes.forEach(n=>trDom(n)); }).observe(document.body,{childList:true,subtree:true});
 
 /* ---------- render + events ---------- */
 const VIEWS=["log","days","body","coach","goals","progress","history"];
@@ -1419,6 +1441,7 @@ document.addEventListener("click",e=>{
     case "more-close": closeMore(); break;
     case "more-go": closeMore(); go(b.dataset.view); break;
     case "theme-set": applyTheme(b.dataset.v); openMore(); break;
+    case "lang-set": applyLang(b.dataset.v); openMore(); break;
     case "set-goal": state.editProfile=true; go("body"); setTimeout(()=>document.getElementById("pf-goalw")?.focus(),0); break;
     case "meal-name": $("#meal-name").value=state.mealDraft.name=b.dataset.name; break;
     case "rm-meal":{ const d=state.cdate; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderCoach(); break; }
@@ -1505,6 +1528,7 @@ if ("serviceWorker" in navigator) {
 if(!configured) $("#signout").hidden=true;
 render();
 applyTheme(currentTheme());
+applyLang(currentLang(),true);
 resumeRest();
 // Don't redraw under someone who is typing; redraw as soon as they leave the field instead.
 const typing=()=>{ const a=document.activeElement; return !!(a&&a.matches&&a.matches("input:not([type=date]),select,textarea")); };
