@@ -87,3 +87,8 @@ test("a message built from a variable plus English text is a violation unless th
   assert.deepEqual(js("toast(e.message);").violations, []);
   assert.deepEqual(js('toast(t("{n} saved",{n:name+"x"}));').violations, []);
 });
+
+test("string literals used only in comparisons are not messages", () => {
+  assert.deepEqual(js('toast(e.code==="denied" ? t("A") : e.code!=="x" ? t("B") : t("C"));').violations, []);
+  assert.equal(js('toast(e.code==="denied" ? "Not allowed" : t("C"));').violations.length, 1);
+});

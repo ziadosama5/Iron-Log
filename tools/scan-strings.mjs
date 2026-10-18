@@ -9,7 +9,7 @@
 // Only template literals and strings that contain an HTML tag are read as markup.
 
 export const LABEL_ALLOW = new Set([
-  "Iron Log", "English", "العربية", "kg", "cm", "kcal", "g", "min", "s", "%", "PR", "e1RM", "1RM", "RPE"
+  "Iron Log", "English", "العربية", "firebase-config.js", "kg", "cm", "kcal", "g", "min", "s", "%", "PR", "e1RM", "1RM", "RPE"
 ]);
 
 const SENT = "\u0001";
@@ -155,7 +155,11 @@ export function scanSource(source, { kind = "js" } = {}) {
     (function walk(str) {
       for (let i = 0; i < str.length; ) {
         const c = str[i];
-        if (c === '"' || c === "'") { const end = skipQuoted(str, i); out.push(str.slice(i + 1, end - 1)); i = end; }
+        if (c === '"' || c === "'") {
+          const end = skipQuoted(str, i);
+          if (!/[!=]==?\s*$/.test(str.slice(0, i))) out.push(str.slice(i + 1, end - 1)); // not a comparison operand
+          i = end;
+        }
         else if (c === "`") { const r = readTemplate(str, i); r.parts.forEach(p => (p.expr !== undefined ? walk(p.expr) : out.push(p.text))); i = r.end; }
         else i++;
       }

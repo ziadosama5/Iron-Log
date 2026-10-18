@@ -384,7 +384,7 @@ const store = {
       this.user=user; state.authed=!!user;
       showAccount(user);
       if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; setSync(""); onData(); return; }
-      setSync("Loading your data…");
+      setSync(t("Loading your data…"));
       this.col = collection(fs, "users", user.uid, "items");
       this.unsub = onSnapshot(this.col, { includeMetadataChanges:true }, snap=>{
         const ws=[], bs=[], food={}; let prog={}, prof={}, settings={rest:{}};
@@ -395,9 +395,9 @@ const store = {
         state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings; state.food=food; state.serverSynced=!snap.metadata.fromCache;
         if(snap.docChanges().length) state.dataRev=(state.dataRev||0)+1;  // metadata-only snapshots ("saved") change nothing
         if(mp.needsSave && !snap.metadata.fromCache) this.saveDays(days);
-        setSync(snap.metadata.hasPendingWrites ? (navigator.onLine===false?"Offline · will sync":"Saving…") : (snap.metadata.fromCache?"Offline":"Synced"));
+        setSync(snap.metadata.hasPendingWrites ? (navigator.onLine===false?t("Offline · will sync"):t("Saving…")) : (snap.metadata.fromCache?t("Offline"):t("Synced")));
         onData();
-      }, err=>{ setSync("Sync stopped. Reload to reconnect"); console.error(err); });
+      }, err=>{ setSync(t("Sync stopped. Reload to reconnect")); console.error(err); });
     });
   },
   write(id, body){
@@ -405,7 +405,7 @@ const store = {
     const ref = doc(this.col, id);
     (body ? setDoc(ref, body) : deleteDoc(ref)).catch(e=>{
       console.error(e);
-      toast(e && e.code==="permission-denied" ? "Not allowed to save. Sign out and back in." : e && e.code==="resource-exhausted" ? "Daily free limit reached. Changes will save tomorrow." : "Couldn't save. Check your connection.");
+      toast(e && e.code==="permission-denied" ? t("Not allowed to save. Sign out and back in.") : e && e.code==="resource-exhausted" ? t("Daily free limit reached. Changes will save tomorrow.") : t("Couldn't save. Check your connection."));
     });
   },
   save(w){
@@ -675,27 +675,27 @@ function addExerciseToWorkout(name){
 
 /* ---------- DAYS ---------- */
 function tplGrid(confirmable){
-  return `<div class="tpl">${TEMPLATES.map((t,i)=>`<button class="daypick" data-act="use-tpl" data-i="${i}"><span class="dayname" style="font-size:20px">${esc(t.name)}</span><small>${esc(t.note)}</small><span class="chips">${t.days.map(d=>`<span class="chip">${esc(d.name)}</span>`).join("")}</span></button>`).join("")}
+  return `<div class="tpl">${TEMPLATES.map((tp,i)=>`<button class="daypick" data-act="use-tpl" data-i="${i}"><span class="dayname" style="font-size:20px">${esc(nameOf("template",tp.name))}</span><small>${esc(nameOf("tplnote",tp.note))}</small><span class="chips">${tp.days.map(d=>`<span class="chip">${esc(nameOf("day",d.name))}</span>`).join("")}</span></button>`).join("")}
     ${confirmable?"":`<button class="daypick" data-act="add-day"><span class="dayname" style="font-size:20px">Blank</span><small>Name your own days</small></button>`}</div>`;
 }
 function weekStrip(){
   if(!state.days.some(d=>(d.weekdays||[]).length)) return `<p class="prev" style="margin:0">Tip: open a day and pick the weekdays you train it. The Workout tab will then pick today's day for you.</p>`;
   const tw=new Date().getDay();
   return `<div class="week">${WEEK.map(wd=>{ const d=dayForWeekday(wd);
-    return `<div class="wd ${wd===tw?"today":""} ${d?"on":""}"><span class="label">${WD[wd]}</span><span class="wdn">${d?esc(d.name):"Rest"}</span></div>`; }).join("")}</div>`;
+    return `<div class="wd ${wd===tw?"today":""} ${d?"on":""}"><span class="label">${nameOf("weekday",WD[wd])}</span><span class="wdn">${d?esc(nameOf("day",d.name)):t("Rest")}</span></div>`; }).join("")}</div>`;
 }
 function renderDays(){
-  let h = `<div class="row"><h2 class="grow">Training days</h2>${state.days.length?`<button class="btn small" data-act="add-day">+ Add day</button><button class="btn small" data-act="change-split">${state.pickSplit?"Cancel":"Change split"}</button>`:""}</div>`;
+  let h = `<div class="row"><h2 class="grow">Training days</h2>${state.days.length?`<button class="btn small" data-act="add-day">+ Add day</button><button class="btn small" data-act="change-split">${state.pickSplit?t("Cancel"):t("Change split")}</button>`:""}</div>`;
   if (!state.days.length){
     h += `<p class="prev" style="margin:0">Start from a common split and edit it, or build your own from scratch.</p>${tplGrid(false)}`;
     $("#view-days").innerHTML=h; return;
   }
   if (state.pickSplit){
-    const t = state.confirmTpl!=null ? TEMPLATES[state.confirmTpl] : null;
+    const tpl = state.confirmTpl!=null ? TEMPLATES[state.confirmTpl] : null;
     h += `<div class="card"><h3>Switch to a different split</h3>
-      <p class="prev" style="margin:0">This replaces your ${state.days.length} current days. Workouts you already logged stay in History and Lifts.</p>
-      ${t?`<div class="row"><span class="grow">Replace your days with <b>${esc(t.name)}</b>?</span><button class="btn small" data-act="cancel-tpl">Back</button><button class="btn small primary" data-act="apply-tpl">Replace</button></div>`:tplGrid(true)}
-      ${t?"":`<div class="row">${state.confirmReset
+      <p class="prev" style="margin:0">${tn("This replaces your {n} current day. Workouts you already logged stay in History and Lifts.","This replaces your {n} current days. Workouts you already logged stay in History and Lifts.",state.days.length)}</p>
+      ${tpl?`<div class="row"><span class="grow">${t("Replace your days with {name}?",{name:"<b>"+esc(nameOf("template",tpl.name))+"</b>"})}</span><button class="btn small" data-act="cancel-tpl">Back</button><button class="btn small primary" data-act="apply-tpl">Replace</button></div>`:tplGrid(true)}
+      ${tpl?"":`<div class="row">${state.confirmReset
         ? `<span class="prev grow">Delete all days and start blank?</span><button class="btn small" data-act="cancel-reset">Back</button><button class="btn small danger" data-act="do-reset">Delete all</button>`
         : `<button class="btn ghost small" data-act="ask-reset">Or start blank</button>`}</div>`}</div>`;
   }
@@ -703,29 +703,29 @@ function renderDays(){
   const nd = nextDay();
   state.days.forEach((d,i)=>{
     const editing = state.editDay===d.id, wds=(d.weekdays||[]);
-    const wdText = WEEK.filter(x=>wds.includes(x)).map(x=>WD[x]).join(" · ");
+    const wdText = WEEK.filter(x=>wds.includes(x)).map(x=>nameOf("weekday",WD[x])).join(" · ");
     h += `<div class="card ${editing?"open":""}">
-      <div class="ex-head"><button class="dayhead" data-act="edit-day" data-id="${d.id}" aria-expanded="${editing}"><span class="daynum">DAY ${i+1}${wdText?" · "+wdText.toUpperCase():""}${nd&&nd.id===d.id?" · UP NEXT":""}</span><span class="dayname">${esc(d.name)}</span></button>
-        <button class="btn small ${editing?"primary":""}" data-act="edit-day" data-id="${d.id}">${editing?"✓ Done":"✎ Edit day"}</button></div>`;
+      <div class="ex-head"><button class="dayhead" data-act="edit-day" data-id="${d.id}" aria-expanded="${editing}"><span class="daynum">${t("DAY {n}",{n:i+1})}${wdText?" · "+wdText.toUpperCase():""}${nd&&nd.id===d.id?" · "+t("UP NEXT"):""}</span><span class="dayname">${esc(nameOf("day",d.name))}</span></button>
+        <button class="btn small ${editing?"primary":""}" data-act="edit-day" data-id="${d.id}">${editing?t("✓ Done"):t("✎ Edit day")}</button></div>`;
     if (!editing){
-      h += `${d.focus.length?`<div class="chips">${d.focus.map(m=>`<span class="chip">${esc(m)}</span>`).join("")}</div>`:""}
-        <div class="prev">${d.exercises.length?d.exercises.map(esc).join(" · "):"No exercises yet. Tap Edit day to add some."}</div>
+      h += `${d.focus.length?`<div class="chips">${d.focus.map(m=>`<span class="chip">${esc(nameOf("muscle",m))}</span>`).join("")}</div>`:""}
+        <div class="prev">${d.exercises.length?d.exercises.map(n=>esc(nameOf("ex",n))).join(" · "):t("No exercises yet. Tap Edit day to add some.")}</div>
         <div class="row"><button class="btn primary small" data-act="train-day" data-id="${d.id}">Train this day</button></div>`;
     } else {
       h += `<label class="stack" style="gap:4px"><span class="label">Day name</span><input id="dn-${d.id}" value="${esc(d.name)}" data-act-change="rename" data-id="${d.id}" maxlength="40"></label>
         <div class="stack" style="gap:6px"><span class="label">Train on</span><div class="chips">${WEEK.map(x=>{ const other=state.days.find(o=>o.id!==d.id&&(o.weekdays||[]).includes(x));
-          return `<button class="chip" data-act="toggle-wd" data-id="${d.id}" data-wd="${x}" aria-pressed="${wds.includes(x)}" title="${other?"Currently "+esc(other.name):""}">${WD[x]}${other&&!wds.includes(x)?` <span style="opacity:.6">· ${esc(other.name)}</span>`:""}</button>`;}).join("")}</div></div>
-        <div class="stack" style="gap:6px"><span class="label">Muscles trained</span><div class="chips">${MUSCLES.map(m=>`<button class="chip" data-act="toggle-m" data-id="${d.id}" data-m="${esc(m)}" aria-pressed="${d.focus.includes(m)}">${esc(m)}</button>`).join("")}</div></div>
+          return `<button class="chip" data-act="toggle-wd" data-id="${d.id}" data-wd="${x}" aria-pressed="${wds.includes(x)}" title="${other?esc(t("Currently {name}",{name:nameOf("day",other.name)})):""}">${nameOf("weekday",WD[x])}${other&&!wds.includes(x)?` <span style="opacity:.6">· ${esc(nameOf("day",other.name))}</span>`:""}</button>`;}).join("")}</div></div>
+        <div class="stack" style="gap:6px"><span class="label">Muscles trained</span><div class="chips">${MUSCLES.map(m=>`<button class="chip" data-act="toggle-m" data-id="${d.id}" data-m="${esc(m)}" aria-pressed="${d.focus.includes(m)}">${esc(nameOf("muscle",m))}</button>`).join("")}</div></div>
         <div class="stack" style="gap:6px"><span class="label">Exercises, in order</span>
-        ${d.exercises.length?`<ol class="exlist">${d.exercises.map((n,k)=>`<li><span class="n">${k+1}</span><span class="t">${esc(n)}</span>${infoBtn(n)}
-          <button class="btn ghost small" data-act="mv" data-id="${d.id}" data-k="${k}" data-d="-1" aria-label="Move ${esc(n)} up" ${k===0?"disabled":""}>↑</button>
-          <button class="btn ghost small" data-act="mv" data-id="${d.id}" data-k="${k}" data-d="1" aria-label="Move ${esc(n)} down" ${k===d.exercises.length-1?"disabled":""}>↓</button>
-          <button class="btn ghost small danger" data-act="rm-dex" data-id="${d.id}" data-k="${k}" aria-label="Remove ${esc(n)}">✕</button></li>`).join("")}</ol>`:`<span class="prev">Tap suggestions below or type an exercise.</span>`}</div>
-        ${(()=>{ const s=suggestionsFor(d.focus,d.exercises); return s.length?`<div class="stack" style="gap:10px"><span class="label">Suggestions</span>${s.map(g=>`<div class="stack" style="gap:6px"><span class="prev">${esc(g.muscle)}</span><div class="chips">${g.items.map(n=>`${chipInfo(`<button class="chip add" data-act="add-dex" data-id="${d.id}" data-name="${esc(n)}">${esc(n)}</button>`,n)}`).join("")}</div></div>`).join("")}</div>`:(d.focus.length?"":`<span class="prev">Pick the muscles this day trains to get exercise suggestions.</span>`); })()}
+        ${d.exercises.length?`<ol class="exlist">${d.exercises.map((n,k)=>`<li><span class="n">${k+1}</span><span class="t">${esc(nameOf("ex",n))}</span>${infoBtn(n)}
+          <button class="btn ghost small" data-act="mv" data-id="${d.id}" data-k="${k}" data-d="-1" aria-label="${esc(t("Move {name} up",{name:nameOf("ex",n)}))}" ${k===0?"disabled":""}>↑</button>
+          <button class="btn ghost small" data-act="mv" data-id="${d.id}" data-k="${k}" data-d="1" aria-label="${esc(t("Move {name} down",{name:nameOf("ex",n)}))}" ${k===d.exercises.length-1?"disabled":""}>↓</button>
+          <button class="btn ghost small danger" data-act="rm-dex" data-id="${d.id}" data-k="${k}" aria-label="${esc(t("Remove {name}",{name:nameOf("ex",n)}))}">✕</button></li>`).join("")}</ol>`:`<span class="prev">Tap suggestions below or type an exercise.</span>`}</div>
+        ${(()=>{ const s=suggestionsFor(d.focus,d.exercises); return s.length?`<div class="stack" style="gap:10px"><span class="label">Suggestions</span>${s.map(g=>`<div class="stack" style="gap:6px"><span class="prev">${esc(nameOf("muscle",g.muscle))}</span><div class="chips">${g.items.map(n=>`${chipInfo(`<button class="chip add" data-act="add-dex" data-id="${d.id}" data-name="${esc(n)}">${esc(nameOf("ex",n))}</button>`,n)}`).join("")}</div></div>`).join("")}</div>`:(d.focus.length?"":`<span class="prev">Pick the muscles this day trains to get exercise suggestions.</span>`); })()}
         <form class="row" data-form="add-dex" data-id="${d.id}" autocomplete="off"><input list="ex-list" placeholder="Type any exercise" style="flex:1 1 180px"><button class="btn" type="submit">Add</button></form>
         <div class="row" style="justify-content:space-between">
           <div class="row" style="gap:4px"><button class="btn ghost small" data-act="mv-day" data-id="${d.id}" data-d="-1" ${i===0?"disabled":""}>Move day up</button><button class="btn ghost small" data-act="mv-day" data-id="${d.id}" data-d="1" ${i===state.days.length-1?"disabled":""}>Move day down</button></div>
-          ${state.confirmDayDel===d.id?`<div class="row" style="gap:6px"><span class="prev">Delete ${esc(d.name)}?</span><button class="btn small" data-act="cancel-ddel">Keep</button><button class="btn small danger" data-act="del-day" data-id="${d.id}">Delete</button></div>`
+          ${state.confirmDayDel===d.id?`<div class="row" style="gap:6px"><span class="prev">${esc(t("Delete {name}?",{name:nameOf("day",d.name)}))}</span><button class="btn small" data-act="cancel-ddel">Keep</button><button class="btn small danger" data-act="del-day" data-id="${d.id}">Delete</button></div>`
             :`<button class="btn ghost small danger" data-act="ask-ddel" data-id="${d.id}">Delete day</button>`}
         </div>
         <button class="btn primary" data-act="edit-day" data-id="${d.id}">✓ Done editing</button>`;
@@ -758,7 +758,7 @@ function renderProgress(){
   const first=pts[0], lastP=pts[pts.length-1];
   const change=pts.length>1&&first.e1?((lastP.e1-first.e1)/first.e1*100):null;
   $("#view-progress").innerHTML=`<div class="row"><h2 class="grow">Progress</h2>
-    <select id="prog-ex" style="width:auto;max-width:60%">${names.sort().map(n=>`<option ${n===ex?"selected":""}>${esc(n)}</option>`).join("")}</select></div>
+    <select id="prog-ex" style="width:auto;max-width:60%">${names.sort().map(n=>`<option value="${esc(n)}" ${n===ex?"selected":""}>${esc(nameOf("ex",n))}</option>`).join("")}</select></div>
   <div class="stats">
     <div class="stat"><div class="label">Best e1RM</div><div class="v">${kg(Math.round(allBest*10)/10)} <small>kg</small></div></div>
     <div class="stat"><div class="label">Heaviest set</div><div class="v">${kg(allTop)} <small>kg</small></div></div>
@@ -772,7 +772,7 @@ function renderProgress(){
   <p class="prev">e1RM uses the Epley formula: weight × (1 + reps ÷ 30). It lets sets of different rep counts be compared on one line.</p>`;
 }
 function chart(pts){
-  return lineChart(pts,[{k:"e1",c:"var(--accent)",main:true},{k:"top",c:"var(--muted)",dash:true}],"Estimated 1RM and top set weight over time","One session logged. The chart appears after your second.");
+  return lineChart(pts,[{k:"e1",c:"var(--accent)",main:true},{k:"top",c:"var(--muted)",dash:true}],t("Estimated 1RM and top set weight over time"),t("One session logged. The chart appears after your second."));
 }
 function lineChart(all, series, aria, emptyMsg){
   const W=600,H=240,L=44,R=14,T=14,B=30;
@@ -1154,14 +1154,14 @@ function renderHistory(){
   let h=`<h2>History</h2>`;
   if(!ws.length){ $("#view-history").innerHTML=h+`<div class="empty"><strong>No workouts yet</strong>Every day you log shows up here. Tap one to open and edit it.</div>`+backupCard(); return; }
   const week=ws.filter(w=>(Date.now()-new Date(w.date+"T12:00:00"))/864e5<7).length;
-  h+=`<div class="row label" style="gap:16px"><span>${ws.length} workouts logged</span><span>${week} in the last 7 days</span></div><div class="stack">`;
+  h+=`<div class="row label" style="gap:16px"><span>${tn("{n} workout logged","{n} workouts logged",ws.length)}</span><span>${t("{n} in the last 7 days",{n:week})}</span></div><div class="stack">`;
   ws.forEach(w=>{
     const done=w.entries.filter(e=>e.sets.length);
     const v=done.reduce((a,e)=>a+vol(e.sets),0), sets=done.reduce((a,e)=>a+e.sets.length,0);
     const day=dayById(w.dayId), dname=day?day.name:(w.dayName||"Free workout");
     h+=`<div class="card" data-open="${esc(w.date)}" tabindex="0" style="cursor:pointer">
-      <div class="ex-head"><div class="stack" style="gap:6px;min-width:0"><span class="prev">${fmtDateY(w.date)}</span><span class="daytag" style="align-self:flex-start">${esc(dname)}</span></div><span class="num prev" style="white-space:nowrap">${historySummary(w,sets,v)}</span></div>
-      <div class="chips">${done.map(e=>`<span class="chip">${esc(e.ex)} · ${e.sets.length}</span>`).join("")}${(w.cardio||[]).map(c=>`<span class="chip">${CARDIO_LABEL[c.type]||"Cardio"} ${c.min} min</span>`).join("")}</div>
+      <div class="ex-head"><div class="stack" style="gap:6px;min-width:0"><span class="prev">${fmtDateY(w.date)}</span><span class="daytag" style="align-self:flex-start">${esc(nameOf("day",dname))}</span></div><span class="num prev" style="white-space:nowrap">${historySummary(w,sets,v)}</span></div>
+      <div class="chips">${done.map(e=>`<span class="chip">${esc(nameOf("ex",e.ex))} · ${e.sets.length}</span>`).join("")}${(w.cardio||[]).map(c=>`<span class="chip">${cardioLabel(c.type)} ${c.min} min</span>`).join("")}</div>
       <div class="row" style="justify-content:flex-end">${state.confirmDel===w.id
         ?`<span class="prev">Delete this workout?</span><button class="btn small" data-act="cancel-del">Keep</button><button class="btn small danger" data-act="del-w" data-id="${w.id}">Delete</button>`
         :`<button class="btn ghost small danger" data-act="ask-del" data-id="${w.id}">Delete</button>`}</div></div>`;
@@ -1169,16 +1169,16 @@ function renderHistory(){
   $("#view-history").innerHTML=h+"</div>"+backupCard();
 }
 function historySummary(w,sets,v){
-  const parts=[]; if(sets) parts.push(`${sets} sets · ${kg(v)} kg`);
-  const ek=exerciseKcal(w,weightOn(state.body,w.date)).total; if(ek) parts.push(`${ek.toLocaleString("en-US")} kcal exercise`);
+  const parts=[]; if(sets) parts.push(`${tn("{n} set","{n} sets",sets)} · ${kg(v)} kg`);
+  const ek=exerciseKcal(w,weightOn(state.body,w.date)).total; if(ek) parts.push(t("{n} kcal exercise",{n:ek.toLocaleString("en-US")}));
   return parts.join(" · ");
 }
 function backupCard(){
   let last=null; try{ last=localStorage.getItem("ironlog.lastBackup"); }catch(e){}
   const age=last?Math.floor(daysAgo(last)):null;
   const status = last==null ? `<span class="prev" style="color:var(--danger)">No backup downloaded on this device yet.</span>`
-    : age>=30 ? `<span class="prev" style="color:var(--danger)">Last backup ${age} days ago. Time for a new one.</span>`
-    : `<span class="prev" style="color:var(--good)">Last backup ${age===0?"today":age+" day"+(age>1?"s":"")+" ago"}.</span>`;
+    : age>=30 ? `<span class="prev" style="color:var(--danger)">${tn("Last backup {n} day ago. Time for a new one.","Last backup {n} days ago. Time for a new one.",age)}</span>`
+    : `<span class="prev" style="color:var(--good)">${age===0?t("Last backup today."):tn("Last backup {n} day ago.","Last backup {n} days ago.",age)}</span>`;
   return `<div class="card"><h3>Backup</h3>
     <p class="prev" style="margin:0">Download everything (workouts, days, body data) as a file you keep, for example in Google Drive. Restore it here any time, even into a new account. Once a month is a good habit.</p>
     ${status}
@@ -1207,8 +1207,8 @@ async function importData(file){
     // Backup files can come from anywhere: clean every item, skip anything that looks wrong.
     const {items, skipped}=cleanBackupItems(j.items,{bodyKeys:Object.keys(BF), goals:Object.keys(GOALS), muscles:MUSCLES});
     if(!items.length) throw new Error("format");
-    await store.restore(items); toast("Restored "+items.length+" items"+(skipped?`, skipped ${skipped} that looked damaged`:""));
-  }catch(e){ console.error(e); toast(e.message==="format"?"That file isn't an Iron Log backup":"Couldn't restore that file"); }
+    await store.restore(items); toast(t("Restored {n} items",{n:items.length})+(skipped?t(", skipped {k} that looked damaged",{k:skipped}):""));
+  }catch(e){ console.error(e); toast(e.message==="format"?t("That file isn't an Iron Log backup"):t("Couldn't restore that file")); }
 }
 
 /* ---------- EXERCISE INFO ---------- */
@@ -1218,12 +1218,12 @@ let exInfoToken=0;
 function openExInfo(name){
   const info=infoFor(name); if(!info) return;
   const dlg=$("#exinfo"), token=++exInfoToken;
-  const figs = info.img ? `<div class="ex-figs">${[["start","Start"],["end","Finish"]].map(([p,l])=>
+  const figs = info.img ? `<div class="ex-figs">${[["start",t("Start")],["end",t("Finish")]].map(([p,l])=>
       `<figure><div class="ex-fig" data-src="/exercises/${info.slug}-${p}.svg" aria-hidden="true"></div><figcaption class="label">${l}</figcaption></figure>`).join("")}</div>` : "";
-  dlg.innerHTML = `<div class="sheet-head"><h2 id="exinfo-title">${esc(info.name)}</h2><button class="btn ghost small" data-act="exinfo-close" aria-label="Close">✕</button></div>
+  dlg.innerHTML = `<div class="sheet-head"><h2 id="exinfo-title">${esc(nameOf("ex",info.name))}</h2><button class="btn ghost small" data-act="exinfo-close" aria-label="Close">✕</button></div>
     ${figs}
-    <p class="ex-works">Works: <b>${info.primary.map(esc).join(", ")}</b>${info.secondary.length?` <span class="prev">· ${info.secondary.map(esc).join(", ")}</span>`:""}</p>
-    <ul class="ex-tips">${info.tips.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>
+    <p class="ex-works">Works: <b>${info.primary.map(m=>esc(nameOf("muscle",m))).join(", ")}</b>${info.secondary.length?` <span class="prev">· ${info.secondary.map(m=>esc(nameOf("muscle",m))).join(", ")}</span>`:""}</p>
+    <ul class="ex-tips">${(isRtl()&&info.ar&&info.ar.tips?info.ar.tips:info.tips).map(tip=>`<li>${esc(tip)}</li>`).join("")}</ul>
     ${info.img?`<p class="prev ex-credit">Illustrations: Everkinetic, CC BY-SA 4.0</p>`:""}`;
   if(!dlg.open){ dlg.showModal(); history.pushState({exinfo:1},""); }
   dlg.querySelectorAll(".ex-fig").forEach(box=>{
@@ -1245,8 +1245,8 @@ window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.exinf
 const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History"};
 // More sheet: Days, Lifts, History & backup, theme, account. Same open/close pattern as the info sheet.
 function openMore(){
-  const d=$("#moresheet"), t=currentTheme();
-  d.querySelectorAll("[data-act=theme-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===t));
+  const d=$("#moresheet"), th=currentTheme();
+  d.querySelectorAll("[data-act=theme-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===th));
   d.querySelectorAll("[data-act=lang-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===currentLang()));
   if(!d.open){ d.showModal(); history.pushState({more:1},""); }
 }
@@ -1351,7 +1351,7 @@ function render(){
   if(!authed){ VIEWS.forEach(v=>$("#view-"+v).hidden=true); renderSignin(); syncWake(); return; }
   const inMore=["days","progress","history"].includes(state.view);
   document.querySelectorAll(".tabbar button").forEach(b=>{ if(b.dataset.view===state.view||(inMore&&b.dataset.view==="more")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
-  $("#screen-title").textContent=SCREEN_TITLES[state.view]||"Iron Log";
+  $("#screen-title").textContent=t(SCREEN_TITLES[state.view]||"Iron Log");
   VIEWS.forEach(v=>$("#view-"+v).hidden=v!==state.view);
   ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory})[state.view]();
   syncWake();
@@ -1377,15 +1377,15 @@ document.addEventListener("submit",e=>{
   if(f.id==="meal-form"){
     const kRaw=$("#meal-kcal").value.trim(), pRaw=$("#meal-protein").value.trim().replace(",","."), name=$("#meal-name").value.trim();
     const k=Number(kRaw), p=pRaw===""?null:Number(pRaw);
-    if(!(Number.isInteger(k)&&k>=1&&k<=5000) || (p!==null&&!(Number.isFinite(p)&&p>=0&&p<=500)) || name.length>40){ toast("Enter 1–5000 kcal (protein 0–500 g)"); return; }
+    if(!(Number.isInteger(k)&&k>=1&&k<=5000) || (p!==null&&!(Number.isFinite(p)&&p>=0&&p<=500)) || name.length>40){ toast(t("Enter 1–5000 kcal (protein 0–500 g)")); return; }
     const d=state.cdate, meals=[...((state.food[d]&&state.food[d].meals)||[]), {id:uid(), name:name||null, kcal:k, protein:p}];
-    store.saveFood({date:d, meals}); state.mealDraft={kcal:"",protein:"",name:""}; renderCoach(); toast("Meal added"); return;
+    store.saveFood({date:d, meals}); state.mealDraft={kcal:"",protein:"",name:""}; renderCoach(); toast(t("Meal added")); return;
   }
   if(f.id==="quickw-form"){
     const n=parseFloat(String($("#quickw").value).trim().replace(",","."));
-    if(!(isFinite(n)&&n>0)){ toast("Body weight needs a number"); return; }
+    if(!(isFinite(n)&&n>0)){ toast(t("Body weight needs a number")); return; }
     store.saveBody({...withWeight(state.body.find(e=>e.date===state.bdate),state.bdate,n), updated:Date.now()});
-    renderBody(); toast("Saved for "+fmtDate(state.bdate)); return;
+    renderBody(); toast(t("Saved for {d}",{d:fmtDate(state.bdate)})); return;
   }
   if(f.id==="add-ex-form"){ addExerciseToWorkout($("#new-ex").value); }
   if(f.id==="profile-form"){
@@ -1393,21 +1393,21 @@ document.addEventListener("submit",e=>{
     const p={sex:fd.get("sex")||null, height:num(fd.get("height")), birthYear:num(fd.get("birthYear")), goal:fd.get("goal")||null};
     // Target weight is optional; changing it restarts the goal from today.
     const gw=String(fd.get("goalWeight")||"").trim()===""?null:num(fd.get("goalWeight"));
-    if(String(fd.get("goalWeight")||"").trim()!==""&&!(gw>=30&&gw<=300)){ toast("Target weight must be 30–300 kg"); return; }
+    if(String(fd.get("goalWeight")||"").trim()!==""&&!(gw>=30&&gw<=300)){ toast(t("Target weight must be 30–300 kg")); return; }
     p.goalWeight=gw; p.goalStart=gw==null?null:(gw===state.profile.goalWeight&&state.profile.goalStart?state.profile.goalStart:today());
     const yr=new Date().getFullYear();
-    if(!p.sex||!p.goal||!p.height||p.height<100||p.height>250||!p.birthYear||p.birthYear<yr-100||p.birthYear>yr-10){ toast("Fill in all four fields: height in cm (100–250) and a 4-digit birth year"); return; }
-    store.saveProfile(p); state.editProfile=false; renderBody(); toast("Saved");
+    if(!p.sex||!p.goal||!p.height||p.height<100||p.height>250||!p.birthYear||p.birthYear<yr-100||p.birthYear>yr-10){ toast(t("Fill in all four fields: height in cm (100–250) and a 4-digit birth year")); return; }
+    store.saveProfile(p); state.editProfile=false; renderBody(); toast(t("Saved"));
   }
   if(f.id==="body-form"){
     const e={date:state.bdate}; let any=false, bad=null;
     Object.keys(BF).forEach(k=>{ const raw=String(f.elements[k]?.value||"").trim().replace(",","."); if(!raw) return; const n=parseFloat(raw); if(!isFinite(n)||n<0){ bad=BF[k].label; return; } e[k]=n; any=true; });
-    if(bad){ toast(bad+" needs a number"); return; }
-    if(!any){ toast("Enter at least one value, like your body weight"); return; }
-    e.updated=Date.now(); store.saveBody(e); renderBody(); toast("Entry saved for "+fmtDate(state.bdate));
+    if(bad){ toast(t("{name} needs a number",{name:t(bad)})); return; }
+    if(!any){ toast(t("Enter at least one value, like your body weight")); return; }
+    e.updated=Date.now(); store.saveBody(e); renderBody(); toast(t("Entry saved for {d}",{d:fmtDate(state.bdate)}));
   }
   if(f.dataset.form==="add-dex"){ const v=f.querySelector("input").value.trim(); if(!v) return; const n=canonical(v);
-    const d=dayById(f.dataset.id); if(d.exercises.some(x=>same(x,n))){ toast(n+" is already on this day"); return; }
+    const d=dayById(f.dataset.id); if(d.exercises.some(x=>same(x,n))){ toast(t("{name} is already on this day",{name:nameOf("ex",n)})); return; }
     editDays(ds=>ds.find(x=>x.id===f.dataset.id).exercises.push(n)); setTimeout(()=>document.querySelector(`[data-form="add-dex"] input`)?.focus(),0); }
 });
 document.addEventListener("click",e=>{
@@ -1434,7 +1434,7 @@ document.addEventListener("click",e=>{
       const wt=v.w, r=v.r;
       en.sets.push({w:wt,r,t:Date.now()}); delete ui[en.ex]; store.save(w); renderLog(); startRestFor(en.ex);
       const best=bestBefore(en.ex,state.date);
-      if(best>0&&e1rm(wt,r)>best&&en.sets.filter(s=>e1rm(s.w,s.r)>best).length===1) toast("New PR on "+en.ex+"!");
+      if(best>0&&e1rm(wt,r)>best&&en.sets.filter(s=>e1rm(s.w,s.r)>best).length===1) toast(t("New PR on {name}!",{name:nameOf("ex",en.ex)}));
       break; }
     case "rest-adj": adjustRestBy(+b.dataset.d); break;
     case "rest-skip": clearRest(); break;
@@ -1461,10 +1461,10 @@ document.addEventListener("click",e=>{
     case "cardio-step":{ const d=state.cardioDraft; d.min=String(Math.max(1,Math.min(600,(parseInt(d.min,10)||0)+(+b.dataset.d)))); renderLog(); break; }
     case "add-cardio":{
       const d=state.cardioDraft, mRaw=String(d.min).trim(), kRaw=String(d.kcal).trim(), m=Number(mRaw), k=kRaw===""?null:Number(kRaw);
-      if(!(Number.isInteger(m)&&m>=1&&m<=600) || (k!==null&&!(Number.isInteger(k)&&k>=1&&k<=5000))){ toast("Enter 1–600 minutes and, if you have it, 1–5000 kcal"); return; }
+      if(!(Number.isInteger(m)&&m>=1&&m<=600) || (k!==null&&!(Number.isInteger(k)&&k>=1&&k<=5000))){ toast(t("Enter 1–600 minutes and, if you have it, 1–5000 kcal")); return; }
       const w=ensureWorkout(); if(!workoutFor(state.date)&&!w.dayName) w.dayName="Cardio";
       w.cardio=[...(w.cardio||[]),{id:uid(),type:d.type,min:m,intensity:d.intensity,kcal:k}];
-      store.save(w); d.kcal=""; renderLog(); toast("Cardio added"); break; }
+      store.save(w); d.kcal=""; renderLog(); toast(t("Cardio added")); break; }
     case "rm-cardio":{ const w=ensureWorkout(); w.cardio=(w.cardio||[]).filter(c=>c.id!==b.dataset.id); store.save(w); renderLog(); break; }
     case "exinfo-close": closeExInfo(); break;
     case "rm-set":{ const w=ensureWorkout(), en=w.entries[ei], si=+b.dataset.si;
@@ -1478,7 +1478,7 @@ document.addEventListener("click",e=>{
       stopEditing(); const w=ensureWorkout(); w.entries[ei].done=true; store.save(w);
       const next=w.entries.slice(ei+1).concat(w.entries.slice(0,ei)).find(e=>!e.done);
       state.openEx=next?next.ex:undefined; renderLog();
-      if(next){ scrollToOpen(); toast("Next up: "+next.ex); } else { window.scrollTo({top:0,behavior:"smooth"}); toast("Workout complete. Nice work!"); }
+      if(next){ scrollToOpen(); toast(t("Next up: {name}",{name:nameOf("ex",next.ex)})); } else { window.scrollTo({top:0,behavior:"smooth"}); toast(t("Workout complete. Nice work!")); }
       break; }
     case "undone-ex":{ stopEditing(); const w=ensureWorkout(); w.entries[ei].done=false; state.openEx=w.entries[ei].ex; store.save(w); renderLog(); break; }
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
@@ -1491,8 +1491,8 @@ document.addEventListener("click",e=>{
     case "train-day": state.date=today(); state.view="log"; startDay(dayById(id)); go("log"); break;
     case "use-tpl":{ const i=+b.dataset.i;
       if(state.days.length){ state.confirmTpl=i; renderDays(); break; }
-      const t=TEMPLATES[i]; store.saveDays(t.days.map(d=>({id:uid(),...clone(d),weekdays:[]}))); state.editDay=null; renderDays(); toast(t.name+" added. Tap Edit day to change anything."); break; }
-    case "apply-tpl":{ const t=TEMPLATES[state.confirmTpl]; store.saveDays(t.days.map(d=>({id:uid(),...clone(d),weekdays:[]}))); state.confirmTpl=null; state.pickSplit=false; state.editDay=null; renderDays(); window.scrollTo(0,0); toast("Switched to "+t.name); break; }
+      const tp=TEMPLATES[i]; store.saveDays(tp.days.map(d=>({id:uid(),...clone(d),weekdays:[]}))); state.editDay=null; renderDays(); toast(t("{name} added. Tap Edit day to change anything.",{name:nameOf("template",tp.name)})); break; }
+    case "apply-tpl":{ const tp=TEMPLATES[state.confirmTpl]; store.saveDays(tp.days.map(d=>({id:uid(),...clone(d),weekdays:[]}))); state.confirmTpl=null; state.pickSplit=false; state.editDay=null; renderDays(); window.scrollTo(0,0); toast(t("Switched to {name}",{name:nameOf("template",tp.name)})); break; }
     case "cancel-tpl": state.confirmTpl=null; renderDays(); break;
     case "change-split": state.pickSplit=!state.pickSplit; state.confirmTpl=null; state.confirmReset=false; renderDays(); break;
     case "toggle-wd": editDays(ds=>{ const x=+b.dataset.wd, d=ds.find(o=>o.id===id); d.weekdays=d.weekdays||[];
@@ -1513,15 +1513,15 @@ document.addEventListener("click",e=>{
     case "do-reset": state.confirmReset=false; state.pickSplit=false; state.editDay=null; store.saveDays([]); renderDays(); break;
     case "edit-profile": state.editProfile=true; renderBody(); break;
     case "cancel-profile": state.editProfile=false; renderBody(); break;
-    case "del-body": store.removeBody(state.bdate); renderBody(); toast("Entry deleted"); break;
+    case "del-body": store.removeBody(state.bdate); renderBody(); toast(t("Entry deleted")); break;
     case "goto-body": go("body"); break;
-    case "coach-add":{ const keep=state.view; state.date=today(); addExerciseToWorkout(b.dataset.name); state.view=keep; toast(b.dataset.name+" added to today's workout"); renderCoach(); break; }
+    case "coach-add":{ const keep=state.view; state.date=today(); addExerciseToWorkout(b.dataset.name); state.view=keep; toast(t("{name} added to today's workout",{name:nameOf("ex",b.dataset.name)})); renderCoach(); break; }
     case "copy-review": copyReview(); break;
     case "signin": signIn(); break;
     case "export": exportData(); break;
     case "ask-del": state.confirmDel=id; renderHistory(); break;
     case "cancel-del": state.confirmDel=null; renderHistory(); break;
-    case "del-w": store.remove(id); state.confirmDel=null; renderHistory(); toast("Workout deleted"); break;
+    case "del-w": store.remove(id); state.confirmDel=null; renderHistory(); toast(t("Workout deleted")); break;
   }
 });
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.matches?.("tr[data-act]")){ e.target.click(); return; } if(e.key==="Enter"){ const c=e.target.closest?.("[data-open]"); if(c&&e.target===c){ state.date=c.dataset.open; go("log"); } } });
@@ -1531,8 +1531,8 @@ $("#signout").addEventListener("click",()=>{ clearRest(); closeMore(); signOut(a
 // Sheets add history entries; restoring the old scroll position when they close would undo
 // go()'s scroll-to-top (e.g. More → Lifts opening halfway down), so the app handles scrolling itself.
 try{ history.scrollRestoration="manual"; }catch(e){}
-window.addEventListener("offline",()=>setSync("Offline · saving on this phone"));
-window.addEventListener("online",()=>setSync("Back online · syncing…"));
+window.addEventListener("offline",()=>setSync(t("Offline · saving on this phone")));
+window.addEventListener("online",()=>setSync(t("Back online · syncing…")));
 if ("serviceWorker" in navigator) {
   window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(e=>console.warn("Offline cache unavailable",e)));
 }
