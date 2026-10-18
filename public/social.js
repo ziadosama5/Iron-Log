@@ -108,3 +108,14 @@ export function shouldPublish({ visibility, last, next, lastAt, now, minGapMs = 
   if (summaryEqual(last, next)) return false;
   return now - lastAt >= minGapMs;
 }
+
+// What the "Find a friend" box shows. A missing result and a hidden/unreadable one are the same {kind:"none"},
+// so a search can't tell whether someone exists but keeps their progress private.
+export function lookupResult(input, outcome) {
+  const raw = String(input ?? "").trim();
+  if (!raw) return { kind: "empty" };
+  if (!normalizeEmail(raw) && !validUsername(normalizeUsername(raw)).ok) return { kind: "invalid" };
+  if (!outcome || outcome.status !== "found" || !outcome.profile) return { kind: "none" };
+  const p = outcome.profile;
+  return { kind: "card", card: { displayName: p.displayName, username: p.username, summary: p.summary || null } };
+}

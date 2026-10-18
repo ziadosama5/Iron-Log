@@ -152,3 +152,21 @@ test("shouldPublish: never while private, never for an unchanged summary, not in
   assert.equal(at({ last: null }), true, "never published before");
   assert.equal(at({ visibility: undefined }), false);
 });
+
+import { lookupResult } from "../public/social.js";
+
+test("lookupResult: blank, invalid, and the same answer for missing and hidden", () => {
+  assert.equal(lookupResult("   ", null).kind, "empty");
+  assert.equal(lookupResult("a", null).kind, "invalid");
+  assert.equal(lookupResult("a b", null).kind, "invalid");
+  assert.deepEqual(lookupResult("zed", { status: "none" }), lookupResult("zed", null));
+  assert.deepEqual(lookupResult("zed", null), { kind: "none" });
+});
+
+test("lookupResult: a found profile becomes a card, summary only when readable", () => {
+  const prof = { username: "zed", displayName: "Zed", visibility: "public", summary: { level: 2 } };
+  assert.deepEqual(lookupResult("@Zed", { status: "found", profile: prof }), { kind: "card", card: { displayName: "Zed", username: "zed", summary: { level: 2 } } });
+  const noSummary = lookupResult("zed", { status: "found", profile: { username: "zed", displayName: "Zed" } });
+  assert.equal(noSummary.card.summary, null);
+  assert.equal(lookupResult("Zed@Example.com", { status: "found", profile: prof }).kind, "card", "e-mail input is accepted");
+});
