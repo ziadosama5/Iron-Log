@@ -80,5 +80,8 @@ export function deriveAccent(setting, mode, surface, bg) {
   let accent = ensureContrast(base, surface, m);
   accent = ensureContrast(accent, bg, m);
   const ink = INKS.reduce((best, c) => (contrast(c, accent) > contrast(best, accent) ? c : best));
-  return { accent, ink, soft: mix(accent, surface, m === "dark" ? 0.22 : 0.14) };
+  // Tint strength starts at 14% (light) / 22% (dark) and is lowered until accent-coloured text on it stays readable.
+  let k = m === "dark" ? 0.22 : 0.14, soft = mix(accent, surface, k);
+  while (k > 0 && contrast(accent, soft) < 4.5) { k = Math.max(0, k - 0.02); soft = mix(accent, surface, k); }
+  return { accent, ink, soft };
 }

@@ -65,3 +65,14 @@ test("presets: 8, plate first, unique ids, valid hex, English names", () => {
   assert.equal(new Set(PRESETS.map(p => p.id)).size, 8);
   for (const p of PRESETS) assert.equal(parseHex(p.hex), p.hex);
 });
+
+test("accent-coloured text on the soft tint stays readable (4.5:1) for presets and random colours", () => {
+  let seed = 7; const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const customs = Array.from({ length: 300 }, () => "#" + [0, 0, 0].map(() => Math.floor(rnd() * 256).toString(16).padStart(2, "0")).join(""));
+  for (const s of [...PRESETS.filter(p => p.id !== "plate").map(p => p.id), ...customs]) {
+    for (const mode of ["light", "dark"]) {
+      const d = derive(s, mode);
+      assert.ok(contrast(d.accent, d.soft) >= 4.5, `${s} ${mode}: ${contrast(d.accent, d.soft).toFixed(2)}`);
+    }
+  }
+});
