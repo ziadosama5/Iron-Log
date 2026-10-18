@@ -9,7 +9,7 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 | 3 | Calories and cardio (Today card, meals, burned estimate) | [spec](superpowers/specs/2026-10-17-calories-cardio-design.md) | [plan](superpowers/plans/2026-10-17-calories-cardio.md) | ✓ |
 | 4 | Achievements (Goals tab: target weight, streaks, badges, levels) | [spec](superpowers/specs/2026-10-17-achievements-design.md) | [plan](superpowers/plans/2026-10-17-achievements.md) | ✓ |
 | 5 | Look & feel (Clean plate style, dark mode, bottom tabs, focus mode) | [spec](superpowers/specs/2026-10-17-look-and-feel-design.md) | [plan](superpowers/plans/2026-10-17-look-and-feel.md) | ✓ sw v11 |
-| 6 | Exercise list audit (74 exercises, 4 merged, 23 added, 16 new drawings) | – | – | ✓ sw v12 |
+| 6 | Exercise list audit (74 exercises, 4 merged, 23 added, 18 new drawings) | – | – | sw v12 (ready, not deployed) |
 
 Next: **ready for more users**.
 
