@@ -101,3 +101,9 @@ test("labels kept in index.html constants (body fields, screen titles) have Arab
   assert.ok(labels.length >= 20, "found the constants");
   assert.deepEqual([...new Set(labels)].filter(l => AR.ui[l] == null), []);
 });
+
+import { PRESETS } from "../public/theme-tools.js";
+test("accent preset names and the picker labels have Arabic", () => {
+  const missing = [...PRESETS.map(p => p.name), "Accent", "Custom"].filter(k => AR.ui[k] == null);
+  assert.deepEqual(missing, []);
+});

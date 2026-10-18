@@ -14,6 +14,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <script>/* apply the saved theme before the page draws */try{var t=localStorage.getItem("ironlog.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
 <script>/* language + direction before the page draws */try{var l=localStorage.getItem("ironlog.lang");if(l!=="ar"&&l!=="en")l=/^ar/i.test(navigator.language||"")?"ar":"en";document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";}catch(e){}</script>
+<script>/* accent colour before the page draws (computed values are cached by the app) */try{var c=JSON.parse(localStorage.getItem("ironlog.accent.css")||"null");if(c){var th=localStorage.getItem("ironlog.theme"),dk=th==="dark"||(th!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches),v=c[dk?"dark":"light"],ok=v&&v.length===3&&v.every(function(x){return /^#[0-9a-f]{6}$/i.test(x);});if(ok){var st=document.documentElement.style;st.setProperty("--accent",v[0]);st.setProperty("--accent-ink",v[1]);st.setProperty("--accent-soft",v[2]);}}}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
 <style>
@@ -140,6 +141,11 @@ tr.setrow.editing td{background:var(--accent-soft)}
 .stat .v{font:600 22px/1.2 var(--f-num);font-variant-numeric:tabular-nums}
 .stat .v small{font-size:12px;color:var(--muted);font-weight:500}
 .chart{width:100%;height:auto;display:block}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatch{appearance:none;position:relative;width:34px;height:34px;padding:0;border-radius:50%;border:2px solid var(--line);background:var(--sw);cursor:pointer}
+.swatch[aria-pressed="true"]{outline:2px solid var(--fg);outline-offset:2px}
+.swatch.custom{background:conic-gradient(#e03131,#f0a500,#2f9e44,#0f9488,#1f5fd1,#7048e8,#d6336c,#e03131)}
+.swatch.custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
 .nextbtn::after{content:" ›"}
 [dir="rtl"] .nextbtn::after{content:" ‹"}
 [dir="rtl"] b.num,[dir="rtl"] span.num{direction:ltr;unicode-bidi:isolate}
@@ -320,6 +326,8 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
   <button class="more-row" data-act="more-go" data-view="history">History &amp; backup<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <div class="stack" style="gap:6px;margin-top:14px"><span class="label">Language</span>
     <div class="seg" role="group" aria-label="Language" data-no-tr><button data-act="lang-set" data-v="en">English</button><button data-act="lang-set" data-v="ar">العربية</button></div></div>
+  <div class="stack" style="gap:6px;margin-top:14px"><span class="label">Accent</span>
+    <div class="swatches" id="accent-swatches" role="group" aria-label="Accent"></div></div>
   <div class="stack" style="gap:6px;margin-top:14px"><span class="label">Theme</span>
     <div class="seg" role="group" aria-label="Theme"><button data-act="theme-set" data-v="system">System</button><button data-act="theme-set" data-v="light">Light</button><button data-act="theme-set" data-v="dark">Dark</button></div></div>
   <div class="row" style="margin-top:14px"><span class="prev grow" id="acct-user" hidden></span><button class="btn secondary small" id="signout" hidden>Sign out</button></div>
@@ -348,6 +356,7 @@ import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION, resol
 import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
+import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
 
@@ -1251,6 +1260,7 @@ function openMore(){
   const d=$("#moresheet"), th=currentTheme();
   d.querySelectorAll("[data-act=theme-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===th));
   d.querySelectorAll("[data-act=lang-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===currentLang()));
+  drawSwatches();
   if(!d.open){ d.showModal(); history.pushState({more:1},""); }
 }
 function closeMore(){ const d=$("#moresheet"); if(d.open) d.close(); }
@@ -1318,8 +1328,31 @@ function applyTheme(setting){
   const a=themeAttr(setting);
   if(a) document.documentElement.dataset.theme=a; else delete document.documentElement.dataset.theme;
   const m=document.querySelector('meta[name="theme-color"]');
+  applyAccent(currentAccent(),false);
   if(m) m.content=getComputedStyle(document.documentElement).getPropertyValue("--surface").trim()||"#ffffff";
 }
+/* ---------- ACCENT ---------- */
+// One chosen colour -> accent, text-on-accent and soft tint for light and dark (theme-tools.js). The result for both modes is
+// cached in localStorage so the <head> script can apply it before first paint. Plate blue = the CSS defaults (nothing set).
+const ACCENT_ENV={light:{surface:"#ffffff",bg:"#f3f5f9"},dark:{surface:"#171d26",bg:"#0f1319"}};
+function currentAccent(){ try{ const a=localStorage.getItem("ironlog.accent"); return a&&(PRESETS.some(p=>p.id===a)||parseHex(a))?a:"plate"; }catch(e){ return "plate"; } }
+function isDarkNow(){ const th=document.documentElement.dataset.theme; return th==="dark"||(th!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches); }
+function applyAccent(setting,save){
+  const s=PRESETS.some(p=>p.id===setting)?setting:(parseHex(setting)||"plate"), st=document.documentElement.style;
+  const both={light:deriveAccent(s,"light",ACCENT_ENV.light.surface,ACCENT_ENV.light.bg),dark:deriveAccent(s,"dark",ACCENT_ENV.dark.surface,ACCENT_ENV.dark.bg)};
+  if(save!==false){ try{ localStorage.setItem("ironlog.accent",s); if(s==="plate") localStorage.removeItem("ironlog.accent.css"); else localStorage.setItem("ironlog.accent.css",JSON.stringify({light:[both.light.accent,both.light.ink,both.light.soft],dark:[both.dark.accent,both.dark.ink,both.dark.soft]})); }catch(e){} }
+  if(s==="plate"){ ["--accent","--accent-ink","--accent-soft"].forEach(n=>st.removeProperty(n)); return; }
+  const v=both[isDarkNow()?"dark":"light"];
+  st.setProperty("--accent",v.accent); st.setProperty("--accent-ink",v.ink); st.setProperty("--accent-soft",v.soft);
+}
+function drawSwatches(){
+  const box=$("#accent-swatches"); if(!box) return;
+  const cur=currentAccent(), custom=!PRESETS.some(p=>p.id===cur);
+  box.innerHTML=PRESETS.map(p=>`<button class="swatch" data-act="accent-set" data-v="${p.id}" style="--sw:${p.hex}" aria-pressed="${cur===p.id}" aria-label="${esc(t(p.name))}"></button>`).join("")+
+    `<label class="swatch custom" aria-pressed="${custom}" title="${esc(t("Custom"))}"><input type="color" id="accent-custom" value="${custom?cur:"#1f5fd1"}" aria-label="${esc(t("Custom"))}"></label>`;
+}
+document.addEventListener("input",e=>{ if(e.target.id==="accent-custom"){ applyAccent(e.target.value); const c=e.target.closest(".swatch"); document.querySelectorAll("#accent-swatches .swatch").forEach(b=>b.setAttribute("aria-pressed",b===c)); } });
+try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>applyAccent(currentAccent(),false)); }catch(e){}
 
 /* ---------- LANGUAGE ---------- */
 // English / Arabic. Plain labels are swapped by trDom (also for everything drawn later, via the observer below);
@@ -1456,6 +1489,7 @@ document.addEventListener("click",e=>{
     case "more-go": closeMore(); go(b.dataset.view); break;
     case "theme-set": applyTheme(b.dataset.v); openMore(); break;
     case "lang-set": applyLang(b.dataset.v); openMore(); break;
+    case "accent-set": applyAccent(b.dataset.v); drawSwatches(); break;
     case "set-goal": state.editProfile=true; go("body"); setTimeout(()=>document.getElementById("pf-goalw")?.focus(),0); break;
     case "meal-name": $("#meal-name").value=state.mealDraft.name=nameOf("meal",b.dataset.name); break;
     case "rm-meal":{ const d=state.cdate; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderCoach(); break; }
@@ -1543,6 +1577,7 @@ if(!configured) $("#signout").hidden=true;
 render();
 applyTheme(currentTheme());
 applyLang(currentLang(),true);
+applyAccent(currentAccent(),false);
 resumeRest();
 // Don't redraw under someone who is typing; redraw as soon as they leave the field instead.
 const typing=()=>{ const a=document.activeElement; return !!(a&&a.matches&&a.matches("input:not([type=date]),select,textarea")); };

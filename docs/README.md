@@ -11,8 +11,8 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 | 5 | Look & feel (Clean plate style, dark mode, bottom tabs, focus mode) | [spec](superpowers/specs/2026-10-17-look-and-feel-design.md) | [plan](superpowers/plans/2026-10-17-look-and-feel.md) | ✓ sw v11 |
 | 6 | Exercise list audit (74 exercises, 4 merged, 23 added, 18 new drawings) | – | – | ✓ sw v12 |
 | 7 | Arabic language (switch, RTL, whole app + exercise names and tips) | [spec](superpowers/specs/2026-10-18-arabic-language-design.md) | [plan](superpowers/plans/2026-10-18-arabic-language.md) | ✓ sw v13 |
-| 8 | Accent colors (8 presets + custom, derived contrast) | [spec](superpowers/specs/2026-10-18-accent-colors-design.md) | [plan](superpowers/plans/2026-10-18-accent-colors.md) | next |
+| 8 | Accent colors (8 presets + custom, derived contrast) | [spec](superpowers/specs/2026-10-18-accent-colors-design.md) | [plan](superpowers/plans/2026-10-18-accent-colors.md) | ✓ sw v14 |
 
-Next: **accent colors**, then **ready for more users**.
+Next: **ready for more users**.
 
 Plans describe the code at the time they were written. For how the app works today, read [CLAUDE.md](../CLAUDE.md).

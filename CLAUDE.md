@@ -24,6 +24,7 @@ tools/svg-tools.mjs         helpers for the import script (recolor, clean SVG). 
 public/achievements.js      streaks, 24 badges (BADGES, earned dates by replaying history), XP/levels, goalProgress. Unit-tested
 public/energy.js            daily calories: weightOn, bmrFor, baselineBurn, liftMinutes/liftKcal, cardioKcal (MET table), exerciseKcal, dayEnergy. Unit-tested
 public/ui-helpers.js        themeAttr, sortTips (warn→info→good), withWeight (quick weight keeps other fields). Unit-tested
+public/theme-tools.js      accent colours: PRESETS (8), parseHex, contrast, ensureContrast, deriveAccent(setting, mode, surface, bg) → {accent, ink, soft}. Unit-tested
 public/i18n.js             English/Arabic layer: t(text,{params}), tn(one,other,n), nameOf(kind,name), trDom(root) (swaps plain labels + isolates numbers in Arabic), withLang, detectLang. Unit-tested
 public/lang-ar.js          AR = {ui: English text → Arabic, names: ex/muscle/template/tplnote/day/badge/cardio/intensity/goal/weekday/meal/level}
 tools/scan-strings.mjs     finds user-visible English text in the source for tests/lang-coverage.test.js (dev/test only). Unit-tested
@@ -67,7 +68,7 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
 - `LIB`, `TEMPLATES` (PPL, Upper/Lower, Full Body, Bro Split) are imported from `exercise-library.js`; a test checks every template day is tagged with each exercise's muscle group
 - `state` object: `workouts, days, body, profile, view, date, bdate, openEx, editDay, pickSplit, confirmTpl, authed, ...`
 - `/* ---------- storage: Firebase Auth + Firestore ... */`: `store` with `init, write, save, remove, saveDays, saveBody, removeBody, saveProfile, restore`. One `onSnapshot` on the collection rebuilds state, then `render()`.
-- Navigation: bottom `.tabbar` (Workout · Coach · Body · Goals · More); More = `#moresheet` dialog with Days, Lifts, History & backup, Language (English / العربية, localStorage `ironlog.lang`), Theme (System/Light/Dark, localStorage `ironlog.theme`, both applied by tiny `<head>` scripts before first paint) and Sign out. Header = logo + screen title + sync status.
+- Navigation: bottom `.tabbar` (Workout · Coach · Body · Goals · More); More = `#moresheet` dialog with Days, Lifts, History & backup, Language (English / العربية, `ironlog.lang`), Accent (8 swatches + custom colour, `ironlog.accent`), Theme (System/Light/Dark, `ironlog.theme`); each applied by a tiny `<head>` script before first paint and Sign out. Header = logo + screen title + sync status.
 - Sheets (`dialog.sheet`): `#exinfo`, `#moresheet`, `#exsheet` (+ Exercise), `#cardiosheet` (+ Cardio). Each pushes a history entry; its popstate handler closes it only when its own step was left (sheets can stack).
 - Views (each has a `render*()` writing `innerHTML` into `#view-*`): `log` (Workout), `days`, `body`, `coach`, `goals`, `progress` (tab label "Lifts"), `history`, plus `signin`.
 - Events: one delegated `click` handler with `switch` on `data-act`, plus delegated `input`/`change`/`submit` handlers.
@@ -103,6 +104,12 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
 - Arabic = simple Modern Standard Arabic, digits 0-9 (`toLocaleString("en-US")`, dates via `locale()` = `ar-EG-u-nu-latn`), units stay Latin (kg, cm, kcal, g, min). `trDom` wraps numbers/ranges/units in LTR isolates so "138–189 g" keeps its order. "Copy my summary" stays English (`withLang("en", …)`).
 - RTL: CSS uses logical properties (`margin-inline-start`, `inset-inline-end`, `text-align:start`); steppers, charts and numeric inputs stay LTR; chevrons flip; font IBM Plex Sans Arabic. Known limits: the browser's own date picker shows its own digits, and the header sync text keeps its language until the next sync event.
 
+## Accent colours
+- More sheet › Accent: 8 presets (plate blue default, teal, green, orange, red, pink, purple, gold) + a custom colour (`<input type=color>`). Stored per device in `ironlog.accent` (preset id or `#rrggbb`; anything invalid = plate blue).
+- `deriveAccent` turns the one colour into `--accent`, `--accent-ink` (white or near-black, ≥ 4.5:1) and `--accent-soft` for light and dark, moving lightness until the accent has ≥ 4.5:1 against surface and bg (so a light gold becomes brown in light mode). Plate blue returns the original tokens exactly and sets nothing.
+- `applyAccent` sets the three custom properties inline on `<html>`; the computed values for both modes are cached in `ironlog.accent.css` so the `<head>` script can paint the right colour on first load. Re-applied on theme change and when the phone switches dark/light.
+- Never hardcode blue in UI CSS/SVG: use `var(--accent)` etc. (the logo/icons stay blue). `--good`/`--danger` never change with the accent.
+
 ## Design rules in use
 - "Clean plate" style: CSS tokens on `:root` with dark-mode overrides (`prefers-color-scheme` + `[data-theme]`): `--bg/--surface/--sunk/--line`, `--shadow`, `--card-border`, `--r-card` 18px, `--r-btn` 14px, `--tabbar` 64px. Accent plate-blue `#1f5fd1` (light) / `#6c9cff` (dark). Building blocks: `.card`, `.btn.primary/.secondary`, `.bigstep`, `.chip`, `.exchip`, `.ebar`, `dialog.sheet`. Icons: inline `<symbol>` sprite (`#i-workout`, `#i-coach`, `#i-body`, `#i-goals`, `#i-more`, `#i-chev`).
 - Mobile-first, max-width 640px, safe-area insets respected, no horizontal scroll.
@@ -130,7 +137,7 @@ firebase deploy --only hosting            # rules: firebase deploy --only firest
 
 ## Ideas not built yet
 - Bodyweight-exercise mode; set types (warm-up / drop set)
-- Planned sub-projects (done: faster logging, exercise info, full-app review, smarter coaching/progress, look & feel, Arabic): accent colors (spec + plan written), then ready for more users
+- Planned sub-projects (done: faster logging, exercise info, full-app review, smarter coaching/progress, look & feel, Arabic, accent colours): ready for more users
 - Per-day target sets/reps in templates
 - CSV export for spreadsheets
 - GitHub Actions auto-deploy (`firebase init hosting:github`), offered but not set up
