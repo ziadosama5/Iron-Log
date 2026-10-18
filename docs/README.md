@@ -1,0 +1,15 @@
+# Design docs
+
+Each improvement was designed first (spec), then broken into tasks (plan), built, reviewed and deployed.
+
+| # | Sub-project | Spec | Plan | Shipped |
+|---|---|---|---|---|
+| 1 | Faster logging at the gym (prefill, rest timer, edit sets, screen awake) | [spec](superpowers/specs/2026-10-17-faster-logging-design.md) | [plan](superpowers/plans/2026-10-17-faster-logging.md) | ✓ |
+| 2 | Exercise info "!" (drawings, muscles, tips) + full-app review fixes | [spec](superpowers/specs/2026-10-17-exercise-info-design.md) | [plan](superpowers/plans/2026-10-17-exercise-info.md) | ✓ |
+| 3 | Calories and cardio (Today card, meals, burned estimate) | [spec](superpowers/specs/2026-10-17-calories-cardio-design.md) | [plan](superpowers/plans/2026-10-17-calories-cardio.md) | ✓ |
+| 4 | Achievements (Goals tab: target weight, streaks, badges, levels) | [spec](superpowers/specs/2026-10-17-achievements-design.md) | [plan](superpowers/plans/2026-10-17-achievements.md) | ✓ |
+| 5 | Look & feel (Clean plate style, dark mode, bottom tabs, focus mode) | [spec](superpowers/specs/2026-10-17-look-and-feel-design.md) | [plan](superpowers/plans/2026-10-17-look-and-feel.md) | ✓ sw v11 |
+
+Next: **ready for more users**.
+
+Plans describe the code at the time they were written. For how the app works today, read [CLAUDE.md](../CLAUDE.md).
