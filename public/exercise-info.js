@@ -121,6 +121,29 @@ export const INFO = {
    ]
   }
  },
+ "barbell lunge": {
+  "name": "Barbell Lunge",
+  "slug": "lunge",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Bar on the upper back, torso upright",
+   "Step forward and lower the back knee",
+   "Push through the front heel to stand"
+  ],
+  "ar": {
+   "tips": [
+    "البار على أعلى الظهر والجذع منتصب",
+    "تقدّم بخطوة وأنزل الركبة الخلفية",
+    "ادفع بالكعب الأمامي للوقوف"
+   ]
+  }
+ },
  "barbell rear delt row": {
   "name": "Barbell Rear Delt Row",
   "slug": "barbell-rear-delt-row",
@@ -263,6 +286,53 @@ export const INFO = {
     "انحنِ من الوركين وظهرك مستقيم",
     "اسحب الدمبل إلى أسفل الأضلاع",
     "أبقِ الجذع ثابتاً دون ارتجاج"
+   ]
+  }
+ },
+ "bodyweight squat": {
+  "name": "Bodyweight Squat",
+  "slug": "bodyweight-squat",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Feet shoulder width, arms forward",
+   "Knees track over your toes",
+   "Sit down until the thighs are parallel"
+  ],
+  "ar": {
+   "tips": [
+    "القدمان بعرض الكتفين والذراعان للأمام",
+    "الركبتان باتجاه أصابع القدمين",
+    "اجلس حتى يصبح الفخذان أفقيين"
+   ]
+  }
+ },
+ "box squat": {
+  "name": "Box Squat",
+  "slug": "squat",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Set the box at about knee height",
+   "Sit back until you touch the box, don't drop",
+   "Drive up through the whole foot"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط الصندوق عند مستوى الركبتين تقريباً",
+    "اجلس للخلف حتى تلمس الصندوق دون سقوط",
+    "ادفع للأعلى بكامل القدم"
    ]
   }
  },
@@ -1077,6 +1147,52 @@ export const INFO = {
    ]
   }
  },
+ "dumbbell squat": {
+  "name": "Dumbbell Squat",
+  "slug": "goblet-squat",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Hold a dumbbell in each hand at your sides",
+   "Knees track over your toes",
+   "Hit at least parallel depth"
+  ],
+  "ar": {
+   "tips": [
+    "أمسك دمبلاً في كل يد بجانبيك",
+    "الركبتان باتجاه أصابع القدمين",
+    "انزل إلى مستوى التوازي على الأقل"
+   ]
+  }
+ },
+ "dumbbell step-up": {
+  "name": "Dumbbell Step-up",
+  "slug": "dumbbell-step-up",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Hold a dumbbell in each hand",
+   "Put the whole foot on the box",
+   "Drive through the heel and lower slowly"
+  ],
+  "ar": {
+   "tips": [
+    "أمسك دمبلاً في كل يد",
+    "ضع القدم كاملة على الصندوق",
+    "ادفع بالكعب وانزل ببطء"
+   ]
+  }
+ },
  "dumbbell upright row": {
   "name": "Dumbbell Upright Row",
   "slug": "dumbbell-upright-row",
@@ -1192,6 +1308,29 @@ export const INFO = {
     "البار على مقدمة الكتفين",
     "أبقِ المرفقين مرتفعين طوال الوقت",
     "ابقَ منتصباً أثناء الجلوس",
+    "ادفع للأعلى بكامل القدم"
+   ]
+  }
+ },
+ "goblet squat": {
+  "name": "Goblet Squat",
+  "slug": "goblet-squat",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Hold one dumbbell against your chest",
+   "Keep the chest up and elbows inside the knees",
+   "Drive up through the whole foot"
+  ],
+  "ar": {
+   "tips": [
+    "أمسك دمبلاً واحداً أمام صدرك",
+    "أبقِ صدرك مرفوعاً والمرفقين داخل الركبتين",
     "ادفع للأعلى بكامل القدم"
    ]
   }
@@ -1913,6 +2052,29 @@ export const INFO = {
    ]
   }
  },
+ "narrow-stance leg press": {
+  "name": "Narrow-stance Leg Press",
+  "slug": "narrow-stance-leg-press",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Feet close together, low on the platform",
+   "Lower until knees reach about 90 degrees",
+   "Don't lock the knees at the top"
+  ],
+  "ar": {
+   "tips": [
+    "القدمان متقاربتان في أسفل المنصة",
+    "انزل حتى تصل الركبتان إلى 90 درجة تقريباً",
+    "لا تقفل الركبتين في الأعلى"
+   ]
+  }
+ },
  "one-arm cable pushdown": {
   "name": "One-arm Cable Pushdown",
   "slug": "tricep-pushdown",
@@ -2267,6 +2429,29 @@ export const INFO = {
    ]
   }
  },
+ "reverse lunge": {
+  "name": "Reverse Lunge",
+  "slug": "lunge",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Step back and lower the back knee toward the floor",
+   "Keep the front knee over the ankle",
+   "Push through the front heel to stand"
+  ],
+  "ar": {
+   "tips": [
+    "تراجع بخطوة وأنزل الركبة الخلفية نحو الأرض",
+    "أبقِ الركبة الأمامية فوق الكاحل",
+    "ادفع بالكعب الأمامي للوقوف"
+   ]
+  }
+ },
  "reverse pec deck": {
   "name": "Reverse Pec Deck",
   "slug": "reverse-pec-deck",
@@ -2521,6 +2706,30 @@ export const INFO = {
   },
   "own": true
  },
+ "side lunge": {
+  "name": "Side Lunge",
+  "slug": "side-lunge",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Step wide to the side and sit back into the hip",
+   "Keep the other leg straight",
+   "Push off to return to standing"
+  ],
+  "ar": {
+   "tips": [
+    "خذ خطوة واسعة للجانب واجلس للخلف على الورك",
+    "أبقِ الساق الأخرى مستقيمة",
+    "ادفع للعودة إلى الوقوف"
+   ]
+  }
+ },
  "side plank": {
   "name": "Side Plank",
   "slug": "side-plank",
@@ -2541,6 +2750,50 @@ export const INFO = {
     "ضع القدمين فوق بعضهما وارفع الوركين",
     "أبقِ خطاً مستقيماً من الرأس إلى القدمين",
     "تنفّس بانتظام وثبّت الوضع"
+   ]
+  }
+ },
+ "single-leg leg press": {
+  "name": "Single-leg Leg Press",
+  "slug": "leg-press",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "One foot in the middle of the platform",
+   "Lower until the knee reaches about 90 degrees",
+   "Keep your hips flat on the seat"
+  ],
+  "ar": {
+   "tips": [
+    "قدم واحدة في منتصف المنصة",
+    "انزل حتى تصل الركبة إلى 90 درجة تقريباً",
+    "أبقِ وركيك ملاصقين للمقعد"
+   ]
+  }
+ },
+ "sissy squat": {
+  "name": "Sissy Squat",
+  "slug": "sissy-squat",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [],
+  "tips": [
+   "Rise onto your toes and lean back",
+   "Let the knees travel forward as you lower",
+   "Go only as deep as you can control"
+  ],
+  "ar": {
+   "tips": [
+    "ارتفع على أصابع قدميك وأمِل للخلف",
+    "دع الركبتين تتقدمان أثناء النزول",
+    "انزل بقدر ما تستطيع التحكم"
    ]
   }
  },
@@ -2705,6 +2958,30 @@ export const INFO = {
     "توقف في الأعلى ثم انزل ببطء"
    ]
   }
+ },
+ "smith machine split squat": {
+  "name": "Smith Machine Split Squat",
+  "slug": "bulgarian-split-squat",
+  "img": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Front foot ahead, rear foot behind",
+   "Drop the back knee straight down",
+   "Push up through the front heel"
+  ],
+  "ar": {
+   "tips": [
+    "القدم الأمامية للأمام والخلفية للخلف",
+    "أنزل الركبة الخلفية للأسفل مباشرة",
+    "ادفع للأعلى عبر الكعب الأمامي"
+   ]
+  },
+  "own": true
  },
  "smith machine squat": {
   "name": "Smith Machine Squat",
@@ -3026,6 +3303,30 @@ export const INFO = {
     "انزل حتى تكاد الركبة الخلفية تلمس الأرض",
     "أبقِ جذعك منتصباً",
     "ادفع وتقدّم بالخطوة التالية"
+   ]
+  }
+ },
+ "wall sit": {
+  "name": "Wall Sit",
+  "slug": "wall-sit",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Quads"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Back flat against the wall",
+   "Thighs parallel to the floor, knees over the ankles",
+   "Breathe steadily and hold"
+  ],
+  "ar": {
+   "tips": [
+    "ظهرك ملاصق للحائط",
+    "الفخذان موازيان للأرض والركبتان فوق الكاحلين",
+    "تنفّس بانتظام وثبّت الوضع"
    ]
   }
  },

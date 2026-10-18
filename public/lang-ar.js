@@ -336,7 +336,20 @@ export const AR = {
       "Machine Dip": "متوازي بالجهاز",
       "Machine Triceps Extension": "تمديد الترايسبس بالجهاز",
       "Cable Kickback": "ركلة الترايسبس بالكابل",
-      "Diamond Push-up": "ضغط الألماسة"
+      "Diamond Push-up": "ضغط الألماسة",
+      "Box Squat": "سكوات على الصندوق",
+      "Goblet Squat": "سكوات الكأس",
+      "Dumbbell Squat": "سكوات بالدمبل",
+      "Narrow-stance Leg Press": "ضغط الأرجل بوقفة ضيقة",
+      "Single-leg Leg Press": "ضغط الأرجل بساق واحدة",
+      "Smith Machine Split Squat": "سكوات منفصل بجهاز سميث",
+      "Reverse Lunge": "اندفاع للخلف",
+      "Barbell Lunge": "اندفاع بالبار",
+      "Side Lunge": "اندفاع جانبي",
+      "Dumbbell Step-up": "صعود الدرجة بالدمبل",
+      "Bodyweight Squat": "سكوات بوزن الجسم",
+      "Sissy Squat": "سكوات سيسي",
+      "Wall Sit": "الجلوس على الحائط"
     },
     muscle: {
       "Chest": "الصدر", "Back": "الظهر", "Shoulders": "الأكتاف", "Biceps": "البايسبس", "Triceps": "الترايسبس",

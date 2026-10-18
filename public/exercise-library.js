@@ -89,7 +89,10 @@ export const EXERCISES = [
   ...X("Quads", [
     ["Squat", "barbell", "rack"], ["Front Squat", "barbell", "rack"], ["Leg Press", "leg-press"], ["Hack Squat", "hack-squat"],
     ["Bulgarian Split Squat", "dumbbell", "bench"], ["Walking Lunge", "dumbbell"], ["Leg Extension", "leg-extension"], ["Lunge", "dumbbell"],
-    ["Step-up", "box"], ["Smith Machine Squat", "smith"]]),
+    ["Step-up", "box"], ["Smith Machine Squat", "smith"], ["Box Squat", "barbell", "rack", "box"], ["Goblet Squat", "dumbbell"],
+    ["Dumbbell Squat", "dumbbell"], ["Narrow-stance Leg Press", "leg-press"], ["Single-leg Leg Press", "leg-press"],
+    ["Smith Machine Split Squat", "smith"], ["Reverse Lunge", "dumbbell"], ["Barbell Lunge", "barbell"], ["Side Lunge", "dumbbell"],
+    ["Dumbbell Step-up", "dumbbell", "box"], ["Bodyweight Squat"], ["Sissy Squat"], ["Wall Sit"]]),
   ...X("Hamstrings & Glutes", [
     ["Romanian Deadlift", "barbell"], ["Lying Leg Curl", "leg-curl"], ["Hip Thrust", "barbell", "bench"], ["Good Morning", "barbell", "rack"],
     ["Stiff-leg Deadlift", "barbell"], ["Hip Abduction", "hip-abduction"]]),

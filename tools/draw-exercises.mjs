@@ -251,6 +251,46 @@ const machineRow = finish => {
   });
 };
 
+// ---------- Side Lunge (front view, step wide to the side) ----------
+const sideLunge = finish => {
+  const sh = finish ? [100, 114] : [108, 92], hip = finish ? [88, 192] : [108, 172];
+  const lKnee = finish ? [52, 216] : [92, 222], lAnk = finish ? [50, 262] : [90, 262];
+  const rHip = finish ? [112, 194] : [122, 176], rKnee = finish ? [146, 232] : [124, 222], rAnk = finish ? [178, 262] : [126, 262];
+  const hands = finish ? [[96, 140], [110, 140]] : [[100, 118], [116, 118]], bell = [(hands[0][0] + hands[1][0]) / 2, hands[0][1]];
+  return fig({
+    ...head(finish ? [104, 74] : [108, 52]),
+    parts: [tap(sh, hip, 70, 46),
+      tap([hip[0] - 8, hip[1]], lKnee, 26, 19), tap(lKnee, lAnk, 19, 12), tap(rHip, rKnee, 26, 19), tap(rKnee, rAnk, 19, 12),
+      tap([sh[0] - 26, sh[1] + 6], [sh[0] - 22, sh[1] + 36], 18, 13), tap([sh[0] - 22, sh[1] + 36], hands[0], 13, 10),
+      tap([sh[0] + 26, sh[1] + 6], [sh[0] + 22, sh[1] + 36], 18, 13), tap([sh[0] + 22, sh[1] + 36], hands[1], 13, 10),
+      delt([sh[0] - 28, sh[1] + 6], 12), delt([sh[0] + 28, sh[1] + 6], 12)],
+    gear: floor() + dumbbell(bell, 0, 26, 8)
+  });
+};
+
+// ---------- Bodyweight Squat (arms forward, sit down to parallel) ----------
+const bodyweightSquat = finish => {
+  const sh = finish ? [112, 134] : [106, 92], hip = finish ? [80, 214] : [108, 162], knee = finish ? [142, 206] : [110, 216], ank = finish ? [112, 262] : [110, 262];
+  const elbow = finish ? [142, 140] : [136, 100], wrist = finish ? [168, 140] : [162, 102];
+  return fig({
+    ...head(finish ? [124, 112] : [108, 54]),
+    parts: [...body({ sh, hip }), ...leg(hip, knee, ank, [134, 266]), ...arm(sh, elbow, wrist), delt(sh, 12)],
+    gear: floor()
+  });
+};
+
+// ---------- Wall Sit (back flat on the wall, thighs parallel) ----------
+const wallSit = finish => {
+  const sh = finish ? [66, 134] : [66, 92], hip = finish ? [66, 206] : [66, 162], knee = finish ? [136, 206] : [68, 216], ank = finish ? [138, 262] : [68, 262];
+  const elbow = finish ? [92, 166] : [76, 128], wrist = finish ? [118, 194] : [80, 168];
+  return fig({
+    ...head(finish ? [66, 98] : [66, 54]),
+    parts: [...body({ sh, hip, chest: 34, waist: 26 }), ...leg(hip, knee, ank, [158, 266], [26, 18, 11]), ...arm(sh, elbow, wrist), delt(sh, 12)],
+    behind: rect(26, 20, 14, 250, 3),
+    gear: floor()
+  });
+};
+
 export const DRAWINGS = {
   "face-pull": { start: facePull(false), end: facePull(true) },
   "hip-thrust": { start: hipThrust(false), end: hipThrust(true) },
@@ -270,7 +310,10 @@ export const DRAWINGS = {
   "decline-push-up": { start: declinePushUp(false), end: declinePushUp(true) },
   "dumbbell-floor-press": { start: dumbbellFloorPress(true), end: dumbbellFloorPress(false) },
   "chest-supported-dumbbell-row": { start: chestSupportedRow(false), end: chestSupportedRow(true) },
-  "machine-row": { start: machineRow(false), end: machineRow(true) }
+  "machine-row": { start: machineRow(false), end: machineRow(true) },
+  "side-lunge": { start: sideLunge(false), end: sideLunge(true) },
+  "bodyweight-squat": { start: bodyweightSquat(false), end: bodyweightSquat(true) },
+  "wall-sit": { start: wallSit(false), end: wallSit(true) }
 };
 
 // Contact sheet for looking at the drawings.
