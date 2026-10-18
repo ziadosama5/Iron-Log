@@ -29,7 +29,7 @@ test("drawing files exist for img:true and none are unreferenced", () => {
   assert.deepEqual([...files].sort(), [...want].sort());
 });
 
-test("60 exercises have drawings", () => assert.equal(Object.values(INFO).filter(e => e.img).length, 60));
+test("every exercise has a drawing", () => assert.equal(Object.values(INFO).filter(e => e.img).length, ALL_EX.length));
 
 test("slugs are unique", () => {
   const s = Object.values(INFO).map(e => e.slug);

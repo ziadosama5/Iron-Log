@@ -29,7 +29,8 @@ export const INFO = {
  "arnold press": {
   "name": "Arnold Press",
   "slug": "arnold-press",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Shoulders"
   ],
@@ -173,7 +174,8 @@ export const INFO = {
  "bulgarian split squat": {
   "name": "Bulgarian Split Squat",
   "slug": "bulgarian-split-squat",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Quads"
   ],
@@ -265,7 +267,8 @@ export const INFO = {
  "chest dip": {
   "name": "Chest Dip",
   "slug": "chest-dip",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Chest"
   ],
@@ -612,7 +615,8 @@ export const INFO = {
  "face pull": {
   "name": "Face Pull",
   "slug": "face-pull",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Shoulders"
   ],
@@ -732,7 +736,8 @@ export const INFO = {
  "hanging leg raise": {
   "name": "Hanging Leg Raise",
   "slug": "hanging-leg-raise",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Core"
   ],
@@ -776,7 +781,8 @@ export const INFO = {
  "hip thrust": {
   "name": "Hip Thrust",
   "slug": "hip-thrust",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Hamstrings & Glutes"
   ],
@@ -1057,7 +1063,8 @@ export const INFO = {
  "machine shoulder press": {
   "name": "Machine Shoulder Press",
   "slug": "machine-shoulder-press",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Shoulders"
   ],
@@ -1080,7 +1087,8 @@ export const INFO = {
  "one-arm dumbbell row": {
   "name": "One-arm Dumbbell Row",
   "slug": "one-arm-dumbbell-row",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Back"
   ],
@@ -1105,7 +1113,8 @@ export const INFO = {
  "overhead cable extension": {
   "name": "Overhead Cable Extension",
   "slug": "overhead-cable-extension",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Triceps"
   ],
@@ -1174,7 +1183,8 @@ export const INFO = {
  "pec deck": {
   "name": "Pec Deck",
   "slug": "pec-deck",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Chest"
   ],
@@ -1197,7 +1207,8 @@ export const INFO = {
  "plank": {
   "name": "Plank",
   "slug": "plank",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Core"
   ],
@@ -1318,7 +1329,8 @@ export const INFO = {
  "reverse pec deck": {
   "name": "Reverse Pec Deck",
   "slug": "reverse-pec-deck",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Shoulders"
   ],
@@ -1366,7 +1378,8 @@ export const INFO = {
  "russian twist": {
   "name": "Russian Twist",
   "slug": "russian-twist",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Core"
   ],
@@ -1572,7 +1585,8 @@ export const INFO = {
  "stiff-leg deadlift": {
   "name": "Stiff-leg Deadlift",
   "slug": "stiff-leg-deadlift",
-  "img": false,
+  "img": true,
+  "own": true,
   "primary": [
    "Hamstrings & Glutes"
   ],

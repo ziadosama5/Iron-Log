@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { recolorSvg, slugify, posesFor } from "./svg-tools.mjs";
 import { ALL_EX, ALIASES } from "../public/exercise-library.js";
+import { DRAWINGS } from "./draw-exercises.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = join(root, "public", "exercises");
@@ -28,7 +29,16 @@ const info = {};
 
 for (const name of names.slice().sort((a, b) => a.localeCompare(b))) {
   const s = sources[name], slug = slugify(name);
-  if (s.ek) {
+  if (s.draw) {
+    // Hand-drawn in tools/draw-exercises.mjs (no download): written straight from the drawing code.
+    if (!DRAWINGS[slug]) fail(`${name}: no drawing for "${slug}" in tools/draw-exercises.mjs`);
+    for (const suffix of ["start", "end"]) {
+      const file = `${slug}-${suffix}.svg`;
+      wanted.add(file);
+      const text = DRAWINGS[slug][suffix] + "\n";
+      if (!existsSync(join(outDir, file)) || readFileSync(join(outDir, file), "utf8") !== text) { writeFileSync(join(outDir, file), text); console.log("drew", file); }
+    }
+  } else if (s.ek) {
     for (const [pose, suffix] of posesFor(s)) {
       const file = `${slug}-${suffix}.svg`;
       wanted.add(file);
@@ -41,7 +51,7 @@ for (const name of names.slice().sort((a, b) => a.localeCompare(b))) {
       console.log("wrote", file);
     }
   }
-  info[name.toLowerCase()] = { name, slug, img: !!s.ek, primary: s.primary, secondary: s.secondary, tips: s.tips, ...(s.ar ? { ar: s.ar } : {}) };
+  info[name.toLowerCase()] = { name, slug, img: !!(s.ek || s.draw), ...(s.draw ? { own: true } : {}), primary: s.primary, secondary: s.secondary, tips: s.tips, ...(s.ar ? { ar: s.ar } : {}) };
 }
 
 for (const f of readdirSync(outDir)) {

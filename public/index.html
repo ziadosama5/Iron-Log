@@ -233,6 +233,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .ex-fig{aspect-ratio:1;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);display:grid;place-items:center;overflow:hidden;padding:6px;text-align:center}
 .ex-fig svg{width:100%;height:100%;display:block}
 .ex-fig .exbg{fill:var(--surface)}
+.ex-fig .exbg-s{stroke:var(--surface)}
 .ex-works{margin:10px 0 4px}
 .ex-tips{margin:6px 0 10px;padding-inline-start:20px}
 .ex-tips li{margin:3px 0}
@@ -1236,7 +1237,7 @@ function openExInfo(name){
     ${figs}
     <p class="ex-works">Works: <b>${info.primary.map(m=>esc(nameOf("muscle",m))).join(", ")}</b>${info.secondary.length?` <span class="prev">· ${info.secondary.map(m=>esc(nameOf("muscle",m))).join(", ")}</span>`:""}</p>
     <ul class="ex-tips">${(isRtl()&&info.ar&&info.ar.tips?info.ar.tips:info.tips).map(tip=>`<li>${esc(tip)}</li>`).join("")}</ul>
-    ${info.img?`<p class="prev ex-credit">Illustrations: Everkinetic, CC BY-SA 4.0</p>`:""}`;
+    ${info.img&&!info.own?`<p class="prev ex-credit">Illustrations: Everkinetic, CC BY-SA 4.0</p>`:""}`;
   if(!dlg.open){ dlg.showModal(); history.pushState({exinfo:1},""); }
   dlg.querySelectorAll(".ex-fig").forEach(box=>{
     fetch(box.dataset.src).then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
