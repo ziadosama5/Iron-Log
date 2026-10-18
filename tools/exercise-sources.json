@@ -178,7 +178,7 @@
     "ar": { "tips": ["الوسادة فوق الكعبين مباشرة","أبقِ وركيك ملاصقين للكرسي","اثنِ بالكامل وانزل ببطء"] } },
   "Hip Thrust": { "ek": null, "primary": ["Hamstrings & Glutes"], "secondary": ["Quads"],
     "tips": ["Upper back on a bench, bar over the hips","Drive the hips up until level","Squeeze glutes hard at the top","Keep the chin tucked"],
-    "ar": { "tips": ["أعلى الظهر على الكرسي والبار فوق الوركين","ادفع الوركين للأعلى حتى يستويا","اعصر الأرداف بقوة في الأعلى","أبقِ ذقنك للداخل"] } },
+    "ar": { "tips": ["أعلى الظهر على المقعد والبار فوق الوركين","ادفع الوركين للأعلى حتى يستويا","اعصر الأرداف بقوة في الأعلى","أبقِ ذقنك للداخل"] } },
   "Good Morning": { "ek": "0101", "primary": ["Hamstrings & Glutes"], "secondary": ["Back"],
     "tips": ["Bar on the upper back like a squat","Soft knees, push the hips back","Keep your back flat","Use a light weight"],
     "ar": { "tips": ["البار على أعلى الظهر كالسكوات","ركبتان مرنتان وادفع الوركين للخلف","أبقِ ظهرك مستقيماً","استخدم وزناً خفيفاً"] } },

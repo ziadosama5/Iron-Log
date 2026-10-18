@@ -124,3 +124,30 @@ test("in Arabic, numbers with ranges, signs and units are isolated so they keep 
   assert.equal(a.nodeValue, "97 / 500 XP");
   assert.equal(e.nodeValue, "English 5 kg");
 });
+
+test("reverseName maps an Arabic display name back to the English key (typed or tapped names)", async () => {
+  const { reverseName } = await import("../public/i18n.js");
+  setLang("ar");
+  assert.equal(reverseName("ex", "ضغط الصدر"), "Bench Press");
+  assert.equal(reverseName("ex", "Bench Press"), "Bench Press");
+  assert.equal(reverseName("ex", "سكوات مخصص"), "سكوات مخصص");
+  assert.equal(reverseName("nokind", "x"), "x");
+  setLang("en");
+  assert.equal(reverseName("ex", "ضغط الصدر"), "ضغط الصدر", "no mapping while English is active");
+});
+
+test("nameOf and reverseName ignore inherited object keys", () => {
+  setLang("ar");
+  assert.equal(nameOf("ex", "constructor"), "constructor");
+  assert.equal(t("toString"), "toString");
+  assert.equal(nameOf("ex", "__proto__"), "__proto__");
+});
+
+test("trDom also isolates numbers in translated static text, and a leading ~ stays with its number", () => {
+  const a = text("+15s"), b = text("~90 kcal est.");
+  registerLang("ar", { ui: { ...AR.ui, "+15s": "+15 ث" }, names: AR.names });
+  setLang("ar"); trDom(el("div", {}, [a, b]));
+  assert.equal(a.nodeValue, "⁦+15⁩ ث");
+  assert.equal(b.nodeValue, "⁦~90 kcal⁩ est.");
+  registerLang("ar", AR);
+});

@@ -346,7 +346,7 @@ import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, 
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, migrateProgram, PROGRAM_VERSION, resolveAlias } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
-import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, locale, trDom } from "./i18n.js";
+import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
@@ -443,10 +443,10 @@ const store = {
 };
 function signInError(e){
   const c=e&&e.code||"";
-  if(c.includes("popup-closed")||c.includes("cancelled")) return "Sign-in cancelled";
-  if(c.includes("unauthorized-domain")) return "This website isn't allowed to sign in yet. Add it under Authentication › Settings › Authorized domains in Firebase.";
-  if(c.includes("network")) return "No connection. Check your internet and try again.";
-  return "Couldn't sign in ("+c+")";
+  if(c.includes("popup-closed")||c.includes("cancelled")) return t("Sign-in cancelled");
+  if(c.includes("unauthorized-domain")) return t("This website isn't allowed to sign in yet. Add it under Authentication › Settings › Authorized domains in Firebase.");
+  if(c.includes("network")) return t("No connection. Check your internet and try again.");
+  return t("Couldn't sign in ({code})",{code:c});
 }
 async function signIn(){
   const provider=new GoogleAuthProvider(); provider.setCustomParameters({prompt:"select_account"});
@@ -627,7 +627,7 @@ function dayPicker(w){
     ${w?`<div class="row"><button class="btn ghost" data-act="cancel-pick">${esc(t("Keep {name}",{name:w.dayName?nameOf("day",w.dayName):t("current workout")}))}</button></div>`:""}
   </div>`;
 }
-function fillDatalist(){ $("#ex-list").innerHTML=[...new Set([...exerciseNames(),...ALL_EX])].map(n=>`<option value="${esc(n)}">`).join(""); }
+function fillDatalist(){ $("#ex-list").innerHTML=[...new Set([...exerciseNames(),...ALL_EX])].map(n=>`<option value="${esc(nameOf("ex",n))}">`).join(""); }
 /* cardio card (Workout tab) */
 const CARDIO_LABEL={treadmill:"Treadmill",elliptical:"Elliptical",bike:"Bike",other:"Other"};
 const INT_LABEL={easy:"Easy",moderate:"Moderate",hard:"Hard"};
@@ -657,7 +657,7 @@ function readSet(ei){
 }
 function stopEditing(){ if(state.editSet){ delete ui[state.editSet.ex]; state.editSet=null; } }
 function ensureWorkout(){ const w=workoutFor(state.date); return w?clone(w):{id:"w-"+state.date,date:state.date,dayId:null,dayName:null,entries:[]}; }
-function canonical(name){ name=resolveAlias(name); return [...exerciseNames(),...ALL_EX].find(n=>same(n,name)) || name; }
+function canonical(name){ name=resolveAlias(reverseName("ex",name)); return [...exerciseNames(),...ALL_EX].find(n=>same(n,name)) || name; }
 function startDay(day){
   const w = ensureWorkout();
   const kept = w.entries.filter(e=>e.sets.length);
@@ -1021,7 +1021,7 @@ function todayCard(){
     ${e.protein!=null?`<p style="margin:0">${kg?t("Protein <b>{a} g</b> of {b}–{c} g",{a:Math.round(e.protein),b:Math.round(kg*1.6),c:Math.round(kg*2.2)}):t("Protein <b>{a} g</b>",{a:Math.round(e.protein)})}</p>`:""}
     <form id="meal-form" class="stack" autocomplete="off" style="gap:8px">
       <span class="label">Add a meal</span>
-      <div class="chips">${["Breakfast","Lunch","Dinner","Snack"].map(n=>`<button type="button" class="chip" data-act="meal-name" data-name="${esc(nameOf("meal",n))}">${esc(nameOf("meal",n))}</button>`).join("")}</div>
+      <div class="chips">${["Breakfast","Lunch","Dinner","Snack"].map(n=>`<button type="button" class="chip" data-act="meal-name" data-name="${esc(n)}">${esc(nameOf("meal",n))}</button>`).join("")}</div>
       <div class="meal-fields">
         <label><span class="label">kcal</span><input id="meal-kcal" inputmode="numeric" value="${esc(state.mealDraft.kcal)}"></label>
         <label><span class="label">Protein g</span><input id="meal-protein" inputmode="numeric" placeholder="optional" value="${esc(state.mealDraft.protein)}"></label>
@@ -1378,7 +1378,7 @@ document.addEventListener("submit",e=>{
   e.preventDefault();
   const f=e.target;
   if(f.id==="meal-form"){
-    const kRaw=$("#meal-kcal").value.trim(), pRaw=$("#meal-protein").value.trim().replace(",","."), name=$("#meal-name").value.trim();
+    const kRaw=$("#meal-kcal").value.trim(), pRaw=$("#meal-protein").value.trim().replace(",","."), name=reverseName("meal",$("#meal-name").value.trim());
     const k=Number(kRaw), p=pRaw===""?null:Number(pRaw);
     if(!(Number.isInteger(k)&&k>=1&&k<=5000) || (p!==null&&!(Number.isFinite(p)&&p>=0&&p<=500)) || name.length>40){ toast(t("Enter 1–5000 kcal (protein 0–500 g)")); return; }
     const d=state.cdate, meals=[...((state.food[d]&&state.food[d].meals)||[]), {id:uid(), name:name||null, kcal:k, protein:p}];
@@ -1457,7 +1457,7 @@ document.addEventListener("click",e=>{
     case "theme-set": applyTheme(b.dataset.v); openMore(); break;
     case "lang-set": applyLang(b.dataset.v); openMore(); break;
     case "set-goal": state.editProfile=true; go("body"); setTimeout(()=>document.getElementById("pf-goalw")?.focus(),0); break;
-    case "meal-name": $("#meal-name").value=state.mealDraft.name=b.dataset.name; break;
+    case "meal-name": $("#meal-name").value=state.mealDraft.name=nameOf("meal",b.dataset.name); break;
     case "rm-meal":{ const d=state.cdate; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderCoach(); break; }
     case "cardio-type": state.cardioDraft.type=b.dataset.v; renderLog(); break;
     case "cardio-int": state.cardioDraft.intensity=b.dataset.v; renderLog(); break;
@@ -1501,7 +1501,7 @@ document.addEventListener("click",e=>{
     case "toggle-wd": editDays(ds=>{ const x=+b.dataset.wd, d=ds.find(o=>o.id===id); d.weekdays=d.weekdays||[];
       if(d.weekdays.includes(x)) d.weekdays=d.weekdays.filter(v=>v!==x);
       else { ds.forEach(o=>{ if(o.weekdays) o.weekdays=o.weekdays.filter(v=>v!==x); }); d.weekdays.push(x); } }); break;
-    case "add-day":{ const nid=uid(); editDays(ds=>ds.push({id:nid,name:"Day "+(ds.length+1),focus:[],exercises:[]})); state.editDay=nid; renderDays(); setTimeout(()=>{ const el=document.getElementById("dn-"+nid); el&&(el.scrollIntoView({block:"center"}),el.select()); },0); break; }
+    case "add-day":{ const nid=uid(); editDays(ds=>ds.push({id:nid,name:t("Day {n}",{n:ds.length+1}),focus:[],exercises:[]})); state.editDay=nid; renderDays(); setTimeout(()=>{ const el=document.getElementById("dn-"+nid); el&&(el.scrollIntoView({block:"center"}),el.select()); },0); break; }
     case "edit-day": state.editDay=state.editDay===id?null:id; state.confirmDayDel=null; renderDays(); break;
     case "toggle-m": editDays(ds=>{ const d=ds.find(x=>x.id===id), m=b.dataset.m; d.focus=d.focus.includes(m)?d.focus.filter(x=>x!==m):MUSCLES.filter(x=>x===m||d.focus.includes(x)); }); break;
     case "add-dex": editDays(ds=>ds.find(x=>x.id===id).exercises.push(b.dataset.name)); break;

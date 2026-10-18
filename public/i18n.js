@@ -4,6 +4,8 @@
 const dicts = { en: { ui: {}, names: {} } };
 let current = "en";
 
+const own = (obj, key) => (obj != null && Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : undefined);
+
 export function registerLang(code, dict) { dicts[code] = { ui: dict.ui || {}, names: dict.names || {} }; }
 export function setLang(code) { if (!dicts[code]) return false; current = code; return true; }
 export function getLang() { return current; }
@@ -23,22 +25,33 @@ export function detectLang(saved, navLang) {
 
 function fill(text, params) {
   if (!params) return text;
-  return text.replace(/\{(\w+)\}/g, (m, k) => (k in params ? String(params[k]) : m));
+  return text.replace(/\{(\w+)\}/g, (m, k) => (own(params, k) !== undefined ? String(params[k]) : m));
 }
 
 export function t(text, params) {
-  const hit = dicts[current].ui[text];
+  const hit = own(dicts[current].ui, text);
   return fill(hit != null ? hit : text, params);
 }
 
 export function tn(one, other, n, params) { return t(n === 1 ? one : other, { n, ...params }); }
 
 export function nameOf(kind, name) {
-  const table = dicts[current].names[kind];
+  const table = own(dicts[current].names, kind);
   if (!table) return name;
-  if (table[name] != null) return table[name];
+  const exact = own(table, name);
+  if (exact != null) return exact;
   const low = String(name).toLowerCase();
   for (const k of Object.keys(table)) if (k.toLowerCase() === low) return table[k];
+  return name;
+}
+
+// The English key whose display name (in the current language) equals `name`; `name` itself otherwise.
+// Used for names the user tapped or typed in Arabic, so stored data stays English.
+export function reverseName(kind, name) {
+  const table = own(dicts[current].names, kind);
+  if (!table) return name;
+  const low = String(name).trim().toLowerCase();
+  for (const k of Object.keys(table)) if (String(table[k]).toLowerCase() === low) return k;
   return name;
 }
 
@@ -48,15 +61,15 @@ const original = new WeakMap(); // text node -> its English text
 
 // Right-to-left text scrambles numbers: "138–189 g" and "97 / 500 XP" would read backwards. Each number
 // (with its sign, range/ratio and unit) is wrapped in a left-to-right isolate so it keeps its order.
-const NUMBER_RUN = /[+−-]?\d[\d.,]*(?:\s*[–\-/×:→]\s*[+−-]?\d[\d.,]*)*%?(?:\s(?:kg|kcal|g|cm|min|XP|L|t)(?![A-Za-z]))?/g;
+const NUMBER_RUN = /[+~−-]?\d[\d.,]*(?:\s*[–\-/×:→]\s*[+−-]?\d[\d.,]*)*%?(?:\s(?:kg|kcal|g|cm|min|XP|L|t)(?![A-Za-z]))?/g;
 export function isolateNumbers(text) { return text.replace(NUMBER_RUN, m => "⁦" + m + "⁩"); }
 
 function translateText(node) {
   const en = original.has(node) ? original.get(node) : node.nodeValue;
   const m = /^(\s*)([\s\S]*?)(\s*)$/.exec(en);
-  const hit = current === "en" ? null : dicts[current].ui[m[2].replace(/\s+/g, " ")];
+  const hit = current === "en" ? null : own(dicts[current].ui, m[2].replace(/\s+/g, " "));
   let out = null;
-  if (hit != null) out = m[1] + hit + m[3];
+  if (hit != null) out = m[1] + (current === "ar" ? isolateNumbers(hit) : hit) + m[3];
   else if (current === "ar") { const iso = isolateNumbers(en); if (iso !== en) out = iso; }
   if (out != null) { original.set(node, en); node.nodeValue = out; }
   else if (original.has(node)) { node.nodeValue = en; original.delete(node); }
@@ -66,7 +79,7 @@ function translateAttr(el, attr) {
   const keep = "data-en-" + attr;
   const en = el.hasAttribute(keep) ? el.getAttribute(keep) : el.getAttribute(attr);
   if (en == null) return;
-  const hit = current === "en" ? null : dicts[current].ui[en.trim()];
+  const hit = current === "en" ? null : own(dicts[current].ui, en.trim());
   if (hit != null) { if (!el.hasAttribute(keep)) el.setAttribute(keep, en); el.setAttribute(attr, hit); }
   else if (el.hasAttribute(keep)) { el.setAttribute(attr, en); el.removeAttribute(keep); }
 }

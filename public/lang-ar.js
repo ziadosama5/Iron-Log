@@ -15,7 +15,7 @@ export const AR = {
     "Rest over · {name}": "انتهت الراحة · {name}", "Rest · {name}": "راحة · {name}", "Go": "ابدأ",
 
     /* ---- Workout ---- */
-    "Today": "اليوم", "Day {n}": "اليوم {n}", "DAY {n}": "اليوم {n}", "ANY": "أي",
+    "Today": "اليوم", "Day {n}": "يوم {n}", "DAY {n}": "يوم {n}", "ANY": "أي",
     "Workout date": "تاريخ التمرين", "Change day": "تغيير اليوم",
     "Exercises done": "التمارين المنجزة", "{n} of {m} done": "تم {n} من {m}",
     "No exercises yet": "لا توجد تمارين بعد", "Tap \"+ Exercise\" to add one.": "اضغط \"+ تمرين\" لإضافة تمرين.",
@@ -94,10 +94,10 @@ export const AR = {
     "Download backup": "تنزيل نسخة احتياطية", "Restore from file": "استعادة من ملف",
     "No backup downloaded on this device yet.": "لم يتم تنزيل أي نسخة احتياطية على هذا الجهاز بعد.",
     "Last backup today.": "آخر نسخة احتياطية اليوم.",
-    "Last backup {n} day ago.": "آخر نسخة احتياطية قبل {n} يوم.", "Last backup {n} days ago.": "آخر نسخة احتياطية قبل {n} أيام.",
+    "Last backup {n} day ago.": "آخر نسخة احتياطية قبل {n} يوم.", "Last backup {n} days ago.": "آخر نسخة احتياطية قبل {n} يوم.",
     "Last backup {n} day ago. Time for a new one.": "آخر نسخة احتياطية قبل {n} يوم. حان وقت نسخة جديدة.",
-    "Last backup {n} days ago. Time for a new one.": "آخر نسخة احتياطية قبل {n} أيام. حان وقت نسخة جديدة.",
-    "Restored {n} items": "تمت استعادة {n} عنصراً", ", skipped {k} that looked damaged": "، وتم تخطي {k} بدت تالفة",
+    "Last backup {n} days ago. Time for a new one.": "آخر نسخة احتياطية قبل {n} يوماً. حان وقت نسخة جديدة.",
+    "Restored {n} items": "تمت استعادة {n} من العناصر", ", skipped {k} that looked damaged": "، وتم تخطي {k} بدت تالفة",
     "That file isn't an Iron Log backup": "هذا الملف ليس نسخة احتياطية من Iron Log", "Couldn't restore that file": "تعذّرت استعادة هذا الملف",
 
     /* ---- Exercise info sheet ---- */
@@ -136,6 +136,10 @@ export const AR = {
     "{name} added. Tap Edit day to change anything.": "تمت إضافة {name}. اضغط تعديل اليوم لتغيير أي شيء.",
     "Switched to {name}": "تم التبديل إلى {name}", "{name} added to today's workout": "تمت إضافة {name} إلى تمرين اليوم",
     "Workout deleted": "تم حذف التمرين",
+    "Sign-in cancelled": "تم إلغاء تسجيل الدخول",
+    "This website isn't allowed to sign in yet. Add it under Authentication › Settings › Authorized domains in Firebase.": "هذا الموقع غير مسموح له بتسجيل الدخول بعد. أضفه ضمن Authentication › Settings › Authorized domains في Firebase.",
+    "No connection. Check your internet and try again.": "لا يوجد اتصال. تحقق من الإنترنت وحاول مرة أخرى.",
+    "Couldn't sign in ({code})": "تعذّر تسجيل الدخول ({code})",
 
     /* ---- Body ---- */
     "today": "اليوم", "Latest weight": "آخر وزن", "Save": "حفظ", "{d} kg vs 4 weeks ago": "{d} kg مقارنة بـ 4 أسابيع",
@@ -155,14 +159,14 @@ export const AR = {
     "Recent entries": "آخر القياسات", "Weight": "الوزن", "Waist": "الخصر", "Fat %": "الدهون %", "Muscle": "العضلات",
     "No body data yet": "لا توجد بيانات للجسم بعد",
     "Log your weight above. Add measurements or an InBody scan whenever you have them, and the Coach tab will start using them.": "سجّل وزنك بالأعلى. أضف القياسات أو فحص InBody متى توفرت، وسيبدأ تبويب المدرب باستخدامها.",
-    "Body weight": "وزن الجسم", "Chest": "الصدر", "Hips": "الأرداف", "Neck": "الرقبة", "Arm (flexed)": "الذراع (مشدودة)", "Thigh": "الفخذ", "Calf": "السمانة",
+    "Body weight": "وزن الجسم", "Chest": "الصدر", "Hips": "الوركان", "Neck": "الرقبة", "Arm (flexed)": "الذراع (مشدودة)", "Thigh": "الفخذ", "Calf": "السمانة",
     "Skeletal muscle mass": "كتلة العضلات الهيكلية", "Body fat mass": "كتلة دهون الجسم", "Body fat": "دهون الجسم",
     "Visceral fat level": "مستوى الدهون الحشوية", "Basal metabolic rate": "معدل الأيض الأساسي", "Total body water": "ماء الجسم الكلي", "InBody score": "درجة InBody",
 
     /* ---- Coach: Today card ---- */
     "Log your weight on the Body tab to see calories burned and your target.": "سجّل وزنك في تبويب الجسم لترى السعرات المحروقة وهدفك.",
     "Fill in About you on the Body tab to see calories burned and your target.": "املأ قسم \"عنك\" في تبويب الجسم لترى السعرات المحروقة وهدفك.",
-    "Eaten": "المتناول", "Burned": "المحروق", "Balance": "الميزان", "Add a meal": "إضافة وجبة", "Protein g": "البروتين g", "Name": "الاسم", "Add meal": "إضافة الوجبة",
+    "Eaten": "المتناول", "Burned": "المحروق", "Balance": "الفرق", "Add a meal": "إضافة وجبة", "Protein g": "البروتين g", "Name": "الاسم", "Add meal": "إضافة الوجبة",
     "Everyday {a} · Lifting {b} · Cardio {c}": "اليومي {a} · الحديد {b} · الكارديو {c}", "Eaten vs target": "المتناول مقابل الهدف",
     "Over by {n} kcal": "زيادة بمقدار {n} kcal",
     "Protein <b>{a} g</b> of {b}–{c} g": "البروتين <b>{a} g</b> من {b}–{c} g", "Protein <b>{a} g</b>": "البروتين <b>{a} g</b>",
@@ -293,7 +297,7 @@ export const AR = {
       "First workout": "أول تمرين", "10 workouts": "10 تمارين", "50 workouts": "50 تمريناً", "100 workouts": "100 تمرين", "250 workouts": "250 تمريناً",
       "10k kcal burned": "حرق 10 آلاف kcal", "50k kcal burned": "حرق 50 ألف kcal", "100k kcal burned": "حرق 100 ألف kcal",
       "1,000 cardio minutes": "1,000 دقيقة كارديو", "5,000 cardio minutes": "5,000 دقيقة كارديو",
-      "First kg": "أول كيلوغرام", "Goal reached": "تحقيق الهدف",
+      "First kg": "أول كيلوجرام", "Goal reached": "تحقيق الهدف",
       "4-week streak": "سلسلة 4 أسابيع", "12-week streak": "سلسلة 12 أسبوعاً", "26-week streak": "سلسلة 26 أسبوعاً",
       "7-day food streak": "سلسلة 7 أيام لتسجيل الطعام", "30-day food streak": "سلسلة 30 يوماً لتسجيل الطعام",
       "First PR": "أول رقم قياسي", "10 PRs": "10 أرقام قياسية",
