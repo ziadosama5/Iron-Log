@@ -71,3 +71,49 @@ test("merged exercises are gone from the library but resolve to the one that sta
   }
   assert.equal(resolveAlias("Bench Press"), "Bench Press");
 });
+
+// ---- equipment model (library 2.0) ----
+import { EQUIPMENT, EXERCISES, equipmentOf, exercisesFor } from "../public/exercise-library.js";
+
+test("EQUIPMENT: 39 unique ids in three groups; every tag used by an exercise exists", () => {
+  assert.equal(EQUIPMENT.length, 39);
+  assert.equal(new Set(EQUIPMENT.map(e => e.id)).size, 39);
+  for (const e of EQUIPMENT) { assert.ok(["weights", "station", "machine"].includes(e.group), e.id); assert.ok(e.name.trim().length > 0, e.id); }
+  const ids = new Set(EQUIPMENT.map(e => e.id));
+  for (const x of EXERCISES) for (const q of x.eq) assert.ok(ids.has(q), `${x.name}: unknown equipment ${q}`);
+});
+
+test("EXERCISES: unique names, valid groups, LIB/ALL_EX derived from them", () => {
+  const key = n => n.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  assert.equal(new Set(EXERCISES.map(x => key(x.name))).size, EXERCISES.length, "names unique ignoring case and punctuation");
+  for (const x of EXERCISES) assert.ok(MUSCLES.includes(x.group), `${x.name}: ${x.group}`);
+  for (const g of MUSCLES) assert.deepEqual(LIB[g], EXERCISES.filter(x => x.group === g).map(x => x.name));
+  assert.equal(ALL_EX.length, EXERCISES.length);
+});
+
+test("equipment tags agree with the words in the exercise name", () => {
+  const word = { Smith: "smith", Cable: "cable", Dumbbell: "dumbbell", Barbell: "barbell", "EZ-bar": "ez-bar", Kettlebell: "kettlebell", "Trap Bar": "trap-bar" };
+  const machineIds = new Set(EQUIPMENT.filter(e => e.group === "machine").map(e => e.id));
+  const machineName = /Machine|Pec Deck|Leg Press|Hack Squat|Leg Extension|Lat Pulldown|Close-grip Pulldown|Reverse-grip Pulldown|Assisted|T-bar|Leg Curl|^Hip (Abduction|Adduction)|^(Standing|Seated) Calf/;
+  for (const x of EXERCISES) {
+    for (const [w, id] of Object.entries(word)) if (x.name.includes(w)) assert.ok(x.eq.includes(id), `${x.name} needs ${id}`);
+    if (machineName.test(x.name) && !/Smith|Cable|Dumbbell|Barbell/.test(x.name)) assert.ok(x.eq.some(q => machineIds.has(q)), `${x.name} needs a machine`);
+  }
+});
+
+test("equipmentOf: required ids for library names, null for custom ones", () => {
+  assert.deepEqual(equipmentOf("bench press"), ["barbell", "bench"]);
+  assert.deepEqual(equipmentOf("Pec Deck"), ["pec-deck"]);
+  assert.deepEqual(equipmentOf("Push-up"), []);
+  assert.equal(equipmentOf("My Custom Thing"), null);
+});
+
+test("exercisesFor: only exercises whose every required item is in the gym", () => {
+  const none = exercisesFor([]);
+  for (const n of ["Push-up", "Plank", "Crunch"]) assert.ok(none.includes(n), n);
+  assert.ok(none.every(n => equipmentOf(n).length === 0));
+  const bb = exercisesFor(["barbell", "bench"]);
+  assert.ok(bb.includes("Bench Press") && bb.includes("Incline Barbell Press"));
+  assert.ok(!bb.includes("Dumbbell Bench Press") && !bb.includes("Squat"));
+  assert.deepEqual(exercisesFor(EQUIPMENT.map(e => e.id)), ALL_EX);
+});

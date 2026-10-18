@@ -314,6 +314,20 @@ export const AR = {
     },
     weekday: { "Sun": "أحد", "Mon": "إثنين", "Tue": "ثلاثاء", "Wed": "أربعاء", "Thu": "خميس", "Fri": "جمعة", "Sat": "سبت" },
     meal: { "Breakfast": "فطور", "Lunch": "غداء", "Dinner": "عشاء", "Snack": "وجبة خفيفة" },
-    level: { "Rookie": "مبتدئ", "Regular": "منتظم", "Committed": "ملتزم", "Iron": "حديدي" }
+    level: { "Rookie": "مبتدئ", "Regular": "منتظم", "Committed": "ملتزم", "Iron": "حديدي" },
+    equipment: {
+      "barbell": "البار", "dumbbell": "دمبل", "ez-bar": "بار EZ", "trap-bar": "بار سداسي (Trap Bar)", "kettlebell": "كيتل بيل",
+      "bench": "بنش قابل للضبط", "decline-bench": "بنش منحدر", "rack": "حامل السكوات", "smith": "جهاز سميث", "cable": "جهاز الكابل",
+      "pullup-bar": "عمود العقلة", "dip-station": "جهاز المتوازي", "captains-chair": "كرسي الكابتن", "preacher-bench": "بنش بريتشر",
+      "hyper-bench": "بنش تمديد الظهر", "box": "صندوق / درجة", "ab-wheel": "عجلة البطن",
+      "chest-press": "جهاز ضغط الصدر", "incline-press-machine": "جهاز ضغط الصدر المائل", "pec-deck": "جهاز الفراشة (Pec Deck)",
+      "shoulder-press-machine": "جهاز ضغط الكتف", "lateral-raise-machine": "جهاز الرفرفة الجانبية", "lat-pulldown": "جهاز سحب الظهر من الأعلى",
+      "seated-row": "جهاز التجديف جلوساً", "assisted-machine": "جهاز العقلة والمتوازي المساعد", "tbar-row": "جهاز تجديف T",
+      "biceps-curl-machine": "جهاز كيرل البايسبس", "triceps-machine": "جهاز الترايسبس", "leg-press": "جهاز ضغط الأرجل",
+      "hack-squat": "جهاز هاك سكوات", "leg-extension": "جهاز تمديد الساق", "leg-curl": "جهاز ثني الساق مستلقياً",
+      "seated-leg-curl": "جهاز ثني الساق جلوساً", "hip-abduction": "جهاز إبعاد الفخذ", "hip-adduction": "جهاز تقريب الفخذ",
+      "glute-kickback": "جهاز ركلة الأرداف", "standing-calf-machine": "جهاز السمانة واقفاً", "seated-calf-machine": "جهاز السمانة جلوساً",
+      "ab-crunch-machine": "جهاز كرنش البطن"
+    }
   }
 };

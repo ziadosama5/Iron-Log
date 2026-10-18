@@ -107,3 +107,10 @@ test("accent preset names and the picker labels have Arabic", () => {
   const missing = [...PRESETS.map(p => p.name), "Accent", "Custom"].filter(k => AR.ui[k] == null);
   assert.deepEqual(missing, []);
 });
+
+import { EQUIPMENT } from "../public/exercise-library.js";
+test("every equipment item has a unique Arabic name", () => {
+  const names = EQUIPMENT.map(e => (AR.names.equipment || {})[e.id]);
+  assert.deepEqual(EQUIPMENT.filter((e, i) => !names[i] || !String(names[i]).trim()).map(e => e.id), []);
+  assert.equal(new Set(names).size, names.length);
+});
