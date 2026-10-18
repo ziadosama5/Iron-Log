@@ -137,3 +137,20 @@ test("library 2.0: the four exercises that were merged earlier are their own exe
   assert.deepEqual(equipmentOf("Seated Leg Curl"), ["seated-leg-curl"]);
   assert.ok(!exercisesFor(["leg-curl"]).includes("Seated Leg Curl"));
 });
+
+// ---- review fixes ----
+test("exercisesFor tolerates bad input", () => {
+  assert.deepEqual(exercisesFor("barbell"), exercisesFor([]));
+  assert.deepEqual(exercisesFor(null), exercisesFor([]));
+});
+
+test("equipment tags follow one rack rule: bar taken off a rack onto the back/shoulders needs a rack", () => {
+  for (const n of ["Squat", "Front Squat", "Box Squat", "Good Morning", "Barbell Lunge", "Barbell Calf Raise"]) assert.ok(equipmentOf(n).includes("rack"), n);
+  assert.deepEqual(equipmentOf("Spider Curl"), ["dumbbell", "bench"]);
+  assert.deepEqual(equipmentOf("Smith Machine Split Squat"), ["smith", "bench"]);
+});
+
+test("the bench and seated-row machine have names users read correctly", () => {
+  assert.equal(EQUIPMENT.find(e => e.id === "bench").name, "Bench (flat / incline)");
+  assert.equal(EQUIPMENT.find(e => e.id === "seated-row").name, "Chest-supported row machine");
+});

@@ -7,7 +7,7 @@ export const EQUIPMENT = [
   { id: "ez-bar", group: "weights", name: "EZ bar" },
   { id: "trap-bar", group: "weights", name: "Trap bar" },
   { id: "kettlebell", group: "weights", name: "Kettlebell" },
-  { id: "bench", group: "station", name: "Adjustable bench" },
+  { id: "bench", group: "station", name: "Bench (flat / incline)" },
   { id: "decline-bench", group: "station", name: "Decline bench" },
   { id: "rack", group: "station", name: "Squat rack" },
   { id: "smith", group: "station", name: "Smith machine" },
@@ -25,7 +25,7 @@ export const EQUIPMENT = [
   { id: "shoulder-press-machine", group: "machine", name: "Shoulder press machine" },
   { id: "lateral-raise-machine", group: "machine", name: "Lateral raise machine" },
   { id: "lat-pulldown", group: "machine", name: "Lat pulldown machine" },
-  { id: "seated-row", group: "machine", name: "Seated row machine" },
+  { id: "seated-row", group: "machine", name: "Chest-supported row machine" },
   { id: "assisted-machine", group: "machine", name: "Assisted pull-up/dip machine" },
   { id: "tbar-row", group: "machine", name: "T-bar row machine" },
   { id: "biceps-curl-machine", group: "machine", name: "Biceps curl machine" },
@@ -77,7 +77,7 @@ export const EXERCISES = [
     ["Barbell Curl", "barbell"], ["Dumbbell Curl", "dumbbell"], ["Hammer Curl", "dumbbell"], ["Preacher Curl", "ez-bar", "preacher-bench"],
     ["Incline Dumbbell Curl", "dumbbell", "bench"], ["Cable Curl", "cable"], ["EZ-bar Curl", "ez-bar"], ["Concentration Curl", "dumbbell"],
     ["Cross-body Hammer Curl", "dumbbell"], ["Dumbbell Preacher Curl", "dumbbell", "preacher-bench"], ["Machine Biceps Curl", "biceps-curl-machine"],
-    ["High Cable Curl", "cable"], ["Rope Hammer Curl", "cable"], ["Spider Curl", "barbell", "bench"], ["Reverse Curl", "ez-bar"],
+    ["High Cable Curl", "cable"], ["Rope Hammer Curl", "cable"], ["Spider Curl", "dumbbell", "bench"], ["Reverse Curl", "ez-bar"],
     ["Zottman Curl", "dumbbell"]]),
   ...X("Triceps", [
     ["Tricep Pushdown", "cable"], ["Skull Crusher", "ez-bar", "bench"], ["Overhead Tricep Extension", "dumbbell"],
@@ -91,7 +91,7 @@ export const EXERCISES = [
     ["Bulgarian Split Squat", "dumbbell", "bench"], ["Walking Lunge", "dumbbell"], ["Leg Extension", "leg-extension"], ["Lunge", "dumbbell"],
     ["Step-up", "box"], ["Smith Machine Squat", "smith"], ["Box Squat", "barbell", "rack", "box"], ["Goblet Squat", "dumbbell"],
     ["Dumbbell Squat", "dumbbell"], ["Narrow-stance Leg Press", "leg-press"], ["Single-leg Leg Press", "leg-press"],
-    ["Smith Machine Split Squat", "smith"], ["Reverse Lunge", "dumbbell"], ["Barbell Lunge", "barbell"], ["Side Lunge", "dumbbell"],
+    ["Smith Machine Split Squat", "smith", "bench"], ["Reverse Lunge", "dumbbell"], ["Barbell Lunge", "barbell", "rack"], ["Side Lunge", "dumbbell"],
     ["Dumbbell Step-up", "dumbbell", "box"], ["Bodyweight Squat"], ["Sissy Squat"], ["Wall Sit"]]),
   ...X("Hamstrings & Glutes", [
     ["Romanian Deadlift", "barbell"], ["Lying Leg Curl", "leg-curl"], ["Hip Thrust", "barbell", "bench"], ["Good Morning", "barbell", "rack"],
@@ -103,7 +103,7 @@ export const EXERCISES = [
     ["Dumbbell Sumo Squat", "dumbbell"], ["Glute-Ham Raise", "hyper-bench"], ["Donkey Kick"]]),
   ...X("Calves", [
     ["Standing Calf Raise", "standing-calf-machine"], ["Seated Calf Raise", "seated-calf-machine"], ["Donkey Calf Raise", "box"],
-    ["Calf Press (Leg Press)", "leg-press"], ["Smith Calf Raise", "smith"], ["Dumbbell Calf Raise", "dumbbell"], ["Barbell Calf Raise", "barbell"],
+    ["Calf Press (Leg Press)", "leg-press"], ["Smith Calf Raise", "smith"], ["Dumbbell Calf Raise", "dumbbell"], ["Barbell Calf Raise", "barbell", "rack"],
     ["Single-leg Calf Raise"]]),
   ...X("Core", [
     ["Plank"], ["Hanging Leg Raise", "pullup-bar"], ["Cable Crunch", "cable"], ["Ab Wheel Rollout", "ab-wheel"], ["Russian Twist"], ["Crunch"],
@@ -127,7 +127,7 @@ export function equipmentOf(name) {
 }
 // Names of library exercises whose every required item is in the gym (list of equipment ids).
 export function exercisesFor(gym) {
-  const have = new Set(gym || []);
+  const have = new Set(Array.isArray(gym) ? gym : []);
   return EXERCISES.filter(e => e.eq.every(q => have.has(q))).map(e => e.name);
 }
 

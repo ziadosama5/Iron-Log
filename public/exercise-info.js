@@ -1363,7 +1363,7 @@ export const INFO = {
    "tips": [
     "الإبط ملاصق لأعلى الوسادة",
     "انزل حتى تكاد الذراع تستقيم",
-    "اثنِ للأعلى دون رفع صدرك عن الوسادة"
+    "اثنِ للأعلى دون رفع ذراعيك عن الوسادة"
    ]
   }
  },
@@ -1505,7 +1505,7 @@ export const INFO = {
  },
  "dumbbell squat": {
   "name": "Dumbbell Squat",
-  "slug": "goblet-squat",
+  "slug": "dumbbell-squat",
   "img": true,
   "primary": [
    "Quads"
@@ -1570,7 +1570,8 @@ export const INFO = {
     "أمسك دمبلاً واحداً بين ساقيك",
     "اجلس وادفع للأعلى عبر الكعبين"
    ]
-  }
+  },
+  "own": true
  },
  "dumbbell upright row": {
   "name": "Dumbbell Upright Row",
@@ -1758,8 +1759,9 @@ export const INFO = {
  },
  "glute-ham raise": {
   "name": "Glute-Ham Raise",
-  "slug": "back-extension",
+  "slug": "glute-ham-raise",
   "img": true,
+  "own": true,
   "primary": [
    "Hamstrings & Glutes"
   ],
@@ -1767,15 +1769,15 @@ export const INFO = {
    "Back"
   ],
   "tips": [
-   "Lock your heels and set the pad at the hips",
-   "Lower the torso with a straight back",
-   "Pull up with the hamstrings and glutes"
+   "Lock the heels with the knees just behind the pad",
+   "Lower the torso until the body hangs down",
+   "Curl up with the hamstrings until the body is straight"
   ],
   "ar": {
    "tips": [
-    "ثبّت كعبيك واضبط الوسادة عند الوركين",
-    "أنزل الجذع بظهر مستقيم",
-    "ارتفع بالفخذ الخلفي والأرداف"
+    "ثبّت كعبيك والركبتان خلف الوسادة مباشرة",
+    "أنزل الجذع حتى يتدلى الجسم للأسفل",
+    "اصعد بالفخذ الخلفي حتى يستقيم الجسم"
    ]
   }
  },
@@ -1783,6 +1785,7 @@ export const INFO = {
   "name": "Goblet Squat",
   "slug": "goblet-squat",
   "img": true,
+  "own": true,
   "primary": [
    "Quads"
   ],
@@ -1873,8 +1876,9 @@ export const INFO = {
  },
  "hanging knee raise": {
   "name": "Hanging Knee Raise",
-  "slug": "hanging-leg-raise",
+  "slug": "hanging-knee-raise",
   "img": true,
+  "own": true,
   "primary": [
    "Core"
   ],
@@ -1890,8 +1894,7 @@ export const INFO = {
     "ارفع الركبتين نحو الصدر",
     "انزل ببطء دون تأرجح"
    ]
-  },
-  "own": true
+  }
  },
  "hanging leg raise": {
   "name": "Hanging Leg Raise",
@@ -1919,7 +1922,7 @@ export const INFO = {
  },
  "high cable curl": {
   "name": "High Cable Curl",
-  "slug": "high-cable-curl",
+  "slug": "cable-curl",
   "img": true,
   "primary": [
    "Biceps"
@@ -2339,8 +2342,9 @@ export const INFO = {
  },
  "low cable crossover": {
   "name": "Low Cable Crossover",
-  "slug": "cable-crossover",
+  "slug": "low-cable-crossover",
   "img": true,
+  "own": true,
   "primary": [
    "Chest"
   ],
@@ -2911,7 +2915,7 @@ export const INFO = {
    "tips": [
     "الإبطان ملاصقان لأعلى الوسادة",
     "انزل حتى تكاد الذراعان تستقيمان",
-    "اثنِ للأعلى دون رفع صدرك عن الوسادة"
+    "اثنِ للأعلى دون رفع ذراعيك عن الوسادة"
    ]
   }
  },
@@ -2991,7 +2995,7 @@ export const INFO = {
  },
  "rack pull": {
   "name": "Rack Pull",
-  "slug": "deadlift",
+  "slug": "stiff-leg-deadlift",
   "img": true,
   "primary": [
    "Back"
@@ -3010,7 +3014,8 @@ export const INFO = {
     "ظهر مستقيم والبار قريب من ساقيك",
     "افرد الوركين واعصر أعلى الظهر"
    ]
-  }
+  },
+  "own": true
  },
  "rear delt fly": {
   "name": "Rear Delt Fly",
@@ -3429,8 +3434,9 @@ export const INFO = {
  },
  "single-leg calf raise": {
   "name": "Single-leg Calf Raise",
-  "slug": "standing-calf-raise",
+  "slug": "single-leg-calf-raise",
   "img": true,
+  "own": true,
   "primary": [
    "Calves"
   ],
@@ -3560,7 +3566,7 @@ export const INFO = {
  },
  "smith calf raise": {
   "name": "Smith Calf Raise",
-  "slug": "smith-calf-raise",
+  "slug": "barbell-calf-raise",
   "img": true,
   "primary": [
    "Calves"
@@ -3755,13 +3761,13 @@ export const INFO = {
    "Hamstrings & Glutes"
   ],
   "tips": [
-   "Front foot ahead, rear foot behind",
+   "Front foot ahead, rear foot on a bench behind",
    "Drop the back knee straight down",
    "Push up through the front heel"
   ],
   "ar": {
    "tips": [
-    "القدم الأمامية للأمام والخلفية للخلف",
+    "القدم الأمامية للأمام والخلفية على بنش خلفك",
     "أنزل الركبة الخلفية للأسفل مباشرة",
     "ادفع للأعلى عبر الكعب الأمامي"
    ]
@@ -3795,6 +3801,7 @@ export const INFO = {
   "name": "Spider Curl",
   "slug": "spider-curl",
   "img": true,
+  "own": true,
   "primary": [
    "Biceps"
   ],

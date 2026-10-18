@@ -458,6 +458,80 @@ const pallofPress = finish => {
   });
 };
 
+// ---------- Spider Curl (face down on an incline bench, arms hanging) ----------
+const spiderCurl = finish => {
+  const sh = [120, 164], hip = [74, 214], knee = [54, 240], ank = [38, 262];
+  const elbow = [126, 200], wrist = finish ? [148, 178] : [128, 232];
+  return fig({
+    ...head([142, 144]),
+    parts: [...body({ sh, hip, chest: 34, waist: 24 }), ...leg(hip, knee, ank, [26, 266], [26, 18, 11]), ...arm(sh, elbow, wrist), delt(sh, 12)],
+    behind: poly([[56, 228], [68, 240], [138, 172], [126, 160], [56, 228]], true) + line([94, 206], [94, 270], 4) + line([122, 178], [134, 270], 4),
+    gear: floor() + dumbbell(wrist, 0, 22, 8) + hand(wrist, 5)
+  });
+};
+
+// ---------- Glute-Ham Raise (heels locked, hips on the pad, curl the body up) ----------
+const gluteHamRaise = finish => {
+  const hip = [104, 190], knee = [68, 196], ank = [34, 202];
+  const sh = finish ? [150, 188] : [112, 236];
+  return fig({
+    ...head(finish ? [176, 184] : [114, 262]),
+    parts: [...body({ sh, hip, chest: 34, waist: 26 }), ...chain([hip, knee, ank], [26, 18, 11]), ...arm(sh, finish ? [150, 212] : [118, 232], finish ? [136, 220] : [122, 246]), delt(sh, 11)],
+    behind: rect(88, 172, 34, 28, 6) + line([105, 200], [105, 270], 4) + rect(10, 186, 14, 40, 3) + line([17, 226], [17, 270], 4),
+    gear: floor()
+  });
+};
+
+// ---------- Goblet Squat (one dumbbell held at the chest) ----------
+const gobletSquat = finish => {
+  const sh = finish ? [112, 138] : [106, 92], hip = finish ? [82, 212] : [108, 162], knee = finish ? [142, 208] : [110, 216], ank = finish ? [112, 262] : [110, 262];
+  const elbow = finish ? [134, 158] : [126, 128], wrist = finish ? [138, 136] : [132, 106];
+  return fig({
+    ...head(finish ? [124, 116] : [108, 54]),
+    parts: [...body({ sh, hip }), ...leg(hip, knee, ank, [134, 266]), ...arm(sh, elbow, wrist), delt(sh, 12)],
+    gear: floor() + dumbbell([wrist[0] + 4, wrist[1] - 2], 90, 26, 8) + hand(wrist, 5)
+  });
+};
+
+// ---------- Low Cable Crossover (front view, low pulleys, sweep the hands up and together) ----------
+const lowCableCrossover = finish => {
+  const L = finish ? { e: [84, 130], h: [100, 118] } : { e: [60, 152], h: [66, 206] };
+  const R = finish ? { e: [132, 130], h: [116, 118] } : { e: [156, 152], h: [150, 206] };
+  return fig({
+    ...head([108, 52]),
+    parts: [tap([108, 92], [108, 172], 72, 46),
+      tap([78, 98], L.e, 18, 14), tap(L.e, L.h, 14, 10), tap([138, 98], R.e, 18, 14), tap(R.e, R.h, 14, 10),
+      delt([78, 98], 12), delt([138, 98], 12),
+      tap([94, 176], [92, 222], 26, 19), tap([92, 222], [90, 262], 19, 12), tap([122, 176], [124, 222], 26, 19), tap([124, 222], [126, 262], 19, 12)],
+    behind: rect(4, 60, 14, 210, 3) + rect(198, 60, 14, 210, 3),
+    gear: floor() + cable([11, 250], L.h) + cable([205, 250], R.h) + hand(L.h, 5) + hand(R.h, 5)
+  });
+};
+
+// ---------- Single-leg Calf Raise (one foot on a step edge) ----------
+const singleLegCalfRaise = finish => {
+  const sh = [106, 92], hip = [108, 162], knee = [110, 212], ank = finish ? [110, 232] : [110, 246], toe = [134, 246];
+  return fig({
+    ...head([108, 54]),
+    parts: [...body({ sh, hip }), ...leg(hip, knee, ank, toe, [28, 19, 12]), ...chain([hip, [88, 204], [70, 226]], [26, 18, 11]), ...arm(sh, [100, 130], [104, 166]), delt(sh, 12)],
+    behind: rect(70, 246, 100, 24, 4),
+    gear: floor()
+  });
+};
+
+// ---------- Hanging Knee Raise (hang from a bar, bring the knees up) ----------
+const hangingKneeRaise = finish => {
+  const sh = [108, 76], hip = finish ? [102, 152] : [108, 152];
+  const knee = finish ? [148, 166] : [110, 206], ank = finish ? [120, 206] : [110, 258];
+  return fig({
+    ...head([108, 50]),
+    parts: [...body({ sh, hip, chest: 34, waist: 24 }), ...chain([hip, knee, ank], [24, 17, 11]), tap(ank, [ank[0] + 14, ank[1] + 4], 11, 8),
+      ...arm(sh, [122, 54], [116, 28]), delt(sh, 12)],
+    behind: line([56, 24], [160, 24], 5) + line([56, 24], [56, 270], 3) + line([160, 24], [160, 270], 3),
+    gear: floor() + hand([116, 26], 5)
+  });
+};
+
 export const DRAWINGS = {
   "face-pull": { start: facePull(false), end: facePull(true) },
   "hip-thrust": { start: hipThrust(false), end: hipThrust(true) },
@@ -494,7 +568,13 @@ export const DRAWINGS = {
   "mountain-climber": { start: mountainClimber(false), end: mountainClimber(true) },
   "dead-bug": { start: deadBug(false), end: deadBug(true) },
   "cable-woodchop": { start: cableWoodchop(false), end: cableWoodchop(true) },
-  "pallof-press": { start: pallofPress(false), end: pallofPress(true) }
+  "pallof-press": { start: pallofPress(false), end: pallofPress(true) },
+  "spider-curl": { start: spiderCurl(false), end: spiderCurl(true) },
+  "glute-ham-raise": { start: gluteHamRaise(false), end: gluteHamRaise(true) },
+  "goblet-squat": { start: gobletSquat(false), end: gobletSquat(true) },
+  "low-cable-crossover": { start: lowCableCrossover(false), end: lowCableCrossover(true) },
+  "single-leg-calf-raise": { start: singleLegCalfRaise(false), end: singleLegCalfRaise(true) },
+  "hanging-knee-raise": { start: hangingKneeRaise(false), end: hangingKneeRaise(true) }
 };
 
 // Contact sheet for looking at the drawings.
