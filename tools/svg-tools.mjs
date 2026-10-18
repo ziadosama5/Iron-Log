@@ -45,3 +45,19 @@ export function posesFor(source) {
   if (s !== "relaxation" && s !== "tension") throw new Error(`unknown start pose "${s}" (use "relaxation" or "tension")`);
   return s === "tension" ? [["tension", "start"], ["relaxation", "end"]] : [["relaxation", "start"], ["tension", "end"]];
 }
+
+// Sources entries with "drawing": "<other exercise>" use that exercise's figures: copy slug/img/own
+// from the target (which must exist, have a drawing, and not be a reuse itself). `info` is keyed by
+// lower-cased exercise name, `sources` by exercise name.
+export function applyDrawingReuse(info, sources) {
+  for (const [name, s] of Object.entries(sources)) {
+    if (!s.drawing) continue;
+    const target = sources[s.drawing], ti = info[String(s.drawing).toLowerCase()];
+    if (!target || !ti) throw new Error(`${name}: drawing source "${s.drawing}" not found`);
+    if (target.drawing) throw new Error(`${name}: "${s.drawing}" is itself a reuse (no chains)`);
+    if (!ti.img) throw new Error(`${name}: "${s.drawing}" has no drawing`);
+    const mine = info[name.toLowerCase()];
+    mine.slug = ti.slug; mine.img = true;
+    if (ti.own) mine.own = true; else delete mine.own;
+  }
+}

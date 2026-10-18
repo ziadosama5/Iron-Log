@@ -42,3 +42,16 @@ test("posesFor: start:tension swaps the order (e.g. squat starts standing)", () 
   assert.deepEqual(posesFor({ ek: "0122", start: "tension" }), [["tension", "start"], ["relaxation", "end"]]));
 test("posesFor rejects unknown start values", () =>
   assert.throws(() => posesFor({ ek: "0122", start: "top" }), /start/));
+
+import { applyDrawingReuse } from "../tools/svg-tools.mjs";
+
+test("applyDrawingReuse copies slug/img/own from the target and rejects bad targets", () => {
+  const info = { "leg press": { name: "Leg Press", slug: "leg-press", img: true }, "narrow-stance leg press": { name: "Narrow-stance Leg Press", slug: "narrow-stance-leg-press", img: false } };
+  const sources = { "Leg Press": { ek: "0127" }, "Narrow-stance Leg Press": { drawing: "Leg Press" } };
+  applyDrawingReuse(info, sources);
+  assert.equal(info["narrow-stance leg press"].slug, "leg-press");
+  assert.equal(info["narrow-stance leg press"].img, true);
+  assert.throws(() => applyDrawingReuse({ a: { name: "A" } }, { A: { drawing: "Nope" } }), /Nope/);
+  assert.throws(() => applyDrawingReuse({ a: { name: "A" }, b: { name: "B" } }, { A: { drawing: "B" }, B: { drawing: "A" } }), /reuse/i);
+  assert.throws(() => applyDrawingReuse({ a: { name: "A" }, b: { name: "B", img: false } }, { A: { drawing: "B" }, B: {} }), /no drawing/i);
+});

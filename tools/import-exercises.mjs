@@ -5,7 +5,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { recolorSvg, slugify, posesFor } from "./svg-tools.mjs";
+import { recolorSvg, slugify, posesFor, applyDrawingReuse } from "./svg-tools.mjs";
 import { ALL_EX, ALIASES } from "../public/exercise-library.js";
 import { DRAWINGS } from "./draw-exercises.mjs";
 
@@ -53,6 +53,8 @@ for (const name of names.slice().sort((a, b) => a.localeCompare(b))) {
   }
   info[name.toLowerCase()] = { name, slug, img: !!(s.ek || s.draw), ...(s.draw ? { own: true } : {}), primary: s.primary, secondary: s.secondary, tips: s.tips, ...(s.ar ? { ar: s.ar } : {}) };
 }
+
+applyDrawingReuse(info, sources);
 
 for (const f of readdirSync(outDir)) {
   if (f.endsWith(".svg") && !wanted.has(f)) { unlinkSync(join(outDir, f)); console.log("removed", f); }
