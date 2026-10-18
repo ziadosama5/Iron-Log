@@ -288,7 +288,22 @@ export const AR = {
       "Incline Push-up": "ضغط مائل (اليدان على البنش)",
       "Decline Push-up": "ضغط منحدر (القدمان على البنش)",
       "Dumbbell Pullover": "بولوفر بالدمبل",
-      "Dumbbell Floor Press": "ضغط الدمبل من الأرض"
+      "Dumbbell Floor Press": "ضغط الدمبل من الأرض",
+      "Wide-grip Pull-up": "عقلة بقبضة واسعة",
+      "Assisted Pull-up": "عقلة بالجهاز المساعد",
+      "Reverse-grip Pulldown": "سحب بقبضة عكسية",
+      "Underhand Barbell Row": "تجديف بالبار بقبضة سفلية",
+      "Smith Machine Row": "تجديف بجهاز سميث",
+      "Chest-supported Dumbbell Row": "تجديف بالدمبل مع إسناد الصدر",
+      "Bent-over Dumbbell Row": "تجديف بالدمبل مع الانحناء",
+      "Wide-grip Cable Row": "تجديف الكابل بقبضة واسعة",
+      "One-arm Cable Row": "تجديف الكابل بذراع واحدة",
+      "Machine Row": "تجديف بالجهاز",
+      "Trap Bar Deadlift": "رفعة ميتة ببار سداسي",
+      "Rack Pull": "سحب من الحامل",
+      "Cable Shrug": "هز الكتفين بالكابل",
+      "Smith Machine Shrug": "هز الكتفين بجهاز سميث",
+      "Inverted Row": "تجديف مقلوب"
     },
     muscle: {
       "Chest": "الصدر", "Back": "الظهر", "Shoulders": "الأكتاف", "Biceps": "البايسبس", "Triceps": "الترايسبس",

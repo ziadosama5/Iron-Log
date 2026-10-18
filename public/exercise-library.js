@@ -59,7 +59,12 @@ export const EXERCISES = [
   ...X("Back", [
     ["Pull-up", "pullup-bar"], ["Lat Pulldown", "lat-pulldown"], ["Barbell Row", "barbell"], ["One-arm Dumbbell Row", "dumbbell", "bench"],
     ["Seated Cable Row", "cable"], ["T-bar Row", "tbar-row"], ["Chin-up", "pullup-bar"], ["Deadlift", "barbell"], ["Barbell Shrug", "barbell"],
-    ["Dumbbell Shrug", "dumbbell"], ["Straight-arm Pulldown", "cable"], ["Back Extension", "hyper-bench"], ["Close-grip Pulldown", "lat-pulldown"]]),
+    ["Dumbbell Shrug", "dumbbell"], ["Straight-arm Pulldown", "cable"], ["Back Extension", "hyper-bench"], ["Close-grip Pulldown", "lat-pulldown"],
+    ["Wide-grip Pull-up", "pullup-bar"], ["Assisted Pull-up", "assisted-machine"], ["Reverse-grip Pulldown", "lat-pulldown"],
+    ["Underhand Barbell Row", "barbell"], ["Smith Machine Row", "smith"], ["Chest-supported Dumbbell Row", "dumbbell", "bench"],
+    ["Bent-over Dumbbell Row", "dumbbell"], ["Wide-grip Cable Row", "cable"], ["One-arm Cable Row", "cable"], ["Machine Row", "seated-row"],
+    ["Trap Bar Deadlift", "trap-bar"], ["Rack Pull", "barbell", "rack"], ["Cable Shrug", "cable"], ["Smith Machine Shrug", "smith"],
+    ["Inverted Row", "rack"]]),
   ...X("Shoulders", [
     ["Overhead Press", "barbell"], ["Arnold Press", "dumbbell"], ["Lateral Raise", "dumbbell"], ["Rear Delt Fly", "dumbbell"], ["Face Pull", "cable"],
     ["Upright Row", "barbell"], ["Machine Shoulder Press", "shoulder-press-machine"], ["Reverse Pec Deck", "pec-deck"]]),

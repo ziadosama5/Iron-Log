@@ -227,6 +227,30 @@ const dumbbellFloorPress = finish => {
   });
 };
 
+// ---------- Chest-supported Dumbbell Row (face down on an incline bench) ----------
+const chestSupportedRow = finish => {
+  const sh = [120, 164], hip = [74, 214], knee = [54, 240], ank = [38, 262];
+  const elbow = finish ? [98, 188] : [124, 198], wrist = finish ? [114, 208] : [126, 232];
+  return fig({
+    ...head([142, 144]),
+    parts: [...body({ sh, hip, chest: 34, waist: 24 }), ...leg(hip, knee, ank, [26, 266], [26, 18, 11]), ...arm(sh, elbow, wrist), delt(sh, 12)],
+    behind: poly([[56, 228], [68, 240], [138, 172], [126, 160], [56, 228]], true) + line([94, 206], [94, 270], 4) + line([122, 178], [134, 270], 4),
+    gear: floor() + dumbbell(wrist, 0, 22, 8) + hand(wrist, 5)
+  });
+};
+
+// ---------- Machine Row (seated, chest against the pad) ----------
+const machineRow = finish => {
+  const sh = [104, 98], hip = [92, 196], knee = [152, 202], ank = [154, 262];
+  const elbow = finish ? [78, 124] : [142, 116], wrist = finish ? [128, 130] : [178, 128];
+  return fig({
+    ...head([108, 60]),
+    parts: [...body({ sh, hip, chest: 34, waist: 26 }), ...leg(hip, knee, ank, [176, 266], [26, 18, 11]), ...arm(sh, elbow, wrist), delt(sh, 12)],
+    behind: rect(48, 198, 70, 14, 5) + rect(128, 88, 16, 78, 6) + line([196, 60], [196, 270], 4),
+    gear: floor() + line([wrist[0], wrist[1]], [196, wrist[1]], 2) + line([wrist[0] + 2, wrist[1] - 8], [wrist[0] + 2, wrist[1] + 8], 5) + hand(wrist, 5)
+  });
+};
+
 export const DRAWINGS = {
   "face-pull": { start: facePull(false), end: facePull(true) },
   "hip-thrust": { start: hipThrust(false), end: hipThrust(true) },
@@ -244,7 +268,9 @@ export const DRAWINGS = {
   "russian-twist": { start: russianTwist(false), end: russianTwist(true) },
   "incline-push-up": { start: inclinePushUp(false), end: inclinePushUp(true) },
   "decline-push-up": { start: declinePushUp(false), end: declinePushUp(true) },
-  "dumbbell-floor-press": { start: dumbbellFloorPress(true), end: dumbbellFloorPress(false) }
+  "dumbbell-floor-press": { start: dumbbellFloorPress(true), end: dumbbellFloorPress(false) },
+  "chest-supported-dumbbell-row": { start: chestSupportedRow(false), end: chestSupportedRow(true) },
+  "machine-row": { start: machineRow(false), end: machineRow(true) }
 };
 
 // Contact sheet for looking at the drawings.

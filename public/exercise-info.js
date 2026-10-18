@@ -50,6 +50,31 @@ export const INFO = {
    ]
   }
  },
+ "assisted pull-up": {
+  "name": "Assisted Pull-up",
+  "slug": "pull-up",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Biceps"
+  ],
+  "tips": [
+   "Choose a weight that lets you finish every rep",
+   "Grip a bit wider than shoulders",
+   "Pull until your chin clears the bar",
+   "Lower slowly to a full stretch"
+  ],
+  "ar": {
+   "tips": [
+    "اختر وزناً يتيح لك إنهاء كل تكرار",
+    "القبضة أعرض من الكتفين قليلاً",
+    "اسحب حتى يتجاوز ذقنك العمود",
+    "انزل ببطء حتى التمدد الكامل"
+   ]
+  }
+ },
  "back extension": {
   "name": "Back Extension",
   "slug": "back-extension",
@@ -171,6 +196,29 @@ export const INFO = {
    ]
   }
  },
+ "bent-over dumbbell row": {
+  "name": "Bent-over Dumbbell Row",
+  "slug": "barbell-row",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Biceps"
+  ],
+  "tips": [
+   "Hinge at the hips, back flat",
+   "Pull both dumbbells to the lower ribs",
+   "Keep the torso still, no jerking"
+  ],
+  "ar": {
+   "tips": [
+    "انحنِ من الوركين وظهرك مستقيم",
+    "اسحب الدمبل إلى أسفل الأضلاع",
+    "أبقِ الجذع ثابتاً دون ارتجاج"
+   ]
+  }
+ },
  "bulgarian split squat": {
   "name": "Bulgarian Split Squat",
   "slug": "bulgarian-split-squat",
@@ -287,6 +335,29 @@ export const INFO = {
    ]
   }
  },
+ "cable shrug": {
+  "name": "Cable Shrug",
+  "slug": "cable-shrug",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Shoulders"
+  ],
+  "tips": [
+   "Hold the handles at your sides, arms straight",
+   "Shrug straight up and pause",
+   "Lower slowly, don't roll the shoulders"
+  ],
+  "ar": {
+   "tips": [
+    "أمسك المقبضين بجانبيك والذراعان مستقيمتان",
+    "ارفع الكتفين للأعلى وتوقف قليلاً",
+    "انزل ببطء ولا تدر الكتفين"
+   ]
+  }
+ },
  "chest dip": {
   "name": "Chest Dip",
   "slug": "chest-dip",
@@ -309,6 +380,31 @@ export const INFO = {
     "أمِل الجذع للأمام وافتح المرفقين قليلاً",
     "انزل حتى تشعر بتمدد في الصدر",
     "ادفع للأعلى دون قفل المرفقين بقوة"
+   ]
+  }
+ },
+ "chest-supported dumbbell row": {
+  "name": "Chest-supported Dumbbell Row",
+  "slug": "chest-supported-dumbbell-row",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Biceps",
+   "Shoulders"
+  ],
+  "tips": [
+   "Lie face down on an incline bench",
+   "Pull the dumbbells toward your hips",
+   "Squeeze the shoulder blades together"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ على بطنك على بنش مائل",
+    "اسحب الدمبل نحو وركيك",
+    "اعصر لوحي الكتف معاً"
    ]
   }
  },
@@ -1066,6 +1162,30 @@ export const INFO = {
    ]
   }
  },
+ "inverted row": {
+  "name": "Inverted Row",
+  "slug": "inverted-row",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Biceps",
+   "Shoulders"
+  ],
+  "tips": [
+   "Lie under a bar set at hip height",
+   "Keep your body in a straight line",
+   "Pull your chest up to the bar"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ تحت بار بارتفاع الوركين",
+    "أبقِ جسمك في خط مستقيم",
+    "اسحب صدرك نحو البار"
+   ]
+  }
+ },
  "lat pulldown": {
   "name": "Lat Pulldown",
   "slug": "lat-pulldown",
@@ -1276,6 +1396,31 @@ export const INFO = {
    ]
   }
  },
+ "machine row": {
+  "name": "Machine Row",
+  "slug": "machine-row",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Biceps",
+   "Shoulders"
+  ],
+  "tips": [
+   "Set the seat so the handles line up with mid-chest",
+   "Keep your chest against the pad",
+   "Pull back and squeeze the shoulder blades"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط المقعد ليكون المقبضان عند منتصف الصدر",
+    "أبقِ صدرك ملاصقاً للوسادة",
+    "اسحب للخلف واعصر لوحي الكتف"
+   ]
+  }
+ },
  "machine shoulder press": {
   "name": "Machine Shoulder Press",
   "slug": "machine-shoulder-press",
@@ -1297,6 +1442,29 @@ export const INFO = {
     "اضبط المقعد ليبدأ المقبضان عند مستوى الكتفين",
     "ادفع للأعلى دون قفل المرفقين",
     "أبقِ ظهرك ملاصقاً للوسادة"
+   ]
+  }
+ },
+ "one-arm cable row": {
+  "name": "One-arm Cable Row",
+  "slug": "seated-cable-row",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Biceps"
+  ],
+  "tips": [
+   "Sit tall with a slight knee bend",
+   "Pull the handle to your lower ribs",
+   "Keep the shoulders level, don't twist"
+  ],
+  "ar": {
+   "tips": [
+    "اجلس منتصباً مع ثنية خفيفة في الركبتين",
+    "اسحب المقبض إلى أسفل الأضلاع",
+    "أبقِ الكتفين متساويين ولا تلتفّ"
    ]
   }
  },
@@ -1517,6 +1685,29 @@ export const INFO = {
    ]
   }
  },
+ "rack pull": {
+  "name": "Rack Pull",
+  "slug": "deadlift",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Set the bar at knee height",
+   "Flat back, bar close to your legs",
+   "Lock out the hips and squeeze the upper back"
+  ],
+  "ar": {
+   "tips": [
+    "ضع البار عند مستوى الركبتين",
+    "ظهر مستقيم والبار قريب من ساقيك",
+    "افرد الوركين واعصر أعلى الظهر"
+   ]
+  }
+ },
  "rear delt fly": {
   "name": "Rear Delt Fly",
   "slug": "rear-delt-fly",
@@ -1563,6 +1754,29 @@ export const INFO = {
     "اجلس مواجهاً للوسادة والمقبضان بمستوى الكتفين",
     "افتح الذراعين للجانبين والمرفقان مثنيان قليلاً",
     "اعصر مؤخرة الكتفين ولا تتأرجح"
+   ]
+  }
+ },
+ "reverse-grip pulldown": {
+  "name": "Reverse-grip Pulldown",
+  "slug": "reverse-grip-pulldown",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Biceps"
+  ],
+  "tips": [
+   "Underhand grip, shoulder width",
+   "Lean back slightly and pull to the upper chest",
+   "Keep the elbows close to your body"
+  ],
+  "ar": {
+   "tips": [
+    "قبضة سفلية بعرض الكتفين",
+    "أمِل للخلف قليلاً واسحب إلى أعلى الصدر",
+    "أبقِ المرفقين قريبين من جسمك"
    ]
   }
  },
@@ -1753,6 +1967,52 @@ export const INFO = {
    ]
   }
  },
+ "smith machine row": {
+  "name": "Smith Machine Row",
+  "slug": "barbell-row",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Biceps"
+  ],
+  "tips": [
+   "Hinge at the hips with a flat back",
+   "Pull the bar to the lower ribs",
+   "Squeeze the shoulder blades at the top"
+  ],
+  "ar": {
+   "tips": [
+    "انحنِ من الوركين وظهرك مستقيم",
+    "اسحب البار إلى أسفل الأضلاع",
+    "اعصر لوحي الكتف في الأعلى"
+   ]
+  }
+ },
+ "smith machine shrug": {
+  "name": "Smith Machine Shrug",
+  "slug": "smith-machine-shrug",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Shoulders"
+  ],
+  "tips": [
+   "Hold the bar in front of your thighs",
+   "Lift the shoulders straight up",
+   "Pause at the top, then lower slowly"
+  ],
+  "ar": {
+   "tips": [
+    "أمسك البار أمام فخذيك",
+    "ارفع الكتفين مباشرة للأعلى",
+    "توقف في الأعلى ثم انزل ببطء"
+   ]
+  }
+ },
  "smith machine squat": {
   "name": "Smith Machine Squat",
   "slug": "smith-machine-squat",
@@ -1917,6 +2177,30 @@ export const INFO = {
    ]
   }
  },
+ "trap bar deadlift": {
+  "name": "Trap Bar Deadlift",
+  "slug": "deadlift",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Quads",
+   "Hamstrings & Glutes"
+  ],
+  "tips": [
+   "Stand in the middle of the bar",
+   "Flat back, chest up before you pull",
+   "Push the floor away and stand tall"
+  ],
+  "ar": {
+   "tips": [
+    "قف في منتصف البار",
+    "ظهر مستقيم وصدر مرفوع قبل السحب",
+    "ادفع الأرض بعيداً وقف منتصباً"
+   ]
+  }
+ },
  "tricep pushdown": {
   "name": "Tricep Pushdown",
   "slug": "tricep-pushdown",
@@ -1956,6 +2240,29 @@ export const INFO = {
     "انحنِ للأمام والعضد موازٍ للأرض",
     "مدّد الساعد للخلف حتى يستقيم",
     "أبقِ العضد ثابتاً"
+   ]
+  }
+ },
+ "underhand barbell row": {
+  "name": "Underhand Barbell Row",
+  "slug": "underhand-barbell-row",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Biceps"
+  ],
+  "tips": [
+   "Underhand grip, hinge at the hips",
+   "Pull the bar to the lower belly",
+   "Keep your back flat and the torso still"
+  ],
+  "ar": {
+   "tips": [
+    "قبضة سفلية وانحنِ من الوركين",
+    "اسحب البار إلى أسفل البطن",
+    "أبقِ ظهرك مستقيماً والجذع ثابتاً"
    ]
   }
  },
@@ -2005,6 +2312,55 @@ export const INFO = {
     "انزل حتى تكاد الركبة الخلفية تلمس الأرض",
     "أبقِ جذعك منتصباً",
     "ادفع وتقدّم بالخطوة التالية"
+   ]
+  }
+ },
+ "wide-grip cable row": {
+  "name": "Wide-grip Cable Row",
+  "slug": "seated-cable-row",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Shoulders",
+   "Biceps"
+  ],
+  "tips": [
+   "Use the wide bar and sit tall",
+   "Pull the bar to the upper abdomen",
+   "Open the elbows and squeeze the upper back"
+  ],
+  "ar": {
+   "tips": [
+    "استخدم البار العريض واجلس منتصباً",
+    "اسحب البار إلى أعلى البطن",
+    "افتح المرفقين واعصر أعلى الظهر"
+   ]
+  }
+ },
+ "wide-grip pull-up": {
+  "name": "Wide-grip Pull-up",
+  "slug": "wide-grip-pull-up",
+  "img": true,
+  "primary": [
+   "Back"
+  ],
+  "secondary": [
+   "Biceps"
+  ],
+  "tips": [
+   "Grip well outside shoulder width",
+   "Start from a full hang",
+   "Pull until your chin clears the bar",
+   "Avoid swinging or kicking"
+  ],
+  "ar": {
+   "tips": [
+    "القبضة أعرض بكثير من الكتفين",
+    "ابدأ من التعلق الكامل",
+    "اسحب حتى يتجاوز ذقنك العمود",
+    "تجنب التأرجح والركل"
    ]
   }
  }
