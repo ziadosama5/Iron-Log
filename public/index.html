@@ -15,7 +15,7 @@
 <script>/* apply the saved theme before the page draws */try{var t=localStorage.getItem("ironlog.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
 <script>/* language + direction before the page draws */try{var l=localStorage.getItem("ironlog.lang");if(l!=="ar"&&l!=="en")l=/^ar/i.test(navigator.language||"")?"ar":"en";document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
 <style>
 /* "Clean plate": phone-first single column, soft white cards on a light steel background (navy/slate in dark), plate-blue accent, bottom tab bar */
 :root{
@@ -48,19 +48,19 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var
 .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:10px}
 .brand{font:700 22px/1 var(--f-display);letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
 .plate{width:22px;height:22px;border-radius:50%;background:var(--accent);box-shadow:inset 0 0 0 6px var(--accent),inset 0 0 0 8px var(--surface)}
-.sync{font-size:12px;color:var(--muted);text-align:right}
+.sync{font-size:12px;color:var(--muted);text-align:end}
 .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
 .fields label{display:flex;flex-direction:column;gap:4px;min-width:0}
 .fields input{font-family:var(--f-num)}
 details{border-top:1px solid var(--line);padding-top:10px}
 summary{cursor:pointer;font:700 15px/1.2 var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);list-style-position:outside}
 details[open] summary{margin-bottom:10px}
-.insight{border-left:3px solid var(--line);padding:2px 0 2px 12px;display:flex;flex-direction:column;gap:6px}
-.insight.good{border-left-color:var(--good)} .insight.warn{border-left-color:var(--danger)} .insight.info{border-left-color:var(--accent)}
+.insight{border-inline-start:3px solid var(--line);padding:2px 0;padding-inline-start:12px;display:flex;flex-direction:column;gap:6px}
+.insight.good{border-inline-start-color:var(--good)} .insight.warn{border-inline-start-color:var(--danger)} .insight.info{border-inline-start-color:var(--accent)}
 .insight b{font-weight:600}
 .bars{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;font-size:13px}
 .bars .track{height:8px;background:var(--sunk);border-radius:4px;position:relative;overflow:hidden}
-.bars .fill{position:absolute;inset:0 auto 0 0;border-radius:4px;background:var(--accent)}
+.bars .fill{position:absolute;inset-block:0;inset-inline-start:0;border-radius:4px;background:var(--accent)}
 .bars .fill.low{background:var(--danger)} .bars .fill.ok{background:var(--good)}
 .bars .zone{position:absolute;top:0;bottom:0;border-left:1px dashed var(--muted);border-right:1px dashed var(--muted)}
 .ai{white-space:pre-wrap;font-size:14px;line-height:1.6}
@@ -119,13 +119,13 @@ input:focus-visible,select:focus-visible,button:focus-visible,[tabindex]:focus-v
 .prev{font-size:13px;color:var(--muted)}
 .prev b{color:var(--fg);font-weight:500}
 table{width:100%;border-collapse:collapse}
-td,th{padding:7px 4px;text-align:left;border-bottom:1px solid var(--line)}
+td,th{padding:7px 4px;text-align:start;border-bottom:1px solid var(--line)}
 th{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 tr:last-child td{border-bottom:0}
-td.r,th.r{text-align:right}
+td.r,th.r{text-align:end}
 tr.setrow{cursor:pointer}
 tr.setrow.editing td{background:var(--accent-soft)}
-.pr{display:inline-block;font:600 10px/1 var(--f-body);letter-spacing:.08em;background:var(--accent-soft);color:var(--accent);padding:3px 6px;border-radius:4px;margin-left:6px;vertical-align:2px}
+.pr{display:inline-block;font:600 10px/1 var(--f-body);letter-spacing:.08em;background:var(--accent-soft);color:var(--accent);padding:3px 6px;border-radius:4px;margin-inline-start:6px;vertical-align:2px}
 .adder{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
 @media (max-width:420px){.adder{grid-template-columns:1fr 1fr}.adder .btn{grid-column:1/-1}}
 .adder label{display:flex;flex-direction:column;gap:4px;min-width:0}
@@ -140,6 +140,12 @@ tr.setrow.editing td{background:var(--accent-soft)}
 .stat .v{font:600 22px/1.2 var(--f-num);font-variant-numeric:tabular-nums}
 .stat .v small{font-size:12px;color:var(--muted);font-weight:500}
 .chart{width:100%;height:auto;display:block}
+/* right-to-left (Arabic): mirror arrows; keep steppers, charts and numeric fields left-to-right */
+[dir="rtl"] .more-row svg{transform:scaleX(-1)}
+[dir="rtl"] .bigstep,[dir="rtl"] .stepper,[dir="rtl"] .chart,[dir="rtl"] .bars .track{direction:ltr}
+[dir="rtl"] input[inputmode="decimal"],[dir="rtl"] input[inputmode="numeric"],[dir="rtl"] input[type="number"]{direction:ltr;text-align:right}
+:root[lang="ar"]{--f-body:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;--f-display:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
+:root[lang="ar"] .dayname,:root[lang="ar"] .daytag,:root[lang="ar"] .label,:root[lang="ar"] .badge,:root[lang="ar"] .pr{text-transform:none;letter-spacing:0}
 .empty{border:1.5px dashed var(--line);border-radius:16px;padding:22px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:12px;align-items:center}
 .empty strong{display:block;color:var(--fg);font:700 18px/1.2 var(--f-display);text-transform:uppercase;letter-spacing:.04em}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -150,14 +156,14 @@ button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--acc
 .toast{inset:auto;margin:0;border:0;position:fixed;left:50%;bottom:calc(var(--tabbar) + 12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
 .notice{font-size:13px;color:var(--muted);background:var(--sunk);border-radius:12px;padding:10px 12px}
 .legend{display:flex;gap:16px;font-size:12px;color:var(--muted);flex-wrap:wrap}
-.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-inline-end:6px}
 /* day picker */
 .days{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
-.daypick{appearance:none;text-align:left;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--card-border);border-radius:var(--r-card);box-shadow:var(--shadow);padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:6px;position:relative}
+.daypick{appearance:none;text-align:start;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--card-border);border-radius:var(--r-card);box-shadow:var(--shadow);padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:6px;position:relative}
 .daypick.next{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .daynum{font:600 11px/1 var(--f-num);letter-spacing:.06em;color:var(--muted)}
 .dayname{font:700 22px/1 var(--f-display);text-transform:uppercase;letter-spacing:.02em;overflow-wrap:anywhere}
-.badge{position:absolute;top:10px;right:10px;font:600 10px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:var(--accent-ink);padding:4px 6px;border-radius:4px}
+.badge{position:absolute;top:10px;inset-inline-end:10px;font:600 10px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:var(--accent-ink);padding:4px 6px;border-radius:4px}
 .daytag{display:inline-flex;gap:8px;align-items:baseline;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:4px 10px;font:700 15px/1.2 var(--f-display);letter-spacing:.05em;text-transform:uppercase}
 .exlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .exlist li{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--line)}
@@ -174,7 +180,7 @@ button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--acc
 .progress{display:flex;flex-direction:column;gap:6px}
 .progress .track{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
 .progress .fill{height:100%;background:var(--good);border-radius:3px;transition:width .3s}
-.exrow{appearance:none;width:100%;text-align:left;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.exrow{appearance:none;width:100%;text-align:start;font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer}
 .exrow .tick{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font:700 14px/1 var(--f-body);color:var(--muted)}
 .exrow.done{background:var(--sunk);border-color:transparent}
 .exrow.done .tick{background:var(--good);border-color:var(--good);color:var(--surface)}
@@ -193,13 +199,13 @@ button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--acc
 .wd .wdn{font:600 12px/1.2 var(--f-body);color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
 .wd.on .wdn{color:var(--fg)}
 .wd.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-.dayhead{appearance:none;border:0;background:none;padding:0;margin:0;color:inherit;font:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
+.dayhead{appearance:none;border:0;background:none;padding:0;margin:0;color:inherit;font:inherit;text-align:start;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
 .brand svg{width:30px;height:30px;flex:none;border-radius:8px}
 /* rest timer bar, pinned to the bottom on every tab */
 .restbar{position:fixed;left:0;right:0;bottom:calc(var(--tabbar) + env(safe-area-inset-bottom,0px));z-index:15;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgb(0 0 0 / .08);padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
 .restbar-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:8px}
 .restbar .rb-label{flex:1 1 auto;min-width:0;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.restbar .rb-clock{font-size:24px;font-weight:600;min-width:4.2ch;text-align:right}
+.restbar .rb-clock{font-size:24px;font-weight:600;min-width:4.2ch;text-align:end}
 .restbar .btn{padding:9px 10px;font-size:13px}
 .restbar.go{background:var(--accent);border-top-color:var(--accent)}
 .restbar.go .rb-label,.restbar.go .rb-clock{color:var(--accent-ink)}
@@ -217,7 +223,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .ex-fig svg{width:100%;height:100%;display:block}
 .ex-fig .exbg{fill:var(--surface)}
 .ex-works{margin:10px 0 4px}
-.ex-tips{margin:6px 0 10px;padding-left:20px}
+.ex-tips{margin:6px 0 10px;padding-inline-start:20px}
 .ex-tips li{margin:3px 0}
 .ex-credit{margin:0;font-size:12px}
 .stat .v.good{color:var(--good)}
@@ -248,10 +254,10 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .infobtn{appearance:none;border:0;background:none;color:var(--muted);padding:11px;margin:-11px 0;flex:none;cursor:pointer;display:grid;place-items:center;font:inherit}
 .infobtn .ib{width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font:700 13px/1 var(--f-body)}
 .infobtn:hover,.infobtn:focus-visible{color:var(--accent)}
-.ex-head > .infobtn{margin-right:auto;margin-left:-6px}
+.ex-head > .infobtn{margin-inline-end:auto;margin-inline-start:-6px}
 .exrow-wrap{position:relative}
-.exrow-wrap .exrow .meta{margin-right:34px}
-.exrow-wrap .infobtn{position:absolute;right:26px;top:50%;margin:0;transform:translateY(-50%)}
+.exrow-wrap .exrow .meta{margin-inline-end:34px}
+.exrow-wrap .infobtn{position:absolute;inset-inline-end:26px;top:50%;margin:0;transform:translateY(-50%)}
 .chipgrp{display:inline-flex;align-items:center}
 .chipgrp .infobtn{padding:2px 4px;margin:0;position:relative}
 .chipgrp .infobtn::after{content:"";position:absolute;inset:-10px -4px}
@@ -1021,7 +1027,7 @@ function todayCard(){
 function renderCoach(){
   const list=sortTips(insights());
   let h=`<h2>Coach</h2>`;
-  if(!profileReady()) h+=`<div class="notice">Add your sex, height, birth year and goal on the Body tab for calorie targets and personalised ranges. <button class="btn small" data-act="goto-body" style="margin-left:6px">Go to Body</button></div>`;
+  if(!profileReady()) h+=`<div class="notice">Add your sex, height, birth year and goal on the Body tab for calorie targets and personalised ranges. <button class="btn small" data-act="goto-body" style="margin-inline-start:6px">Go to Body</button></div>`;
   h+=todayCard();
   if(!list.length){
     h+=`<div class="empty"><strong>Nothing to analyse yet</strong>Log a few workouts and your body weight, and suggestions will show up here.</div>`;
@@ -1045,7 +1051,7 @@ function volumeBars(){
   const s=weeklySets(), max=Math.max(24,...Object.values(s));
   return `<div class="card"><h3>Sets per muscle · last 7 days</h3><div class="bars">${MUSCLES.map(m=>{
     const v=s[m], cls=v<6?"low":v<=20?"ok":"";
-    return `<span>${esc(m)}</span><span class="track"><span class="zone" style="left:${10/max*100}%;width:${10/max*100}%"></span><span class="fill ${cls}" style="width:${Math.min(100,v/max*100)}%"></span></span><span class="num">${v}</span>`;}).join("")}</div>
+    return `<span>${esc(m)}</span><span class="track"><span class="zone" style="inset-inline-start:${10/max*100}%;width:${10/max*100}%"></span><span class="fill ${cls}" style="width:${Math.min(100,v/max*100)}%"></span></span><span class="num">${v}</span>`;}).join("")}</div>
     <span class="prev">Dashed band marks 10–20 sets, a common target for growth.</span></div>`;
 }
 function reviewPrompt(){
