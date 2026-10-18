@@ -13,7 +13,8 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 | 7 | Arabic language (switch, RTL, whole app + exercise names and tips) | [spec](superpowers/specs/2026-10-18-arabic-language-design.md) | [plan](superpowers/plans/2026-10-18-arabic-language.md) | ✓ sw v13 |
 | 8 | Accent colors (8 presets + custom, derived contrast) | [spec](superpowers/specs/2026-10-18-accent-colors-design.md) | [plan](superpowers/plans/2026-10-18-accent-colors.md) | ✓ sw v14 |
 | 9 | Exercise library 2.0 (183 exercises, 39 equipment items) | [spec](superpowers/specs/2026-10-19-exercise-library-2-design.md) | [plan](superpowers/plans/2026-10-19-exercise-library-2.md) | ✓ sw v16 |
+| 10 | Profiles, privacy and search (username, Private/Friends/Public summary, exact search) | [spec](superpowers/specs/2026-10-19-profiles-and-search-design.md) | [plan](superpowers/plans/2026-10-19-profiles-and-search.md) | ✓ sw v17 |
 
-Next: **My Gym** (pick the equipment your gym has) and the **personal journey**, then **ready for more users**.
+Next: **friends** (requests, list, a friend's progress page), then **challenges**, **My Gym** and the **personal journey**.
 
 Plans describe the code at the time they were written. For how the app works today, read [CLAUDE.md](../CLAUDE.md).

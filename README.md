@@ -97,6 +97,9 @@ If a daily quota runs out, the app keeps working offline and saves the next day.
 ## Moving data between accounts
 **More › History & backup**: **Download backup** saves everything as a file, and **Restore from file** loads it into any account.
 
+## Sharing and privacy
+People can pick a username and share a small progress summary (level, streaks, workout counts) as Private, Friends or Public; nothing is shared by default, and body data, meals and individual workouts are never shared. This is enforced by `firestore.rules` (deploy them with `firebase deploy --only firestore:rules`, and run `tests-rules/` first; it needs Java 21+).
+
 ## Notes
 - **Offline:** the app caches your data on the device. You can log a workout with no signal, and it syncs when you're back online.
 - **"This website isn't allowed to sign in yet":** if you host the app on another domain, add it under **Authentication › Settings › Authorized domains**.

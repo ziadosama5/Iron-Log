@@ -28,6 +28,7 @@ public/achievements.js      streaks, 24 badges (BADGES, earned dates by replayin
 public/energy.js            daily calories: weightOn, bmrFor, baselineBurn, liftMinutes/liftKcal, cardioKcal (MET table), exerciseKcal, dayEnergy. Unit-tested
 public/ui-helpers.js        themeAttr, sortTips (warn→info→good), withWeight (quick weight keeps other fields). Unit-tested
 public/theme-tools.js      accent colours: PRESETS (8), parseHex, contrast, ensureContrast, deriveAccent(setting, mode, surface, bg) → {accent, ink, soft}. Unit-tested
+public/social.js            profiles/privacy/search helpers: validUsername, normalizeEmail, buildSummary (the shared progress summary), planShare (exact write batch), shouldPublish, lookupResult. Unit-tested
 public/i18n.js             English/Arabic layer: t(text,{params}), tn(one,other,n), nameOf(kind,name), trDom(root) (swaps plain labels + isolates numbers in Arabic), withLang, detectLang. Unit-tested
 public/lang-ar.js          AR = {ui: English text → Arabic, names: ex/muscle/template/tplnote/day/badge/cardio/intensity/goal/weekday/meal/level}
 tools/scan-strings.mjs     finds user-visible English text in the source for tests/lang-coverage.test.js (dev/test only). Unit-tested
@@ -37,12 +38,13 @@ public/firebase-config.js   `export const firebaseConfig = {...}`. MUST keep the
 public/sw.js                offline cache. Bump VERSION ("iron-log-vN") on EVERY deploy that changes files
 public/manifest.webmanifest PWA manifest
 public/logo-mark.svg, icon-192.png, icon-512.png, icon-maskable-512.png, apple-touch-icon.png
-firestore.rules             users/{uid}/items/{itemId}: only that signed-in user can read/write
+firestore.rules             users/{uid}/items/{itemId}: only that signed-in user can read/write; profiles/usernames/emails: sharing (see below). No listing anywhere
+tests-rules/                security-rules tests in the Firebase emulator (own package.json, needs Java 21+; run `cd tests-rules && npm install && npm test` whenever the rules change; NOT part of `npm test`)
 firebase.json               hosting (no-cache headers on html/js, manifest content type) + rules path
 .firebaserc                 links folder to project gym-logger-85d4c
 README.md                   overview, folder map, setup/deploy guide for a fresh Firebase project
 brand/                      logo source files (PNG/SVG, white variants, 1024 mark). Not served
-tests/*.test.js             unit tests: `npm test` (Node built-in runner, no dependencies)
+tests/*.test.js             unit tests: `npm test` (Node built-in runner, runs only tests/, no dependencies)
 package.json                only `"type":"module"` + the test script; nothing to install
 docs/README.md              index of sub-projects with links to each spec + plan
 docs/superpowers/           design specs and implementation plans
@@ -59,6 +61,17 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
 | `program` | training days: `{days:[{id, name, focus:[muscle], exercises:[name], weekdays:[0-6]}], v, updated}`. `v:2` = focus tags were auto-filled from exercises once (`migrateProgram`); never re-run, so removed tags stay removed |
 | `profile` | `{sex:"male"/"female", height (cm), birthYear, goal, goalWeight?, goalStart?}` (target weight kg; goalStart resets when the target changes) goal in fat-loss, muscle, recomp, strength, maintain |
 | `settings` | `{rest:{"<exercise>": seconds}, seenBadges?:[badge ids], updated}` (seenBadges undefined = first run; saveSettings merges) per-exercise rest length, written when ±15s is tapped (debounced) |
+
+**Sharing (top-level collections, all in firestore.rules; none can be listed, only fetched by exact id):**
+
+| path | content |
+|---|---|
+| `profiles/{uid}` | what the person chose to share: `{username, displayName, visibility: private/friends/public, findByEmail, summary?, updated}`. `summary` (only when friends/public): `{level, xp, title, badges, streakWeeks, foodDays, workoutsWeek, workouts30, workoutsTotal, volumeWeekKg, prs30, lastWorkout, updated}` built on the phone by `buildSummary` (never body data, meals or single workouts). NOT the same as `users/{uid}/items/profile` (private body profile) |
+| `usernames/{name}` | `{uid, displayName, updated}`: exact-name lookup. Name = 3–20 of a-z 0-9 _ . (no leading/trailing . or _, no `..`, not reserved). Claimed in one batch together with the profile; one name per person (a rename deletes the old one in the same batch) |
+| `emails/{email}` | `{uid}`: opt-in exact e-mail lookup; id = the person's own verified e-mail, lower-case |
+
+- Visibility: only the owner reads a `private` or `friends` profile; any signed-in user reads a `public` one (friend reads arrive with the friends feature). New users publish nothing until they pick a username (More › Profile and privacy). The app republishes the summary ~20 s after data changes (`maybePublish`, server snapshots only, skipped when unchanged).
+- Find a friend: `store.lookup` → exact username or e-mail → uid → profile; every failure (missing, hidden, denied) shows the same "No one found".
 
 - Only ids starting `w-` are read as workouts; any other unknown id is ignored.
 - The running rest timer lives in localStorage `ironlog.rest` (`{ex, endsAt, total}`), not Firestore.
@@ -125,7 +138,7 @@ git pull                                  # always before editing
 # edit files; bump VERSION in public/sw.js (and add any new public/*.js to APP_SHELL)
 npm test                                  # unit tests (also runs automatically before `firebase deploy`, via predeploy)
 git add . && git commit -m "..." && git push
-firebase deploy --only hosting            # rules: firebase deploy --only firestore:rules
+firebase deploy --only hosting            # rules: firebase deploy --only firestore:rules (run tests-rules first; deploy rules BEFORE hosting when both change)
 ```
 - Windows: if PowerShell blocks npm/firebase scripts, use Command Prompt or `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 - Can't test by opening index.html from disk (module + auth need http). Use the deployed URL or `firebase serve` (http://localhost:5000).
@@ -140,7 +153,7 @@ firebase deploy --only hosting            # rules: firebase deploy --only firest
 
 ## Ideas not built yet
 - Bodyweight-exercise mode; set types (warm-up / drop set)
-- Planned sub-projects (done: faster logging, exercise info, full-app review, smarter coaching/progress, look & feel, Arabic, accent colours): ready for more users
+- Planned sub-projects (done: faster logging, exercise info, full-app review, smarter coaching/progress, look & feel, Arabic, accent colours, exercise library, profiles/privacy/search): friends (requests, list, a friend's progress, block), challenges, My Gym, personal journey
 - Per-day target sets/reps in templates
 - CSV export for spreadsheets
 - GitHub Actions auto-deploy (`firebase init hosting:github`), offered but not set up
