@@ -17,3 +17,10 @@ export function sortTips(items) {
 export function withWeight(entry, date, kg) {
   return { ...(entry || { date }), weight: kg };
 }
+
+// Suggestion lists: the first `limit` items, or all of them when expanded ("Show more").
+export function visibleItems(items, expanded, limit = 6) {
+  const list = items || [];
+  const shown = expanded ? list : list.slice(0, limit);
+  return { shown, hidden: list.length - shown.length };
+}

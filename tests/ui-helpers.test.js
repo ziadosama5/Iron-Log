@@ -19,3 +19,14 @@ test("withWeight keeps other fields", () => {
   assert.deepEqual(withWeight(undefined, "2026-10-18", 80), { date: "2026-10-18", weight: 80 });
   assert.equal(e.weight, 81, "input not mutated");
 });
+
+import { visibleItems } from "../public/ui-helpers.js";
+
+test("visibleItems shows the first N, or everything when expanded", () => {
+  assert.deepEqual(visibleItems(["a", "b", "c"], false, 2), { shown: ["a", "b"], hidden: 1 });
+  assert.deepEqual(visibleItems(["a", "b", "c"], true, 2), { shown: ["a", "b", "c"], hidden: 0 });
+  assert.deepEqual(visibleItems(["a", "b"], false, 6), { shown: ["a", "b"], hidden: 0 });
+  assert.deepEqual(visibleItems([], false), { shown: [], hidden: 0 });
+  assert.equal(visibleItems(Array.from({ length: 9 }, (_, i) => i), false).shown.length, 6, "default limit is 6");
+  assert.deepEqual(visibleItems(undefined, false), { shown: [], hidden: 0 });
+});

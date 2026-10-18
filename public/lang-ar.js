@@ -9,6 +9,7 @@ export const AR = {
     "Sections": "الأقسام",
     "Days": "الأيام", "Lifts": "الرفعات", "History & backup": "السجل والنسخ الاحتياطي",
     "Language": "اللغة", "Theme": "المظهر",
+    "Equipment": "المعدات", "No equipment": "بدون معدات", "Show more ({n})": "عرض المزيد ({n})",
     "Accent": "اللون المميز", "Custom": "مخصص", "Plate blue": "أزرق", "Teal": "أخضر مزرق", "Green": "أخضر", "Orange": "برتقالي",
     "Red": "أحمر", "Pink": "وردي", "Purple": "بنفسجي", "Gold": "ذهبي", "System": "النظام", "Light": "فاتح", "Dark": "داكن",
     "Sign out": "تسجيل الخروج", "Close": "إغلاق",
