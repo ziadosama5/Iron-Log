@@ -121,6 +121,29 @@ export const INFO = {
    ]
   }
  },
+ "barbell rear delt row": {
+  "name": "Barbell Rear Delt Row",
+  "slug": "barbell-rear-delt-row",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Back"
+  ],
+  "tips": [
+   "Hinge forward with a flat back",
+   "Wide overhand grip, pull toward the upper chest",
+   "Flare the elbows out and squeeze"
+  ],
+  "ar": {
+   "tips": [
+    "انحنِ للأمام وظهرك مستقيم",
+    "قبضة علوية واسعة، اسحب نحو أعلى الصدر",
+    "افتح المرفقين للخارج واعصر"
+   ]
+  }
+ },
  "barbell row": {
   "name": "Barbell Row",
   "slug": "barbell-row",
@@ -335,6 +358,73 @@ export const INFO = {
    ]
   }
  },
+ "cable front raise": {
+  "name": "Cable Front Raise",
+  "slug": "cable-front-raise",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Chest"
+  ],
+  "tips": [
+   "Face away from the low pulley",
+   "Raise the handle to shoulder height",
+   "Lower slowly under control"
+  ],
+  "ar": {
+   "tips": [
+    "أعطِ ظهرك للبكرة السفلية",
+    "ارفع المقبض إلى مستوى الكتف",
+    "انزل ببطء وتحكم"
+   ]
+  }
+ },
+ "cable lateral raise": {
+  "name": "Cable Lateral Raise",
+  "slug": "lateral-raise",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [],
+  "tips": [
+   "Stand side-on to the low pulley",
+   "Raise the arm out to shoulder height",
+   "Lead with the elbow and lower slowly"
+  ],
+  "ar": {
+   "tips": [
+    "قف جانبياً أمام البكرة السفلية",
+    "ارفع الذراع للجانب إلى مستوى الكتف",
+    "قُد الحركة بالمرفق وانزل ببطء"
+   ]
+  }
+ },
+ "cable rear delt fly": {
+  "name": "Cable Rear Delt Fly",
+  "slug": "cable-rear-delt-fly",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Back"
+  ],
+  "tips": [
+   "Cross the cables and hold the opposite handles",
+   "Open the arms wide with soft elbows",
+   "Squeeze the back of the shoulders"
+  ],
+  "ar": {
+   "tips": [
+    "اعقد الكابلين وأمسك المقبضين المتقابلين",
+    "افتح الذراعين بمرفقين مرنين",
+    "اعصر مؤخرة الكتفين"
+   ]
+  }
+ },
  "cable shrug": {
   "name": "Cable Shrug",
   "slug": "cable-shrug",
@@ -355,6 +445,29 @@ export const INFO = {
     "أمسك المقبضين بجانبيك والذراعان مستقيمتان",
     "ارفع الكتفين للأعلى وتوقف قليلاً",
     "انزل ببطء ولا تدر الكتفين"
+   ]
+  }
+ },
+ "cable upright row": {
+  "name": "Cable Upright Row",
+  "slug": "cable-upright-row",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Back"
+  ],
+  "tips": [
+   "Grip a bit narrower than shoulders",
+   "Pull the handle up along the body",
+   "Lift the elbows to shoulder height, not higher"
+  ],
+  "ar": {
+   "tips": [
+    "قبضة أضيق من الكتفين قليلاً",
+    "اسحب المقبض للأعلى بمحاذاة الجسم",
+    "ارفع المرفقين إلى مستوى الكتفين لا أعلى"
    ]
   }
  },
@@ -785,6 +898,30 @@ export const INFO = {
    ]
   }
  },
+ "dumbbell shoulder press": {
+  "name": "Dumbbell Shoulder Press",
+  "slug": "arnold-press",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Triceps"
+  ],
+  "tips": [
+   "Start with the dumbbells at shoulder height",
+   "Press straight up until the arms are straight",
+   "Lower under control, don't arch the back"
+  ],
+  "ar": {
+   "tips": [
+    "ابدأ والدمبل عند مستوى الكتفين",
+    "ادفع للأعلى حتى تستقيم الذراعان",
+    "انزل بتحكم ولا تقوّس ظهرك"
+   ]
+  },
+  "own": true
+ },
  "dumbbell shrug": {
   "name": "Dumbbell Shrug",
   "slug": "dumbbell-shrug",
@@ -805,6 +942,29 @@ export const INFO = {
     "أمسك الدمبل بجانبيك والذراعان مستقيمتان",
     "ارفع الكتفين للأعلى وتوقف قليلاً",
     "لا تدر الكتفين ولا تثنِ المرفقين"
+   ]
+  }
+ },
+ "dumbbell upright row": {
+  "name": "Dumbbell Upright Row",
+  "slug": "dumbbell-upright-row",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Back"
+  ],
+  "tips": [
+   "Hold the dumbbells in front of the thighs",
+   "Pull them up along the body",
+   "Lift the elbows to shoulder height, not higher"
+  ],
+  "ar": {
+   "tips": [
+    "أمسك الدمبل أمام الفخذين",
+    "اسحبهما للأعلى بمحاذاة الجسم",
+    "ارفع المرفقين إلى مستوى الكتفين لا أعلى"
    ]
   }
  },
@@ -852,6 +1012,29 @@ export const INFO = {
     "اسحب الحبل نحو جبهتك",
     "افصل طرفي الحبل والمرفقان مرتفعان",
     "اعصر مؤخرة الكتفين في النهاية"
+   ]
+  }
+ },
+ "front raise": {
+  "name": "Front Raise",
+  "slug": "front-raise",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Chest"
+  ],
+  "tips": [
+   "Slight bend in the elbows",
+   "Raise the dumbbells to shoulder height",
+   "Lower slowly, no swinging"
+  ],
+  "ar": {
+   "tips": [
+    "ثنية خفيفة في المرفقين",
+    "ارفع الدمبل إلى مستوى الكتفين",
+    "انزل ببطء دون تأرجح"
    ]
   }
  },
@@ -1372,6 +1555,29 @@ export const INFO = {
    ]
   }
  },
+ "lying rear lateral raise": {
+  "name": "Lying Rear Lateral Raise",
+  "slug": "lying-rear-lateral-raise",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Back"
+  ],
+  "tips": [
+   "Lie face down on an incline bench",
+   "Raise the arms out wide with soft elbows",
+   "Use a light weight and control it"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ على بطنك على بنش مائل",
+    "ارفع الذراعين للجانبين بمرفقين مرنين",
+    "استخدم وزناً خفيفاً وتحكم فيه"
+   ]
+  }
+ },
  "machine chest press": {
   "name": "Machine Chest Press",
   "slug": "machine-chest-press",
@@ -1393,6 +1599,27 @@ export const INFO = {
     "اضبط المقعد ليكون المقبضان عند منتصف الصدر",
     "أبقِ ظهرك ملاصقاً للوسادة",
     "تحكم في الوزن أثناء العودة"
+   ]
+  }
+ },
+ "machine lateral raise": {
+  "name": "Machine Lateral Raise",
+  "slug": "lateral-raise",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [],
+  "tips": [
+   "Set the seat so the pads sit at your elbows",
+   "Raise the arms out to shoulder height",
+   "Lower slowly, don't let the weight drop"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط المقعد لتكون الوسادتان عند المرفقين",
+    "ارفع الذراعين للجانبين إلى مستوى الكتفين",
+    "انزل ببطء ولا تُسقط الوزن"
    ]
   }
  },
@@ -1660,6 +1887,30 @@ export const INFO = {
    ]
   }
  },
+ "push press": {
+  "name": "Push Press",
+  "slug": "overhead-press",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Triceps",
+   "Quads"
+  ],
+  "tips": [
+   "Bar on the front of the shoulders",
+   "Dip slightly and drive up with the legs",
+   "Finish with the arms straight overhead"
+  ],
+  "ar": {
+   "tips": [
+    "البار على مقدمة الكتفين",
+    "اخفض قليلاً وادفع للأعلى بالساقين",
+    "أنهِ والذراعان مستقيمتان فوق الرأس"
+   ]
+  }
+ },
  "push-up": {
   "name": "Push-up",
   "slug": "push-up",
@@ -1829,6 +2080,29 @@ export const INFO = {
    ]
   }
  },
+ "seated barbell press": {
+  "name": "Seated Barbell Press",
+  "slug": "overhead-press",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Triceps"
+  ],
+  "tips": [
+   "Set the bench upright and keep your back on it",
+   "Lower the bar to the upper chest or chin",
+   "Press straight up past your face"
+  ],
+  "ar": {
+   "tips": [
+    "اجعل البنش عمودياً وأبقِ ظهرك عليه",
+    "أنزل البار إلى أعلى الصدر أو الذقن",
+    "ادفع للأعلى بمحاذاة وجهك"
+   ]
+  }
+ },
  "seated cable row": {
   "name": "Seated Cable Row",
   "slug": "seated-cable-row",
@@ -1874,6 +2148,30 @@ export const INFO = {
     "ارتفع وتوقف في الأعلى"
    ]
   }
+ },
+ "seated dumbbell press": {
+  "name": "Seated Dumbbell Press",
+  "slug": "arnold-press",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Triceps"
+  ],
+  "tips": [
+   "Set the bench upright and keep your back on it",
+   "Start with the dumbbells at shoulder height",
+   "Press up without clanging them together"
+  ],
+  "ar": {
+   "tips": [
+    "اجعل البنش عمودياً وأبقِ ظهرك عليه",
+    "ابدأ والدمبل عند مستوى الكتفين",
+    "ادفع للأعلى دون اصطدام الدمبلين"
+   ]
+  },
+  "own": true
  },
  "side plank": {
   "name": "Side Plank",
@@ -1987,6 +2285,29 @@ export const INFO = {
     "انحنِ من الوركين وظهرك مستقيم",
     "اسحب البار إلى أسفل الأضلاع",
     "اعصر لوحي الكتف في الأعلى"
+   ]
+  }
+ },
+ "smith machine shoulder press": {
+  "name": "Smith Machine Shoulder Press",
+  "slug": "overhead-press",
+  "img": true,
+  "primary": [
+   "Shoulders"
+  ],
+  "secondary": [
+   "Triceps"
+  ],
+  "tips": [
+   "Set the bench upright under the bar",
+   "Lower the bar to the upper chest",
+   "Press straight up along the rails"
+  ],
+  "ar": {
+   "tips": [
+    "اجعل البنش عمودياً تحت البار",
+    "أنزل البار إلى أعلى الصدر",
+    "ادفع للأعلى بمحاذاة المسارات"
    ]
   }
  },
@@ -2366,5 +2687,5 @@ export const INFO = {
  }
 };
 
-const ALIASES = {"dumbbell shoulder press":"overhead press","cable lateral raise":"lateral raise","glute bridge":"hip thrust","seated leg curl":"lying leg curl"};
+const ALIASES = {"glute bridge":"hip thrust","seated leg curl":"lying leg curl"};
 export function infoFor(name) { const k = String(name).toLowerCase(); return INFO[k] || INFO[ALIASES[k]] || null; }

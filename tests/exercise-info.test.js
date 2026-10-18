@@ -51,7 +51,7 @@ test("infoFor is case-insensitive", () => {
 });
 
 test("merged names still show the info of the exercise they were merged into", () => {
-  assert.equal(infoFor("Dumbbell Shoulder Press").name, "Overhead Press");
+  assert.equal(infoFor("seated leg curl").name, "Lying Leg Curl");
   assert.equal(infoFor("glute bridge").name, "Hip Thrust");
 });
 
@@ -65,4 +65,11 @@ test("every exercise has Arabic tips: same count, short, no trailing period", ()
       assert.ok(/[؀-ۿ]/.test(t), `${e.name}: not Arabic: ${t}`);
     }
   }
+});
+
+test("restored exercises are their own entries, no longer redirected", () => {
+  assert.equal(infoFor("Dumbbell Shoulder Press").name, "Dumbbell Shoulder Press");
+  assert.equal(infoFor("cable lateral raise").name, "Cable Lateral Raise");
+  assert.equal(muscleOf("Dumbbell Shoulder Press"), "Shoulders");
+  assert.equal(muscleOf("Cable Lateral Raise"), "Shoulders");
 });

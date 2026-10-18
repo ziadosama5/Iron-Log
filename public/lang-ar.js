@@ -303,7 +303,21 @@ export const AR = {
       "Rack Pull": "سحب من الحامل",
       "Cable Shrug": "هز الكتفين بالكابل",
       "Smith Machine Shrug": "هز الكتفين بجهاز سميث",
-      "Inverted Row": "تجديف مقلوب"
+      "Inverted Row": "تجديف مقلوب",
+      "Dumbbell Shoulder Press": "ضغط الكتف بالدمبل",
+      "Seated Barbell Press": "ضغط الكتف بالبار جلوساً",
+      "Seated Dumbbell Press": "ضغط الكتف بالدمبل جلوساً",
+      "Smith Machine Shoulder Press": "ضغط الكتف بجهاز سميث",
+      "Push Press": "ضغط الكتف بدفع الساقين",
+      "Cable Lateral Raise": "رفع جانبي بالكابل",
+      "Machine Lateral Raise": "رفع جانبي بالجهاز",
+      "Front Raise": "رفع أمامي",
+      "Cable Front Raise": "رفع أمامي بالكابل",
+      "Cable Rear Delt Fly": "فتح الكتف الخلفي بالكابل",
+      "Cable Upright Row": "تجديف عمودي بالكابل",
+      "Dumbbell Upright Row": "تجديف عمودي بالدمبل",
+      "Barbell Rear Delt Row": "تجديف الكتف الخلفي بالبار",
+      "Lying Rear Lateral Raise": "رفع جانبي خلفي مستلقياً"
     },
     muscle: {
       "Chest": "الصدر", "Back": "الظهر", "Shoulders": "الأكتاف", "Biceps": "البايسبس", "Triceps": "الترايسبس",

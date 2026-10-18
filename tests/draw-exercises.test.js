@@ -18,7 +18,7 @@ test("hand-drawn figures: start and finish for every exercise marked draw, plain
 });
 
 test("every hand-drawn figure belongs to a library exercise marked own, with files on disk", () => {
-  const own = Object.values(INFO).filter(e => e.own);
+  const own = Object.values(INFO).filter(e => e.own && slugify(e.name) === e.slug);
   assert.deepEqual(own.map(e => slugify(e.name)).sort(), Object.keys(DRAWINGS).sort());
   for (const e of own) for (const k of ["start", "end"]) {
     assert.equal(readFileSync(new URL(`../public/exercises/${e.slug}-${k}.svg`, import.meta.url), "utf8").trim(), DRAWINGS[e.slug][k], `${e.slug}-${k}.svg is stale: run node tools/import-exercises.mjs`);

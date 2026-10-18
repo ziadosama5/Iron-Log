@@ -67,7 +67,12 @@ export const EXERCISES = [
     ["Inverted Row", "rack"]]),
   ...X("Shoulders", [
     ["Overhead Press", "barbell"], ["Arnold Press", "dumbbell"], ["Lateral Raise", "dumbbell"], ["Rear Delt Fly", "dumbbell"], ["Face Pull", "cable"],
-    ["Upright Row", "barbell"], ["Machine Shoulder Press", "shoulder-press-machine"], ["Reverse Pec Deck", "pec-deck"]]),
+    ["Upright Row", "barbell"], ["Machine Shoulder Press", "shoulder-press-machine"], ["Reverse Pec Deck", "pec-deck"],
+    ["Dumbbell Shoulder Press", "dumbbell"], ["Seated Barbell Press", "barbell", "bench"], ["Seated Dumbbell Press", "dumbbell", "bench"],
+    ["Smith Machine Shoulder Press", "smith", "bench"], ["Push Press", "barbell"], ["Cable Lateral Raise", "cable"],
+    ["Machine Lateral Raise", "lateral-raise-machine"], ["Front Raise", "dumbbell"], ["Cable Front Raise", "cable"], ["Cable Rear Delt Fly", "cable"],
+    ["Cable Upright Row", "cable"], ["Dumbbell Upright Row", "dumbbell"], ["Barbell Rear Delt Row", "barbell"],
+    ["Lying Rear Lateral Raise", "dumbbell", "bench"]]),
   ...X("Biceps", [
     ["Barbell Curl", "barbell"], ["Dumbbell Curl", "dumbbell"], ["Hammer Curl", "dumbbell"], ["Preacher Curl", "ez-bar", "preacher-bench"],
     ["Incline Dumbbell Curl", "dumbbell", "bench"], ["Cable Curl", "cable"], ["EZ-bar Curl", "ez-bar"], ["Concentration Curl", "dumbbell"]]),
@@ -91,8 +96,6 @@ export const LIB = Object.fromEntries(GROUPS.map(g => [g, EXERCISES.filter(e => 
 // Exercises merged into another one. Saved days and workouts keep the old name; these only decide
 // which info/muscle to show for it and what a typed old name turns into.
 export const ALIASES = {
-  "dumbbell shoulder press": "Overhead Press",
-  "cable lateral raise": "Lateral Raise",
   "glute bridge": "Hip Thrust",
   "seated leg curl": "Lying Leg Curl"
 };
