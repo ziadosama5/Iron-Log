@@ -122,3 +122,18 @@ test("ALIASES is empty and resolveAlias leaves every name alone, even names like
   assert.deepEqual(ALIASES, {});
   for (const n of ["Squat", "constructor", "toString", "__proto__", "My Custom Thing"]) assert.equal(resolveAlias(n), n);
 });
+
+// ---- library 2.0 final shape ----
+test("library 2.0: 183 exercises in the agreed per-group counts, every equipment item used", () => {
+  assert.equal(EXERCISES.length, 183);
+  const counts = { "Chest": 22, "Back": 28, "Shoulders": 22, "Biceps": 16, "Triceps": 18, "Quads": 23, "Hamstrings & Glutes": 24, "Calves": 8, "Core": 22 };
+  for (const [g, n] of Object.entries(counts)) assert.equal(LIB[g].length, n, g);
+  const used = new Set(EXERCISES.flatMap(x => x.eq));
+  assert.deepEqual(EQUIPMENT.filter(e => !used.has(e.id)).map(e => e.id), [], "every equipment item is needed by at least one exercise");
+});
+
+test("library 2.0: the four exercises that were merged earlier are their own exercises again", () => {
+  for (const n of ["Seated Leg Curl", "Cable Lateral Raise", "Dumbbell Shoulder Press", "Glute Bridge"]) assert.ok(ALL_EX.includes(n), n);
+  assert.deepEqual(equipmentOf("Seated Leg Curl"), ["seated-leg-curl"]);
+  assert.ok(!exercisesFor(["leg-curl"]).includes("Seated Leg Curl"));
+});
