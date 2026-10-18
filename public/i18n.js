@@ -46,11 +46,19 @@ const ATTRS = ["aria-label", "placeholder", "title", "alt"];
 const SKIP = new Set(["SCRIPT", "STYLE", "SVG"]);
 const original = new WeakMap(); // text node -> its English text
 
+// Right-to-left text scrambles numbers: "138–189 g" and "97 / 500 XP" would read backwards. Each number
+// (with its sign, range/ratio and unit) is wrapped in a left-to-right isolate so it keeps its order.
+const NUMBER_RUN = /[+−-]?\d[\d.,]*(?:\s*[–\-/×:→]\s*[+−-]?\d[\d.,]*)*%?(?:\s(?:kg|kcal|g|cm|min|XP|L|t)(?![A-Za-z]))?/g;
+export function isolateNumbers(text) { return text.replace(NUMBER_RUN, m => "⁦" + m + "⁩"); }
+
 function translateText(node) {
   const en = original.has(node) ? original.get(node) : node.nodeValue;
   const m = /^(\s*)([\s\S]*?)(\s*)$/.exec(en);
   const hit = current === "en" ? null : dicts[current].ui[m[2].replace(/\s+/g, " ")];
-  if (hit != null) { original.set(node, en); node.nodeValue = m[1] + hit + m[3]; }
+  let out = null;
+  if (hit != null) out = m[1] + hit + m[3];
+  else if (current === "ar") { const iso = isolateNumbers(en); if (iso !== en) out = iso; }
+  if (out != null) { original.set(node, en); node.nodeValue = out; }
   else if (original.has(node)) { node.nodeValue = en; original.delete(node); }
 }
 

@@ -108,3 +108,19 @@ test("withLang runs a function in another language and restores the current one"
   assert.throws(() => withLang("en", () => { throw new Error("x"); }));
   assert.equal(getLang(), "ar");
 });
+
+test("in Arabic, numbers with ranges, signs and units are isolated so they keep their order", () => {
+  const LRI = "⁦", PDI = "⁩";
+  const a = text("97 / 500 XP"), b = text("البروتين 138–189 g"), c = text("−1,185 kcal"), d = text("بلا أرقام"), e = text("English 5 kg");
+  const root = el("div", {}, [a, b, c, d, e]);
+  setLang("ar"); trDom(root);
+  assert.equal(a.nodeValue, `${LRI}97 / 500 XP${PDI}`);
+  assert.equal(b.nodeValue, `البروتين ${LRI}138–189 g${PDI}`);
+  assert.equal(c.nodeValue, `${LRI}−1,185 kcal${PDI}`);
+  assert.equal(d.nodeValue, "بلا أرقام");
+  trDom(root);
+  assert.equal(a.nodeValue, `${LRI}97 / 500 XP${PDI}`, "running again changes nothing");
+  setLang("en"); trDom(root);
+  assert.equal(a.nodeValue, "97 / 500 XP");
+  assert.equal(e.nodeValue, "English 5 kg");
+});

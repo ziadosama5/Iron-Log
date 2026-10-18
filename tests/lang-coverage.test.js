@@ -4,8 +4,7 @@ import { readFileSync } from "node:fs";
 import { scanSource } from "../tools/scan-strings.mjs";
 import { AR } from "../public/lang-ar.js";
 
-// Sections still being translated. Tasks 5-7 of docs/superpowers/plans/2026-10-18-arabic-language.md
-// remove names from this list; it must end up empty.
+// Sections still being translated (empty now that the whole app is done; new sections must ship translated).
 const PENDING = [];
 
 const read = f => readFileSync(new URL("../public/" + f, import.meta.url), "utf8");
@@ -55,7 +54,7 @@ test("Arabic entries keep the same {placeholders} as their English key and are n
   }
 });
 
-test("translation is finished when I18N_DONE=1", { skip: process.env.I18N_DONE !== "1" }, () => {
+test("every section is translated (PENDING is empty)", () => {
   assert.deepEqual(PENDING, []);
 });
 

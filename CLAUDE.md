@@ -24,6 +24,9 @@ tools/svg-tools.mjs         helpers for the import script (recolor, clean SVG). 
 public/achievements.js      streaks, 24 badges (BADGES, earned dates by replaying history), XP/levels, goalProgress. Unit-tested
 public/energy.js            daily calories: weightOn, bmrFor, baselineBurn, liftMinutes/liftKcal, cardioKcal (MET table), exerciseKcal, dayEnergy. Unit-tested
 public/ui-helpers.js        themeAttr, sortTips (warn→info→good), withWeight (quick weight keeps other fields). Unit-tested
+public/i18n.js             English/Arabic layer: t(text,{params}), tn(one,other,n), nameOf(kind,name), trDom(root) (swaps plain labels + isolates numbers in Arabic), withLang, detectLang. Unit-tested
+public/lang-ar.js          AR = {ui: English text → Arabic, names: ex/muscle/template/tplnote/day/badge/cardio/intensity/goal/weekday/meal/level}
+tools/scan-strings.mjs     finds user-visible English text in the source for tests/lang-coverage.test.js (dev/test only). Unit-tested
 public/backup.js            cleanBackupItems(): validates/cleans every item of a backup file before restore. Unit-tested
 public/workout-tools.js     pure helpers (rest defaults/timer math, set prefill, wake lock). No DOM/Firebase; unit-tested
 public/firebase-config.js   `export const firebaseConfig = {...}`. MUST keep the `export` keyword
@@ -64,7 +67,7 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
 - `LIB`, `TEMPLATES` (PPL, Upper/Lower, Full Body, Bro Split) are imported from `exercise-library.js`; a test checks every template day is tagged with each exercise's muscle group
 - `state` object: `workouts, days, body, profile, view, date, bdate, openEx, editDay, pickSplit, confirmTpl, authed, ...`
 - `/* ---------- storage: Firebase Auth + Firestore ... */`: `store` with `init, write, save, remove, saveDays, saveBody, removeBody, saveProfile, restore`. One `onSnapshot` on the collection rebuilds state, then `render()`.
-- Navigation: bottom `.tabbar` (Workout · Coach · Body · Goals · More); More = `#moresheet` dialog with Days, Lifts, History & backup, Theme (System/Light/Dark, localStorage `ironlog.theme`, applied by a tiny `<head>` script before first paint) and Sign out. Header = logo + screen title + sync status.
+- Navigation: bottom `.tabbar` (Workout · Coach · Body · Goals · More); More = `#moresheet` dialog with Days, Lifts, History & backup, Language (English / العربية, localStorage `ironlog.lang`), Theme (System/Light/Dark, localStorage `ironlog.theme`, both applied by tiny `<head>` scripts before first paint) and Sign out. Header = logo + screen title + sync status.
 - Sheets (`dialog.sheet`): `#exinfo`, `#moresheet`, `#exsheet` (+ Exercise), `#cardiosheet` (+ Cardio). Each pushes a history entry; its popstate handler closes it only when its own step was left (sheets can stack).
 - Views (each has a `render*()` writing `innerHTML` into `#view-*`): `log` (Workout), `days`, `body`, `coach`, `goals`, `progress` (tab label "Lifts"), `history`, plus `signin`.
 - Events: one delegated `click` handler with `switch` on `data-act`, plus delegated `input`/`change`/`submit` handlers.
@@ -90,6 +93,15 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
 - **Lifts tab:** per-exercise e1RM + top-set chart (hand-written SVG `lineChart()`), stats, session table.
 - **History tab:** workouts list (tap to edit, delete with inline confirm), **Backup** (download JSON / restore from file, reminder when last backup > 30 days, stored in localStorage `ironlog.lastBackup`).
 - Offline: Firestore cache + service worker. Status text in header ("Synced", "Offline · saving on this phone"...).
+
+## Language (English / Arabic)
+- Switch: More sheet › Language. First run follows the phone (`navigator.language` starts with `ar`). `applyLang` sets `<html lang dir>`, runs `trDom`, redraws.
+- **English text is the key.** Plain labels in HTML/templates need no code: `trDom` swaps any text node / `aria-label` / `placeholder` / `title` that exactly matches an `AR.ui` key (a MutationObserver does it for everything drawn later). Text with numbers or names uses `t("{n} of {m} done",{n,m})` / `tn("{n} set","{n} sets",n)`; never glue strings (`"Add "+name`, `\`${n} sets\``). Toast/setSync/insight messages must go through `t()`.
+- Add a string: write the English in the code, run `npm test`, add the Arabic to `public/lang-ar.js` (`tests/lang-coverage.test.js` lists what is missing; it also fails on glued text). Keep `{placeholders}` identical.
+- Library things are translated at display time with `nameOf(kind, name)`; stored data (Firestore, backups, `dayName`, cardio `type`) stays English. Adding an exercise/muscle/badge/template without an Arabic name fails the tests. Exercise tips: `ar.tips` in `tools/exercise-sources.json`.
+- Local variables named `t` shadow the imported `t()`: rename them before wrapping strings in that scope.
+- Arabic = simple Modern Standard Arabic, digits 0-9 (`toLocaleString("en-US")`, dates via `locale()` = `ar-EG-u-nu-latn`), units stay Latin (kg, cm, kcal, g, min). `trDom` wraps numbers/ranges/units in LTR isolates so "138–189 g" keeps its order. "Copy my summary" stays English (`withLang("en", …)`).
+- RTL: CSS uses logical properties (`margin-inline-start`, `inset-inline-end`, `text-align:start`); steppers, charts and numeric inputs stay LTR; chevrons flip; font IBM Plex Sans Arabic. Known limits: the browser's own date picker shows its own digits, and the header sync text keeps its language until the next sync event.
 
 ## Design rules in use
 - "Clean plate" style: CSS tokens on `:root` with dark-mode overrides (`prefers-color-scheme` + `[data-theme]`): `--bg/--surface/--sunk/--line`, `--shadow`, `--card-border`, `--r-card` 18px, `--r-btn` 14px, `--tabbar` 64px. Accent plate-blue `#1f5fd1` (light) / `#6c9cff` (dark). Building blocks: `.card`, `.btn.primary/.secondary`, `.bigstep`, `.chip`, `.exchip`, `.ebar`, `dialog.sheet`. Icons: inline `<symbol>` sprite (`#i-workout`, `#i-coach`, `#i-body`, `#i-goals`, `#i-more`, `#i-chev`).
@@ -118,7 +130,7 @@ firebase deploy --only hosting            # rules: firebase deploy --only firest
 
 ## Ideas not built yet
 - Bodyweight-exercise mode; set types (warm-up / drop set)
-- Planned sub-projects (done: faster logging, exercise info, full-app review, smarter coaching/progress, look & feel): ready for more users
+- Planned sub-projects (done: faster logging, exercise info, full-app review, smarter coaching/progress, look & feel, Arabic): accent colors (spec + plan written), then ready for more users
 - Per-day target sets/reps in templates
 - CSV export for spreadsheets
 - GitHub Actions auto-deploy (`firebase init hosting:github`), offered but not set up
