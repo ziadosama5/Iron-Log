@@ -1,0 +1,211 @@
+// Security-rules tests for firestore.rules. Run from this folder: `npm install` then `npm test`
+// (starts the Firestore emulator, so Java is required). Not part of the root `npm test`.
+import { test, before, after, beforeEach } from "node:test";
+import { readFileSync } from "node:fs";
+import { initializeTestEnvironment, assertSucceeds, assertFails } from "@firebase/rules-unit-testing";
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, writeBatch, collection, getDocs } from "firebase/firestore";
+
+let env;
+before(async () => {
+  env = await initializeTestEnvironment({ projectId: "demo-iron-log", firestore: { rules: readFileSync(new URL("../firestore.rules", import.meta.url), "utf8") } });
+});
+after(async () => { await env.cleanup(); });
+beforeEach(async () => { await env.clearFirestore(); });
+
+const U1 = { email: "u1@x.com", email_verified: true }, U2 = { email: "u2@x.com", email_verified: true };
+const as = (uid, claims) => env.authenticatedContext(uid, claims).firestore();
+const anon = () => env.unauthenticatedContext().firestore();
+const seed = fn => env.withSecurityRulesDisabled(async ctx => fn(ctx.firestore()));
+
+const SUMMARY = { level: 3, xp: 400, title: "Rookie", badges: 2, streakWeeks: 1, foodDays: 0, workoutsWeek: 2, workouts30: 9, workoutsTotal: 20, volumeWeekKg: 5000.5, prs30: 1, lastWorkout: "2026-10-17", updated: 5 };
+const profile = (o = {}) => ({ username: "ziad", displayName: "Ziad", visibility: "private", findByEmail: false, updated: 1, ...o });
+const nameDoc = (uid = "u1") => ({ uid, displayName: "Ziad", updated: 1 });
+
+// A claim batch: username doc + profile in one commit (what the app does).
+const claim = async (db, uid, name, extra = {}) => {
+  const b = writeBatch(db);
+  b.set(doc(db, "usernames", name), nameDoc(uid));
+  b.set(doc(db, "profiles", uid), profile({ username: name, ...extra }));
+  return b.commit();
+};
+const seedClaim = (uid, name, extra = {}) => seed(async db => {
+  await setDoc(doc(db, "usernames", name), nameDoc(uid));
+  await setDoc(doc(db, "profiles", uid), profile({ username: name, ...extra }));
+});
+
+test("existing paths: owner reads and writes users/{uid}/items, others and signed-out cannot", async () => {
+  await assertSucceeds(setDoc(doc(as("u1", U1), "users/u1/items/profile"), { sex: "male", updated: 1 }));
+  await assertSucceeds(getDoc(doc(as("u1", U1), "users/u1/items/profile")));
+  await assertFails(getDoc(doc(as("u2", U2), "users/u1/items/profile")));
+  await assertFails(setDoc(doc(as("u2", U2), "users/u1/items/profile"), { sex: "x" }));
+  await assertFails(getDoc(doc(anon(), "users/u1/items/profile")));
+});
+
+test("list is denied on usernames, emails and profiles", async () => {
+  await seedClaim("u1", "ziad", { visibility: "public" });
+  for (const c of ["usernames", "emails", "profiles"]) await assertFails(getDocs(collection(as("u2", U2), c)));
+});
+
+test("usernames: claim with a matching profile in the same batch is allowed", async () => {
+  await assertSucceeds(claim(as("u1", U1), "u1", "ziad"));
+});
+
+test("usernames: claim without the profile write is denied", async () => {
+  await assertFails(setDoc(doc(as("u1", U1), "usernames", "ziad"), nameDoc("u1")));
+});
+
+test("usernames: a taken name cannot be claimed or overwritten", async () => {
+  await seedClaim("u2", "ziad");
+  await assertFails(claim(as("u1", U1), "u1", "ziad"));
+  const db = as("u1", U1);
+  await assertFails(setDoc(doc(db, "usernames", "ziad"), nameDoc("u1")));
+});
+
+test("usernames: reserved and invalid names are denied", async () => {
+  for (const bad of ["admin", "ironlog", "ab", "a..b", ".abc", "abc_", "Ziad", "a".repeat(21), "zi ad", "zi-ad"]) {
+    await assertFails(claim(as("u1", U1), "u1", bad));
+  }
+});
+
+test("usernames: extra keys or another user's uid are denied", async () => {
+  const db = as("u1", U1);
+  let b = writeBatch(db);
+  b.set(doc(db, "usernames", "ziad"), { ...nameDoc("u1"), extra: 1 });
+  b.set(doc(db, "profiles", "u1"), profile());
+  await assertFails(b.commit());
+  b = writeBatch(db);
+  b.set(doc(db, "usernames", "ziad"), nameDoc("u2"));
+  b.set(doc(db, "profiles", "u1"), profile());
+  await assertFails(b.commit());
+});
+
+test("usernames: only the owner can update or delete; anyone signed in can get; signed-out cannot", async () => {
+  await seedClaim("u1", "ziad");
+  await assertFails(updateDoc(doc(as("u2", U2), "usernames", "ziad"), { displayName: "X", updated: 2 }));
+  await assertFails(deleteDoc(doc(as("u2", U2), "usernames", "ziad")));
+  await assertSucceeds(getDoc(doc(as("u2", U2), "usernames", "ziad")));
+  await assertFails(getDoc(doc(anon(), "usernames", "ziad")));
+  await assertSucceeds(updateDoc(doc(as("u1", U1), "usernames", "ziad"), { displayName: "Zed", updated: 2 }));
+  await assertFails(updateDoc(doc(as("u1", U1), "usernames", "ziad"), { uid: "u2" }));
+  await assertSucceeds(deleteDoc(doc(as("u1", U1), "usernames", "ziad")));
+});
+
+test("usernames: a freed name can be claimed by someone else", async () => {
+  await seedClaim("u1", "ziad");
+  const db = as("u1", U1), b = writeBatch(db);
+  b.delete(doc(db, "usernames", "ziad"));
+  b.set(doc(db, "usernames", "zed"), nameDoc("u1"));
+  b.set(doc(db, "profiles", "u1"), profile({ username: "zed" }));
+  await assertSucceeds(b.commit());
+  await assertSucceeds(claim(as("u2", U2), "u2", "ziad"));
+});
+
+test("emails: own verified e-mail with findByEmail in the same batch is allowed", async () => {
+  await seedClaim("u1", "ziad");
+  const db = as("u1", U1), b = writeBatch(db);
+  b.set(doc(db, "profiles", "u1"), profile({ findByEmail: true }));
+  b.set(doc(db, "emails", "u1@x.com"), { uid: "u1" });
+  await assertSucceeds(b.commit());
+});
+
+test("emails: denied without findByEmail, for someone else's e-mail, unverified accounts, another uid", async () => {
+  await seedClaim("u1", "ziad");
+  await assertFails(setDoc(doc(as("u1", U1), "emails", "u1@x.com"), { uid: "u1" }));
+  await seedClaim("u3", "third", { findByEmail: true });
+  await assertFails(setDoc(doc(as("u3", { email: "u3@x.com", email_verified: true }), "emails", "u1@x.com"), { uid: "u3" }));
+  await assertFails(setDoc(doc(as("u3", { email: "u3@x.com", email_verified: false }), "emails", "u3@x.com"), { uid: "u3" }));
+  await assertFails(setDoc(doc(as("u3", { email: "u3@x.com", email_verified: true }), "emails", "u3@x.com"), { uid: "u1" }));
+  await assertSucceeds(setDoc(doc(as("u3", { email: "u3@x.com", email_verified: true }), "emails", "u3@x.com"), { uid: "u3" }));
+});
+
+test("emails: get for signed-in users, owner-only delete", async () => {
+  await seedClaim("u1", "ziad", { findByEmail: true });
+  await seed(db => setDoc(doc(db, "emails", "u1@x.com"), { uid: "u1" }));
+  await assertSucceeds(getDoc(doc(as("u2", U2), "emails", "u1@x.com")));
+  await assertFails(getDoc(doc(anon(), "emails", "u1@x.com")));
+  await assertFails(deleteDoc(doc(as("u2", U2), "emails", "u1@x.com")));
+  await assertSucceeds(deleteDoc(doc(as("u1", U1), "emails", "u1@x.com")));
+});
+
+test("profiles: owner can write a private profile without a summary and read it", async () => {
+  await seed(db => setDoc(doc(db, "usernames", "ziad"), nameDoc("u1")));
+  await assertSucceeds(setDoc(doc(as("u1", U1), "profiles", "u1"), profile()));
+  await assertSucceeds(getDoc(doc(as("u1", U1), "profiles", "u1")));
+});
+
+test("profiles: others cannot read private or friends profiles; they can read public ones; signed-out cannot", async () => {
+  await seedClaim("u1", "ziad", { visibility: "private" });
+  await assertFails(getDoc(doc(as("u2", U2), "profiles", "u1")));
+  await seed(db => setDoc(doc(db, "profiles", "u1"), profile({ visibility: "friends", summary: SUMMARY })));
+  await assertFails(getDoc(doc(as("u2", U2), "profiles", "u1")));
+  await assertSucceeds(getDoc(doc(as("u1", U1), "profiles", "u1")));
+  await seed(db => setDoc(doc(db, "profiles", "u1"), profile({ visibility: "public", summary: SUMMARY })));
+  await assertSucceeds(getDoc(doc(as("u2", U2), "profiles", "u1")));
+  await assertFails(getDoc(doc(anon(), "profiles", "u1")));
+});
+
+test("profiles: summary rejected while private; bad visibility and extra keys rejected", async () => {
+  await seed(db => setDoc(doc(db, "usernames", "ziad"), nameDoc("u1")));
+  const ref = doc(as("u1", U1), "profiles", "u1");
+  await assertFails(setDoc(ref, profile({ visibility: "private", summary: SUMMARY })));
+  await assertFails(setDoc(ref, profile({ visibility: "everyone" })));
+  await assertFails(setDoc(ref, profile({ sneaky: 1 })));
+  await assertSucceeds(setDoc(ref, profile({ visibility: "public", summary: SUMMARY })));
+  await assertSucceeds(setDoc(ref, profile({ visibility: "friends", summary: SUMMARY })));
+});
+
+test("profiles: every Summary field is validated (type, range, missing, extra)", async () => {
+  await seed(db => setDoc(doc(db, "usernames", "ziad"), nameDoc("u1")));
+  const ref = doc(as("u1", U1), "profiles", "u1");
+  const bad = (patch, del) => { const s = { ...SUMMARY, ...patch }; if (del) delete s[del]; return profile({ visibility: "public", summary: s }); };
+  const range = { level: [0, 501], xp: [-1, 10000001], badges: [-1, 101], streakWeeks: [-1, 601], foodDays: [-1, 4001], workoutsWeek: [-1, 51], workouts30: [-1, 401], workoutsTotal: [-1, 50001], volumeWeekKg: [-1, 1000001], prs30: [-1, 401] };
+  for (const [k, [lo, hi]] of Object.entries(range)) {
+    await assertFails(setDoc(ref, bad({ [k]: lo })));
+    await assertFails(setDoc(ref, bad({ [k]: hi })));
+  }
+  for (const k of Object.keys(SUMMARY)) {
+    await assertFails(setDoc(ref, bad({}, k)));
+    await assertFails(setDoc(ref, bad({ [k]: k === "title" || k === "lastWorkout" ? 5 : "x" })));
+  }
+  await assertFails(setDoc(ref, bad({ extra: 1 })));
+  await assertFails(setDoc(ref, bad({ title: "x".repeat(21) })));
+  await assertFails(setDoc(ref, bad({ lastWorkout: "yesterday" })));
+  await assertSucceeds(setDoc(ref, bad({ lastWorkout: null })));
+  await assertSucceeds(setDoc(ref, bad({})));
+});
+
+test("profiles: the username must be claimed by me", async () => {
+  await assertFails(setDoc(doc(as("u1", U1), "profiles", "u1"), profile()));
+  await seed(db => setDoc(doc(db, "usernames", "ziad"), nameDoc("u2")));
+  await assertFails(setDoc(doc(as("u1", U1), "profiles", "u1"), profile()));
+});
+
+test("profiles: others cannot write or delete; owner can delete; oversized documents are denied", async () => {
+  await seedClaim("u1", "ziad", { visibility: "public", summary: SUMMARY });
+  await assertFails(setDoc(doc(as("u2", U2), "profiles", "u1"), profile()));
+  await assertFails(deleteDoc(doc(as("u2", U2), "profiles", "u1")));
+  await assertFails(setDoc(doc(as("u1", U1), "profiles", "u1"), profile({ displayName: "x".repeat(6000) })));
+  await assertSucceeds(deleteDoc(doc(as("u1", U1), "profiles", "u1")));
+});
+
+test("profiles: display name must be 1-40 characters", async () => {
+  await seed(db => setDoc(doc(db, "usernames", "ziad"), nameDoc("u1")));
+  const ref = doc(as("u1", U1), "profiles", "u1");
+  await assertFails(setDoc(ref, profile({ displayName: "" })));
+  await assertFails(setDoc(ref, profile({ displayName: "x".repeat(41) })));
+  await assertSucceeds(setDoc(ref, profile({ displayName: "x".repeat(40) })));
+});
+
+test("usernames: one username per person - a second name needs the first one deleted in the same batch", async () => {
+  await seedClaim("u1", "first");
+  const db = as("u1", U1);
+  const sq = writeBatch(db);
+  sq.set(doc(db, "usernames", "second"), nameDoc("u1"));
+  sq.set(doc(db, "profiles", "u1"), profile({ username: "second" }));
+  await assertFails(sq.commit());
+  const ok = writeBatch(db);
+  ok.delete(doc(db, "usernames", "first"));
+  ok.set(doc(db, "usernames", "second"), nameDoc("u1"));
+  ok.set(doc(db, "profiles", "u1"), profile({ username: "second" }));
+  await assertSucceeds(ok.commit());
+});

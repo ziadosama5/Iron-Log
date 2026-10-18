@@ -35,5 +35,13 @@
     "predeploy": [
       "npm test"
     ]
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8080
+    },
+    "ui": {
+      "enabled": false
+    }
   }
 }
