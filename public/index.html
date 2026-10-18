@@ -346,7 +346,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
@@ -358,6 +358,7 @@ import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
+import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername } from "./social.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
 
@@ -374,7 +375,7 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
-let state = { showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
+let state = { share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -394,8 +395,9 @@ const store = {
       if (this.unsub){ this.unsub(); this.unsub=null; }
       this.user=user; state.authed=!!user;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
+      this.loadShare().then(()=>{ maybePublish(); if(state.view==="profile") renderProfile(); });
       this.col = collection(fs, "users", user.uid, "items");
       this.unsub = onSnapshot(this.col, { includeMetadataChanges:true }, snap=>{
         const ws=[], bs=[], food={}; let prog={}, prof={}, settings={rest:{}};
@@ -410,6 +412,53 @@ const store = {
         onData();
       }, err=>{ setSync(t("Sync stopped. Reload to reconnect")); console.error(err); });
     });
+  },
+  // ---- sharing: profiles/{uid}, usernames/{name}, emails/{email} (see firestore.rules) ----
+  async loadShare(){
+    const sh=state.share; sh.loaded=false;
+    try{ const snap=await getDoc(doc(fs,"profiles",this.user.uid)); sh.profile=snap.exists()?snap.data():null; sh.last=(sh.profile&&sh.profile.summary)||null; sh.lastAt=0; }
+    catch(e){ console.error(e); sh.profile=null; }
+    sh.loaded=true;
+  },
+  // next = {username, displayName, visibility, findByEmail}. Returns {ok:true} or {ok:false, reason}.
+  async saveShare(next){
+    if(navigator.onLine===false) return {ok:false,reason:"offline"};
+    const u=this.user, sh=state.share, email=u.emailVerified?normalizeEmail(u.email):null;
+    const summary=(next.visibility==="friends"||next.visibility==="public")?currentSummary():null;
+    const plan=planShare({uid:u.uid,current:sh.profile,next,email,summary,now:Date.now()});
+    if(plan.error) return {ok:false,reason:plan.error};
+    sh.busy=true;
+    try{
+      const b=writeBatch(fs);
+      for(const o of plan.ops){ const ref=doc(fs,...o.path); if(o.op==="set") b.set(ref,o.data); else if(o.op==="update") b.update(ref,o.data); else b.delete(ref); }
+      await b.commit();
+      sh.profile=plan.ops.find(o=>o.path[0]==="profiles").data; sh.last=summary; sh.lastAt=Date.now();
+      return {ok:true};
+    }catch(e){ console.error(e); return {ok:false,reason:e&&e.code==="permission-denied"?"taken":"error"}; }
+    finally{ sh.busy=false; }
+  },
+  async deleteShare(){
+    const sh=state.share, p=sh.profile; if(!p) return true;
+    if(navigator.onLine===false) return false;
+    try{
+      const b=writeBatch(fs), email=this.user.emailVerified?normalizeEmail(this.user.email):null;
+      b.delete(doc(fs,"profiles",this.user.uid)); b.delete(doc(fs,"usernames",p.username));
+      if(p.findByEmail&&email) b.delete(doc(fs,"emails",email));
+      await b.commit(); sh.profile=null; sh.last=null; return true;
+    }catch(e){ console.error(e); return false; }
+  },
+  // Exact username or e-mail -> {status:"found", uid, profile} or {status:"none"}. Every failure (missing,
+  // not findable, profile not readable) is the same "none", so a search can't tell hidden from absent.
+  async lookup(q){
+    try{
+      const raw=String(q||"").trim(), email=normalizeEmail(raw);
+      let uid=null;
+      if(email){ const s=await getDoc(doc(fs,"emails",email)); if(s.exists()) uid=s.data().uid; }
+      else{ const name=normalizeUsername(raw); if(!validUsername(name).ok) return {status:"none"}; const s=await getDoc(doc(fs,"usernames",name)); if(s.exists()) uid=s.data().uid; }
+      if(!uid) return {status:"none"};
+      const p=await getDoc(doc(fs,"profiles",uid));
+      return p.exists()?{status:"found",uid,profile:p.data()}:{status:"none"};
+    }catch(e){ return {status:"none"}; }
   },
   write(id, body){
     if (!this.col) return;
@@ -480,6 +529,22 @@ let tt; function toast(t){
   const el=$("#toast"); el.textContent=t; clearTimeout(tt);
   if(toastPopover){ try{ if(el.matches(":popover-open")) el.hidePopover(); el.showPopover(); }catch(e){} tt=setTimeout(()=>{ try{ el.hidePopover(); }catch(e){} },2400); }
   else { el.hidden=false; tt=setTimeout(()=>el.hidden=true,2400); }
+}
+
+/* ---------- sharing: publish the progress summary ---------- */
+// Friends/public viewers see a small summary computed here from your own data (never raw workouts or body data).
+function currentSummary(){ return buildSummary({workouts:state.workouts,body:state.body,food:state.food,days:state.days,profile:state.profile,today:today()},Date.now()); }
+let publishTimer=null;
+function maybePublish(){
+  const sh=state.share; if(!state.authed||!state.serverSynced||!sh||!sh.profile) return;
+  clearTimeout(publishTimer);
+  publishTimer=setTimeout(async ()=>{
+    const p=state.share.profile; if(!p||navigator.onLine===false) return;
+    const next=currentSummary();
+    if(!shouldPublish({visibility:p.visibility,last:state.share.last,next,lastAt:state.share.lastAt,now:Date.now()})) return;
+    try{ const data={...p,summary:next,updated:Date.now()}; await setDoc(doc(fs,"profiles",store.user.uid),data); state.share.profile=data; state.share.last=next; state.share.lastAt=Date.now(); }
+    catch(e){ console.error(e); }
+  },20000);
 }
 
 /* ---------- derived ---------- */
@@ -1605,7 +1670,7 @@ function checkNewDay(){
 }
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkNewDay(); });
 setInterval(checkNewDay,60000);
-store.init(()=>{ renderSoon(); checkBadges(); });
+store.init(()=>{ renderSoon(); checkBadges(); maybePublish(); });
 })();
 </script>
 </body>

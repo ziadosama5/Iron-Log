@@ -100,3 +100,11 @@ export function planShare({ uid, current, next, email, summary, now }) {
   }
   return { ops };
 }
+
+// Whether the app should write a fresh summary now: only for friends/public, only when something
+// changed, and not more often than every minGapMs.
+export function shouldPublish({ visibility, last, next, lastAt, now, minGapMs = 20000 }) {
+  if (visibility !== "friends" && visibility !== "public") return false;
+  if (summaryEqual(last, next)) return false;
+  return now - lastAt >= minGapMs;
+}

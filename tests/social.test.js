@@ -137,3 +137,18 @@ test("every Summary field is mentioned in firestore.rules (kept in sync)", { ski
   for (const k of Object.keys(SUMMARY_LIMITS)) assert.ok(rules.includes(k), `${k} missing in firestore.rules`);
   assert.ok(existsSync(new URL("../firestore.rules", import.meta.url)));
 });
+
+import { shouldPublish } from "../public/social.js";
+
+test("shouldPublish: never while private, never for an unchanged summary, not inside the minimum gap", () => {
+  const a = buildSummary({ ...base, workouts: [], today: "2026-10-17" }, 1);
+  const b = { ...a, workoutsWeek: 1 };
+  const at = (o) => shouldPublish({ visibility: "public", last: a, next: b, lastAt: 0, now: 25000, ...o });
+  assert.equal(at({ visibility: "private" }), false);
+  assert.equal(at({ next: { ...a, updated: 77 } }), false, "only `updated` differs");
+  assert.equal(at({ now: 5000 }), false, "5 s after the last publish");
+  assert.equal(at({ now: 25000 }), true);
+  assert.equal(at({ visibility: "friends" }), true);
+  assert.equal(at({ last: null }), true, "never published before");
+  assert.equal(at({ visibility: undefined }), false);
+});
