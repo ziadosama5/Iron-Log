@@ -43,7 +43,7 @@ const original = new WeakMap(); // text node -> its English text
 function translateText(node) {
   const en = original.has(node) ? original.get(node) : node.nodeValue;
   const m = /^(\s*)([\s\S]*?)(\s*)$/.exec(en);
-  const hit = current === "en" ? null : dicts[current].ui[m[2]];
+  const hit = current === "en" ? null : dicts[current].ui[m[2].replace(/\s+/g, " ")];
   if (hit != null) { original.set(node, en); node.nodeValue = m[1] + hit + m[3]; }
   else if (original.has(node)) { node.nodeValue = en; original.delete(node); }
 }

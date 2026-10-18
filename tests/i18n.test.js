@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { registerLang, setLang, getLang, isRtl, detectLang, t, tn, nameOf, locale, trDom } from "../public/i18n.js";
 
 const AR = {
-  ui: { "Skip": "تخطي", "Close": "إغلاق", "Search": "بحث", "Weight": "الوزن", "{n} of {m} done": "{n} من {m} تم", "{n} set": "{n} مجموعة", "{n} sets": "{n} مجموعات" },
+  ui: { "Add set": "إضافة مجموعة", "Skip": "تخطي", "Close": "إغلاق", "Search": "بحث", "Weight": "الوزن", "{n} of {m} done": "{n} من {m} تم", "{n} set": "{n} مجموعة", "{n} sets": "{n} مجموعات" },
   names: { ex: { "Bench Press": "ضغط الصدر" }, muscle: { "Chest": "الصدر" } }
 };
 registerLang("ar", AR);
@@ -91,4 +91,10 @@ test("trDom translates text and attributes, keeps whitespace, is idempotent and 
   setLang("en"); trDom(root);
   assert.equal(skip.nodeValue, "  Skip ");
   assert.equal(root.childNodes[0].getAttribute("aria-label"), "Close");
+});
+
+test("trDom matches text split over lines by collapsing inner whitespace", () => {
+  const n = text("\n   Add\n      set\n ");
+  setLang("ar"); trDom(el("p", {}, [n]));
+  assert.equal(n.nodeValue, "\n   إضافة مجموعة\n ");
 });
