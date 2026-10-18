@@ -93,7 +93,7 @@ const paths = r => r.ops.map(o => o.op + " " + o.path.join("/"));
 test("planShare: first claim", () => {
   const r = planShare({ uid: "u1", current: null, next: nxt(), email: "z@x.com", summary: null, now: 50 });
   assert.deepEqual(paths(r), ["set usernames/ziad", "set profiles/u1"]);
-  assert.deepEqual(r.ops[0].data, { uid: "u1", displayName: "Ziad", updated: 50 });
+  assert.deepEqual(r.ops[0].data, { uid: "u1", updated: 50 });
   assert.equal(r.ops[1].data.updated, 50);
 });
 
@@ -103,11 +103,10 @@ test("planShare: renaming frees the old name", () => {
   assert.deepEqual(paths(r), ["set usernames/zed", "delete usernames/ziad", "set profiles/u1"]);
 });
 
-test("planShare: only the display name changed", () => {
+test("planShare: only the display name changed touches just the profile", () => {
   const cur = { username: "ziad", displayName: "Ziad", visibility: "private", findByEmail: false };
   const r = planShare({ uid: "u1", current: cur, next: nxt({ displayName: "Z" }), email: null, summary: null, now: 9 });
-  assert.deepEqual(paths(r), ["update usernames/ziad", "set profiles/u1"]);
-  assert.deepEqual(r.ops[0].data, { displayName: "Z", updated: 9 });
+  assert.deepEqual(paths(r), ["set profiles/u1"]);
 });
 
 test("planShare: the summary is written only when friends or public", () => {

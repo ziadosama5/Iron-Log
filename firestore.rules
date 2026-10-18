@@ -61,23 +61,19 @@ service cloud.firestore {
       // Claim: only together with the profile that names it (same batch), never over an existing name.
       allow create: if signedIn()
                     && validUsername(name)
-                    && request.resource.data.keys().hasOnly(['uid', 'displayName', 'updated'])
-                    && request.resource.data.keys().hasAll(['uid', 'displayName', 'updated'])
+                    && request.resource.data.keys().hasOnly(['uid', 'updated'])
+                    && request.resource.data.keys().hasAll(['uid', 'updated'])
                     && request.resource.data.uid == request.auth.uid
-                    && validName(request.resource.data.displayName)
                     && request.resource.data.updated is number
                     && getAfter(profilePath(request.auth.uid)).data.username == name
                     // One username per person: a previous name must be deleted in the same batch.
                     && (!exists(profilePath(request.auth.uid))
                         || !existsAfter(usernamePath(get(profilePath(request.auth.uid)).data.username)));
-      allow update: if signedIn()
-                    && resource.data.uid == request.auth.uid
-                    && request.resource.data.uid == resource.data.uid
-                    && request.resource.data.keys().hasOnly(['uid', 'displayName', 'updated'])
-                    && request.resource.data.keys().hasAll(['uid', 'displayName', 'updated'])
-                    && validName(request.resource.data.displayName)
-                    && request.resource.data.updated is number;
-      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      // Never edited in place. Deleting needs the profile to stop using the name in the same batch,
+      // so nobody can leave orphan names behind.
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid
+                    && (!existsAfter(profilePath(request.auth.uid))
+                        || getAfter(profilePath(request.auth.uid)).data.username != name);
     }
 
     match /emails/{email} {
@@ -110,7 +106,9 @@ service cloud.firestore {
                                 ? !('summary' in request.resource.data)
                                 : (!('summary' in request.resource.data) || validSummary(request.resource.data.summary)))
                             && getAfter(usernamePath(request.resource.data.username)).data.uid == request.auth.uid;
-      allow delete: if signedIn() && request.auth.uid == uid;
+      // The name doc must go in the same batch (or the profile keeps pointing at a name it no longer owns).
+      allow delete: if signedIn() && request.auth.uid == uid
+                    && !existsAfter(usernamePath(resource.data.username));
     }
 
     // Everything else is closed.

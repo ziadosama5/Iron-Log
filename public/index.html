@@ -348,7 +348,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
@@ -544,7 +544,7 @@ function maybePublish(){
     const p=state.share.profile; if(!p||navigator.onLine===false) return;
     const next=currentSummary();
     if(!shouldPublish({visibility:p.visibility,last:state.share.last,next,lastAt:state.share.lastAt,now:Date.now()})) return;
-    try{ const data={...p,summary:next,updated:Date.now()}; await setDoc(doc(fs,"profiles",store.user.uid),data); state.share.profile=data; state.share.last=next; state.share.lastAt=Date.now(); }
+    try{ const data={...p,summary:next,updated:Date.now()}; await updateDoc(doc(fs,"profiles",store.user.uid),{summary:next,updated:data.updated}); state.share.profile=data; state.share.last=next; state.share.lastAt=Date.now(); }
     catch(e){ console.error(e); }
   },20000);
 }

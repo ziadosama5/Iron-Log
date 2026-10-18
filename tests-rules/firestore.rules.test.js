@@ -19,7 +19,7 @@ const seed = fn => env.withSecurityRulesDisabled(async ctx => fn(ctx.firestore()
 
 const SUMMARY = { level: 3, xp: 400, title: "Rookie", badges: 2, streakWeeks: 1, foodDays: 0, workoutsWeek: 2, workouts30: 9, workoutsTotal: 20, volumeWeekKg: 5000.5, prs30: 1, lastWorkout: "2026-10-17", updated: 5 };
 const profile = (o = {}) => ({ username: "ziad", displayName: "Ziad", visibility: "private", findByEmail: false, updated: 1, ...o });
-const nameDoc = (uid = "u1") => ({ uid, displayName: "Ziad", updated: 1 });
+const nameDoc = (uid = "u1") => ({ uid, updated: 1 });
 
 // A claim batch: username doc + profile in one commit (what the app does).
 const claim = async (db, uid, name, extra = {}) => {
@@ -81,13 +81,14 @@ test("usernames: extra keys or another user's uid are denied", async () => {
 
 test("usernames: only the owner can update or delete; anyone signed in can get; signed-out cannot", async () => {
   await seedClaim("u1", "ziad");
-  await assertFails(updateDoc(doc(as("u2", U2), "usernames", "ziad"), { displayName: "X", updated: 2 }));
   await assertFails(deleteDoc(doc(as("u2", U2), "usernames", "ziad")));
   await assertSucceeds(getDoc(doc(as("u2", U2), "usernames", "ziad")));
   await assertFails(getDoc(doc(anon(), "usernames", "ziad")));
-  await assertSucceeds(updateDoc(doc(as("u1", U1), "usernames", "ziad"), { displayName: "Zed", updated: 2 }));
   await assertFails(updateDoc(doc(as("u1", U1), "usernames", "ziad"), { uid: "u2" }));
-  await assertSucceeds(deleteDoc(doc(as("u1", U1), "usernames", "ziad")));
+  const db = as("u1", U1), b = writeBatch(db);
+  b.delete(doc(db, "usernames", "ziad"));
+  b.delete(doc(db, "profiles", "u1"));
+  await assertSucceeds(b.commit());
 });
 
 test("usernames: a freed name can be claimed by someone else", async () => {
@@ -185,7 +186,10 @@ test("profiles: others cannot write or delete; owner can delete; oversized docum
   await assertFails(setDoc(doc(as("u2", U2), "profiles", "u1"), profile()));
   await assertFails(deleteDoc(doc(as("u2", U2), "profiles", "u1")));
   await assertFails(setDoc(doc(as("u1", U1), "profiles", "u1"), profile({ displayName: "x".repeat(6000) })));
-  await assertSucceeds(deleteDoc(doc(as("u1", U1), "profiles", "u1")));
+  const db = as("u1", U1), b = writeBatch(db);
+  b.delete(doc(db, "profiles", "u1"));
+  b.delete(doc(db, "usernames", "ziad"));
+  await assertSucceeds(b.commit());
 });
 
 test("profiles: display name must be 1-40 characters", async () => {
@@ -208,4 +212,27 @@ test("usernames: one username per person - a second name needs the first one del
   ok.set(doc(db, "usernames", "second"), nameDoc("u1"));
   ok.set(doc(db, "profiles", "u1"), profile({ username: "second" }));
   await assertSucceeds(ok.commit());
+});
+
+test("usernames: no display name is stored there (it would leak a private person's name)", async () => {
+  const db = as("u1", U1), b = writeBatch(db);
+  b.set(doc(db, "usernames", "ziad"), { uid: "u1", displayName: "Ziad", updated: 1 });
+  b.set(doc(db, "profiles", "u1"), profile());
+  await assertFails(b.commit());
+});
+
+test("orphans: deleting only the profile or only the username doc is denied (no name squatting)", async () => {
+  await seedClaim("u1", "ziad");
+  const db = as("u1", U1);
+  await assertFails(deleteDoc(doc(db, "profiles", "u1")));
+  await assertFails(deleteDoc(doc(db, "usernames", "ziad")));
+  const b = writeBatch(db);
+  b.delete(doc(db, "profiles", "u1"));
+  b.delete(doc(db, "usernames", "ziad"));
+  await assertSucceeds(b.commit());
+});
+
+test("profile update keeping the same name still works after the orphan guards", async () => {
+  await seedClaim("u1", "ziad", { visibility: "public" });
+  await assertSucceeds(updateDoc(doc(as("u1", U1), "profiles", "u1"), { summary: SUMMARY, updated: 9 }));
 });

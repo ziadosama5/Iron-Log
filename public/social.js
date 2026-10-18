@@ -84,10 +84,8 @@ export function planShare({ uid, current, next, email, summary, now }) {
   const ops = [];
   const oldName = current && current.username;
   if (next.username !== oldName) {
-    ops.push({ op: "set", path: ["usernames", next.username], data: { uid, displayName: next.displayName, updated: now } });
+    ops.push({ op: "set", path: ["usernames", next.username], data: { uid, updated: now } });
     if (oldName) ops.push({ op: "delete", path: ["usernames", oldName] });
-  } else if (current && current.displayName !== next.displayName) {
-    ops.push({ op: "update", path: ["usernames", next.username], data: { displayName: next.displayName, updated: now } });
   }
   const profile = { username: next.username, displayName: next.displayName, visibility: next.visibility, findByEmail: !!next.findByEmail, updated: now };
   if ((next.visibility === "friends" || next.visibility === "public") && summary) profile.summary = summary;

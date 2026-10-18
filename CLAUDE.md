@@ -67,7 +67,7 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
 | path | content |
 |---|---|
 | `profiles/{uid}` | what the person chose to share: `{username, displayName, visibility: private/friends/public, findByEmail, summary?, updated}`. `summary` (only when friends/public): `{level, xp, title, badges, streakWeeks, foodDays, workoutsWeek, workouts30, workoutsTotal, volumeWeekKg, prs30, lastWorkout, updated}` built on the phone by `buildSummary` (never body data, meals or single workouts). NOT the same as `users/{uid}/items/profile` (private body profile) |
-| `usernames/{name}` | `{uid, displayName, updated}`: exact-name lookup. Name = 3–20 of a-z 0-9 _ . (no leading/trailing . or _, no `..`, not reserved). Claimed in one batch together with the profile; one name per person (a rename deletes the old one in the same batch) |
+| `usernames/{name}` | `{uid, updated}`: exact-name lookup. Name = 3–20 of a-z 0-9 _ . (no leading/trailing . or _, no `..`, not reserved). Claimed in one batch together with the profile; one name per person (a rename deletes the old one in the same batch); the profile and its name doc can only be deleted together |
 | `emails/{email}` | `{uid}`: opt-in exact e-mail lookup; id = the person's own verified e-mail, lower-case |
 
 - Visibility: only the owner reads a `private` or `friends` profile; any signed-in user reads a `public` one (friend reads arrive with the friends feature). New users publish nothing until they pick a username (More › Profile and privacy). The app republishes the summary ~20 s after data changes (`maybePublish`, server snapshots only, skipped when unchanged).
