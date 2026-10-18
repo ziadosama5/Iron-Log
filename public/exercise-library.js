@@ -51,7 +51,11 @@ export const EXERCISES = [
   ...X("Chest", [
     ["Bench Press", "barbell", "bench"], ["Incline Barbell Press", "barbell", "bench"], ["Incline Dumbbell Press", "dumbbell", "bench"],
     ["Dumbbell Bench Press", "dumbbell", "bench"], ["Machine Chest Press", "chest-press"], ["Dumbbell Fly", "dumbbell", "bench"],
-    ["Cable Crossover", "cable"], ["Push-up"], ["Decline Bench Press", "barbell", "decline-bench"], ["Pec Deck", "pec-deck"], ["Chest Dip", "dip-station"]]),
+    ["Cable Crossover", "cable"], ["Push-up"], ["Decline Bench Press", "barbell", "decline-bench"], ["Pec Deck", "pec-deck"],
+    ["Chest Dip", "dip-station"], ["Decline Dumbbell Press", "dumbbell", "decline-bench"], ["Incline Machine Press", "incline-press-machine"],
+    ["Smith Machine Bench Press", "smith", "bench"], ["Smith Machine Incline Press", "smith", "bench"], ["Incline Dumbbell Fly", "dumbbell", "bench"],
+    ["Low Cable Crossover", "cable"], ["Cable Fly (Flat Bench)", "cable", "bench"], ["Incline Push-up", "bench"], ["Decline Push-up", "bench"],
+    ["Dumbbell Pullover", "dumbbell", "bench"], ["Dumbbell Floor Press", "dumbbell"]]),
   ...X("Back", [
     ["Pull-up", "pullup-bar"], ["Lat Pulldown", "lat-pulldown"], ["Barbell Row", "barbell"], ["One-arm Dumbbell Row", "dumbbell", "bench"],
     ["Seated Cable Row", "cable"], ["T-bar Row", "tbar-row"], ["Chin-up", "pullup-bar"], ["Deadlift", "barbell"], ["Barbell Shrug", "barbell"],
@@ -63,8 +67,8 @@ export const EXERCISES = [
     ["Barbell Curl", "barbell"], ["Dumbbell Curl", "dumbbell"], ["Hammer Curl", "dumbbell"], ["Preacher Curl", "ez-bar", "preacher-bench"],
     ["Incline Dumbbell Curl", "dumbbell", "bench"], ["Cable Curl", "cable"], ["EZ-bar Curl", "ez-bar"], ["Concentration Curl", "dumbbell"]]),
   ...X("Triceps", [
-    ["Tricep Pushdown", "cable"], ["Skull Crusher", "ez-bar", "bench"], ["Overhead Tricep Extension", "dumbbell"], ["Close-grip Bench Press", "barbell", "bench"],
-    ["Dip", "dip-station"], ["Overhead Cable Extension", "cable"], ["Triceps Kickback", "dumbbell"]]),
+    ["Tricep Pushdown", "cable"], ["Skull Crusher", "ez-bar", "bench"], ["Overhead Tricep Extension", "dumbbell"],
+    ["Close-grip Bench Press", "barbell", "bench"], ["Dip", "dip-station"], ["Overhead Cable Extension", "cable"], ["Triceps Kickback", "dumbbell"]]),
   ...X("Quads", [
     ["Squat", "barbell", "rack"], ["Front Squat", "barbell", "rack"], ["Leg Press", "leg-press"], ["Hack Squat", "hack-squat"],
     ["Bulgarian Split Squat", "dumbbell", "bench"], ["Walking Lunge", "dumbbell"], ["Leg Extension", "leg-extension"], ["Lunge", "dumbbell"],
@@ -72,7 +76,8 @@ export const EXERCISES = [
   ...X("Hamstrings & Glutes", [
     ["Romanian Deadlift", "barbell"], ["Lying Leg Curl", "leg-curl"], ["Hip Thrust", "barbell", "bench"], ["Good Morning", "barbell", "rack"],
     ["Stiff-leg Deadlift", "barbell"], ["Hip Abduction", "hip-abduction"]]),
-  ...X("Calves", [["Standing Calf Raise", "standing-calf-machine"], ["Seated Calf Raise", "seated-calf-machine"], ["Donkey Calf Raise", "box"]]),
+  ...X("Calves", [
+    ["Standing Calf Raise", "standing-calf-machine"], ["Seated Calf Raise", "seated-calf-machine"], ["Donkey Calf Raise", "box"]]),
   ...X("Core", [
     ["Plank"], ["Hanging Leg Raise", "pullup-bar"], ["Cable Crunch", "cable"], ["Ab Wheel Rollout", "ab-wheel"], ["Russian Twist"], ["Crunch"],
     ["Side Plank"], ["Lying Leg Raise"]])

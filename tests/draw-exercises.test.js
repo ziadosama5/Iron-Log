@@ -5,8 +5,9 @@ import { DRAWINGS } from "../tools/draw-exercises.mjs";
 import { INFO } from "../public/exercise-info.js";
 import { slugify } from "../tools/svg-tools.mjs";
 
-test("hand-drawn figures: 14 exercises, start and finish, plain theme-aware SVG only", () => {
-  assert.equal(Object.keys(DRAWINGS).length, 14);
+test("hand-drawn figures: start and finish for every exercise marked draw, plain theme-aware SVG only", () => {
+  const drawn = Object.entries(JSON.parse(readFileSync("tools/exercise-sources.json", "utf8"))).filter(([, v]) => v.draw).map(([n]) => slugify(n));
+  assert.deepEqual(Object.keys(DRAWINGS).sort(), drawn.sort(), "every hand-drawn exercise has code, and vice versa");
   for (const [slug, d] of Object.entries(DRAWINGS)) for (const k of ["start", "end"]) {
     const s = d[k];
     assert.match(s, /^<svg viewBox="0 0 216 300" xmlns="http:\/\/www\.w3\.org\/2000\/svg">/, `${slug} ${k}`);

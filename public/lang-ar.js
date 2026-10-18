@@ -277,7 +277,18 @@ export const AR = {
       "Good Morning": "جود مورنينج", "Stiff-leg Deadlift": "رفعة ميتة بساقين مستقيمتين", "Hip Abduction": "إبعاد الفخذ",
       "Standing Calf Raise": "رفع السمانة واقفاً", "Seated Calf Raise": "رفع السمانة جلوساً", "Donkey Calf Raise": "رفع السمانة (دونكي)",
       "Plank": "بلانك", "Hanging Leg Raise": "رفع الأرجل من التعلق", "Cable Crunch": "كرنش الكابل", "Ab Wheel Rollout": "عجلة البطن",
-      "Russian Twist": "التفاف روسي", "Crunch": "كرنش", "Side Plank": "بلانك جانبي", "Lying Leg Raise": "رفع الأرجل مستلقياً"
+      "Russian Twist": "التفاف روسي", "Crunch": "كرنش", "Side Plank": "بلانك جانبي", "Lying Leg Raise": "رفع الأرجل مستلقياً",
+      "Decline Dumbbell Press": "ضغط الصدر المنحدر بالدمبل",
+      "Incline Machine Press": "ضغط الصدر المائل بالجهاز",
+      "Smith Machine Bench Press": "ضغط البنش بجهاز سميث",
+      "Smith Machine Incline Press": "ضغط الصدر المائل بجهاز سميث",
+      "Incline Dumbbell Fly": "فتح الصدر المائل بالدمبل",
+      "Low Cable Crossover": "تقاطع الكابل السفلي",
+      "Cable Fly (Flat Bench)": "فتح الصدر بالكابل على البنش",
+      "Incline Push-up": "ضغط مائل (اليدان على البنش)",
+      "Decline Push-up": "ضغط منحدر (القدمان على البنش)",
+      "Dumbbell Pullover": "بولوفر بالدمبل",
+      "Dumbbell Floor Press": "ضغط الدمبل من الأرض"
     },
     muscle: {
       "Chest": "الصدر", "Back": "الظهر", "Shoulders": "الأكتاف", "Biceps": "البايسبس", "Triceps": "الترايسبس",

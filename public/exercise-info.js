@@ -264,6 +264,29 @@ export const INFO = {
    ]
   }
  },
+ "cable fly (flat bench)": {
+  "name": "Cable Fly (Flat Bench)",
+  "slug": "dumbbell-fly",
+  "img": true,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Shoulders"
+  ],
+  "tips": [
+   "Lie on the bench between the low pulleys",
+   "Keep a soft bend in the elbows",
+   "Bring the handles together over the chest"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ على البنش بين البكرتين السفليتين",
+    "أبقِ ثنية خفيفة في المرفقين",
+    "قرّب المقبضين فوق الصدر"
+   ]
+  }
+ },
  "chest dip": {
   "name": "Chest Dip",
   "slug": "chest-dip",
@@ -453,6 +476,55 @@ export const INFO = {
    ]
   }
  },
+ "decline dumbbell press": {
+  "name": "Decline Dumbbell Press",
+  "slug": "decline-dumbbell-press",
+  "img": true,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Triceps",
+   "Shoulders"
+  ],
+  "tips": [
+   "Hook your feet and set a slight decline",
+   "Lower the dumbbells to the sides of the lower chest",
+   "Press up and slightly together"
+  ],
+  "ar": {
+   "tips": [
+    "ثبّت قدميك واضبط انحداراً خفيفاً",
+    "أنزل الدمبل إلى جانبي أسفل الصدر",
+    "ادفع للأعلى مع تقريبهما قليلاً"
+   ]
+  }
+ },
+ "decline push-up": {
+  "name": "Decline Push-up",
+  "slug": "decline-push-up",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Shoulders",
+   "Triceps"
+  ],
+  "tips": [
+   "Feet on the bench, hands on the floor",
+   "Keep your body in a straight line",
+   "Lower until your chest nearly touches the floor"
+  ],
+  "ar": {
+   "tips": [
+    "القدمان على البنش واليدان على الأرض",
+    "أبقِ جسمك في خط مستقيم",
+    "انزل حتى يكاد صدرك يلمس الأرض"
+   ]
+  }
+ },
  "dip": {
   "name": "Dip",
   "slug": "dip",
@@ -545,6 +617,31 @@ export const INFO = {
    ]
   }
  },
+ "dumbbell floor press": {
+  "name": "Dumbbell Floor Press",
+  "slug": "dumbbell-floor-press",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Triceps",
+   "Shoulders"
+  ],
+  "tips": [
+   "Lie on the floor with your knees bent",
+   "Lower until the upper arms touch the floor",
+   "Press up without bouncing"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ على الأرض وركبتاك مثنيتان",
+    "انزل حتى يلمس العضدان الأرض",
+    "ادفع للأعلى دون ارتداد"
+   ]
+  }
+ },
  "dumbbell fly": {
   "name": "Dumbbell Fly",
   "slug": "dumbbell-fly",
@@ -565,6 +662,30 @@ export const INFO = {
     "أبقِ ثنية خفيفة في المرفقين",
     "افتح الذراعين حتى تشعر بتمدد الصدر",
     "ارفع الدمبل في قوس واسع"
+   ]
+  }
+ },
+ "dumbbell pullover": {
+  "name": "Dumbbell Pullover",
+  "slug": "dumbbell-pullover",
+  "img": true,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Back",
+   "Triceps"
+  ],
+  "tips": [
+   "Lie across the bench holding one dumbbell",
+   "Lower it behind your head with soft elbows",
+   "Pull it back over the chest"
+  ],
+  "ar": {
+   "tips": [
+    "استلقِ عرضياً على البنش ممسكاً دمبل",
+    "أنزله خلف رأسك بمرفقين مرنين",
+    "اسحبه عائداً فوق الصدر"
    ]
   }
  },
@@ -849,6 +970,29 @@ export const INFO = {
    ]
   }
  },
+ "incline dumbbell fly": {
+  "name": "Incline Dumbbell Fly",
+  "slug": "incline-dumbbell-fly",
+  "img": true,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Shoulders"
+  ],
+  "tips": [
+   "Set the bench to about 30 degrees",
+   "Keep a soft bend in the elbows",
+   "Open until you feel a chest stretch"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط البنش على زاوية 30 درجة تقريباً",
+    "أبقِ ثنية خفيفة في المرفقين",
+    "افتح الذراعين حتى تشعر بتمدد الصدر"
+   ]
+  }
+ },
  "incline dumbbell press": {
   "name": "Incline Dumbbell Press",
   "slug": "incline-dumbbell-press",
@@ -870,6 +1014,55 @@ export const INFO = {
     "اضبط الكرسي على زاوية 30 درجة تقريباً",
     "أنزل الدمبل إلى جانبي الصدر",
     "ادفع للأعلى مع تقريبهما قليلاً"
+   ]
+  }
+ },
+ "incline machine press": {
+  "name": "Incline Machine Press",
+  "slug": "machine-chest-press",
+  "img": true,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Shoulders",
+   "Triceps"
+  ],
+  "tips": [
+   "Adjust the seat so handles sit at upper chest",
+   "Keep your back against the pad",
+   "Press forward without locking out hard"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط المقعد ليكون المقبضان عند أعلى الصدر",
+    "أبقِ ظهرك ملاصقاً للوسادة",
+    "ادفع للأمام دون قفل المرفقين بقوة"
+   ]
+  }
+ },
+ "incline push-up": {
+  "name": "Incline Push-up",
+  "slug": "incline-push-up",
+  "img": true,
+  "own": true,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Triceps",
+   "Shoulders"
+  ],
+  "tips": [
+   "Hands on the bench, shoulder width",
+   "Keep a straight line from head to heels",
+   "Lower your chest to the bench edge"
+  ],
+  "ar": {
+   "tips": [
+    "اليدان على البنش بعرض الكتفين",
+    "أبقِ خطاً مستقيماً من الرأس إلى الكعبين",
+    "أنزل صدرك نحو حافة البنش"
    ]
   }
  },
@@ -964,6 +1157,29 @@ export const INFO = {
     "انزل حتى تصل الركبتان إلى 90 درجة تقريباً",
     "أبقِ أسفل ظهرك على الوسادة",
     "لا تقفل الركبتين في الأعلى"
+   ]
+  }
+ },
+ "low cable crossover": {
+  "name": "Low Cable Crossover",
+  "slug": "cable-crossover",
+  "img": true,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Shoulders"
+  ],
+  "tips": [
+   "Set the pulleys low and step forward",
+   "Sweep the hands up and together in front of the chest",
+   "Keep a soft bend in the elbows"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط البكرتين في الأسفل وتقدّم خطوة",
+    "اجمع اليدين للأعلى أمام الصدر",
+    "أبقِ ثنية خفيفة في المرفقين"
    ]
   }
  },
@@ -1486,6 +1702,54 @@ export const INFO = {
     "أبقِ العضدين موجهين نحو السقف",
     "أنزل البار نحو جبهتك",
     "مدّد الذراعين دون فتح المرفقين"
+   ]
+  }
+ },
+ "smith machine bench press": {
+  "name": "Smith Machine Bench Press",
+  "slug": "smith-machine-bench-press",
+  "img": true,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Triceps",
+   "Shoulders"
+  ],
+  "tips": [
+   "Set the bench so the bar lowers to mid-chest",
+   "Pinch your shoulder blades before unracking",
+   "Press straight up along the rails"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط البنش لينزل البار إلى منتصف الصدر",
+    "اضمم لوحي الكتف قبل رفع البار",
+    "ادفع للأعلى بمحاذاة المسارات"
+   ]
+  }
+ },
+ "smith machine incline press": {
+  "name": "Smith Machine Incline Press",
+  "slug": "smith-machine-incline-press",
+  "img": true,
+  "primary": [
+   "Chest"
+  ],
+  "secondary": [
+   "Shoulders",
+   "Triceps"
+  ],
+  "tips": [
+   "Set the bench to about 30 degrees",
+   "Lower the bar to the upper chest",
+   "Press straight up without flaring elbows"
+  ],
+  "ar": {
+   "tips": [
+    "اضبط البنش على زاوية 30 درجة تقريباً",
+    "أنزل البار إلى أعلى الصدر",
+    "ادفع للأعلى دون فتح المرفقين"
    ]
   }
  },

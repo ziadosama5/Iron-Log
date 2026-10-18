@@ -192,6 +192,41 @@ const russianTwist = finish => {
   });
 };
 
+// ---------- Incline Push-up (hands on a bench, body in a straight line) ----------
+const inclinePushUp = finish => {
+  const sh = finish ? [140, 190] : [150, 154], hip = finish ? [88, 226] : [95, 202], knee = finish ? [58, 244] : [62, 230], ank = [30, 258];
+  const elbow = finish ? [124, 208] : [152, 184], wrist = [154, 212];
+  return fig({
+    ...head(finish ? [162, 176] : [172, 138]),
+    parts: [...body({ sh, hip, chest: 34, waist: 24 }), ...leg(hip, knee, ank, [20, 266], [26, 18, 11]), ...arm(sh, elbow, wrist), delt(sh, 12)],
+    behind: rect(150, 214, 58, 56, 4),
+    gear: floor() + hand(wrist, 5)
+  });
+};
+
+// ---------- Decline Push-up (feet on a bench, hands on the floor) ----------
+const declinePushUp = finish => {
+  const sh = finish ? [148, 244] : [146, 206], hip = finish ? [96, 219] : [93, 200], knee = finish ? [68, 207] : [66, 197], ank = [40, 196];
+  const elbow = finish ? [126, 254] : [148, 236], wrist = [152, 262];
+  return fig({
+    ...head(finish ? [172, 238] : [170, 196]),
+    parts: [...body({ sh, hip, chest: 34, waist: 24 }), ...leg(hip, knee, ank, [28, 202], [26, 18, 11]), ...arm(sh, elbow, wrist), delt(sh, 12)],
+    behind: rect(8, 204, 56, 66, 4),
+    gear: floor() + hand(wrist, 5)
+  });
+};
+
+// ---------- Dumbbell Floor Press (lying on the floor, upper arms stop on the floor) ----------
+const dumbbellFloorPress = finish => {
+  const sh = [62, 248], hip = [132, 252], knee = [164, 214], ank = [178, 260];
+  const elbow = finish ? [62, 200] : [46, 262], wrist = finish ? [62, 176] : [50, 214];
+  return fig({
+    ...head([36, 250]),
+    parts: [...body({ sh, hip, chest: 32, waist: 26 }), ...leg(hip, knee, ank, [196, 264], [26, 18, 11]), ...arm(sh, elbow, wrist), delt(sh, 11)],
+    gear: floor(268) + dumbbell([wrist[0], wrist[1] - 4], 0, 28, 9) + hand(wrist, 5)
+  });
+};
+
 export const DRAWINGS = {
   "face-pull": { start: facePull(false), end: facePull(true) },
   "hip-thrust": { start: hipThrust(false), end: hipThrust(true) },
@@ -206,7 +241,10 @@ export const DRAWINGS = {
   "bulgarian-split-squat": { start: bulgarianSplitSquat(false), end: bulgarianSplitSquat(true) },
   "one-arm-dumbbell-row": { start: oneArmRow(false), end: oneArmRow(true) },
   "hanging-leg-raise": { start: hangingLegRaise(false), end: hangingLegRaise(true) },
-  "russian-twist": { start: russianTwist(false), end: russianTwist(true) }
+  "russian-twist": { start: russianTwist(false), end: russianTwist(true) },
+  "incline-push-up": { start: inclinePushUp(false), end: inclinePushUp(true) },
+  "decline-push-up": { start: declinePushUp(false), end: declinePushUp(true) },
+  "dumbbell-floor-press": { start: dumbbellFloorPress(true), end: dumbbellFloorPress(false) }
 };
 
 // Contact sheet for looking at the drawings.
