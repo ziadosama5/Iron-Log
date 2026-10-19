@@ -40,6 +40,13 @@ export function planNameRefresh({ me, other, myName, now }) {
   return { ops: [{ op: "update", path: pairPath(me, other), data: { ["names." + me]: myName, updated: now } }] };
 }
 
+// Pairs where my stored name is not my current username: [{other}] (the app refreshes those once).
+export function staleNameDocs(docs, me, myName) {
+  if (!myName) return [];
+  return (docs || []).filter(d => d && Array.isArray(d.users) && d.users.includes(me) && !(d.names && d.names[me] === myName))
+    .map(d => ({ other: d.users.find(u => u !== me) }));
+}
+
 const otherOf = (d, me) => d.users.find(u => u !== me);
 
 export function groupFriendships(docs, me, blocks) {

@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   pairId, planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh,
-  groupFriendships, relationTo, compareSummaries
+  groupFriendships, relationTo, compareSummaries, staleNameDocs
 } from "../public/friends.js";
 
 const paths = r => r.ops.map(o => o.op + " " + o.path.join("/"));
@@ -76,4 +76,17 @@ test("compareSummaries gives the leader per key in a fixed order; a missing summ
   const none = compareSummaries(mine, null);
   assert.ok(none.every(r => r.theirs === 0));
   assert.equal(none[0].leader, "me");
+});
+
+test("staleNameDocs lists the pairs where my stored name differs from my username", () => {
+  const docs = [
+    fd("u1", "u2", "accepted", { u1: "old", u2: "zed" }),
+    fd("u3", "u1", "pending", { u1: "ziad", u3: "omar" }),
+    fd("u1", "u4", "pending", { u1: "ziad", u4: "x" }),
+    fd("u7", "u8", "accepted", { u7: "a", u8: "b" })
+  ];
+  assert.deepEqual(staleNameDocs(docs, "u1", "ziad"), [{ other: "u2" }]);
+  assert.deepEqual(staleNameDocs(docs, "u1", "new"), [{ other: "u2" }, { other: "u3" }, { other: "u4" }]);
+  assert.deepEqual(staleNameDocs([], "u1", "ziad"), []);
+  assert.deepEqual(staleNameDocs(docs, "u1", ""), [], "no username yet: nothing to refresh");
 });
