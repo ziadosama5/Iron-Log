@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { scanSource } from "../tools/scan-strings.mjs";
 import { AR } from "../public/lang-ar.js";
+import { TABS, PILL_LABEL } from "../public/nav.js";
+import { FAMILIES } from "../public/badge-art.js";
 
 // Sections still being translated (empty now that the whole app is done; new sections must ship translated).
 const PENDING = [];
@@ -86,6 +88,7 @@ test("cardio, intensity, goal, weekday, meal and level names exist", () => {
   needNames("weekday", ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
   needNames("meal", ["Breakfast", "Lunch", "Dinner", "Snack"]);
   needNames("level", ["Rookie", "Regular", "Committed", "Iron"]);
+  needNames("family", FAMILIES.map(f => f.name));
 });
 
 test("Arabic exercise names are unique", () => {
@@ -164,4 +167,9 @@ test("challenges: messages and labels shown through variables have Arabic", () =
   const keys = ["Challenge created", "You joined the challenge", "Declined", "You left the challenge", "Challenge deleted", "Delete challenge", "Leave challenge", "Leave", "Delete", "Keep",
     "Accept", "Decline", "Today", "Cancel", "Back", "{n} week", "{n} weeks", "Create challenge"];
   assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
+});
+
+test("tab names and section pills have Arabic", () => {
+  const labels = [...TABS.map(t => t.label), ...Object.values(PILL_LABEL)];
+  assert.deepEqual([...new Set(labels)].filter(l => AR.ui[l] == null), []);
 });

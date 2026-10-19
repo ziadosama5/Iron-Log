@@ -288,7 +288,13 @@ export const AR = {
     "{a} / {b} XP to level {c} · +{d} XP this week": "{a} / {b} XP للوصول إلى المستوى {c} · +{d} XP هذا الأسبوع",
     "Training: {x}": "التدريب: {x}", "{n} week": "{n} أسبوع", "{n} weeks": "{n} أسابيع", "{a} of {b} this week": "{a} من {b} هذا الأسبوع",
     "Food log: {x}": "تسجيل الطعام: {x}", "{n} day": "{n} يوم", "{n} days": "{n} أيام",
-    "Badges · {a} of {b}": "الأوسمة · {a} من {b}", "Badge earned: {name}": "وسام جديد: {name}"
+    "Badges · {a} of {b}": "الأوسمة · {a} من {b}", "Badge earned: {name}": "وسام جديد: {name}",
+    "Appearance": "المظهر", "Your data": "بياناتك", "About and account": "حول التطبيق والحساب", "Plan": "الخطة", "Me": "أنا",
+    "Leaderboard": "لوحة المتصدرين", "No friends yet. Use Find to look someone up by username.": "لا أصدقاء بعد. استخدم «بحث» للعثور على شخص باسم المستخدم.",
+    "Next badge: {name}": "الوسام التالي: {name}", "Food and energy": "الطعام والطاقة",
+    "Level {a} of {b}": "المستوى {a} من {b}", "All levels reached": "تم الوصول إلى كل المستويات",
+    "New badge": "وسام جديد", "{name} · Level {n}": "{name} · المستوى {n}", "Level up!": "ارتقيت مستوى!",
+    "You won!": "فزت!", "You won the challenge": "فزت بالتحدي", "Nice!": "رائع!"
   },
   names: {
     ex: {
@@ -464,6 +470,7 @@ export const AR = {
     weekday: { "Sun": "أحد", "Mon": "إثنين", "Tue": "ثلاثاء", "Wed": "أربعاء", "Thu": "خميس", "Fri": "جمعة", "Sat": "سبت" },
     meal: { "Breakfast": "فطور", "Lunch": "غداء", "Dinner": "عشاء", "Snack": "وجبة خفيفة" },
     level: { "Rookie": "مبتدئ", "Regular": "منتظم", "Committed": "ملتزم", "Iron": "حديدي" },
+    family: { "Workouts": "التمارين", "Calories burned": "السعرات المحروقة", "Cardio minutes": "دقائق الكارديو", "Goal weight": "الوزن المستهدف", "Training streak": "سلسلة التدريب", "Food streak": "سلسلة الطعام", "Personal records": "الأرقام القياسية", "Strength club": "نادي القوة", "Volume lifted": "الحجم المرفوع" },
     equipment: {
       "barbell": "البار", "dumbbell": "دمبل", "ez-bar": "بار EZ", "trap-bar": "بار سداسي (Trap Bar)", "kettlebell": "كيتل بيل",
       "bench": "بنش (مسطح / مائل)", "decline-bench": "بنش منحدر", "rack": "حامل السكوات", "smith": "جهاز سميث", "cable": "جهاز الكابل",
