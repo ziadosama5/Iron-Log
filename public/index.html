@@ -109,6 +109,7 @@ svg.i.f{fill:currentColor;stroke:none}
 .pill .count{min-width:18px;padding:2px 5px;border-radius:9px;background:var(--danger);color:#fff;font:700 11px/14px var(--f-body);text-align:center}
 /* hero block: level ring */
 .hero{background:var(--hero);color:var(--hero-ink);border-radius:22px;padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:var(--pop)}
+button.hero{appearance:none;border:0;width:100%;text-align:start;font:inherit;cursor:pointer}
 .hero h3{color:inherit;opacity:.7}
 .hero .prev{color:inherit;opacity:.7}
 .hero .ebar{background:rgb(255 255 255 / .16)}
@@ -480,6 +481,7 @@ import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN, WEEK_CHOICES, 
 import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
 import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney } from "./plan-tools.js";
+import { FAMILIES, allFamilies, closestFamily, tierFor } from "./badge-art.js";
 import { TABS, PILL_LABEL, tabOf, pillsFor, migrateView } from "./nav.js";
 import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername, lookupResult, shareLabel } from "./social.js";
 (function(){
@@ -1088,14 +1090,14 @@ function gymNote(focus, exclude){
 function renderLog(){
   const w = workoutFor(state.date);
   const dateLabel = state.date===today()?t("Today"):fmtDate(state.date);
-  let h = (state.days.length||state.serverSynced!==true?"":journeyCard()) + `<div class="row">
+  let h = levelHero() + (state.days.length||state.serverSynced!==true?"":journeyCard()) + `<div class="row">
     <div class="grow"><div class="label">Workout date</div><h2>${dateLabel}</h2></div>
     <input type="date" id="log-date" value="${state.date}" max="${today()}" style="width:auto">
   </div>`;
 
   // A day with only cardio still asks which training day it is (the cardio is kept when one is picked).
   const cardioOnly = w && !w.dayId && !w.entries.length && w.dayName==="Cardio";
-  if (!w || state.pickDay || cardioOnly){ $("#view-log").innerHTML = h + dayPicker(cardioOnly&&!state.pickDay?null:w) + cardioCard(); fillDatalist(); refreshSheets(); syncWake(); return; }
+  if (!w || state.pickDay || cardioOnly){ $("#view-log").innerHTML = h + dayPicker(cardioOnly&&!state.pickDay?null:w) + cardioCard() + todayCard(); fillDatalist(); refreshSheets(); syncWake(); return; }
 
   const day = dayById(w.dayId), entries = w.entries, M = entries.length;
   const doneN = entries.filter(e=>e.done).length;
@@ -1121,7 +1123,7 @@ function renderLog(){
   const cardio=(w.cardio||[]), kgNow=weightOn(state.body,state.date);
   if (cardio.length) h += `<ul class="cardio-list">${cardio.map(c=>`<li><span class="grow">${cardioLabel(c.type)} · ${c.min} min · ${cardioText(c,kgNow)}</span><button class="btn ghost small danger" data-act="rm-cardio" data-id="${esc(c.id)}" aria-label="${esc(t("Delete {name} session",{name:cardioLabel(c.type)}))}">✕</button></li>`).join("")}</ul>`;
 
-  $("#view-log").innerHTML = h; fillDatalist(); refreshSheets(); syncWake();
+  $("#view-log").innerHTML = h + todayCard(); fillDatalist(); refreshSheets(); syncWake();
   // keep the open exercise's chip in view without scrolling the page
   const c=$("#exchips"), on=c&&c.querySelector('[aria-current="true"]');
   if(on){ const a=on.getBoundingClientRect(), b=c.getBoundingClientRect(); c.scrollLeft+=(a.left+a.width/2)-(b.left+b.width/2); }
@@ -1738,15 +1740,24 @@ function balanceGood(goal,bal){
 }
 const kcalTxt=v=>v==null?"–":Math.round(v).toLocaleString("en-US");
 const signedTxt=v=>v==null?"–":(v>0?"+":v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString("en-US");
+function levelHero(){
+  const input=goalsInput(), list=badges(input), xp=xpSummary(input,list), ts=trainingStreak(state.workouts,state.days,today());
+  const cl=closestFamily(allFamilies(list)), C=2*Math.PI*25, off=C*(1-Math.min(1,Math.max(0,xp.into/xp.needed)));
+  const nxt=cl?`<div class="prev">${t("Next badge: {name}",{name:esc(nameOf("badge",cl.next.name))})} · ${esc(badgeProgress({...cl.next,earned:null}))}</div>`:"";
+  return `<button class="hero" data-act="hero-go" aria-label="${esc(t("Level {n}",{n:xp.level}))}">
+    <span class="ring"><svg viewBox="0 0 60 60" aria-hidden="true"><circle class="tr" cx="30" cy="30" r="25" fill="none" stroke-width="6"/><circle class="pr" cx="30" cy="30" r="25" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg><b>${xp.level}</b></span>
+    <span class="grow stack" style="gap:3px"><span class="row" style="gap:8px"><b class="grow">${t("Level {n}",{n:xp.level})} · ${esc(nameOf("level",xp.title))}</b><span class="streakflag"><svg class="i" aria-hidden="true"><use href="#i-flame"/></svg>${tn("{n} week","{n} weeks",ts.weeks)}</span></span>
+      <span class="prev">${t("{a} / {b} XP to level {c} · +{d} XP this week",{a:xp.into.toLocaleString("en-US"),b:xp.needed.toLocaleString("en-US"),c:xp.level+1,d:xp.weekXp.toLocaleString("en-US")})}</span>${nxt}</span></button>`;
+}
 function todayCard(){
-  const d=state.cdate, p=state.profile, kg=weightOn(state.body,d), b=bmrFor(p,state.body,d);
+  const d=state.date, p=state.profile, kg=weightOn(state.body,d), b=bmrFor(p,state.body,d);
   const e=dayEnergy({bmr:b?b.bmr:null, kg, goal:p.goal, workout:workoutFor(d)||null, food:state.food[d]||null});
   const meals=(state.food[d]&&state.food[d].meals)||[];
   const missing = kg==null ? t("Log your weight on the Body tab to see calories burned and your target.")
     : !b ? t("Fill in About you on the Body tab to see calories burned and your target.") : "";
   const pct=e.target?Math.min(100,e.eaten/e.target*100):0, over=e.target!=null&&e.eaten>e.target?e.eaten-e.target:0;
   return `<div class="card today">
-    <div class="row"><h3 class="grow">${d===today()?t("Today"):esc(fmtDate(d))}</h3><input type="date" id="coach-date" value="${esc(d)}" max="${today()}" style="width:auto"></div>
+    <div class="row"><h3 class="grow">${t("Food and energy")}</h3></div>
     <div class="stats">
       <div class="stat"><div class="label">Eaten</div><div class="v">${kcalTxt(e.eaten)} <small>/ ${kcalTxt(e.target)} kcal</small></div></div>
       <div class="stat"><div class="label">Burned</div><div class="v">${kcalTxt(e.burned)} <small>kcal</small></div></div>
@@ -1773,7 +1784,6 @@ function renderCoach(){
   const list=sortTips(insights());
   let h=`<h2>Coach</h2>`;
   if(!profileReady()) h+=`<div class="notice">Add your sex, height, birth year and goal on the Body tab for calorie targets and personalised ranges. <button class="btn small" data-act="goto-body" style="margin-inline-start:6px">Go to Body</button></div>`;
-  h+=todayCard();
   if(!list.length){
     h+=`<div class="empty"><strong>Nothing to analyse yet</strong>Log a few workouts and your body weight, and suggestions will show up here.</div>`;
   } else {
@@ -2189,7 +2199,6 @@ document.addEventListener("change",e=>{
   if(t.id==="prog-ex"){ state.progressEx=t.value; renderProgress(); }
   if(t.id==="body-date"&&t.value){ state.bdate=t.value; renderBody(); }
   if(t.id==="restore-file"&&t.files&&t.files[0]){ importData(t.files[0]); t.value=""; }
-  if(t.id==="coach-date"&&t.value){ state.cdate=t.value; renderCoach(); }
   if(t.id==="body-metric"){ state.metric=t.value; renderBody(); }
   if(t.dataset.actChange==="rename"){ clearTimeout(renameTimer); const v=t.value.trim(); if(!v||dayById(t.dataset.id)?.name===v) return; editDays(ds=>{ ds.find(d=>d.id===t.dataset.id).name=v; },{quiet:true}); }
 });
@@ -2218,8 +2227,8 @@ document.addEventListener("submit",e=>{
     const kRaw=$("#meal-kcal").value.trim(), pRaw=$("#meal-protein").value.trim().replace(",","."), name=reverseName("meal",$("#meal-name").value.trim());
     const k=Number(kRaw), p=pRaw===""?null:Number(pRaw);
     if(!(Number.isInteger(k)&&k>=1&&k<=5000) || (p!==null&&!(Number.isFinite(p)&&p>=0&&p<=500)) || name.length>40){ toast(t("Enter 1–5000 kcal (protein 0–500 g)")); return; }
-    const d=state.cdate, meals=[...((state.food[d]&&state.food[d].meals)||[]), {id:uid(), name:name||null, kcal:k, protein:p}];
-    store.saveFood({date:d, meals}); state.mealDraft={kcal:"",protein:"",name:""}; renderCoach(); toast(t("Meal added")); return;
+    const d=state.date, meals=[...((state.food[d]&&state.food[d].meals)||[]), {id:uid(), name:name||null, kcal:k, protein:p}];
+    store.saveFood({date:d, meals}); state.mealDraft={kcal:"",protein:"",name:""}; renderLog(); toast(t("Meal added")); return;
   }
   if(f.id==="quickw-form"){
     const n=parseFloat(String($("#quickw").value).trim().replace(",","."));
@@ -2299,7 +2308,8 @@ document.addEventListener("click",e=>{
     case "accent-set": applyAccent(b.dataset.v); drawSwatches(); break;
     case "set-goal": state.editProfile=true; go("body"); setTimeout(()=>document.getElementById("pf-goalw")?.focus(),0); break;
     case "meal-name": $("#meal-name").value=state.mealDraft.name=nameOf("meal",b.dataset.name); break;
-    case "rm-meal":{ const d=state.cdate; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderCoach(); break; }
+    case "rm-meal":{ const d=state.date; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderLog(); break; }
+    case "hero-go": go("goals"); break;
     case "cardio-type": state.cardioDraft.type=b.dataset.v; renderLog(); break;
     case "cardio-int": state.cardioDraft.intensity=b.dataset.v; renderLog(); break;
     case "cardio-step":{ const d=state.cardioDraft; d.min=String(Math.max(1,Math.min(600,(parseInt(d.min,10)||0)+(+b.dataset.d)))); renderLog(); break; }
