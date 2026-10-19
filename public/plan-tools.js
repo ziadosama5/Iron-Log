@@ -18,28 +18,62 @@ const KIND_MUSCLES = {
   legs: ["Quads", "Hamstrings & Glutes", "Calves"],
   upper: ["Chest", "Back", "Shoulders", "Biceps", "Triceps"],
   lower: ["Quads", "Hamstrings & Glutes", "Calves", "Core"],
-  full: ["Quads", "Chest", "Back", "Shoulders", "Hamstrings & Glutes", "Core"]
+  full: ["Quads", "Chest", "Back", "Shoulders", "Hamstrings & Glutes", "Core"],
+  chest: ["Chest"], back: ["Back"], shoulders: ["Shoulders"], arms: ["Biceps", "Triceps"],
+  brolegs: ["Quads", "Hamstrings & Glutes", "Calves"]
 };
+const BRO_KINDS = new Set(["chest", "back", "shoulders", "arms", "brolegs"]);
 
 // Saturday-first week (JS getDay numbers), one weekday per day in plan order.
 const WEEKDAYS = { 2: [6, 2], 3: [6, 1, 3], 4: [6, 0, 2, 3], 5: [6, 0, 1, 3, 4], 6: [6, 0, 1, 2, 3, 4] };
 
-function layout(daysPerWeek, experience) {
-  switch (daysPerWeek) {
-    case 2: return { split: "Full Body", days: [["Full Body A", "full"], ["Full Body B", "full"]] };
-    case 3: return experience === "beginner"
-      ? { split: "Full Body", days: [["Full Body A", "full"], ["Full Body B", "full"], ["Full Body C", "full"]] }
-      : { split: "Push / Pull / Legs", days: [["Push", "push"], ["Pull", "pull"], ["Legs", "legs"]] };
-    case 4: return { split: "Upper / Lower", days: [["Upper A", "upper"], ["Lower A", "lower"], ["Upper B", "upper"], ["Lower B", "lower"]] };
-    case 5: return { split: "Push / Pull / Legs + Upper / Lower", days: [["Push", "push"], ["Pull", "pull"], ["Legs", "legs"], ["Upper A", "upper"], ["Lower A", "lower"]] };
-    default: return { split: "Push / Pull / Legs ×2", days: [["Push", "push"], ["Pull", "pull"], ["Legs", "legs"], ["Push B", "push"], ["Pull B", "pull"], ["Legs B", "legs"]] };
-  }
+const D = (...pairs) => pairs;
+const PPL = D(["Push", "push"], ["Pull", "pull"], ["Legs", "legs"]);
+const UPPER_LOWER_4 = D(["Upper A", "upper"], ["Lower A", "lower"], ["Upper B", "upper"], ["Lower B", "lower"]);
+// Every choice per days per week. The first is the default (for 3 days beginners start with Full Body).
+const SPLITS = {
+  2: [
+    { id: "full", name: "Full Body", days: D(["Full Body A", "full"], ["Full Body B", "full"]) },
+    { id: "upper-lower", name: "Upper / Lower", days: D(["Upper A", "upper"], ["Lower A", "lower"]) }
+  ],
+  3: [
+    { id: "ppl", name: "Push / Pull / Legs", days: PPL },
+    { id: "full", name: "Full Body", days: D(["Full Body A", "full"], ["Full Body B", "full"], ["Full Body C", "full"]) }
+  ],
+  4: [
+    { id: "upper-lower", name: "Upper / Lower", days: UPPER_LOWER_4 },
+    { id: "ppl-full", name: "Push / Pull / Legs + Full Body", days: [...PPL, ["Full Body A", "full"]] }
+  ],
+  5: [
+    { id: "ppl-upper-lower", name: "Push / Pull / Legs + Upper / Lower", days: [...PPL, ["Upper A", "upper"], ["Lower A", "lower"]] },
+    { id: "bro", name: "Bro Split", days: D(["Chest", "chest"], ["Back", "back"], ["Shoulders", "shoulders"], ["Arms", "arms"], ["Legs", "brolegs"]) }
+  ],
+  6: [
+    { id: "ppl-x2", name: "Push / Pull / Legs ×2", days: [...PPL, ["Push B", "push"], ["Pull B", "pull"], ["Legs B", "legs"]] },
+    { id: "upper-lower-x3", name: "Upper / Lower ×3", days: [...UPPER_LOWER_4, ["Upper C", "upper"], ["Lower C", "lower"]] }
+  ]
+};
+
+// The choices for a number of days, default first: [{id, name}].
+export function splitOptions(daysPerWeek, experience) {
+  const list = SPLITS[daysPerWeek];
+  if (!list) throw new Error("daysPerWeek must be 2-6");
+  const ordered = daysPerWeek === 3 && experience === "beginner" ? [list[1], list[0]] : list;
+  return ordered.map(({ id, name }) => ({ id, name }));
 }
 
 const BIG_FOUR = ["Chest", "Back", "Quads", "Hamstrings & Glutes"];
 
 // Exercises per muscle in one day (see the plan's volume rules).
 function countFor(goal, experience, kind, muscle) {
+  if (BRO_KINDS.has(kind)) {
+    // One muscle a day, so more exercises each: heavier for muscle/recomp once past the beginner stage.
+    if (goal === "strength" && (muscle === "Calves" || muscle === "Core")) return 0;
+    const heavy = (goal === "muscle" || goal === "recomp") && experience !== "beginner";
+    if (kind === "arms") return heavy ? 3 : 2;
+    if (kind === "brolegs") return muscle === "Quads" ? (heavy ? 3 : 2) : muscle === "Hamstrings & Glutes" ? (heavy ? 2 : 1) : 1;
+    return heavy ? 4 : 3;
+  }
   if (goal === "strength") {
     // Main lifts only: arms get one isolation on their own push/pull day, back gets a vertical and a row on pull days.
     if (muscle === "Calves" || muscle === "Core") return 0;
@@ -73,11 +107,14 @@ function pick(pool, n, day, usedInPlan) {
   return out;
 }
 
-export function buildPlan({ goal, daysPerWeek, experience, gym }) {
+export function buildPlan({ goal, daysPerWeek, experience, gym, splitId }) {
   if (!(goal in GOAL_DEFAULT_DAYS)) throw new Error("unknown goal: " + goal);
   if (!EXPERIENCE.includes(experience)) throw new Error("unknown experience: " + experience);
   if (!Number.isInteger(daysPerWeek) || daysPerWeek < 2 || daysPerWeek > 6) throw new Error("daysPerWeek must be 2-6");
-  const { split, days: shape } = layout(daysPerWeek, experience);
+  const options = splitOptions(daysPerWeek, experience);
+  const chosen = splitId === undefined ? options[0] : options.find(o => o.id === splitId);
+  if (!chosen) throw new Error("unknown split for " + daysPerWeek + " days: " + splitId);
+  const { name: split, days: shape } = SPLITS[daysPerWeek].find(x => x.id === chosen.id);
   const notes = [], usedInPlan = new Set(), days = [];
   const cap = goal === "strength" ? 5 : 7;
 

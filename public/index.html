@@ -384,7 +384,7 @@ import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reve
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
 import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs } from "./friends.js";
-import { buildPlan, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney } from "./plan-tools.js";
+import { buildPlan, splitOptions, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney } from "./plan-tools.js";
 import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername, lookupResult, shareLabel } from "./social.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
@@ -955,12 +955,11 @@ function weekStrip(){
 /* ---------- JOURNEY (Plan my training) ---------- */
 const JR_EXP=[["beginner","Beginner","New to lifting, or coming back after a long break"],["intermediate","Intermediate","Training regularly for about a year or more"],["advanced","Advanced","Several years of consistent training"]];
 const jrSteps=()=>["goal","days","gym","experience",...(needsAbout(state.profile)?["about"]:[]),"preview"];
-// The equipment the plan is built for: the preset picked here, else the saved My Gym list (undefined = everything).
-function jrGym(){ const j=state.journey; if(j.gymNone) return undefined; if(j.gymChosen){ const p=GYM_PRESETS.find(x=>x.id===j.preset); return p?p.equipment:undefined; } return state.settings.gym; }
+// The equipment the plan is built for: the list ticked here (undefined = every exercise).
+function jrGym(){ const j=state.journey; return j.gymNone?undefined:j.gym; }
 function openJourney(fromAuto){
   const g=GOAL_DEFAULT_DAYS[state.profile.goal]!==undefined?state.profile.goal:null;
-  const cur=GYM_PRESETS.find(p=>sameGym(state.settings.gym,p.equipment));
-  state.journey={step:0,goal:g,days:g?GOAL_DEFAULT_DAYS[g]:3,daysTouched:false,preset:cur?cur.id:null,gymChosen:false,gymNone:false,experience:null,about:{sex:state.profile.sex||"",height:"",birthYear:""},busy:false,fromAuto:!!fromAuto};
+  state.journey={step:0,goal:g,days:g?GOAL_DEFAULT_DAYS[g]:3,daysTouched:false,split:null,gym:Array.isArray(state.settings.gym)?[...state.settings.gym]:undefined,gymTouched:false,gymNone:false,experience:null,about:{sex:state.profile.sex||"",height:"",birthYear:""},busy:false,fromAuto:!!fromAuto};
   history.pushState({journey:1},"");
   go("journey");
 }
@@ -978,10 +977,11 @@ function journeyCard(){
 }
 function jrOpt(act,v,on,label,sub){ return `<button class="jr-opt" data-act="${act}" data-v="${esc(v)}" aria-pressed="${on}">${label}${sub?`<small>${esc(t(sub))}</small>`:""}</button>`; }
 function jrPreview(j){
-  const plan=buildPlan({goal:j.goal,daysPerWeek:j.days,experience:j.experience,gym:jrGym()});
-  const gym=jrGym(), preset=j.gymChosen&&!j.gymNone?GYM_PRESETS.find(p=>p.id===j.preset):null;
+  const opts=splitOptions(j.days,j.experience), sid=opts.some(o=>o.id===j.split)?j.split:opts[0].id;
+  const plan=buildPlan({goal:j.goal,daysPerWeek:j.days,experience:j.experience,gym:jrGym(),splitId:sid});
+  const gym=jrGym(), preset=Array.isArray(gym)?GYM_PRESETS.find(p=>sameGym(gym,p.equipment)):null;
   const label=preset?t(preset.name):Array.isArray(gym)?t("your My Gym list"):t("every exercise");
-  let h=`<h2>Your week</h2><p class="prev" style="margin:0">${esc(t(plan.split))} · ${esc(t("Planned for: {x}",{x:label}))}</p>`;
+  let h=`<h2>Your week</h2><span class="label">Split</span><div class="chips">${opts.map(o=>`<button class="chip" data-act="jr-split" data-v="${o.id}" aria-pressed="${o.id===sid}">${esc(t(o.name))}</button>`).join("")}</div><p class="prev" style="margin:0">${esc(t("Planned for: {x}",{x:label}))}</p>`;
   if(state.days.length) h+=`<p class="prev" style="margin:0">This replaces your current training days. Your workout history stays.</p>`;
   h+=plan.days.map(d=>`<div class="card"><div class="row"><b class="grow">${esc(nameOf("day",d.name))}</b><span class="prev">${d.weekdays.map(x=>esc(nameOf("weekday",WD[x]))).join(" · ")}</span></div><span class="prev">${d.exercises.map(n=>esc(nameOf("ex",n))).join(" · ")}</span></div>`).join("");
   h+=plan.notes.map(n=>`<p class="prev" style="margin:0">${esc(t(n.text,{...n.params,...(n.params.muscle?{muscle:nameOf("muscle",n.params.muscle)}:{}),...(n.params.day?{day:nameOf("day",n.params.day)}:{})}))}</p>`).join("");
@@ -997,7 +997,11 @@ function renderJourney(){
   else if(key==="days"){
     body=`<h2>How many days a week can you train?</h2><div class="chips">${[2,3,4,5,6].map(n=>`<button class="chip" data-act="jr-days" data-v="${n}" aria-pressed="${j.days===n}">${n}</button>`).join("")}</div><p class="prev">Most people do well with 3–5 days.</p>`; }
   else if(key==="gym"){
-    body=`<h2>Where will you train?</h2><div class="chips">${GYM_PRESETS.map(p=>`<button class="chip" data-act="jr-gym" data-v="${p.id}" aria-pressed="${!j.gymNone&&j.preset===p.id}">${esc(t(p.name))}</button>`).join("")}<button class="chip" data-act="jr-gym" data-v="none" aria-pressed="${j.gymNone}">Not sure, suggest everything</button></div><p class="prev">You can fine-tune the exact machines later in My Gym.</p>`; }
+    const on=new Set(Array.isArray(j.gym)?j.gym:[]), c=gymCounts(j.gym);
+    body=`<h2>Where will you train?</h2><p class="prev" style="margin:0">Tick the equipment your gym has, or start from a preset.</p>
+      <div class="chips">${GYM_PRESETS.map(p=>`<button class="chip" data-act="jr-gym" data-v="${p.id}" aria-pressed="${!j.gymNone&&sameGym(j.gym,p.equipment)}">${esc(t(p.name))}</button>`).join("")}<button class="chip" data-act="jr-gym" data-v="none" aria-pressed="${j.gymNone}">Not sure, suggest everything</button></div>
+      ${GYM_GROUPS.map(([g,label])=>`<div class="card"><h3>${label}</h3><div class="chips">${EQUIPMENT.filter(e=>e.group===g).map(e=>`<button class="chip" data-act="jr-toggle" data-id="${e.id}" aria-pressed="${!j.gymNone&&on.has(e.id)}">${esc(eqLabel(e.id))}</button>`).join("")}</div></div>`).join("")}
+      <p class="prev">${j.gymNone||!Array.isArray(j.gym)?esc(t("Not set yet. Every exercise is suggested.")):esc(t("{a} of {b} items · {c} exercises available",{a:c.items,b:c.itemsTotal,c:c.exercises}))}</p>`; }
   else if(key==="experience"){ canNext=!!j.experience;
     body=`<h2>How experienced are you?</h2><div class="stack" style="gap:8px">${JR_EXP.map(([k,name,sub])=>jrOpt("jr-exp",k,j.experience===k,esc(t(name)),sub)).join("")}</div>`; }
   else if(key==="about"){
@@ -1022,11 +1026,12 @@ function journeyNext(){
 }
 function journeyStart(){
   const j=state.journey; if(!j||j.busy) return; j.busy=true;
-  const plan=buildPlan({goal:j.goal,daysPerWeek:j.days,experience:j.experience,gym:jrGym()});
+  const opts=splitOptions(j.days,j.experience), sid=opts.some(o=>o.id===j.split)?j.split:opts[0].id;
+  const plan=buildPlan({goal:j.goal,daysPerWeek:j.days,experience:j.experience,gym:jrGym(),splitId:sid});
   if(!plan.days.length){ j.busy=false; toast(t("No plan fits this gym. Pick a bigger gym and try again.")); return; }
   store.saveDays(plan.days.map(d=>({id:uid(),...d})));
   store.saveProfile(mergeProfile(state.profile,{goal:j.goal,...j.about}));
-  if(j.gymChosen&&!j.gymNone){ const p=GYM_PRESETS.find(x=>x.id===j.preset); if(p) store.saveSettings({gym:[...p.equipment]}); }
+  if(j.gymTouched&&!j.gymNone&&Array.isArray(j.gym)) store.saveSettings({gym:[...j.gym]});
   state.openEx=undefined; state.pickSplit=false; state.editDay=null; endJourney(); go("log"); toast(t("Your plan is ready"));
 }
 
@@ -1970,10 +1975,12 @@ document.addEventListener("click",e=>{
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
     case "journey-open": openJourney(false); break;
     case "more-journey": { let opened=false; const open=()=>{ if(!opened){ opened=true; openJourney(false); } }; window.addEventListener("popstate",()=>setTimeout(open,0),{once:true}); setTimeout(open,800); closeMore(); break; }
-    case "jr-goal": { const j=state.journey; j.goal=b.dataset.v; if(!j.daysTouched) j.days=GOAL_DEFAULT_DAYS[j.goal]; renderJourney(); break; }
-    case "jr-days": { const j=state.journey; j.days=+b.dataset.v; j.daysTouched=true; renderJourney(); break; }
-    case "jr-gym": { const j=state.journey, v=b.dataset.v; if(v==="none"){ j.gymNone=true; j.gymChosen=false; j.preset=null; } else { j.gymNone=false; j.gymChosen=true; j.preset=v; } renderJourney(); break; }
-    case "jr-exp": state.journey.experience=b.dataset.v; renderJourney(); break;
+    case "jr-goal": { const j=state.journey; j.goal=b.dataset.v; if(!j.daysTouched){ j.days=GOAL_DEFAULT_DAYS[j.goal]; j.split=null; } renderJourney(); break; }
+    case "jr-days": { const j=state.journey; j.days=+b.dataset.v; j.daysTouched=true; j.split=null; renderJourney(); break; }
+    case "jr-gym": { const j=state.journey, v=b.dataset.v; if(v==="none"){ j.gymNone=true; j.gym=undefined; } else { const p=GYM_PRESETS.find(x=>x.id===v); if(p){ j.gymNone=false; j.gym=[...p.equipment]; j.gymTouched=true; } } renderJourney(); break; }
+    case "jr-toggle": { const j=state.journey, cur=j.gymNone||!Array.isArray(j.gym)?[]:j.gym, id=b.dataset.id; j.gym=cur.includes(id)?cur.filter(x=>x!==id):[...cur,id]; j.gymNone=false; j.gymTouched=true; renderJourney(); break; }
+    case "jr-split": state.journey.split=b.dataset.v; renderJourney(); break;
+    case "jr-exp": state.journey.experience=b.dataset.v; state.journey.split=null; renderJourney(); break;
     case "jr-sex": state.journey.about.sex=b.dataset.v; renderJourney(); break;
     case "jr-next": journeyNext(); break;
     case "jr-back": if(state.journey.step>0){ state.journey.step--; renderJourney(); window.scrollTo(0,0); } break;

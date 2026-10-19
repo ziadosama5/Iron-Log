@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { LIB, MUSCLES, muscleOf, gymFilter, GYM_PRESETS } from "../public/exercise-library.js";
 import { AR } from "../public/lang-ar.js";
-import { EXPERIENCE, GOAL_DEFAULT_DAYS, movementFamily, buildPlan } from "../public/plan-tools.js";
+import { EXPERIENCE, GOAL_DEFAULT_DAYS, movementFamily, buildPlan, splitOptions } from "../public/plan-tools.js";
 
 const GOALS = ["fat-loss", "muscle", "recomp", "strength", "maintain"];
 const GYMS = [undefined, ...GYM_PRESETS.map(p => p.equipment)];
@@ -44,10 +44,10 @@ test("weekday table in plan order, one weekday per day", () => {
 });
 
 test("every goal x days x experience x gym gives a sound plan", () => {
-  for (const goal of GOALS) for (const daysPerWeek of [2, 3, 4, 5, 6]) for (const experience of EXPERIENCE) for (const gym of GYMS) {
-    const label = [goal, daysPerWeek, experience, gym ? gym.length : "all"].join("/");
-    const p = buildPlan({ goal, daysPerWeek, experience, gym });
-    const again = buildPlan({ goal, daysPerWeek, experience, gym });
+  for (const goal of GOALS) for (const daysPerWeek of [2, 3, 4, 5, 6]) for (const experience of EXPERIENCE) for (const gym of GYMS) for (const so of splitOptions(daysPerWeek, experience)) {
+    const label = [goal, daysPerWeek, experience, gym ? gym.length : "all", so.id].join("/");
+    const p = buildPlan({ goal, daysPerWeek, experience, gym, splitId: so.id });
+    const again = buildPlan({ goal, daysPerWeek, experience, gym, splitId: so.id });
     assert.deepEqual(again, p, "deterministic " + label);
     assert.ok(p.days.length > 0, "has days " + label);
     assert.equal(new Set(names(p)).size, p.days.length, "unique names " + label);
@@ -103,7 +103,7 @@ test("invalid input throws", () => {
 });
 
 test("every generated day name has an Arabic name", () => {
-  for (const n of ["Push", "Pull", "Legs", "Push B", "Pull B", "Legs B", "Upper A", "Lower A", "Upper B", "Lower B", "Full Body A", "Full Body B", "Full Body C"]) {
+  for (const n of ["Push", "Pull", "Legs", "Push B", "Pull B", "Legs B", "Upper A", "Lower A", "Upper B", "Lower B", "Upper C", "Lower C", "Full Body A", "Full Body B", "Full Body C", "Chest", "Back", "Shoulders", "Arms"]) {
     assert.ok(AR.names.day[n], n);
   }
 });
@@ -158,13 +158,14 @@ test("mergeProfile sets the goal, adds valid body basics, and never drops the ta
 const DAY_MUSCLES = {
   Push: ["Chest", "Shoulders", "Triceps"], Pull: ["Back", "Biceps"], Legs: ["Quads", "Hamstrings & Glutes", "Calves"],
   Upper: ["Chest", "Back", "Shoulders", "Biceps", "Triceps"], Lower: ["Quads", "Hamstrings & Glutes", "Calves", "Core"],
-  "Full Body": ["Quads", "Chest", "Back", "Shoulders", "Hamstrings & Glutes", "Core"]
+  "Full Body": ["Quads", "Chest", "Back", "Shoulders", "Hamstrings & Glutes", "Core"],
+  Chest: ["Chest"], Back: ["Back"], Shoulders: ["Shoulders"], Arms: ["Biceps", "Triceps"]
 };
 const baseName = n => n.replace(/ [ABC]$/, "");
 
 test("every muscle a day trains keeps at least one exercise when the gym can work it (all goals except strength)", () => {
-  for (const goal of GOALS.filter(g => g !== "strength")) for (const daysPerWeek of [2, 3, 4, 5, 6]) for (const experience of EXPERIENCE) for (const gym of GYMS) {
-    const p = buildPlan({ goal, daysPerWeek, experience, gym });
+  for (const goal of GOALS.filter(g => g !== "strength")) for (const daysPerWeek of [2, 3, 4, 5, 6]) for (const experience of EXPERIENCE) for (const gym of GYMS) for (const so of splitOptions(daysPerWeek, experience)) {
+    const p = buildPlan({ goal, daysPerWeek, experience, gym, splitId: so.id });
     for (const d of p.days) {
       for (const m of DAY_MUSCLES[baseName(d.name)]) {
         if (gymFilter(LIB[m], gym).length > 0) assert.ok(d.focus.includes(m), [d.name, m, goal, daysPerWeek, experience, gym ? gym.length : "all"].join("/"));
@@ -192,4 +193,45 @@ test("strength: compounds first, rows on pull days, no arm isolation on Upper da
   const p6 = buildPlan({ goal: "strength", daysPerWeek: 6, experience: "advanced" });
   const push = p6.days.find(d => d.name === "Push"), pushB = p6.days.find(d => d.name === "Push B");
   assert.equal(pushB.exercises[0], push.exercises[0], "the main press repeats on the B day");
+});
+
+test("splitOptions: two choices per days per week, the first one is today's default", () => {
+  const ids = (n, e = "intermediate") => splitOptions(n, e).map(o => o.id);
+  assert.deepEqual(ids(2), ["full", "upper-lower"]);
+  assert.deepEqual(ids(3, "beginner"), ["full", "ppl"]);
+  assert.deepEqual(ids(3, "intermediate"), ["ppl", "full"]);
+  assert.deepEqual(ids(4), ["upper-lower", "ppl-full"]);
+  assert.deepEqual(ids(5), ["ppl-upper-lower", "bro"]);
+  assert.deepEqual(ids(6), ["ppl-x2", "upper-lower-x3"]);
+  assert.deepEqual(splitOptions(4, "beginner").map(o => o.name), ["Upper / Lower", "Push / Pull / Legs + Full Body"]);
+  for (const n of [2, 3, 4, 5, 6]) for (const e of EXPERIENCE) {
+    const first = splitOptions(n, e)[0];
+    const def = buildPlan({ goal: "muscle", daysPerWeek: n, experience: e });
+    assert.deepEqual(buildPlan({ goal: "muscle", daysPerWeek: n, experience: e, splitId: first.id }), def, "default = first option");
+    assert.equal(def.split, first.name);
+  }
+});
+
+test("each split option builds the days it names", () => {
+  const days = (n, id) => names(buildPlan({ goal: "muscle", daysPerWeek: n, experience: "intermediate", splitId: id }));
+  assert.deepEqual(days(2, "upper-lower"), ["Upper A", "Lower A"]);
+  assert.deepEqual(days(3, "full"), ["Full Body A", "Full Body B", "Full Body C"]);
+  assert.deepEqual(days(4, "ppl-full"), ["Push", "Pull", "Legs", "Full Body A"]);
+  assert.deepEqual(days(5, "bro"), ["Chest", "Back", "Shoulders", "Arms", "Legs"]);
+  assert.deepEqual(days(6, "upper-lower-x3"), ["Upper A", "Lower A", "Upper B", "Lower B", "Upper C", "Lower C"]);
+});
+
+test("a split id that does not belong to the days per week throws", () => {
+  assert.throws(() => buildPlan({ goal: "muscle", daysPerWeek: 4, experience: "beginner", splitId: "bro" }));
+  assert.throws(() => buildPlan({ goal: "muscle", daysPerWeek: 3, experience: "beginner", splitId: "nope" }));
+});
+
+test("bro split: one muscle a day with more exercises for muscle goals, light for strength", () => {
+  const heavy = buildPlan({ goal: "muscle", daysPerWeek: 5, experience: "advanced", splitId: "bro" });
+  const light = buildPlan({ goal: "strength", daysPerWeek: 5, experience: "advanced", splitId: "bro" });
+  const chestH = heavy.days.find(d => d.name === "Chest"), chestL = light.days.find(d => d.name === "Chest");
+  assert.deepEqual(chestH.focus, ["Chest"]);
+  assert.ok(chestH.exercises.length > chestL.exercises.length);
+  assert.deepEqual(heavy.days.find(d => d.name === "Arms").focus, ["Biceps", "Triceps"]);
+  assert.equal(heavy.split, "Bro Split");
 });
