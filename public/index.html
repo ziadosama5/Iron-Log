@@ -415,7 +415,6 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
     <section id="view-progress" class="view" hidden></section>
     <section id="view-history" class="view" hidden></section>
     <section id="view-profile" class="view" hidden>
-      <div id="profile-dyn" class="dyn"></div>
       <div id="me-static" class="dyn">
         <div class="card"><h3>Appearance</h3>
           <div class="stack" style="gap:6px"><span class="label">Language</span>
@@ -426,6 +425,9 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
             <div class="seg" role="group" aria-label="Theme"><button data-act="theme-set" data-v="system">System</button><button data-act="theme-set" data-v="light">Light</button><button data-act="theme-set" data-v="dark">Dark</button></div></div></div>
         <div class="card"><h3>Your data</h3>
           <button class="more-row" data-act="goto-history">History &amp; backup<svg aria-hidden="true"><use href="#i-chev"/></svg></button></div>
+      </div>
+      <div id="profile-dyn" class="dyn"></div>
+      <div id="me-account" class="dyn">
         <div class="card"><h3>About and account</h3>
           <a class="more-row" href="/privacy.html" target="_blank" rel="noopener">Privacy Policy<svg aria-hidden="true"><use href="#i-chev"/></svg></a>
           <a class="more-row" href="/terms.html" target="_blank" rel="noopener">Terms<svg aria-hidden="true"><use href="#i-chev"/></svg></a>
@@ -2128,7 +2130,7 @@ function resumeRest(){
 }
 
 function syncMe(){
-  const th=currentTheme(), root=$("#me-static"); if(!root) return;
+  const th=currentTheme(), root=$("#view-profile"); if(!root) return;
   root.querySelectorAll("[data-act=theme-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===th));
   root.querySelectorAll("[data-act=lang-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===currentLang()));
   const box=$("#accent-swatches"); if(box&&!box.children.length) drawSwatches();
