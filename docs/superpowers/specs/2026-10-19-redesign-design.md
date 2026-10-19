@@ -23,21 +23,21 @@ Backend or rules changes; new badge metrics or XP rules; sounds or vibration; re
 ### Tabs and sections
 | Tab | Sections (switcher) | Existing screens that move in |
 |---|---|---|
-| Today | none (one page) | `log` (workout, cardio) + the Coach "Today" card (date, eaten/target/burned, meals, protein) |
+| Today | none (one page) | view id stays `log`: workout, cardio + the Coach "Today" card (date, eaten/target/burned, meals, protein) |
 | Plan | Days · My Gym | `days`, `gym`; "Plan my training" card on top opens `journey` |
 | Progress | Body · Lifts · Goals · Coach · History | `body`, `progress` (Lifts), `goals`, `coach` (tips, sets per muscle, review, copy summary), `history` (+ backup/restore) |
 | Friends | Friends · Challenges · Find | `friends` (the Find a friend card becomes its own section), `challenges` |
-| Me | none (one scrolling page of cards) | `profile` (profile and privacy), language, accent, theme, backup shortcut, Privacy Policy, Terms, Delete my account, Sign out |
+| Me | none (one scrolling page of cards) | view id stays `profile`: profile and privacy, language, accent, theme, backup shortcut, Privacy Policy, Terms, Delete my account, Sign out |
 
 `journey` and `delete` stay full-screen with the tab bar hidden and are never restored as the last view (as today).
 
 ### Mechanics (keep the existing view model)
 - `state.view` stays the id of a **screen** (`log`, `days`, `body`, ...). Every existing `go("friends")`, `renderX()` and `#view-*` section keeps working. A new pure module `public/nav.js` holds the registry:
-  - `TABS = [{id:"today", views:["today"]}, {id:"plan", views:["days","gym"]}, {id:"progress", views:["body","progress","goals","coach","history"]}, {id:"friends", views:["friends","challenges","find"]}, {id:"me", views:["me"]}]`
-  - `tabOf(view)` → tab id or `null` (journey, delete); `sectionsOf(tab)`; `migrateView(saved)` maps any value saved in `ironlog.view` before this release (`log`→`today`, `coach`→`coach`, `profile`→`me`, others unchanged; unknown → `today`).
+  - `TABS = [{id:"today", views:["log"]}, {id:"plan", views:["days","gym"]}, {id:"progress", views:["body","progress","goals","coach","history"]}, {id:"friends", views:["friends","challenges","find"]}, {id:"me", views:["profile"]}]`
+  - `tabOf(view)` → tab id or `null` (journey, delete); `sectionsOf(tab)`; `migrateView(saved)` returns a valid screen id for any value saved in `ironlog.view` (known screens unchanged; `more`, `journey`, `delete` and anything unknown → `log`).
 - The switcher is one shared component drawn at the top of a tab's views (pills, scrolls sideways if narrow, `aria-pressed`, arrow keys not required). Changing a pill calls `go(view)`. The selected section per tab is remembered through `ironlog.view` only (last view), as today.
-- Today is a **new view id `today`** that composes `renderLog()` output and the Coach Today card renderer (extracted from `renderCoach` into its own function). The two dates unify: one date strip drives workout and food; `state.cdate` follows `state.date` (the food card keeps reading `cdate`, which is set whenever `date` changes). `rolloverDate` keeps both in step.
-- `find` is a new view that renders the existing Find a friend card on its own (the code moves out of `renderFriends`; `store.lookup` and its state are untouched).
+- Today keeps the view id `log` (so the ~10 existing `go("log")` calls, `shouldWake` and the journey exits keep working) and composes `renderLog()` output and the Coach Today card renderer (extracted from `renderCoach` into its own function). The two dates unify: one date strip drives workout and food; `state.cdate` follows `state.date` (the food card keeps reading `cdate`, which is set whenever `date` changes). `rolloverDate` keeps both in step.
+- `find` is the only new view id; it renders the existing Find a friend card on its own (the code moves out of `renderFriends`; `store.lookup` and its state are untouched).
 - Tab bar: a floating pill, five buttons (icon + label), `aria-current="page"` on the active tab, a dot on Friends for waiting friend requests plus challenge invites (today's `renderFriendsBadge` logic, retargeted from More to Friends), counts shown on the Friends and Challenges pills. Hidden for `journey`/`delete` and when signed out. The pinned rest-timer bar sits above it as now.
 - The More sheet, `more-open`/`more-go` handlers and the long row list are removed; the language, accent and theme controls and the policy links move into the Me page unchanged (same ids/handlers where possible, so applyLang/applyAccent/theme code is untouched).
 - Header: logo, screen title (the current section's name), sync status, as now.
@@ -91,16 +91,17 @@ Pill and tab changes do not add history entries (same as today's `go`). Sheets k
 | File | Change |
 |---|---|
 | `public/nav.js` (new, pure) | `TABS`, `tabOf`, `sectionsOf`, `migrateView`, `pillsFor` |
+| `public/celebrate.js` (new, pure) | `buildCards({freshBadges, list, levelBefore, levelNow, wins})` → ordered celebration cards; `newWins` |
 | `public/badge-art.js` (new, pure) | `FAMILIES`, `familyState`, `tierOf`, `ICONS` (path data per icon id, no DOM) |
 | `public/index.html` | tab bar + removal of More sheet, switcher component, `today`/`find`/`me` views, extracted Coach Today card, Goals wall, podium, celebration dialog, new CSS tokens and sprite |
 | `public/lang-ar.js` | Arabic for every new string, family names |
-| `public/sw.js` | `VERSION` bump (v26), `nav.js` and `badge-art.js` in `APP_SHELL` |
+| `public/sw.js` | `VERSION` bump (v26), `nav.js`, `badge-art.js` and `celebrate.js` in `APP_SHELL` |
 | `tests/` | `nav.test.js`, `badge-art.test.js`, updated `lang-coverage` lists, `pages` unchanged |
 | `tools/screenshot-harness/` | driver `go=` values for new views; screenshots of every tab in light/dark/Arabic and 3 accents |
 | `CLAUDE.md`, `README.md`, `docs/README.md`, `docs/open-points.md`, memory | Navigation, files and design-rule sections updated |
 
 ## 5. Data flow and safety
-No new reads or writes. The sign-in -> store.init -> listeners -> state -> render chain is unchanged: `render()` maps `state.view` to the same renderers (plus `renderToday`, `renderFind`, `renderMe`), then draws the shared tab bar/switcher. The snapshot "skip re-render while typing" rule, `renderSoon`, `store.wiping` guards, the pinned rest bar and Wake Lock (`shouldWake` checks `state.view==="today"` instead of `"log"`) keep working. The privacy and terms pages are unchanged because nothing about data changes.
+No new reads or writes. The sign-in -> store.init -> listeners -> state -> render chain is unchanged: `render()` maps `state.view` to the same renderers (plus `renderFind`), then draws the shared tab bar/switcher. The snapshot "skip re-render while typing" rule, `renderSoon`, `store.wiping` guards, the pinned rest bar and Wake Lock (`shouldWake` keeps checking `"log"`) keep working. The privacy and terms pages are unchanged because nothing about data changes.
 
 ## 6. Error handling and edge cases
 - Old saved `ironlog.view` values (`log`, `more`, anything unknown) never produce a blank page (`migrateView`).
@@ -119,7 +120,7 @@ No new reads or writes. The sign-in -> store.init -> listeners -> state -> rende
 One branch, test-first tasks, one opus whole-branch review, one fix pass, then the owner approves the deploy; hosting only (no rules), sw `VERSION` v26. Rollback = redeploy the previous commit (no data migration to undo).
 
 ## 9. Rulings made in this spec (please veto any)
-1. `state.view` stays a screen id and a thin registry maps it to tabs (smallest change; keeps every renderer and link).
+1. `state.view` stays a screen id and a thin registry maps it to tabs (smallest change; keeps every renderer and link). Today keeps id `log` and Me keeps id `profile`; `find` is the only new view.
 2. One date for Today: the food card follows the workout date strip (the two dates were separate before).
 3. Progression is **derived** from the 24 existing badges (9 families); no new stored tiers, no XP change.
 4. Challenge-win celebration is remembered per device only (no new Firestore field).
