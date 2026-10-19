@@ -45,3 +45,12 @@ test("newWins keeps finished, won, unseen", () => {
   assert.deepEqual(newWins(rows, ["d"]), [{ cid: "a", name: "A" }]);
   assert.deepEqual(newWins(rows, undefined).map(r => r.cid), ["a", "d"]);
 });
+
+test("a badge card reports levels as badges earned so far, not the ladder position", () => {
+  // first Strength club badge earned is the third rung: still level 1 of 3, bronze
+  let cards = buildCards({ ...base, list: mk(["deadlift-2"]), freshBadges: [{ id: "deadlift-2" }] });
+  assert.equal(cards[0].level, 1); assert.equal(cards[0].tier, "bronze");
+  // two workouts badges at once: the first card is level 1 (bronze), the second level 2 (silver)
+  cards = buildCards({ ...base, list: mk(["workouts-1", "workouts-10"]), freshBadges: [{ id: "workouts-1" }, { id: "workouts-10" }] });
+  assert.deepEqual(cards.map(c => [c.level, c.tier]), [[1, "bronze"], [2, "silver"]]);
+});

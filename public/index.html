@@ -25,7 +25,7 @@
   --good:#1d8a52; --danger:#c43a2f;
   --shadow:0 1px 3px rgb(20 30 50 / .08); --card-border:transparent;
   --r-card:20px; --r-btn:14px; --tabbar:84px;
-  --bg-grad:linear-gradient(165deg,color-mix(in srgb,var(--accent) 24%,#fff) 0%,color-mix(in srgb,var(--accent) 9%,#f4f5f8) 55%,color-mix(in srgb,var(--accent) 16%,#fff) 100%);
+  --bg-grad:linear-gradient(165deg,color-mix(in srgb,var(--accent) 12%,#fff) 0%,color-mix(in srgb,var(--accent) 5%,#f4f5f8) 55%,color-mix(in srgb,var(--accent) 8%,#fff) 100%);
   --hero:#0f1115; --hero-ink:#ffffff; --ring:color-mix(in srgb,var(--accent) 55%,#fff);
   --bar:#0f1115; --bar-ink:#8a90a0; --bar-on:#ffffff; --pop:0 10px 28px rgb(15 17 21 / .28);
   --gold:linear-gradient(150deg,#ffe58a,#ffb020); --silver:linear-gradient(150deg,#f4f6fb,#aab2c5); --bronze:linear-gradient(150deg,#ffc29a,#d9783c); --star:#e0a800;
@@ -37,13 +37,13 @@
   --bg:#0f1319; --surface:#171d26; --sunk:#0b0f14; --line:#283140;
   --fg:#e6ebf2; --muted:#8c97a8; --accent:#6c9cff; --accent-ink:#0b1220; --accent-soft:#1b2a47;
   --good:#4cc78a; --danger:#ff7a6e; --shadow:none; --card-border:var(--line); color-scheme:dark;
-  --bg-grad:linear-gradient(165deg,color-mix(in srgb,var(--accent) 30%,#0c0d10) 0%,color-mix(in srgb,var(--accent) 8%,#0c0d10) 55%,color-mix(in srgb,var(--accent) 18%,#0c0d10) 100%);
+  --bg-grad:linear-gradient(165deg,color-mix(in srgb,var(--accent) 14%,#0c0d10) 0%,color-mix(in srgb,var(--accent) 5%,#0c0d10) 55%,color-mix(in srgb,var(--accent) 10%,#0c0d10) 100%);
   --hero:#262a35; --bar:#232731; --bar-ink:#8f95a3; --pop:0 10px 28px rgb(0 0 0 / .5)}}
 :root[data-theme="dark"]{
   --bg:#0f1319; --surface:#171d26; --sunk:#0b0f14; --line:#283140;
   --fg:#e6ebf2; --muted:#8c97a8; --accent:#6c9cff; --accent-ink:#0b1220; --accent-soft:#1b2a47;
   --good:#4cc78a; --danger:#ff7a6e; --shadow:none; --card-border:var(--line); color-scheme:dark;
-  --bg-grad:linear-gradient(165deg,color-mix(in srgb,var(--accent) 30%,#0c0d10) 0%,color-mix(in srgb,var(--accent) 8%,#0c0d10) 55%,color-mix(in srgb,var(--accent) 18%,#0c0d10) 100%);
+  --bg-grad:linear-gradient(165deg,color-mix(in srgb,var(--accent) 14%,#0c0d10) 0%,color-mix(in srgb,var(--accent) 5%,#0c0d10) 55%,color-mix(in srgb,var(--accent) 10%,#0c0d10) 100%);
   --hero:#262a35; --bar:#232731; --bar-ink:#8f95a3; --pop:0 10px 28px rgb(0 0 0 / .5)}
 
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -101,6 +101,7 @@ svg.i.f{fill:currentColor;stroke:none}
 .tabbar button.has-dot::after{content:"";position:absolute;top:8px;inset-inline-start:calc(50% + 10px);width:9px;height:9px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 2px var(--bar)}
 /* section switcher (pills) */
 #pills{margin-bottom:16px}
+.card:empty{display:none}
 .dyn{display:contents}
 .pills{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px;margin:-2px}
 .pills::-webkit-scrollbar{display:none}
@@ -571,10 +572,10 @@ const store = {
   },
   stopChallenges(){ this.cUnsub.forEach(u=>u()); this.cUnsub=[]; this.stopProgress(); },
   watchProgress(cid){
-    this.stopProgress(); const c=state.challenges; c.progress={};
+    this.stopProgress(); const c=state.challenges; c.progress={}; c.progressReady=null;
     this.pUnsub=onSnapshot(collection(fs,"challenges",cid,"progress"), snap=>{
       const m={}; snap.docs.forEach(d=>{ const v=d.data(); m[d.id]={days:v.days,updated:v.updated}; });
-      c.progress=m; if(state.view==="challenges"&&c.open===cid){ if(typing()) renderPending=true; else renderChallenges(); }
+      c.progress=m; if(!(snap.metadata&&snap.metadata.fromCache)) c.progressReady=cid; if(state.view==="challenges"&&c.open===cid){ if(typing()) renderPending=true; else renderChallenges(); }
     }, e=>console.error(e));
   },
   stopProgress(){ if(this.pUnsub){ this.pUnsub(); this.pUnsub=null; } },
@@ -916,7 +917,7 @@ function renderChallengePage(el){
   const prog={...c.progress}; if(ch.joined.includes(me)&&st!=="upcoming") prog[me]={days:countDays(state.workouts,ch.start,ch.end,t0,trainedOn)};
   const rows=rankMembers({members:ch.members,joined:ch.joined,progress:prog,names:ch.names}), final=t0>addDaysISO(ch.end,1), win=final?winners(rows,st):[];
   let h=`<div class="row"><button class="btn small" data-act="ch-back">Back</button></div><h2>${esc(chWeeksLabel(ch.weeks))}</h2><p class="prev" style="margin:0">${esc(chRange(ch))} · ${esc(chStatusText(ch,st))}</p>`;
-  h+=podiumHtml(rows,me)+`<div class="card">${rows.filter((r,i)=>i>=3||!r.joined).map(r=>`<div class="chrow"><span class="rank">${r.rank===null?"–":r.rank}</span><span class="nm"><bdi dir="ltr">@${esc(r.name)}</bdi>${r.uid===me?" "+esc(t("(you)")):""}${r.joined?"":` <span class="prev">${esc(t("Invited"))}</span>`}</span><b>${r.days}</b>${r.joined?`<div class="chbar" role="img" aria-label="${esc(t("{n} of {m} days",{n:r.days,m:total}))}"><span style="width:${Math.min(100,Math.round(r.days/total*100))}%"></span></div>`:""}</div>`).join("")}</div>`;
+  h+=podiumHtml(rows,me)+`<div class="card">${rows.filter((r,i)=>rows.filter(x=>x.joined).length<2||!r.joined||i>=3).map(r=>`<div class="chrow"><span class="rank">${r.rank===null?"–":r.rank}</span><span class="nm"><bdi dir="ltr">@${esc(r.name)}</bdi>${r.uid===me?" "+esc(t("(you)")):""}${r.joined?"":` <span class="prev">${esc(t("Invited"))}</span>`}</span><b>${r.days}</b>${r.joined?`<div class="chbar" role="img" aria-label="${esc(t("{n} of {m} days",{n:r.days,m:total}))}"><span style="width:${Math.min(100,Math.round(r.days/total*100))}%"></span></div>`:""}</div>`).join("")}</div>`;
   if(st==="finished"&&!final) h+=`<p class="prev">${esc(t("Results after {d}",{d:fmtDate(addDaysISO(ch.end,1))}))}</p>`;
   else if(st==="finished") h+=win.length?`<div class="winner"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg><span>${esc(win.length>1?t("Winners: {name}",{name:win.map(u=>iso("@"+(ch.names[u]||"?"))).join(", ")}):t("Winner: {name}",{name:iso("@"+(ch.names[win[0]]||"?"))}))}</span></div>`:`<p class="prev">${esc(t("No winner this time."))}</p>`;
   h+=`<p class="prev">Scores are self-reported. A final score is whatever each person last published.</p>`;
@@ -924,7 +925,7 @@ function renderChallengePage(el){
   h+=c.confirm?`<div class="card"><span>${esc(owner?t("Delete this challenge for everyone?"):t("Leave this challenge?"))}</span><div class="row"><button type="button" class="btn small" data-act="ch-no">Keep</button><button type="button" class="btn small danger" data-act="${owner?"ch-delete-yes":"ch-leave-yes"}" data-id="${esc(ch.id)}">${owner?"Delete":"Leave"}</button></div></div>`
     :`<div class="row"><button type="button" class="btn small danger" data-act="ch-confirm">${owner?"Delete challenge":"Leave challenge"}</button></div>`;
   el.innerHTML=h;
-  if(win.includes(me)){
+  if(win.includes(me)&&c.progressReady===ch.id){
     let seenW=[]; try{ seenW=JSON.parse(lsGet("ironlog.seenWins")||"[]"); }catch(e){}
     const fresh=newWins([{cid:ch.id,name:chRange(ch),finished:true,won:true}],Array.isArray(seenW)?seenW:[]);
     if(fresh.length){ lsSet("ironlog.seenWins",JSON.stringify([...(Array.isArray(seenW)?seenW:[]),ch.id].slice(-50))); setTimeout(()=>showCelebrations(buildCards({wins:fresh})),250); }
@@ -1034,7 +1035,7 @@ function frClick(act,d){
     case "fr-decline": case "fr-cancel": frDo(planRemove({me,other}),"Removed"); return;
     case "fr-block-now": frDo(planBlock({me,other,otherName:name,now}),"Blocked"); return;
     case "fr-unblock": frDo(planUnblock({me,other}),"Unblocked"); return;
-    case "fr-open": f.open=other; f.confirm=null; f.report=null; renderFriends(); window.scrollTo(0,0); return;
+    case "fr-open": f.open=other; f.confirm=null; f.report=null; if(state.view==="find") go("friends"); else renderFriends(); window.scrollTo(0,0); return;
     case "fr-back": f.open=null; f.confirm=null; f.report=null; renderFriends(); return;
     case "fr-refresh": loadFriendData(true); return;
     case "fr-remove": f.confirm="remove"; renderFriends(); return;
@@ -1973,11 +1974,12 @@ function checkBadges(){
   if(badgeRev===state.dataRev) return;  // nothing changed since the last check
   badgeRev=state.dataRev;
   const input=goalsInput(), list=badges(input), earned=list.filter(b=>b.earned), seen=state.settings.seenBadges, level=xpSummary(input,list).level;
-  if(seen===undefined){ store.saveSettings({seenBadges:earned.map(b=>b.id)}); lsSet("ironlog.level",String(level)); return; }  // first run: mark silently
+  const lk="ironlog.level."+store.user.uid;
+  if(seen===undefined){ store.saveSettings({seenBadges:earned.map(b=>b.id)}); lsSet(lk,String(level)); return; }  // first run: mark silently
   const fresh=earned.filter(b=>!seen.includes(b.id));
   if(fresh.length) store.saveSettings({seenBadges:[...seen,...fresh.map(b=>b.id)]});
-  const raw=lsGet("ironlog.level"), before=raw===null||!Number.isFinite(Number(raw))?null:Number(raw);
-  lsSet("ironlog.level",String(level));
+  const raw=lsGet(lk), before=raw===null||!Number.isFinite(Number(raw))?null:Number(raw);
+  lsSet(lk,String(Math.max(level,before===null?0:before)));
   const cards=buildCards({freshBadges:fresh,list,levelBefore:before,levelNow:level});
   if(cards.length) showCelebrations(cards);
 }

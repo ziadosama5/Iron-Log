@@ -34,7 +34,7 @@ const driver = `<script>
 })();
 </script>`;
 s = s.replace("</body>", driver + "</body>");
-s = s.replace("<head>", '<head><script>var q=new URLSearchParams(location.search);if(q.get("theme"))localStorage.setItem("ironlog.theme",q.get("theme"));if(q.get("lang"))localStorage.setItem("ironlog.lang",q.get("lang"));localStorage.setItem("ironlog.level",q.get("cele")?"3":"99");if(q.get("acc"))localStorage.setItem("ironlog.accent",decodeURIComponent(q.get("acc")));</script>');
+s = s.replace("<head>", '<head><script>var q=new URLSearchParams(location.search);if(q.get("theme"))localStorage.setItem("ironlog.theme",q.get("theme"));if(q.get("lang"))localStorage.setItem("ironlog.lang",q.get("lang"));localStorage.setItem("ironlog.level.u1",q.get("cele")?"3":"99");if(q.get("acc"))localStorage.setItem("ironlog.accent",decodeURIComponent(q.get("acc")));</script>');
 fs.writeFileSync(path.join(har, "index.html"), s);
 const types = { ".html": "text/html", ".js": "text/javascript", ".mjs": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png", ".json": "application/json", ".webmanifest": "application/manifest+json" };
 http.createServer((q, r) => {
