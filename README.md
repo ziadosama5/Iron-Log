@@ -8,6 +8,7 @@ Live: https://gym-logger-85d4c.web.app · runs free on Firebase's Spark plan · 
 ## What it does
 
 - **Workout:** pick a training day and log one exercise at a time with big ± buttons. Sets prefill from last session, a rest timer starts after each set, and you can do exercises in any order. Add cardio (treadmill, elliptical, bike) with time and calories.
+- **Challenges:** challenge friends to train on more days over 1, 2 or 4 weeks, with a live leaderboard (only day counts are shared).
 - **Plan my training:** answer four quick questions (goal, days per week, gym, experience) and get a ready week of training days that fits you; new people get it on first sign-in.
 - **My Gym:** tick the equipment your gym has (or start from a preset) and exercise suggestions only offer what you can do.
 - **Exercise info:** tap "!" next to an exercise for start/finish drawings, the muscles it works and form tips.

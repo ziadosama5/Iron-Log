@@ -18,7 +18,8 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 | 12 | My Gym (equipment presets + checklist, filtered suggestions) | [spec](superpowers/specs/2026-10-19-my-gym-design.md) | [plan](superpowers/plans/2026-10-19-my-gym.md) | ✓ sw v19 |
 | 13 | Personal journey (setup questions → generated week of training days) | [spec](superpowers/specs/2026-10-19-personal-journey-design.md) | [plan](superpowers/plans/2026-10-19-personal-journey.md) | ✓ sw v21 |
 | 14 | Readiness pass (privacy policy + terms, delete my account and data, report a user) | [spec](superpowers/specs/2026-10-19-readiness-design.md) | [plan](superpowers/plans/2026-10-19-readiness.md) | ✓ sw v24 |
+| 15 | Challenges (consistency challenge between friends, live leaderboard) | [spec](superpowers/specs/2026-10-19-challenges-design.md) | [plan](superpowers/plans/2026-10-19-challenges.md) | ✓ sw v25 |
 
-Next: **challenges**.
+Next: the **built-in Egyptian food table** (see the project notes).
 
 Plans describe the code at the time they were written. For how the app works today, read [CLAUDE.md](../CLAUDE.md).
