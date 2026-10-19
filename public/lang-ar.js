@@ -430,6 +430,7 @@ export const AR = {
     day: {
       "Push": "دفع", "Pull": "سحب", "Legs": "أرجل", "Upper A": "علوي A", "Lower A": "سفلي A", "Upper B": "علوي B", "Lower B": "سفلي B",
       "Full Body A": "كامل الجسم A", "Full Body B": "كامل الجسم B", "Full Body C": "كامل الجسم C",
+      "Push B": "دفع B", "Pull B": "سحب B", "Legs B": "أرجل B",
       "Chest": "الصدر", "Back": "الظهر", "Shoulders": "الأكتاف", "Arms": "الذراعان",
       "Free workout": "تمرين حر", "Cardio": "كارديو"
     },
