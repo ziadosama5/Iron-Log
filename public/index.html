@@ -365,7 +365,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { themeAttr, sortTips, withWeight, visibleItems } from "./ui-helpers.js";
+import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias } from "./exercise-library.js";
@@ -421,7 +421,7 @@ const store = {
       this.unsub = onSnapshot(this.col, { includeMetadataChanges:true }, snap=>{
         const ws=[], bs=[], food={}; let prog={}, prof={}, settings={rest:{}};
         snap.docs.forEach(d=>{ const v=d.data();
-          if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}, ...(Array.isArray(v.seenBadges)?{seenBadges:v.seenBadges}:{})}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("f-")) food[d.id.slice(2)]={date:d.id.slice(2),meals:v.meals||[]}; else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
+          if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}, ...(Array.isArray(v.seenBadges)?{seenBadges:v.seenBadges}:{}), ...(Array.isArray(v.gym)?{gym:v.gym}:{})}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("f-")) food[d.id.slice(2)]={date:d.id.slice(2),meals:v.meals||[]}; else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
         // One-time fix for days missing muscle tags. Only on server data, so a stale offline copy never overwrites newer edits.
         const mp=migrateProgram(prog), days=mp.days;
         state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings; state.food=food; state.serverSynced=!snap.metadata.fromCache;
@@ -538,7 +538,7 @@ const store = {
     else { delete state.food[doc.date]; this.write("f-"+doc.date,null); } },
   // Merges a partial change (rest times or seen badges) so neither field drops the other.
   saveSettings(patch){ const s={...state.settings,...patch}; state.settings=s;
-    this.write("settings",{rest:s.rest||{}, ...(s.seenBadges?{seenBadges:s.seenBadges}:{}), updated:Date.now()}); },
+    this.write("settings",settingsDoc(s,Date.now())); },
   async restore(items){
     // items: [{id, data}] ; Firestore batches hold up to 500 writes
     for (let i=0;i<items.length;i+=450){
@@ -1453,7 +1453,7 @@ async function importData(file){
     const j=JSON.parse(await file.text());
     if(j.app!=="iron-log"||!Array.isArray(j.items)) throw new Error("format");
     // Backup files can come from anywhere: clean every item, skip anything that looks wrong.
-    const {items, skipped}=cleanBackupItems(j.items,{bodyKeys:Object.keys(BF), goals:Object.keys(GOALS), muscles:MUSCLES});
+    const {items, skipped}=cleanBackupItems(j.items,{bodyKeys:Object.keys(BF), goals:Object.keys(GOALS), muscles:MUSCLES, equipment:EQUIPMENT.map(e=>e.id)});
     if(!items.length) throw new Error("format");
     await store.restore(items); toast(t("Restored {n} items",{n:items.length})+(skipped?t(", skipped {k} that looked damaged",{k:skipped}):""));
   }catch(e){ console.error(e); toast(e.message==="format"?t("That file isn't an Iron Log backup"):t("Couldn't restore that file")); }

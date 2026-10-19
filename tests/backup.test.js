@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { cleanBackupItems } from "../public/backup.js";
 
-const OPTS = { bodyKeys: ["weight", "waist", "pbf"], goals: ["fat-loss", "muscle"], muscles: ["Chest", "Back"] };
+const OPTS = { bodyKeys: ["weight", "waist", "pbf"], goals: ["fat-loss", "muscle"], muscles: ["Chest", "Back"], equipment: ["barbell", "bench", "pec-deck"] };
 const W = { id: "w-2026-10-17", data: { date: "2026-10-17", dayId: "d1", dayName: "Push", updated: 1,
   entries: [{ ex: "Bench Press", sets: [{ w: 60, r: 8 }], done: true }] } };
 
@@ -108,4 +108,25 @@ test("settings seenBadges keeps short strings only", () => {
   const r = cleanBackupItems([{ id: "settings", data: { rest: {}, seenBadges: ["workouts-1", 5, "x".repeat(50), "pr-1"] } }], OPTS);
   assert.deepEqual(r.items[0].data.seenBadges, ["workouts-1", "pr-1"]);
   assert.equal("seenBadges" in cleanBackupItems([{ id: "settings", data: { rest: {} } }], OPTS).items[0].data, false);
+});
+
+test("settings gym keeps known ids only, de-duplicated, in order", () => {
+  const r = cleanBackupItems([{ id: "settings", data: { rest: {}, gym: ["bench", "barbell", "bench", "nonsense", 5, "pec-deck"] } }], OPTS);
+  assert.deepEqual(r.items[0].data.gym, ["bench", "barbell", "pec-deck"]);
+});
+
+test("settings gym [] is kept (bodyweight only) and absent stays absent", () => {
+  assert.deepEqual(cleanBackupItems([{ id: "settings", data: { rest: {}, gym: [] } }], OPTS).items[0].data.gym, []);
+  assert.equal("gym" in cleanBackupItems([{ id: "settings", data: { rest: {} } }], OPTS).items[0].data, false);
+});
+
+test("settings gym that is not an array is dropped", () => {
+  for (const bad of ["barbell", 5, { a: 1 }, null]) {
+    assert.equal("gym" in cleanBackupItems([{ id: "settings", data: { rest: {}, gym: bad } }], OPTS).items[0].data, false, String(bad));
+  }
+});
+
+test("restore without an equipment option drops every gym id instead of trusting the file", () => {
+  const { equipment, ...noEq } = OPTS;
+  assert.deepEqual(cleanBackupItems([{ id: "settings", data: { rest: {}, gym: ["barbell"] } }], noEq).items[0].data.gym, []);
 });

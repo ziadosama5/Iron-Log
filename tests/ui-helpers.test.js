@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { themeAttr, sortTips, withWeight } from "../public/ui-helpers.js";
+import { themeAttr, sortTips, withWeight, settingsDoc } from "../public/ui-helpers.js";
 
 test("themeAttr", () => {
   assert.equal(themeAttr("light"), "light");
@@ -29,4 +29,19 @@ test("visibleItems shows the first N, or everything when expanded", () => {
   assert.deepEqual(visibleItems([], false), { shown: [], hidden: 0 });
   assert.equal(visibleItems(Array.from({ length: 9 }, (_, i) => i), false).shown.length, 6, "default limit is 6");
   assert.deepEqual(visibleItems(undefined, false), { shown: [], hidden: 0 });
+});
+
+test("settingsDoc keeps rest, seenBadges and gym together", () => {
+  const d = settingsDoc({ rest: { "Bench Press": 150 }, seenBadges: ["a"], gym: ["barbell"] }, 9);
+  assert.deepEqual(d, { rest: { "Bench Press": 150 }, seenBadges: ["a"], gym: ["barbell"], updated: 9 });
+});
+
+test("settingsDoc leaves gym out when unset but keeps an empty list", () => {
+  assert.equal("gym" in settingsDoc({ rest: {} }, 1), false);
+  assert.deepEqual(settingsDoc({ rest: {}, gym: [] }, 1).gym, []);
+});
+
+test("settingsDoc without rest or seenBadges still writes a valid doc", () => {
+  assert.deepEqual(settingsDoc({}, 3), { rest: {}, updated: 3 });
+  assert.equal("seenBadges" in settingsDoc({ rest: {}, gym: ["x"] }, 3), false);
 });

@@ -69,17 +69,21 @@ function cleanProfile(d, goals) {
   return out;
 }
 
-function cleanSettings(d) {
+function cleanSettings(d, equipment) {
   const rest = {};
   if (isObj(d.rest)) Object.entries(d.rest).forEach(([k, v]) => { const n = text(k, 80); if (n && num(v, 15, 600)) rest[n] = v; });
   const out = { rest };
   if (Array.isArray(d.seenBadges)) out.seenBadges = d.seenBadges.filter(s => typeof s === "string" && s.length <= 40).slice(0, 200);
+  if (Array.isArray(d.gym)) {
+    const known = new Set(equipment);
+    out.gym = [...new Set(d.gym.filter(id => typeof id === "string" && known.has(id)))];
+  }
   return withUpdated(out, d);
 }
 
-// items: [{id, data}] from the file. opts: {bodyKeys, goals, muscles} from the app.
+// items: [{id, data}] from the file. opts: {bodyKeys, goals, muscles, equipment} from the app (equipment = valid gym ids).
 // Returns {items: cleaned [{id, data}], skipped: number of items left out}.
-export function cleanBackupItems(items, { bodyKeys, goals, muscles }) {
+export function cleanBackupItems(items, { bodyKeys, goals, muscles, equipment = [] }) {
   const out = [];
   let skipped = 0;
   for (const it of Array.isArray(items) ? items : []) {
@@ -89,7 +93,7 @@ export function cleanBackupItems(items, { bodyKeys, goals, muscles }) {
       if (m) data = m[1] === "w" ? cleanWorkout(m[2], it.data) : m[1] === "f" ? cleanFood(m[2], it.data) : cleanBody(m[2], it.data, bodyKeys);
       else if (it.id === "program") data = cleanProgram(it.data, muscles);
       else if (it.id === "profile") data = cleanProfile(it.data, goals);
-      else if (it.id === "settings") data = cleanSettings(it.data);
+      else if (it.id === "settings") data = cleanSettings(it.data, equipment);
     }
     if (data) out.push({ id: it.id, data }); else skipped++;
   }

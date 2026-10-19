@@ -24,3 +24,10 @@ export function visibleItems(items, expanded, limit = 6) {
   const shown = expanded ? list : list.slice(0, limit);
   return { shown, hidden: list.length - shown.length };
 }
+
+// The exact settings document written to Firestore. Every field of the settings lives here so one
+// save (rest times, badges seen, gym) never drops another. gym: absent = not set, [] = bodyweight only.
+export function settingsDoc(s, now) {
+  const x = s || {};
+  return { rest: x.rest || {}, ...(x.seenBadges ? { seenBadges: x.seenBadges } : {}), ...(Array.isArray(x.gym) ? { gym: x.gym } : {}), updated: now };
+}
