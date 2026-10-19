@@ -113,7 +113,7 @@ export const AR = {
     "Suggestions": "اقتراحات", "Pick the muscles this day trains to get exercise suggestions.": "اختر العضلات التي يدربها هذا اليوم لتظهر لك اقتراحات التمارين.",
     "Type any exercise": "اكتب أي تمرين", "Move day up": "نقل اليوم لأعلى", "Move day down": "نقل اليوم لأسفل",
     "Delete {name}?": "حذف {name}؟",
-    "Tip: open a day and pick the weekdays you train it. The Today tab will then pick today's day for you.": "نصيحة: افتح يوماً واختر أيام الأسبوع التي تتدرب فيها عليه. سيختار تبويب اليوم يوم اليوم تلقائياً.", "Keep": "إبقاء", "Delete": "حذف", "Delete day": "حذف اليوم",
+    "Tip: tap a weekday to choose which day you train on it. The Today tab will then pick today's day for you.": "نصيحة: اضغط على يوم من أيام الأسبوع لتختار اليوم الذي تتدرب فيه. سيختار تبويب اليوم يوم اليوم تلقائياً.", "Keep": "إبقاء", "Delete": "حذف", "Delete day": "حذف اليوم",
 
     /* ---- Lifts (progress) ---- */
     "Progress": "التقدم", "Nothing to chart yet": "لا يوجد ما يُعرض بعد",
@@ -294,7 +294,7 @@ export const AR = {
     "Next badge: {name}": "الوسام التالي: {name}", "Food and energy": "الطعام والطاقة",
     "Level {a} of {b}": "المستوى {a} من {b}", "All levels reached": "تم الوصول إلى كل المستويات",
     "New badge": "وسام جديد", "{name} · Level {n}": "{name} · المستوى {n}", "Level up!": "ارتقيت مستوى!",
-    "You won!": "فزت!", "Show all {n} badges": "عرض كل الأوسمة ({n})", "All badges · {a} of {b} earned": "كل الأوسمة · {a} من {b} مكتسبة", "You won the challenge": "فزت بالتحدي", "Nice!": "رائع!"
+    "You won!": "فزت!", "Show all {n} badges": "عرض كل الأوسمة ({n})", "All badges · {a} of {b} earned": "كل الأوسمة · {a} من {b} مكتسبة", "You won the challenge": "فزت بالتحدي", "Nice!": "رائع!", "Plan for {day}": "خطة يوم {day}"
   },
   names: {
     ex: {

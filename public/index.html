@@ -102,6 +102,8 @@ svg.i.f{fill:currentColor;stroke:none}
 /* section switcher (pills) */
 #pills{margin-bottom:16px}
 .card:empty{display:none}
+button.wd{appearance:none;font:inherit;color:inherit;cursor:pointer}
+.wd[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .slide-r{animation:slideR .22s ease-out}
 .slide-l{animation:slideL .22s ease-out}
 @keyframes slideR{from{transform:translateX(36px);opacity:.3}to{transform:none;opacity:1}}
@@ -498,7 +500,7 @@ import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
 import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN, WEEK_CHOICES, nextSaturday, challengeDates, dayNumber, rankMembers, winners, planCreate, planAccept as planAcceptChallenge, planLeave, planDelete } from "./challenges.js";
 import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
 import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs } from "./friends.js";
-import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney } from "./plan-tools.js";
+import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney, assignWeekday } from "./plan-tools.js";
 import { FAMILIES, familyOf, allFamilies, closestFamily, tierFor } from "./badge-art.js";
 import { buildCards, newWins } from "./celebrate.js";
 import { TABS, PILL_LABEL, tabOf, pillsFor, migrateView, neighborTab, swipeDirection } from "./nav.js";
@@ -1305,10 +1307,15 @@ function tplGrid(confirmable){
     ${confirmable?"":`<button class="daypick" data-act="add-day"><span class="dayname" style="font-size:20px">Blank</span><small>Name your own days</small></button>`}</div>`;
 }
 function weekStrip(){
-  if(!state.days.some(d=>(d.weekdays||[]).length)) return `<p class="prev" style="margin:0">Tip: open a day and pick the weekdays you train it. The Today tab will then pick today's day for you.</p>`;
-  const tw=new Date().getDay();
-  return `<div class="week">${WEEK.map(wd=>{ const d=dayForWeekday(wd);
-    return `<div class="wd ${wd===tw?"today":""} ${d?"on":""}"><span class="label">${nameOf("weekday",WD[wd])}</span><span class="wdn">${d?esc(nameOf("day",d.name)):t("Rest")}</span></div>`; }).join("")}</div>`;
+  const tip=state.days.some(d=>(d.weekdays||[]).length)?"":`<p class="prev" style="margin:0">Tip: tap a weekday to choose which day you train on it. The Today tab will then pick today's day for you.</p>`;
+  const tw=new Date().getDay(), pk=state.wdPick;
+  const strip=`<div class="week">${WEEK.map(wd=>{ const d=dayForWeekday(wd);
+    return `<button class="wd ${wd===tw?"today":""} ${d?"on":""}" data-act="wd-pick" data-wd="${wd}" aria-pressed="${pk===wd}"><span class="label">${nameOf("weekday",WD[wd])}</span><span class="wdn">${d?esc(nameOf("day",d.name)):t("Rest")}</span></button>`; }).join("")}</div>`;
+  let picker="";
+  if(pk!=null){ const cur=dayForWeekday(pk);
+    picker=`<div class="card"><div class="row"><b class="grow">${esc(t("Plan for {day}",{day:nameOf("weekday",WD[pk])}))}</b><button class="btn ghost small" data-act="wd-close" aria-label="Close">✕</button></div>
+      <div class="chips">${state.days.map(d=>`<button class="chip" data-act="wd-set" data-wd="${pk}" data-id="${esc(d.id)}" aria-pressed="${!!cur&&cur.id===d.id}">${esc(nameOf("day",d.name))}</button>`).join("")}<button class="chip" data-act="wd-set" data-wd="${pk}" data-id="" aria-pressed="${!cur}">${esc(t("Rest"))}</button></div></div>`; }
+  return tip+strip+picker;
 }
 /* ---------- DELETE MY ACCOUNT ---------- */
 function renderDelete(){
@@ -2293,7 +2300,7 @@ function render(){
   if(state.view==="profile") syncMe();
   syncWake();
 }
-function go(view){ state.view=view; if(view!=="goals") state.goalsAll=false; const tb=tabOf(view); if(tb) state.tabView[tb]=view; if(view!=="journey"&&view!=="delete") try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
+function go(view){ state.view=view; if(view!=="goals") state.goalsAll=false; if(view!=="days") state.wdPick=null; const tb=tabOf(view); if(tb) state.tabView[tb]=view; if(view!=="journey"&&view!=="delete") try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
 
 let renameTimer=null;
 document.addEventListener("input",e=>{
@@ -2495,6 +2502,9 @@ document.addEventListener("click",e=>{
     case "apply-tpl":{ const tp=TEMPLATES[state.confirmTpl]; store.saveDays(tp.days.map(d=>({id:uid(),...clone(d),weekdays:[]}))); state.confirmTpl=null; state.pickSplit=false; state.editDay=null; renderDays(); window.scrollTo(0,0); toast(t("Switched to {name}",{name:nameOf("template",tp.name)})); break; }
     case "cancel-tpl": state.confirmTpl=null; renderDays(); break;
     case "change-split": state.pickSplit=!state.pickSplit; state.confirmTpl=null; state.confirmReset=false; renderDays(); break;
+    case "wd-pick": state.wdPick=state.wdPick===+b.dataset.wd?null:+b.dataset.wd; renderDays(); break;
+    case "wd-close": state.wdPick=null; renderDays(); break;
+    case "wd-set": { const wd=+b.dataset.wd, did=b.dataset.id||null; state.wdPick=null; editDays(ds=>{ ds.splice(0,ds.length,...assignWeekday(ds,wd,did)); }); break; }
     case "toggle-wd": editDays(ds=>{ const x=+b.dataset.wd, d=ds.find(o=>o.id===id); d.weekdays=d.weekdays||[];
       if(d.weekdays.includes(x)) d.weekdays=d.weekdays.filter(v=>v!==x);
       else { ds.forEach(o=>{ if(o.weekdays) o.weekdays=o.weekdays.filter(v=>v!==x); }); d.weekdays.push(x); } }); break;

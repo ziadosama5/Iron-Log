@@ -260,3 +260,16 @@ test("choosing Push / Pull / Legs for 3 days gives Push, Pull, Legs even to a be
   const p = buildPlan({ goal: "muscle", daysPerWeek: 3, experience: "beginner", splitId: splitFor("ppl", 3) });
   assert.deepEqual(names(p), ["Push", "Pull", "Legs"]);
 });
+
+import { assignWeekday } from "../public/plan-tools.js";
+test("assignWeekday moves a weekday to one day, clears it for Rest, and keeps every other weekday", () => {
+  const days = [{ id: "a", name: "Push", weekdays: [6, 2] }, { id: "b", name: "Pull", weekdays: [0] }, { id: "c", name: "Legs" }];
+  const wd = r => Object.fromEntries(r.map(d => [d.id, (d.weekdays || []).slice().sort((x, y) => x - y)]));
+  assert.deepEqual(wd(assignWeekday(days, 0, "c")), { a: [2, 6], b: [], c: [0] });   // Sunday: Pull -> Legs
+  assert.deepEqual(wd(assignWeekday(days, 3, "c")), { a: [2, 6], b: [0], c: [3] });  // a free weekday
+  assert.deepEqual(wd(assignWeekday(days, 2, null)), { a: [6], b: [0], c: [] });     // Rest
+  assert.deepEqual(wd(assignWeekday(days, 6, "a")), { a: [2, 6], b: [0], c: [] });   // same day again: no duplicate
+  assert.deepEqual(wd(assignWeekday(assignWeekday(days, 4, "c"), 1, "c")), { a: [2, 6], b: [0], c: [1, 4] }); // one day on several weekdays
+  assert.equal(days[1].weekdays[0], 0);                                              // input is not changed
+  assert.deepEqual(wd(assignWeekday(days, 3, "zzz")), { a: [2, 6], b: [0], c: [] }); // unknown id: weekday just cleared
+});

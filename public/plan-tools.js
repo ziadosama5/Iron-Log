@@ -197,3 +197,12 @@ export function mergeProfile(existing, answers) {
   if (answers.birthYear != null && validBirthYear(y, year)) out.birthYear = y;
   return out;
 }
+
+// Put a weekday (JS getDay number) on one training day, or make it a rest day (dayId null / unknown).
+// A weekday belongs to at most one day; a day may have several weekdays. Returns new day objects; the input is not changed.
+export function assignWeekday(days, weekday, dayId) {
+  return (days || []).map(d => {
+    const rest = (d.weekdays || []).filter(w => w !== weekday);
+    return { ...d, weekdays: d.id === dayId ? [...rest, weekday] : rest };
+  });
+}
