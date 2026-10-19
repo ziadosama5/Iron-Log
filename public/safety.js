@@ -7,6 +7,15 @@ export const REPORT_REASONS = [
   { id: "other", label: "Something else" }
 ];
 
+// Rejects with Error("timeout") when a promise takes longer than ms (a flaky connection can leave a Firestore write
+// waiting for the server forever). The underlying work may still finish later, which is fine: every step is safe to repeat.
+export function withTimeout(promise, ms) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("timeout")), ms);
+    Promise.resolve(promise).then(v => { clearTimeout(timer); resolve(v); }, e => { clearTimeout(timer); reject(e); });
+  });
+}
+
 // One report document per pair of people: reporting again overwrites it.
 export function reportId(reporter, reported) {
   if (!reporter || !reported || reporter === reported) throw new Error("reportId needs two different uids");

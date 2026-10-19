@@ -388,7 +388,7 @@ import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
-import { REPORT_REASONS, buildReport, chunk, wipePlan } from "./safety.js";
+import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
 import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney } from "./plan-tools.js";
 import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername, lookupResult, shareLabel } from "./social.js";
@@ -421,7 +421,7 @@ if (configured) {
   fs = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
 }
 const store = {
-  col:null, unsub:null, user:null,
+  col:null, unsub:null, user:null, wiping:false,
   init(onData){
     if (!configured){ state.authed=false; state.setup=true; setSync(""); onData(); return; }
     getRedirectResult(auth).catch(e=>toast(signInError(e)));
@@ -475,7 +475,7 @@ const store = {
   // A report about another person: one document per pair (reporting again overwrites it). Nobody can read it back in the app.
   async sendReport(rep){
     if(navigator.onLine===false) return {ok:false,reason:"offline"};
-    try{ await setDoc(doc(fs,"reports",rep.id),rep.data); return {ok:true}; }
+    try{ await withTimeout(setDoc(doc(fs,"reports",rep.id),rep.data),20000); return {ok:true}; }
     catch(e){ console.error(e); return {ok:false,reason:"error"}; }
   },
   // Delete my account and data, in the order of wipePlan(). The Google account goes last; any failure stops the run and
@@ -483,32 +483,42 @@ const store = {
   async wipeAccount(onStep){
     const u=this.user, uid=u.uid; let step="reauth";
     if(navigator.onLine===false) return {ok:false,step,reason:"offline"};
-    const delAll=async refs=>{ for(const part of chunk(refs,450)){ const b=writeBatch(fs); part.forEach(r=>b.delete(r)); await b.commit(); } };
-    state.journeyShown=true;   // emptying the data must not start the setup journey
+    const T=p=>withTimeout(p,20000);
+    const delAll=async refs=>{ for(const part of chunk(refs,450)){ const b=writeBatch(fs); part.forEach(r=>b.delete(r)); await T(b.commit()); } };
     try{
       onStep("reauth");
       try{ const p=new GoogleAuthProvider(); if(u.email) p.setCustomParameters({login_hint:u.email}); await reauthenticateWithPopup(u,p); }
-      catch(e){ console.error(e); return {ok:false,step:"reauth",reason:"cancelled"}; }
-      const ps=await getDoc(doc(fs,"profiles",uid)), prof=ps.exists()?ps.data():null;
+      catch(e){
+        console.error(e); const c=e&&e.code;
+        return {ok:false,step:"reauth",reason:c==="auth/popup-blocked"||c==="auth/operation-not-supported-in-this-environment"?"popup":c==="auth/user-mismatch"?"mismatch":"cancelled"};
+      }
+      // From here on nothing in the app may write to this account again (badges, the summary publisher, name refresh
+      // would otherwise recreate documents while they are being deleted), and the live listeners stop.
+      this.wiping=true; state.journeyShown=true; try{ sessionStorage.setItem("ironlog.wiping","1"); }catch(e){}
+      this.stopFriends(); if(this.unsub){ this.unsub(); this.unsub=null; }
+      const ps=await T(getDoc(doc(fs,"profiles",uid))), prof=ps.exists()?ps.data():null;
       if(prof){
         step="share"; onStep(step);
         const b=writeBatch(fs), email=u.emailVerified?normalizeEmail(u.email):null;
         b.delete(doc(fs,"profiles",uid)); b.delete(doc(fs,"usernames",prof.username));
         if(prof.findByEmail&&email) b.delete(doc(fs,"emails",email));
-        await b.commit(); state.share.profile=null;
+        await T(b.commit()); state.share.profile=null;
       }
       step="friendships"; onStep(step);
-      await delAll((await getDocs(query(collection(fs,"friendships"),where("users","array-contains",uid)))).docs.map(d=>d.ref));
+      await delAll((await T(getDocs(query(collection(fs,"friendships"),where("users","array-contains",uid))))).docs.map(d=>d.ref));
       step="blocks"; onStep(step);
-      await delAll((await getDocs(query(collection(fs,"blocks"),where("blocker","==",uid)))).docs.map(d=>d.ref));
+      await delAll((await T(getDocs(query(collection(fs,"blocks"),where("blocker","==",uid))))).docs.map(d=>d.ref));
       step="items"; onStep(step);
-      await delAll((await getDocs(collection(fs,"users",uid,"items"))).docs.map(d=>d.ref));
+      for(let pass=0;pass<3;pass++){   // list again after deleting, in case something was written meanwhile
+        const docs=(await T(getDocs(collection(fs,"users",uid,"items")))).docs;
+        if(!docs.length) break;
+        await delAll(docs.map(d=>d.ref));
+      }
       step="device"; onStep(step);
-      this.stopFriends(); if(this.unsub){ this.unsub(); this.unsub=null; }
       try{ Object.keys(localStorage).filter(k=>k.startsWith("ironlog.")).forEach(k=>localStorage.removeItem(k)); }catch(e){}
       try{ await terminate(fs); await clearIndexedDbPersistence(fs); }catch(e){}
       step="account"; onStep(step);
-      await deleteUser(auth.currentUser);
+      await T(deleteUser(auth.currentUser));
       return {ok:true};
     }catch(e){ console.error(e); return {ok:false,step,reason:"error"}; }
   },
@@ -567,7 +577,7 @@ const store = {
     }catch(e){ return {status:"none"}; }
   },
   write(id, body){
-    if (!this.col) return;
+    if (!this.col || this.wiping) return;
     const ref = doc(this.col, id);
     (body ? setDoc(ref, body) : deleteDoc(ref)).catch(e=>{
       console.error(e);
@@ -648,7 +658,7 @@ function renderFriendsBadge(){
 }
 // After a rename, put my new username into my friendship docs (once per session).
 function refreshFriendNames(){
-  const f=state.friends, p=state.share.profile; if(!f.loaded||!state.share.loaded||!p||f.renamed||!state.serverSynced) return;
+  const f=state.friends, p=state.share.profile; if(!f.loaded||!state.share.loaded||!p||f.renamed||!state.serverSynced||store.wiping) return;
   f.renamed=true; const me=store.user.uid, now=Date.now();
   staleNameDocs(f.docs,me,p.username).forEach(({other})=>store.friendAction(planNameRefresh({me,other,myName:p.username,now})));
 }
@@ -672,7 +682,7 @@ function reportPanelHtml(){
     const rel=relationTo(store.user.uid,r.uid,state.friends.docs,state.friends.blocks);
     return `<div class="card"><span>${esc(t("Thanks, your report was sent."))}</span><div class="row">${rel==="friends"||rel==="sent"||rel==="received"?frBtn("fr-report-block",{uid:r.uid,name:r.username},"Block this person","danger"):""}<button type="button" class="btn small" data-act="fr-report-no">Done</button></div></div>`;
   }
-  return `<div class="card"><h3>Report this person</h3><div class="chips">${REPORT_REASONS.map(x=>`<button type="button" class="chip" data-act="fr-report-reason" data-v="${x.id}" aria-pressed="${r.reason===x.id}">${esc(t(x.label))}</button>`).join("")}</div><div class="row"><button type="button" class="btn small" data-act="fr-report-no">Cancel</button><button type="button" class="btn small danger" data-act="fr-report-send" ${r.reason&&!r.busy?"":"disabled"}>Send report</button></div></div>`;
+  return `<div class="card"><h3>${esc(t("Report {name}",{name:iso("@"+r.username)}))}</h3><div class="chips">${REPORT_REASONS.map(x=>`<button type="button" class="chip" data-act="fr-report-reason" data-v="${x.id}" aria-pressed="${r.reason===x.id}">${esc(t(x.label))}</button>`).join("")}</div><div class="row"><button type="button" class="btn small" data-act="fr-report-no">Cancel</button><button type="button" class="btn small danger" data-act="fr-report-send" ${r.reason&&!r.busy?"":"disabled"}>Send report</button></div></div>`;
 }
 function findCardHtml(){
   const f=state.friends, fnd=f.found; let res="";
@@ -734,7 +744,7 @@ function renderFriendPage(el,g){
   const ask=(msg,yes,label)=>`<div class="card"><span>${esc(msg)}</span><div class="row"><button class="btn small" data-act="fr-no">Keep</button>${frBtn(yes,x,label,"danger")}</div></div>`;
   h+=f.confirm==="remove"?ask(t("Remove {name} from your friends?",{name:who}),"fr-remove-yes","Remove")
     :f.confirm==="block"?ask(t("Block {name}? They are removed from your friends and cannot send you requests.",{name:who}),"fr-block-yes","Block")
-    :`<div class="row"><button class="btn small" data-act="fr-remove">Remove friend</button><button class="btn small danger" data-act="fr-block">Block</button>${frBtn("fr-report",x,"Report")}</div>`;
+    :`<div class="row"><button class="btn small" data-act="fr-remove">Remove friend</button><button class="btn small danger" data-act="fr-block">Block</button>${x.name?frBtn("fr-report",x,"Report"):""}</div>`;
   h+=reportPanelHtml();
   el.innerHTML=h;
 }
@@ -757,8 +767,8 @@ function frClick(act,d){
     case "fr-decline": case "fr-cancel": frDo(planRemove({me,other}),"Removed"); return;
     case "fr-block-now": frDo(planBlock({me,other,otherName:name,now}),"Blocked"); return;
     case "fr-unblock": frDo(planUnblock({me,other}),"Unblocked"); return;
-    case "fr-open": f.open=other; f.confirm=null; renderFriends(); window.scrollTo(0,0); return;
-    case "fr-back": f.open=null; f.confirm=null; renderFriends(); return;
+    case "fr-open": f.open=other; f.confirm=null; f.report=null; renderFriends(); window.scrollTo(0,0); return;
+    case "fr-back": f.open=null; f.confirm=null; f.report=null; renderFriends(); return;
     case "fr-refresh": loadFriendData(true); return;
     case "fr-remove": f.confirm="remove"; renderFriends(); return;
     case "fr-block": f.confirm="block"; renderFriends(); return;
@@ -779,10 +789,10 @@ function frClick(act,d){
 }
 let publishTimer=null;
 function maybePublish(){
-  const sh=state.share; if(!state.authed||!state.serverSynced||!sh||!sh.profile) return;
+  const sh=state.share; if(!state.authed||!state.serverSynced||!sh||!sh.profile||store.wiping) return;
   clearTimeout(publishTimer);
   publishTimer=setTimeout(async ()=>{
-    const p=state.share.profile; if(!p||navigator.onLine===false) return;
+    const p=state.share.profile; if(!p||navigator.onLine===false||store.wiping) return;
     const next=currentSummary();
     if(!shouldPublish({visibility:p.visibility,last:state.share.last,next,lastAt:state.share.lastAt,now:Date.now()})) return;
     try{ const data={...p,summary:next,updated:Date.now()}; await updateDoc(doc(fs,"profiles",store.user.uid),{summary:next,updated:data.updated}); state.share.profile=data; state.share.last=next; state.share.lastAt=Date.now(); }
@@ -1028,7 +1038,7 @@ function renderDelete(){
   }
   if(d.mode==="failed"){
     const f=d.fail||{}, late=f.step==="account"||f.step==="device";
-    h+=`<div class="card"><span>${esc(t(f.reason==="cancelled"?"Sign-in was cancelled.":f.reason==="offline"?"You're offline. Try again when you're back online.":late?"Your data is removed, but the sign-in account could not be deleted. Reload the app and open Delete my account again.":"Couldn't delete everything. Some of your data may already be removed. Try again."))}</span><div class="row">${late?`<button class="btn small primary" data-act="del-reload">Reload</button>`:`<button class="btn small danger" data-act="del-yes">Retry</button>`}</div></div>`;
+    h+=`<div class="card"><span>${esc(t(f.reason==="cancelled"?"Sign-in was cancelled.":f.reason==="popup"?"Your browser blocked the sign-in window. Allow pop-ups for this site, or open Iron Log in your browser, and try again.":f.reason==="mismatch"?"Choose the same Google account you signed in with.":f.reason==="offline"?"You're offline. Try again when you're back online.":late?"Your data is removed, but the sign-in account could not be deleted. Reload the app and open Delete my account again.":"Couldn't delete everything. Some of your data may already be removed. Try again."))}</span><div class="row">${late?`<button class="btn small primary" data-act="del-reload">Reload</button>`:`<button class="btn small danger" data-act="del-yes">Retry</button>`}</div></div>`;
   }else if(d.mode==="confirm"){
     h+=`<div class="card"><span>Delete your account and all your data? This cannot be undone.</span><div class="row"><button class="btn small" data-act="del-no">Keep</button><button class="btn small danger" data-act="del-yes">Delete</button></div></div>`;
   }else if(d.mode==="idle"){
@@ -1064,7 +1074,7 @@ function markJourneySkipped(){ try{ localStorage.setItem("ironlog.journey","skip
 function endJourney(){ state.journey=null; if(history.state&&history.state.journey) history.back(); }
 window.addEventListener("popstate",()=>{ if(state.journey&&!(history.state&&history.state.journey)){ if(state.journey.fromAuto) markJourneySkipped(); state.journey=null; if(state.view==="journey") go("log"); } });
 function maybeStartJourney(){
-  let skipped=false; try{ skipped=localStorage.getItem("ironlog.journey")==="skip"; }catch(e){}
+  let skipped=false; try{ skipped=localStorage.getItem("ironlog.journey")==="skip"||sessionStorage.getItem("ironlog.wiping")==="1"; }catch(e){}
   if(!shouldAutoJourney({authed:state.authed,synced:state.serverSynced===true,days:state.days,workouts:state.workouts,skipped,shown:state.journeyShown})) return;
   state.journeyShown=true; openJourney(true);
 }
@@ -1625,7 +1635,7 @@ function renderGoals(){
 // cache on a new device can't overwrite the saved list. First run marks existing badges silently.
 let badgeRev=null;
 function checkBadges(){
-  if(!state.authed||!state.serverSynced) return;
+  if(!state.authed||!state.serverSynced||store.wiping) return;
   if(badgeRev===state.dataRev) return;  // nothing changed since the last check
   badgeRev=state.dataRev;
   const earned=badges(goalsInput()).filter(b=>b.earned), seen=state.settings.seenBadges;
@@ -1956,7 +1966,7 @@ document.addEventListener("submit",e=>{
     if(p&&d!==p.displayName) runShare({...shareFields(p),displayName:d}); return;
   }
   if(f.id==="find-form"){
-    const q=$("#find-q").value; state.friends.q=q;
+    const q=$("#find-q").value; state.friends.q=q; state.friends.report=null;
     const r=lookupResult(q,null);
     if(r.kind==="empty"||r.kind==="invalid"){ state.friends.found={q,outcome:null}; renderFriends(); return; }
     store.lookup(q).then(o=>{ state.friends.found={q,outcome:o}; if(state.view==="friends") renderFriends(); }); return;
@@ -2081,7 +2091,7 @@ document.addEventListener("click",e=>{
     case "del-start": state.del.mode="confirm"; renderDelete(); break;
     case "del-no": state.del.mode="idle"; renderDelete(); break;
     case "del-yes": runWipe(); break;
-    case "del-back": state.del=null; go("log"); break;
+    case "del-back": if(store.wiping){ location.reload(); break; } state.del=null; go("log"); break;
     case "del-backup": exportData(); break;
     case "del-reload": location.reload(); break;
     case "more-journey": { let opened=false; const open=()=>{ if(!opened){ opened=true; openJourney(false); } }; window.addEventListener("popstate",()=>setTimeout(open,0),{once:true}); setTimeout(open,800); closeMore(); break; }
@@ -2184,7 +2194,7 @@ function checkNewDay(){
 }
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkNewDay(); });
 setInterval(checkNewDay,60000);
-try{ state.deletedNote=sessionStorage.getItem("ironlog.deleted")==="1"; sessionStorage.removeItem("ironlog.deleted"); }catch(e){}
+try{ state.deletedNote=sessionStorage.getItem("ironlog.deleted")==="1"; sessionStorage.removeItem("ironlog.deleted"); if(state.deletedNote) sessionStorage.removeItem("ironlog.wiping"); }catch(e){}
 store.init(()=>{ renderSoon(); checkBadges(); maybePublish(); refreshFriendNames(); maybeStartJourney(); });
 })();
 </script>

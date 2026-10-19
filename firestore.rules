@@ -177,6 +177,7 @@ service cloud.firestore {
                             && request.resource.data.keys().hasAll(['reporter', 'reported', 'reason', 'username', 'updated'])
                             && request.resource.data.reporter == request.auth.uid
                             && request.resource.data.reported is string
+                            && request.resource.data.reported.size() <= 128
                             && request.resource.data.reported != request.auth.uid
                             && reportId == request.auth.uid + '_' + request.resource.data.reported
                             && request.resource.data.reason in ['name', 'harassment', 'spam', 'other']

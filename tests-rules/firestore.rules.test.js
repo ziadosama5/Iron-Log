@@ -409,3 +409,10 @@ test("reports: nobody can read, list or delete them (only the console can)", asy
   }
   await assertFails(getDoc(doc(anon(), "reports", "u1_u2")), "signed out get");
 });
+
+test("reports: a reported id longer than 128 characters is denied", async () => {
+  const long = "x".repeat(129);
+  await assertFails(setDoc(ref("u1", "reports", "u1_" + long), report({ reported: long })));
+  const ok = "y".repeat(100);
+  await assertSucceeds(setDoc(ref("u1", "reports", "u1_" + ok), report({ reported: ok })));
+});

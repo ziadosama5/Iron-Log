@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { REPORT_REASONS, reportId, buildReport, chunk, wipePlan } from "../public/safety.js";
+import { REPORT_REASONS, reportId, buildReport, chunk, wipePlan, withTimeout } from "../public/safety.js";
 
 test("REPORT_REASONS: four reasons in a fixed order", () => {
   assert.deepEqual(REPORT_REASONS.map(r => r.id), ["name", "harassment", "spam", "other"]);
@@ -48,4 +48,12 @@ test("wipePlan: the Delete flow's steps in order, the account always last, the s
   assert.deepEqual(ids({ hasProfile: false }), ["reauth", "friendships", "blocks", "items", "device", "account"]);
   assert.deepEqual(wipePlan({ hasProfile: true }).map(s => s.label), [
     "Signing in again…", "Removing your shared profile…", "Removing friendships…", "Removing blocks…", "Removing your data…", "Clearing this device…", "Deleting your account…"]);
+});
+
+test("withTimeout: passes the result through, rejects when it takes too long, passes errors through", async () => {
+  assert.equal(await withTimeout(Promise.resolve(5), 50), 5);
+  await assert.rejects(withTimeout(new Promise(() => {}), 20), /timeout/);
+  await assert.rejects(withTimeout(Promise.reject(new Error("boom")), 50), /boom/);
+  const slow = new Promise(r => setTimeout(() => r("late"), 80));
+  await assert.rejects(withTimeout(slow, 10), /timeout/);
 });
