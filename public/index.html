@@ -86,6 +86,8 @@ main{padding-block:18px calc(var(--tabbar) + 24px + env(safe-area-inset-bottom,0
 .complete-card .tick{width:34px;height:34px;border-radius:50%;background:var(--good);color:var(--surface);display:grid;place-items:center;font-weight:700}
 .sheet .card{box-shadow:none;border:0;padding:0;background:none}
 .tabbar button[aria-current="page"]{color:var(--accent)}
+.tabbar button.has-dot{position:relative}
+.tabbar button.has-dot::after{content:"";position:absolute;top:8px;inset-inline-start:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:var(--danger)}
 .more-row{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 4px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:600 16px/1 var(--f-body);cursor:pointer;text-align:left}
 .more-row svg{width:20px;height:20px;color:var(--muted)}
 .seg{display:flex;gap:4px;background:var(--sunk);border-radius:12px;padding:4px}
@@ -348,7 +350,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
@@ -360,6 +362,7 @@ import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
+import { groupFriendships, planNameRefresh } from "./friends.js";
 import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername, lookupResult, shareLabel } from "./social.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
@@ -377,7 +380,8 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
-let state = { share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
+const freshFriends=()=>({loaded:false,docs:[],blocks:[],data:{},open:null,confirm:null,renamed:false,q:"",found:null});
+let state = { friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -395,11 +399,13 @@ const store = {
     getRedirectResult(auth).catch(e=>toast(signInError(e)));
     onAuthStateChanged(auth, user=>{
       if (this.unsub){ this.unsub(); this.unsub=null; }
+      this.stopFriends(); state.friends=freshFriends(); renderFriendsBadge();
       this.user=user; state.authed=!!user;
       showAccount(user);
       if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
-      this.loadShare().then(()=>{ maybePublish(); if(state.view==="profile") renderProfile(); });
+      this.loadShare().then(()=>{ maybePublish(); refreshFriendNames(); if(state.view==="profile") renderProfile(); });
+      this.watchFriends();
       this.col = collection(fs, "users", user.uid, "items");
       this.unsub = onSnapshot(this.col, { includeMetadataChanges:true }, snap=>{
         const ws=[], bs=[], food={}; let prog={}, prof={}, settings={rest:{}};
@@ -416,6 +422,32 @@ const store = {
     });
   },
   // ---- sharing: profiles/{uid}, usernames/{name}, emails/{email} (see firestore.rules) ----
+  // Live friendships (docs I am in) and the people I blocked. Shapes are in friends.js.
+  fUnsub:[],
+  watchFriends(){
+    this.stopFriends(); const uid=this.user.uid, f=state.friends;
+    const changed=()=>{ f.loaded=true; refreshFriendNames(); renderFriendsBadge(); const ae=document.activeElement; if(state.view==="friends"&&!(ae&&ae.tagName==="INPUT")) renderFriends(); };
+    this.fUnsub=[
+      onSnapshot(query(collection(fs,"friendships"),where("users","array-contains",uid)), snap=>{ f.docs=snap.docs.map(d=>d.data()); changed(); }, e=>console.error(e)),
+      onSnapshot(query(collection(fs,"blocks"),where("blocker","==",uid)), snap=>{ f.blocks=snap.docs.map(d=>d.data()); changed(); }, e=>console.error(e))
+    ];
+  },
+  stopFriends(){ this.fUnsub.forEach(u=>u()); this.fUnsub=[]; },
+  // Runs a write plan from friends.js as one batch. reason: offline | denied | error.
+  async friendAction(plan){
+    if(navigator.onLine===false) return {ok:false,reason:"offline"};
+    try{
+      const b=writeBatch(fs);
+      for(const o of plan.ops){ const ref=doc(fs,...o.path); if(o.op==="set") b.set(ref,o.data); else if(o.op==="update") b.update(ref,o.data); else b.delete(ref); }
+      await b.commit(); return {ok:true};
+    }catch(e){ console.error(e); return {ok:false,reason:e&&e.code==="permission-denied"?"denied":"error"}; }
+  },
+  // A friend's shared profile (null when they are not sharing with me). Cached in state.friends.data.
+  async friendProfile(uid){
+    let p=null;
+    try{ const s=await getDoc(doc(fs,"profiles",uid)); p=s.exists()?s.data():null; }catch(e){}
+    state.friends.data[uid]={profile:p,at:Date.now()}; return p;
+  },
   async loadShare(){
     const sh=state.share; sh.loaded=false;
     try{ const snap=await getDoc(doc(fs,"profiles",this.user.uid)); sh.profile=snap.exists()?snap.data():null; sh.last=(sh.profile&&sh.profile.summary)||null; sh.lastAt=0; }
@@ -539,6 +571,19 @@ let tt; function toast(t){
 /* ---------- sharing: publish the progress summary ---------- */
 // Friends/public viewers see a small summary computed here from your own data (never raw workouts or body data).
 function currentSummary(){ return buildSummary({workouts:state.workouts,body:state.body,food:state.food,days:state.days,profile:state.profile,today:today()},Date.now()); }
+// Dot on the More tab (and the count in its sheet row) while friend requests wait for me.
+function incomingRequests(){ return state.authed&&state.friends.loaded?groupFriendships(state.friends.docs,store.user.uid,state.friends.blocks).requests.length:0; }
+function renderFriendsBadge(){
+  const n=incomingRequests(), b=document.querySelector('.tabbar [data-act="more-open"]'); if(b) b.classList.toggle("has-dot",n>0);
+  const c=document.getElementById("friends-count"); if(c){ c.textContent=n?String(n):""; c.hidden=!n; }
+}
+// After a rename, put my new username into my friendship docs (once per session).
+function refreshFriendNames(){
+  const f=state.friends, p=state.share.profile; if(!f.loaded||!state.share.loaded||!p||f.renamed||!state.serverSynced) return;
+  f.renamed=true; const me=store.user.uid, now=Date.now();
+  f.docs.filter(d=>d.names&&d.names[me]!==p.username).forEach(d=>{ const other=d.users.find(u=>u!==me); store.friendAction(planNameRefresh({me,other,myName:p.username,now})); });
+}
+function renderFriends(){}
 let publishTimer=null;
 function maybePublish(){
   const sh=state.share; if(!state.authed||!state.serverSynced||!sh||!sh.profile) return;
