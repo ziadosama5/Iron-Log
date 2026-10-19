@@ -20,6 +20,6 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 | 14 | Readiness pass (privacy policy + terms, delete my account and data, report a user) | [spec](superpowers/specs/2026-10-19-readiness-design.md) | [plan](superpowers/plans/2026-10-19-readiness.md) | ✓ sw v24 |
 | 15 | Challenges (consistency challenge between friends, live leaderboard) | [spec](superpowers/specs/2026-10-19-challenges-design.md) | [plan](superpowers/plans/2026-10-19-challenges.md) | ✓ sw v25 |
 
-Next: the **built-in Egyptian food table** (see the project notes).
+Open points (everything still to do or decide): [open-points.md](open-points.md). The built-in Egyptian food table is parked as a big later project.
 
 Plans describe the code at the time they were written. For how the app works today, read [CLAUDE.md](../CLAUDE.md).
