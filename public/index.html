@@ -90,6 +90,12 @@ main{padding-block:18px calc(var(--tabbar) + 24px + env(safe-area-inset-bottom,0
 .tabbar button.has-dot::after{content:"";position:absolute;top:8px;inset-inline-start:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:var(--danger)}
 .more-row{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 4px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:600 16px/1 var(--f-body);cursor:pointer;text-align:left}
 .more-row svg{width:20px;height:20px;color:var(--muted)}
+.jr-dots{display:flex;gap:6px;align-items:center}
+.jr-dot{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.jr-dot.on{background:var(--accent)}
+.jr-opt{display:block;width:100%;text-align:start;padding:14px 16px;border:2px solid var(--line);border-radius:var(--r-card);background:var(--surface);color:var(--fg);font:600 16px/1.3 var(--f-body);cursor:pointer}
+.jr-opt small{display:block;font-weight:400;color:var(--muted);margin-top:2px}
+.jr-opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .more-row .count{margin-inline-start:auto;margin-inline-end:8px;min-width:22px;padding:2px 7px;border-radius:11px;background:var(--danger);color:#fff;font:700 12px/18px var(--f-body);text-align:center}
 .fcard{display:flex;align-items:center;gap:8px;width:100%;padding:12px 0;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:inherit;text-align:start;cursor:pointer}
 .fcard svg{width:20px;height:20px;color:var(--muted);flex:none}
@@ -320,6 +326,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
     <section id="view-profile" class="view" hidden></section>
     <section id="view-friends" class="view" hidden></section>
     <section id="view-gym" class="view" hidden></section>
+    <section id="view-journey" class="view" hidden></section>
   </main>
 </div>
 <div class="restbar" id="restbar" role="timer" aria-live="off" hidden>
@@ -376,6 +383,7 @@ import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reve
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
 import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs } from "./friends.js";
+import { buildPlan, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney } from "./plan-tools.js";
 import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername, lookupResult, shareLabel } from "./social.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
@@ -394,7 +402,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
 const freshFriends=()=>({loaded:false,docs:[],blocks:[],data:{},open:null,confirm:null,renamed:false,q:"",found:null});
-let state = { gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
+let state = { journey:null, journeyShown:false, gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -415,7 +423,7 @@ const store = {
       this.stopFriends(); state.friends=freshFriends(); renderFriendsBadge();
       this.user=user; state.authed=!!user;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; state.journey=null; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
       this.loadShare().then(()=>{ maybePublish(); refreshFriendNames(); if(state.view==="profile") renderProfile(); });
       this.watchFriends();
@@ -943,6 +951,84 @@ function weekStrip(){
   return `<div class="week">${WEEK.map(wd=>{ const d=dayForWeekday(wd);
     return `<div class="wd ${wd===tw?"today":""} ${d?"on":""}"><span class="label">${nameOf("weekday",WD[wd])}</span><span class="wdn">${d?esc(nameOf("day",d.name)):t("Rest")}</span></div>`; }).join("")}</div>`;
 }
+/* ---------- JOURNEY (Plan my training) ---------- */
+const JR_EXP=[["beginner","Beginner","New to lifting, or coming back after a long break"],["intermediate","Intermediate","Training regularly for about a year or more"],["advanced","Advanced","Several years of consistent training"]];
+const jrSteps=()=>["goal","days","gym","experience",...(needsAbout(state.profile)?["about"]:[]),"preview"];
+// The equipment the plan is built for: the preset picked here, else the saved My Gym list (undefined = everything).
+function jrGym(){ const j=state.journey; if(j.gymNone) return undefined; if(j.gymChosen){ const p=GYM_PRESETS.find(x=>x.id===j.preset); return p?p.equipment:undefined; } return state.settings.gym; }
+function openJourney(fromAuto){
+  const g=GOAL_DEFAULT_DAYS[state.profile.goal]!==undefined?state.profile.goal:null;
+  const cur=GYM_PRESETS.find(p=>sameGym(state.settings.gym,p.equipment));
+  state.journey={step:0,goal:g,days:g?GOAL_DEFAULT_DAYS[g]:3,daysTouched:false,preset:cur?cur.id:null,gymChosen:false,gymNone:false,experience:null,about:{sex:state.profile.sex||"",height:"",birthYear:""},busy:false,fromAuto:!!fromAuto};
+  history.pushState({journey:1},"");
+  go("journey");
+}
+function markJourneySkipped(){ try{ localStorage.setItem("ironlog.journey","skip"); }catch(e){} }
+// Leaves the journey without saving. The history entry it pushed is popped (the popstate handler then finds nothing to close).
+function endJourney(){ state.journey=null; if(history.state&&history.state.journey) history.back(); }
+window.addEventListener("popstate",()=>{ if(state.journey&&!(history.state&&history.state.journey)){ if(state.journey.fromAuto) markJourneySkipped(); state.journey=null; if(state.view==="journey") go("log"); } });
+function maybeStartJourney(){
+  let skipped=false; try{ skipped=localStorage.getItem("ironlog.journey")==="skip"; }catch(e){}
+  if(!shouldAutoJourney({authed:state.authed,synced:state.serverSynced===true,days:state.days,workouts:state.workouts,skipped,shown:state.journeyShown})) return;
+  state.journeyShown=true; openJourney(true);
+}
+function journeyCard(){
+  return `<div class="card"><h3>Plan my training</h3><p class="prev" style="margin:0">Answer 4 quick questions and get a week that fits you.</p><div class="row"><button class="btn primary" data-act="journey-open">Start</button></div></div>`;
+}
+function jrOpt(act,v,on,label,sub){ return `<button class="jr-opt" data-act="${act}" data-v="${esc(v)}" aria-pressed="${on}">${label}${sub?`<small>${esc(t(sub))}</small>`:""}</button>`; }
+function jrPreview(j){
+  const plan=buildPlan({goal:j.goal,daysPerWeek:j.days,experience:j.experience,gym:jrGym()});
+  const gym=jrGym(), preset=j.gymChosen&&!j.gymNone?GYM_PRESETS.find(p=>p.id===j.preset):null;
+  const label=preset?t(preset.name):Array.isArray(gym)?t("your My Gym list"):t("every exercise");
+  let h=`<h2>Your week</h2><p class="prev" style="margin:0">${esc(t(plan.split))} · ${esc(t("Planned for: {x}",{x:label}))}</p>`;
+  if(state.days.length) h+=`<p class="prev" style="margin:0">This replaces your current training days. Your workout history stays.</p>`;
+  h+=plan.days.map(d=>`<div class="card"><div class="row"><b class="grow">${esc(nameOf("day",d.name))}</b><span class="prev">${d.weekdays.map(x=>esc(nameOf("weekday",WD[x]))).join(" · ")}</span></div><span class="prev">${d.exercises.map(n=>esc(nameOf("ex",n))).join(" · ")}</span></div>`).join("");
+  h+=plan.notes.map(n=>`<p class="prev" style="margin:0">${esc(t(n.text,{...n.params,...(n.params.muscle?{muscle:nameOf("muscle",n.params.muscle)}:{}),...(n.params.day?{day:nameOf("day",n.params.day)}:{})}))}</p>`).join("");
+  return {h,empty:!plan.days.length};
+}
+function renderJourney(){
+  const j=state.journey, el=$("#view-journey");
+  if(!j){ state.view="log"; render(); return; }
+  const steps=jrSteps(), key=steps[j.step];
+  let body="", canNext=true;
+  if(key==="goal"){ canNext=!!j.goal;
+    body=`<h2>What's your main goal?</h2><div class="stack" style="gap:8px">${Object.entries(GOALS).map(([k,v])=>jrOpt("jr-goal",k,j.goal===k,esc(nameOf("goal",v)))).join("")}</div>`; }
+  else if(key==="days"){
+    body=`<h2>How many days a week can you train?</h2><div class="chips">${[2,3,4,5,6].map(n=>`<button class="chip" data-act="jr-days" data-v="${n}" aria-pressed="${j.days===n}">${n}</button>`).join("")}</div><p class="prev">Most people do well with 3–5 days.</p>`; }
+  else if(key==="gym"){
+    body=`<h2>Where will you train?</h2><div class="chips">${GYM_PRESETS.map(p=>`<button class="chip" data-act="jr-gym" data-v="${p.id}" aria-pressed="${!j.gymNone&&j.preset===p.id}">${esc(t(p.name))}</button>`).join("")}<button class="chip" data-act="jr-gym" data-v="none" aria-pressed="${j.gymNone}">Not sure, suggest everything</button></div><p class="prev">You can fine-tune the exact machines later in My Gym.</p>`; }
+  else if(key==="experience"){ canNext=!!j.experience;
+    body=`<h2>How experienced are you?</h2><div class="stack" style="gap:8px">${JR_EXP.map(([k,name,sub])=>jrOpt("jr-exp",k,j.experience===k,esc(t(name)),sub)).join("")}</div>`; }
+  else if(key==="about"){
+    body=`<h2>About you</h2><p class="prev" style="margin:0">This helps Coach with calories and body-fat ranges. You can skip it.</p>
+      <div class="chips"><button class="chip" data-act="jr-sex" data-v="male" aria-pressed="${j.about.sex==="male"}">Male</button><button class="chip" data-act="jr-sex" data-v="female" aria-pressed="${j.about.sex==="female"}">Female</button></div>
+      <label><span class="label">Height (cm)</span><input id="jr-height" inputmode="decimal" value="${esc(String(j.about.height))}"></label>
+      <label><span class="label">Birth year</span><input id="jr-year" inputmode="numeric" maxlength="4" value="${esc(String(j.about.birthYear))}"></label>`; }
+  else { const p=jrPreview(j); body=p.h; canNext=!p.empty; }
+  const last=key==="preview";
+  el.innerHTML=`<div class="row"><div class="jr-dots grow" aria-hidden="true">${steps.map((s,i)=>`<span class="jr-dot ${i===j.step?"on":""}"></span>`).join("")}</div>${last?"":`<button class="btn ghost small" data-act="jr-skip">Skip</button>`}</div>
+    ${body}
+    <div class="row">${j.step>0?`<button class="btn" data-act="jr-back">Back</button>`:""}<span class="grow"></span>${last?`<button class="btn primary" data-act="jr-start" ${canNext&&!j.busy?"":"disabled"}>Start</button>`:`<button class="btn primary" data-act="jr-next" ${canNext?"":"disabled"}>Next</button>`}</div>`;
+}
+function journeyNext(){
+  const j=state.journey, key=jrSteps()[j.step];
+  if(key==="about"){
+    const a=j.about, any=a.sex||String(a.height).trim()||String(a.birthYear).trim();
+    if(any&&!checkProfile({sex:a.sex,height:a.height,birthYear:a.birthYear,goal:j.goal},new Date().getFullYear()).ok){ toast(t("Fill in all four fields: height in cm (100–250) and a 4-digit birth year")); return; }
+    if(!any) j.about={sex:"",height:"",birthYear:""};
+  }
+  j.step++; renderJourney(); window.scrollTo(0,0);
+}
+function journeyStart(){
+  const j=state.journey; if(!j||j.busy) return; j.busy=true;
+  const plan=buildPlan({goal:j.goal,daysPerWeek:j.days,experience:j.experience,gym:jrGym()});
+  if(!plan.days.length){ j.busy=false; toast(t("No plan fits this gym. Pick a bigger gym and try again.")); return; }
+  store.saveDays(plan.days.map(d=>({id:uid(),...d})));
+  store.saveProfile(mergeProfile(state.profile,{goal:j.goal,...j.about}));
+  if(j.gymChosen&&!j.gymNone){ const p=GYM_PRESETS.find(x=>x.id===j.preset); if(p) store.saveSettings({gym:[...p.equipment]}); }
+  state.openEx=undefined; endJourney(); go("log"); toast(t("Your plan is ready"));
+}
+
 /* ---------- MY GYM ---------- */
 const GYM_GROUPS=[["weights","Weights"],["station","Stations"],["machine","Machines"]];
 let gymSaveTimer=null;
@@ -1541,7 +1627,7 @@ $("#exinfo").addEventListener("click",e=>{
   if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeExInfo(); // tap on the backdrop
 });
 window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.exinfo)) closeExInfo(); });
-const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Profile",friends:"Friends",gym:"My Gym"};
+const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Profile",friends:"Friends",gym:"My Gym",journey:"Plan my training"};
 // More sheet: Days, Lifts, History & backup, theme, account. Same open/close pattern as the info sheet.
 function openMore(){
   const d=$("#moresheet"), th=currentTheme();
@@ -1639,7 +1725,7 @@ function drawSwatches(){
     `<label class="swatch custom" aria-pressed="${custom}" title="${esc(t("Custom"))}"><input type="color" id="accent-custom" value="${custom?cur:"#1f5fd1"}" aria-label="${esc(t("Custom"))}"></label>`;
 }
 document.addEventListener("input",e=>{ if(e.target.id==="accent-custom"){ applyAccent(e.target.value); const c=e.target.closest(".swatch"); document.querySelectorAll("#accent-swatches .swatch").forEach(b=>b.setAttribute("aria-pressed",b===c)); } });
-document.addEventListener("input",e=>{ if(e.target.id==="find-q") state.friends.q=e.target.value; });
+document.addEventListener("input",e=>{ if(e.target.id==="find-q") state.friends.q=e.target.value; if(state.journey&&e.target.id==="jr-height") state.journey.about.height=e.target.value; if(state.journey&&e.target.id==="jr-year") state.journey.about.birthYear=e.target.value; });
 try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>applyAccent(currentAccent(),false)); }catch(e){}
 
 /* ---------- LANGUAGE ---------- */
@@ -1708,7 +1794,7 @@ async function shareResult(res,okMsg){
 }
 
 /* ---------- render + events ---------- */
-const VIEWS=["log","days","body","coach","goals","progress","history","profile","friends","gym"];
+const VIEWS=["log","days","body","coach","goals","progress","history","profile","friends","gym","journey"];
 function renderSignin(){
   const el=$("#view-signin");
   if(state.setup){ el.innerHTML=`<div class="card signin"><h2>Almost there</h2><p class="prev" style="margin:0">Paste your Firebase project's config into <b class="num">firebase-config.js</b>, then deploy again. The README walks through it step by step.</p></div>`; return; }
@@ -1721,16 +1807,16 @@ function renderSignin(){
 }
 function render(){
   const authed=state.authed;
-  $("#nav").hidden=!authed; $("#view-signin").hidden=authed;
+  $("#nav").hidden=!authed||state.view==="journey"; $("#view-signin").hidden=authed;
   if(!authed){ VIEWS.forEach(v=>$("#view-"+v).hidden=true); renderSignin(); syncWake(); return; }
   const inMore=["days","progress","history","profile","friends","gym"].includes(state.view);
   document.querySelectorAll(".tabbar button").forEach(b=>{ if(b.dataset.view===state.view||(inMore&&b.dataset.view==="more")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   $("#screen-title").textContent=t(SCREEN_TITLES[state.view]||"Iron Log");
   VIEWS.forEach(v=>$("#view-"+v).hidden=v!==state.view);
-  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory,profile:renderProfile,friends:renderFriends,gym:renderGym})[state.view]();
+  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory,profile:renderProfile,friends:renderFriends,gym:renderGym,journey:renderJourney})[state.view]();
   syncWake();
 }
-function go(view){ state.view=view; try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
+function go(view){ state.view=view; if(view!=="journey") try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
 
 let renameTimer=null;
 document.addEventListener("input",e=>{
@@ -1881,6 +1967,16 @@ document.addEventListener("click",e=>{
       break; }
     case "undone-ex":{ stopEditing(); const w=ensureWorkout(); w.entries[ei].done=false; state.openEx=w.entries[ei].ex; store.save(w); renderLog(); break; }
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
+    case "journey-open": openJourney(false); break;
+    case "jr-goal": { const j=state.journey; j.goal=b.dataset.v; if(!j.daysTouched) j.days=GOAL_DEFAULT_DAYS[j.goal]; renderJourney(); break; }
+    case "jr-days": { const j=state.journey; j.days=+b.dataset.v; j.daysTouched=true; renderJourney(); break; }
+    case "jr-gym": { const j=state.journey, v=b.dataset.v; if(v==="none"){ j.gymNone=true; j.gymChosen=false; j.preset=null; } else { j.gymNone=false; j.gymChosen=true; j.preset=v; } renderJourney(); break; }
+    case "jr-exp": state.journey.experience=b.dataset.v; renderJourney(); break;
+    case "jr-sex": state.journey.about.sex=b.dataset.v; renderJourney(); break;
+    case "jr-next": journeyNext(); break;
+    case "jr-back": if(state.journey.step>0){ state.journey.step--; renderJourney(); window.scrollTo(0,0); } break;
+    case "jr-skip": markJourneySkipped(); endJourney(); go("log"); break;
+    case "jr-start": journeyStart(); break;
     case "gym-preset":{ const p=GYM_PRESETS.find(x=>x.id===b.dataset.p); if(p) setGym([...p.equipment]); break; }
     case "gym-toggle":{ const cur=Array.isArray(state.settings.gym)?state.settings.gym:[], id=b.dataset.id; setGym(cur.includes(id)?cur.filter(x=>x!==id):[...cur,id]); break; }
     case "gym-clear": state.gymConfirmClear=true; renderGym(); break;
@@ -1935,7 +2031,7 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.matches?.("tr[data-act]")){ e.target.click(); return; } if(e.key==="Enter"){ const c=e.target.closest?.("[data-open]"); if(c&&e.target===c){ state.date=c.dataset.open; go("log"); } } });
 
-try{ const v=localStorage.getItem("ironlog.view"); if(VIEWS.includes(v)) state.view=v; }catch(e){}
+try{ const v=localStorage.getItem("ironlog.view"); if(VIEWS.includes(v)&&v!=="journey") state.view=v; }catch(e){}
 $("#signout").addEventListener("click",()=>{ flushGym(); clearRest(); closeMore(); signOut(auth); });
 // Sheets add history entries; restoring the old scroll position when they close would undo
 // go()'s scroll-to-top (e.g. More → Lifts opening halfway down), so the app handles scrolling itself.
@@ -1966,7 +2062,7 @@ function checkNewDay(){
 }
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkNewDay(); });
 setInterval(checkNewDay,60000);
-store.init(()=>{ renderSoon(); checkBadges(); maybePublish(); refreshFriendNames(); });
+store.init(()=>{ renderSoon(); checkBadges(); maybePublish(); refreshFriendNames(); maybeStartJourney(); });
 })();
 </script>
 </body>

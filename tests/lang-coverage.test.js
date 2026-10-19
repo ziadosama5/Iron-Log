@@ -140,3 +140,10 @@ test("my gym: labels shown through a condition have Arabic", () => {
   const keys = ["Show all", "Hide them again", "Bodyweight only", "Home", "Basic gym", "Full gym", "Weights", "Stations", "Machines", "Saving…", "Saved ✓", "Done", "Clear", "Keep"];
   assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
 });
+
+test("journey: labels, notes and split names shown through variables have Arabic", () => {
+  const keys = ["Beginner", "Intermediate", "Advanced", "New to lifting, or coming back after a long break", "Training regularly for about a year or more",
+    "Several years of consistent training", "Skip", "Start", "Next", "Male", "Female", "No {muscle} exercise fits your gym.", "{day} was left out: nothing in it fits your gym.",
+    "Full Body", "Push / Pull / Legs", "Upper / Lower", "Push / Pull / Legs + Upper / Lower", "Push / Pull / Legs ×2", "Bodyweight only", "Home", "Basic gym", "Full gym"];
+  assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
+});
