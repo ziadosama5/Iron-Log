@@ -100,6 +100,8 @@ If a daily quota runs out, the app keeps working offline and saves the next day.
 **More › History & backup**: **Download backup** saves everything as a file, and **Restore from file** loads it into any account.
 
 ## Sharing and privacy
+The app has a Privacy Policy and Terms (`public/privacy.html`, `public/terms.html`, English and Arabic): update the contact address there if you fork it. People can delete their account and all their data in the app (**More › Delete my account**) and report other users; reports are stored in the `reports` collection, which the app cannot read: open Firestore in the Firebase console to see them. When you change `firestore.rules`, deploy them before the app: `firebase deploy --only firestore:rules`.
+
 People can pick a username, share a small progress summary (level, streaks, workout counts) as Private, Friends or Public, and become friends by request and acceptance (a friend sees only that summary next to their own; anyone can block); nothing is shared by default, and body data, meals and individual workouts are never shared. This is enforced by `firestore.rules` (deploy them with `firebase deploy --only firestore:rules`, and run `tests-rules/` first; it needs Java 21+).
 
 ## Notes
