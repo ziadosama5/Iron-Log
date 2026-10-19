@@ -131,6 +131,37 @@ export function exercisesFor(gym) {
   return EXERCISES.filter(e => e.eq.every(q => have.has(q))).map(e => e.name);
 }
 
+// ---- My Gym: which equipment a person has ----
+// Starting points for the My Gym checklist. Each preset is inside the next one.
+const BASIC_GYM = EQUIPMENT.filter(e => e.group === "weights" || e.group === "station").map(e => e.id);
+export const GYM_PRESETS = [
+  { id: "bodyweight", name: "Bodyweight only", equipment: [] },
+  { id: "home", name: "Home", equipment: ["dumbbell", "bench", "pullup-bar", "kettlebell", "box", "ab-wheel"] },
+  { id: "basic", name: "Basic gym", equipment: BASIC_GYM },
+  { id: "full", name: "Full gym", equipment: EQUIPMENT.map(e => e.id) }
+];
+
+// Keeps the names the gym can do. gym not an array = not set = keep everything. Custom or unknown
+// names (equipmentOf is null) are always kept.
+export function gymFilter(names, gym) {
+  if (!Array.isArray(gym)) return names;
+  const have = new Set(gym);
+  return names.filter(n => { const eq = equipmentOf(n); return eq === null || eq.every(id => have.has(id)); });
+}
+
+const EQUIPMENT_IDS = new Set(EQUIPMENT.map(e => e.id));
+export function gymCounts(gym) {
+  const ids = Array.isArray(gym) ? gym.filter(id => EQUIPMENT_IDS.has(id)) : [];
+  return { items: new Set(ids).size, itemsTotal: EQUIPMENT.length, exercises: exercisesFor(ids).length, exercisesTotal: EXERCISES.length };
+}
+
+// Same set of ids, in any order. Anything that is not an array is never the same as a list.
+export function sameGym(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b)) return false;
+  const x = new Set(a), y = new Set(b);
+  return x.size === y.size && [...x].every(id => y.has(id));
+}
+
 export const TEMPLATES = [
   { name:"Push / Pull / Legs", note:"3 days · classic split", days:[
     {name:"Push", focus:["Chest","Shoulders","Triceps"], exercises:["Bench Press","Overhead Press","Incline Dumbbell Press","Lateral Raise","Tricep Pushdown"]},

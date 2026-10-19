@@ -154,3 +154,56 @@ test("the bench and seated-row machine have names users read correctly", () => {
   assert.equal(EQUIPMENT.find(e => e.id === "bench").name, "Bench (flat / incline)");
   assert.equal(EQUIPMENT.find(e => e.id === "seated-row").name, "Chest-supported row machine");
 });
+
+// ---- My Gym ----
+import { GYM_PRESETS, gymFilter, gymCounts, sameGym } from "../public/exercise-library.js";
+
+test("GYM_PRESETS: fixed order, real ids, nested from Bodyweight to Full gym", () => {
+  assert.deepEqual(GYM_PRESETS.map(p => p.id), ["bodyweight", "home", "basic", "full"]);
+  assert.deepEqual(GYM_PRESETS.map(p => p.name), ["Bodyweight only", "Home", "Basic gym", "Full gym"]);
+  const all = new Set(EQUIPMENT.map(e => e.id));
+  for (const p of GYM_PRESETS) {
+    assert.equal(new Set(p.equipment).size, p.equipment.length, p.id + " has no duplicates");
+    for (const id of p.equipment) assert.ok(all.has(id), p.id + ": " + id);
+  }
+  assert.deepEqual(GYM_PRESETS[0].equipment, []);
+  assert.equal(GYM_PRESETS[3].equipment.length, EQUIPMENT.length);
+  const basicIds = EQUIPMENT.filter(e => e.group === "weights" || e.group === "station").map(e => e.id);
+  assert.deepEqual([...GYM_PRESETS[2].equipment].sort(), [...basicIds].sort());
+  for (let i = 0; i < 3; i++) {
+    const next = new Set(GYM_PRESETS[i + 1].equipment);
+    for (const id of GYM_PRESETS[i].equipment) assert.ok(next.has(id), GYM_PRESETS[i].id + " is inside " + GYM_PRESETS[i + 1].id + ": " + id);
+  }
+});
+
+test("gymFilter: unset keeps everything, [] keeps bodyweight and custom names, order is preserved", () => {
+  const names = ["Bench Press", "Push-up", "My Custom Lift", "Pec Deck"];
+  assert.deepEqual(gymFilter(names, undefined), names);
+  assert.deepEqual(gymFilter(names, null), names);
+  assert.deepEqual(gymFilter(names, []), ["Push-up", "My Custom Lift"]);
+  assert.deepEqual(gymFilter(names, ["barbell", "bench"]), ["Bench Press", "Push-up", "My Custom Lift"]);
+  assert.deepEqual(gymFilter(names, ["pec-deck", "bench", "barbell"]), names);
+  assert.deepEqual(gymFilter(["Bench Press"], ["barbell", "bench", "nonsense"]), ["Bench Press"], "unknown ids are ignored");
+  assert.deepEqual(gymFilter([], []), []);
+});
+
+test("gymCounts counts known items and available exercises", () => {
+  const none = gymCounts([]);
+  assert.equal(none.items, 0);
+  assert.equal(none.itemsTotal, EQUIPMENT.length);
+  assert.equal(none.exercisesTotal, EXERCISES.length);
+  assert.equal(none.exercises, EXERCISES.filter(e => e.eq.length === 0).length);
+  const all = gymCounts(EQUIPMENT.map(e => e.id));
+  assert.equal(all.items, EQUIPMENT.length);
+  assert.equal(all.exercises, EXERCISES.length);
+  assert.equal(gymCounts(["barbell", "barbell", "nonsense"]).items, 1, "duplicates and unknown ids do not count");
+  assert.equal(gymCounts(undefined).items, 0);
+});
+
+test("sameGym compares sets of ids", () => {
+  assert.equal(sameGym(["a", "b"], ["b", "a"]), true);
+  assert.equal(sameGym([], ["a"]), false);
+  assert.equal(sameGym(undefined, []), false);
+  assert.equal(sameGym([], []), true);
+  assert.equal(equipmentOf("Push-up").length, 0);
+});
