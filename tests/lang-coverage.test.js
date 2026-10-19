@@ -147,3 +147,8 @@ test("journey: labels, notes and split names shown through variables have Arabic
     "Full Body", "Push / Pull / Legs", "Upper / Lower", "Push / Pull / Legs + Upper / Lower", "Which split do you want?", "Not sure, suggest one", "Based on how many days you can train", "Every muscle each session · 2–3 days", "Upper body and lower body days · 2, 4 or 6 days", "Push, pull and leg days · 3 or 6 days", "One muscle group a day · 5 days", "Push / Pull / Legs ×2", "Push / Pull / Legs + Full Body", "Upper / Lower ×3", "Bro Split", "Bodyweight only", "Home", "Basic gym", "Full gym"];
   assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
 });
+
+test("report panel: reason labels and buttons shown through variables have Arabic", () => {
+  const keys = ["Inappropriate name or username", "Harassment", "Spam", "Something else", "Report", "Block this person", "Done", "Cancel"];
+  assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
+});

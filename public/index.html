@@ -386,6 +386,7 @@ import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
+import { REPORT_REASONS, buildReport } from "./safety.js";
 import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney } from "./plan-tools.js";
 import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername, lookupResult, shareLabel } from "./social.js";
@@ -405,7 +406,7 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
-const freshFriends=()=>({loaded:false,docs:[],blocks:[],data:{},open:null,confirm:null,renamed:false,q:"",found:null});
+const freshFriends=()=>({report:null,loaded:false,docs:[],blocks:[],data:{},open:null,confirm:null,renamed:false,q:"",found:null});
 let state = { journey:null, journeyShown:false, gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
 const ui = {};
 
@@ -469,6 +470,12 @@ const store = {
     }catch(e){ console.error(e); return {ok:false,reason:e&&e.code==="permission-denied"?"denied":"error"}; }
   },
   // A friend's shared profile (null when they are not sharing with me). Cached in state.friends.data.
+  // A report about another person: one document per pair (reporting again overwrites it). Nobody can read it back in the app.
+  async sendReport(rep){
+    if(navigator.onLine===false) return {ok:false,reason:"offline"};
+    try{ await setDoc(doc(fs,"reports",rep.id),rep.data); return {ok:true}; }
+    catch(e){ console.error(e); return {ok:false,reason:"error"}; }
+  },
   async friendProfile(uid){
     let p=null;
     try{ const s=await getDoc(doc(fs,"profiles",uid)); p=s.exists()?s.data():null; }catch(e){}
@@ -616,11 +623,20 @@ function friendLabel(x){
   const d=state.friends.data[x.uid], dn=d&&d.profile?d.profile.displayName:null;
   return `${dn?`<b>${esc(dn)}</b> `:""}<bdi dir="ltr" class="prev">${x.name?"@"+esc(x.name):esc(t("Unknown user"))}</bdi>`;
 }
-const frBtn=(act,x,label,cls="")=>`<button class="btn small ${cls}" data-act="${act}" data-uid="${esc(x.uid)}" data-name="${esc(x.name||"")}">${label}</button>`;
+const frBtn=(act,x,label,cls="")=>`<button type="button" class="btn small ${cls}" data-act="${act}" data-uid="${esc(x.uid)}" data-name="${esc(x.name||"")}">${label}</button>`;
 function friendRow(x){
   const d=state.friends.data[x.uid], p=d&&d.profile, sm=p&&p.summary;
   const line=!d?"…":sm?[t("Level {n}",{n:sm.level}),tn("{n} workout this week","{n} workouts this week",sm.workoutsWeek),t("Training: {x}",{x:tn("{n} week","{n} weeks",sm.streakWeeks)})].join(" · "):t("Not sharing right now");
   return `<button class="fcard" data-act="fr-open" data-uid="${esc(x.uid)}"><span class="grow">${friendLabel(x)}<br><span class="prev">${esc(line)}</span></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>`;
+}
+// The inline Report panel (reason chips, then a thank-you with an offer to block).
+function reportPanelHtml(){
+  const r=state.friends.report; if(!r) return "";
+  if(r.sent){
+    const rel=relationTo(store.user.uid,r.uid,state.friends.docs,state.friends.blocks);
+    return `<div class="card"><span>${esc(t("Thanks, your report was sent."))}</span><div class="row">${rel==="friends"||rel==="sent"||rel==="received"?frBtn("fr-report-block",{uid:r.uid,name:r.username},"Block this person","danger"):""}<button type="button" class="btn small" data-act="fr-report-no">Done</button></div></div>`;
+  }
+  return `<div class="card"><h3>Report this person</h3><div class="chips">${REPORT_REASONS.map(x=>`<button type="button" class="chip" data-act="fr-report-reason" data-v="${x.id}" aria-pressed="${r.reason===x.id}">${esc(t(x.label))}</button>`).join("")}</div><div class="row"><button type="button" class="btn small" data-act="fr-report-no">Cancel</button><button type="button" class="btn small danger" data-act="fr-report-send" ${r.reason&&!r.busy?"":"disabled"}>Send report</button></div></div>`;
 }
 function findCardHtml(){
   const f=state.friends, fnd=f.found; let res="";
@@ -637,7 +653,8 @@ function findCardHtml(){
         :rel==="received"?`${frBtn("fr-accept",x,"Accept","primary")}${frBtn("fr-decline",x,"Decline")}`
         :rel==="friends"?`<span class="prev">Friends</span>${frBtn("fr-open",x,"Open")}`
         :`<span class="prev">Blocked</span>${frBtn("fr-unblock",x,"Unblock")}`;
-      res=`<div class="stack" style="gap:6px"><div class="row"><b class="grow">${esc(c.displayName||iso("@"+c.username))}</b><bdi dir="ltr" class="prev">@${esc(c.username)}</bdi></div>${c.summary?summaryLines(c.summary):c.displayName?`<span class="prev">Progress isn't shared with you</span>`:""}<div class="row">${act}</div></div>`;
+      const reportBtn=rel==="self"?"":frBtn("fr-report",x,"Report");
+      res=`<div class="stack" style="gap:6px"><div class="row"><b class="grow">${esc(c.displayName||iso("@"+c.username))}</b><bdi dir="ltr" class="prev">@${esc(c.username)}</bdi></div>${c.summary?summaryLines(c.summary):c.displayName?`<span class="prev">Progress isn't shared with you</span>`:""}<div class="row">${act}${reportBtn}</div></div>`;
     }
   }
   return `<form class="card" id="find-form" autocomplete="off"><h3>Find a friend</h3>
@@ -657,7 +674,7 @@ function renderFriends(){
   const g=groupFriendships(f.docs,store.user.uid,f.blocks);
   if(f.open){ renderFriendPage(el,g); return; }
   loadFriendData(false);
-  let h=`<h2>Friends</h2>`+findCardHtml();
+  let h=`<h2>Friends</h2>`+findCardHtml()+reportPanelHtml();
   if(g.requests.length) h+=`<div class="card"><h3>Requests</h3>${g.requests.map(x=>`<div class="stack" style="gap:6px"><div class="row"><div class="grow">${friendLabel(x)}</div></div><div class="row">${frBtn("fr-accept",x,"Accept","primary")}${frBtn("fr-decline",x,"Decline")}${frBtn("fr-block-now",x,"Block")}</div></div>`).join("")}</div>`;
   h+=`<div class="card"><h3>Friends</h3>${g.friends.length?g.friends.map(friendRow).join(""):`<span class="prev">No friends yet. Find someone by username above.</span>`}<div class="row" style="justify-content:flex-end"><button class="btn small" data-act="fr-refresh">Refresh</button></div></div>`;
   if(g.sent.length) h+=`<div class="card"><h3>Sent</h3>${g.sent.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-cancel",x,"Cancel")}</div>`).join("")}</div>`;
@@ -681,7 +698,8 @@ function renderFriendPage(el,g){
   const ask=(msg,yes,label)=>`<div class="card"><span>${esc(msg)}</span><div class="row"><button class="btn small" data-act="fr-no">Keep</button>${frBtn(yes,x,label,"danger")}</div></div>`;
   h+=f.confirm==="remove"?ask(t("Remove {name} from your friends?",{name:who}),"fr-remove-yes","Remove")
     :f.confirm==="block"?ask(t("Block {name}? They are removed from your friends and cannot send you requests.",{name:who}),"fr-block-yes","Block")
-    :`<div class="row"><button class="btn small" data-act="fr-remove">Remove friend</button><button class="btn small danger" data-act="fr-block">Block</button></div>`;
+    :`<div class="row"><button class="btn small" data-act="fr-remove">Remove friend</button><button class="btn small danger" data-act="fr-block">Block</button>${frBtn("fr-report",x,"Report")}</div>`;
+  h+=reportPanelHtml();
   el.innerHTML=h;
 }
 // One write plan, one toast. Offline and every failure share a message, so a block is never revealed.
@@ -709,6 +727,16 @@ function frClick(act,d){
     case "fr-remove": f.confirm="remove"; renderFriends(); return;
     case "fr-block": f.confirm="block"; renderFriends(); return;
     case "fr-no": f.confirm=null; renderFriends(); return;
+    case "fr-report": f.report={uid:other,username:name,reason:null,sent:false,busy:false}; renderFriends(); return;
+    case "fr-report-reason": f.report.reason=d.v; renderFriends(); return;
+    case "fr-report-no": f.report=null; renderFriends(); return;
+    case "fr-report-send": {
+      const r=f.report, rep=buildReport({reporter:me,reported:r.uid,reason:r.reason,username:r.username,now}); r.busy=true;
+      if(!rep){ r.busy=false; toast(t("Couldn't save. Check your connection.")); return; }
+      renderFriends();
+      store.sendReport(rep).then(res=>{ r.busy=false; if(res.ok) r.sent=true; else toast(t(res.reason==="offline"?"You're offline. Try again when you're back online.":"Couldn't save. Check your connection.")); if(state.view==="friends") renderFriends(); });
+      return; }
+    case "fr-report-block": frDo(planBlock({me,other,otherName:name,now}),"Blocked").then(ok=>{ if(ok){ f.report=null; f.open=null; f.confirm=null; } renderFriends(); }); return;
     case "fr-remove-yes": frDo(planRemove({me,other}),"Removed").then(ok=>{ if(ok){ f.open=null; f.confirm=null; } renderFriends(); }); return;
     case "fr-block-yes": frDo(planBlock({me,other,otherName:name,now}),"Blocked").then(ok=>{ if(ok){ f.open=null; f.confirm=null; } renderFriends(); }); return;
   }
@@ -1952,7 +1980,7 @@ document.addEventListener("click",e=>{
     case "share-vis":{ const p=state.share.profile; if(p&&p.visibility!==b.dataset.v) runShare({...shareFields(p),visibility:b.dataset.v}); break; }
     case "share-email":{ const p=state.share.profile; if(p) runShare({...shareFields(p),findByEmail:!p.findByEmail}); break; }
     case "share-delete": state.share.confirmDelete=true; renderProfile(); break;
-    case "fr-request": case "fr-accept": case "fr-decline": case "fr-cancel": case "fr-block-now": case "fr-unblock": case "fr-open": case "fr-back": case "fr-refresh": case "fr-remove": case "fr-block": case "fr-no": case "fr-remove-yes": case "fr-block-yes": frClick(b.dataset.act,b.dataset); break;
+    case "fr-request": case "fr-accept": case "fr-decline": case "fr-cancel": case "fr-block-now": case "fr-unblock": case "fr-open": case "fr-back": case "fr-refresh": case "fr-remove": case "fr-block": case "fr-no": case "fr-remove-yes": case "fr-block-yes": case "fr-report": case "fr-report-reason": case "fr-report-no": case "fr-report-send": case "fr-report-block": frClick(b.dataset.act,b.dataset); break;
     case "share-delete-no": state.share.confirmDelete=false; renderProfile(); break;
     case "share-delete-yes": store.deleteShare().then(ok=>{ state.share.confirmDelete=false; toast(t(ok?"Profile deleted":"Couldn't save. Check your connection.")); if(state.view==="profile") renderProfile(); }); break;
     case "lang-set": applyLang(b.dataset.v); openMore(); break;
