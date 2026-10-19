@@ -14,7 +14,8 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 | 8 | Accent colors (8 presets + custom, derived contrast) | [spec](superpowers/specs/2026-10-18-accent-colors-design.md) | [plan](superpowers/plans/2026-10-18-accent-colors.md) | ✓ sw v14 |
 | 9 | Exercise library 2.0 (183 exercises, 39 equipment items) | [spec](superpowers/specs/2026-10-19-exercise-library-2-design.md) | [plan](superpowers/plans/2026-10-19-exercise-library-2.md) | ✓ sw v16 |
 | 10 | Profiles, privacy and search (username, Private/Friends/Public summary, exact search) | [spec](superpowers/specs/2026-10-19-profiles-and-search-design.md) | [plan](superpowers/plans/2026-10-19-profiles-and-search.md) | ✓ sw v17 |
+| 11 | Friends (requests, friends list, a friend's progress next to yours, block) | [spec](superpowers/specs/2026-10-19-friends-design.md) | [plan](superpowers/plans/2026-10-19-friends.md) | ✓ sw v18 |
 
-Next: **friends** (requests, list, a friend's progress page), then **challenges**, **My Gym** and the **personal journey**.
+Next: **challenges**, then **My Gym** and the **personal journey**.
 
 Plans describe the code at the time they were written. For how the app works today, read [CLAUDE.md](../CLAUDE.md).

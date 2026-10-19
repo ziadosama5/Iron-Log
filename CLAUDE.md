@@ -29,6 +29,7 @@ public/energy.js            daily calories: weightOn, bmrFor, baselineBurn, lift
 public/ui-helpers.js        themeAttr, sortTips (warn→info→good), withWeight (quick weight keeps other fields). Unit-tested
 public/theme-tools.js      accent colours: PRESETS (8), parseHex, contrast, ensureContrast, deriveAccent(setting, mode, surface, bg) → {accent, ink, soft}. Unit-tested
 public/social.js            profiles/privacy/search helpers: validUsername, normalizeEmail, buildSummary (the shared progress summary), planShare (exact write batch), shouldPublish, lookupResult. Unit-tested
+public/friends.js          friends: pairId, write plans (planRequest/Accept/Remove/Block/Unblock/NameRefresh), groupFriendships, relationTo, compareSummaries. Pure, unit-tested
 public/i18n.js             English/Arabic layer: t(text,{params}), tn(one,other,n), nameOf(kind,name), trDom(root) (swaps plain labels + isolates numbers in Arabic), withLang, detectLang. Unit-tested
 public/lang-ar.js          AR = {ui: English text → Arabic, names: ex/muscle/template/tplnote/day/badge/cardio/intensity/goal/weekday/meal/level}
 tools/scan-strings.mjs     finds user-visible English text in the source for tests/lang-coverage.test.js (dev/test only). Unit-tested
@@ -69,9 +70,11 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
 | `profiles/{uid}` | what the person chose to share: `{username, displayName, visibility: private/friends/public, findByEmail, summary?, updated}`. `summary` (only when friends/public): `{level, xp, title, badges, streakWeeks, foodDays, workoutsWeek, workouts30, workoutsTotal, volumeWeekKg, prs30, lastWorkout, updated}` built on the phone by `buildSummary` (never body data, meals or single workouts). NOT the same as `users/{uid}/items/profile` (private body profile) |
 | `usernames/{name}` | `{uid, updated}`: exact-name lookup. Name = 3–20 of a-z 0-9 _ . (no leading/trailing . or _, no `..`, not reserved). Claimed in one batch together with the profile; one name per person (a rename deletes the old one in the same batch); the profile and its name doc can only be deleted together |
 | `emails/{email}` | `{uid}`: opt-in exact e-mail lookup; id = the person's own verified e-mail, lower-case |
+| `friendships/{smallerUid_largerUid}` | `{users:[a,b] (sorted), requester, status: pending/accepted, names:{uid:username}, updated}`. Created by the requester (pending; names checked against profile/usernames), accepted by the other person, deleted by either (decline, cancel, remove). Readable only by the two people (query `where users array-contains me`) |
+| `blocks/{blocker_blocked}` | `{blocker, blocked, name?, updated}`: only the blocker can read/delete it; a blocked person cannot create a request. Blocking = set this + delete the friendship in one batch |
 
-- Visibility: only the owner reads a `private` or `friends` profile; any signed-in user reads a `public` one (friend reads arrive with the friends feature). New users publish nothing until they pick a username (More › Profile and privacy). The app republishes the summary ~20 s after data changes (`maybePublish`, server snapshots only, skipped when unchanged).
-- Find a friend: `store.lookup` → exact username or e-mail → uid → profile; every failure (missing, hidden, denied) shows the same "No one found".
+- Visibility: only the owner reads a `private` or `friends` profile; any signed-in user reads a `public` one, accepted friends read a `friends` one (rules: `areFriends`). New users publish nothing until they pick a username (More › Profile and privacy). The app republishes the summary ~20 s after data changes (`maybePublish`, server snapshots only, skipped when unchanged).
+- Find a friend (now on the Friends screen): `store.lookup` → exact username or e-mail → uid → profile. A username whose profile is unreadable still gives a bare `@username` card (request can be sent); e-mail search and missing names show "No one found".
 
 - Only ids starting `w-` are read as workouts; any other unknown id is ignored.
 - The running rest timer lives in localStorage `ironlog.rest` (`{ex, endsAt, total}`), not Firestore.
@@ -107,6 +110,7 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
   - "Trained" (`trainedOn`) = sets or cardio, except training-day rotation (sets only).
 - **Goals tab:** level (XP: trained day 50, cardio 10+1/5min ≤30, meals day 10, PR 20, badge 100; level L at 50·L·(L−1)), target-weight card (calorie bank at 7,700 kcal/kg over days with meals + weight bar + finish estimate from last 14 logged days), streaks (weekly training Sat–Fri with target 2–6 from training days; daily food), 24 badges. All derived from data; badge toasts once via `settings.seenBadges`, only after a server (non-cache) snapshot; first run marks existing badges silently.
 - **Coach tab:** Today card, then Tips (top 3 by `sortTips`, "Show all tips"), then "More from Coach" (sets per muscle + written review). Rule-based insights (weight-trend vs goal pace, body fat range by sex, visceral fat ≥10, muscle/fat change between scans, waist-to-height, weekly sets per muscle vs 10–20, stalled/progressing lifts). "Copy my summary" copies a coaching prompt + JSON data to paste into an AI chat (no API key in the app, to stay free).
+- **Friends screen (More › Friends):** Find a friend, Requests (Accept/Decline/Block), Friends (tap → friend page: their summary next to yours, leader marked ✓, Remove/Block with inline confirm), Sent (Cancel), Blocked (Unblock). Live `onSnapshot` on `friendships` and `blocks` (`store.watchFriends`); friends' profiles are fetched on open/Refresh (`state.friends.data`). Dot on the More tab + count on the More row for waiting requests. Writes go through `store.friendAction(plan)` (one batch); offline and every failure show the same messages. Caps 100 friends / 30 sent (client only). `refreshFriendNames` updates my name in my friendship docs once per session.
 - **Lifts tab:** per-exercise e1RM + top-set chart (hand-written SVG `lineChart()`), stats, session table.
 - **History tab:** workouts list (tap to edit, delete with inline confirm), **Backup** (download JSON / restore from file, reminder when last backup > 30 days, stored in localStorage `ironlog.lastBackup`).
 - Offline: Firestore cache + service worker. Status text in header ("Synced", "Offline · saving on this phone"...).
@@ -153,7 +157,7 @@ firebase deploy --only hosting            # rules: firebase deploy --only firest
 
 ## Ideas not built yet
 - Bodyweight-exercise mode; set types (warm-up / drop set)
-- Planned sub-projects (done: faster logging, exercise info, full-app review, smarter coaching/progress, look & feel, Arabic, accent colours, exercise library, profiles/privacy/search): friends (requests, list, a friend's progress, block), challenges, My Gym, personal journey
+- Planned sub-projects (done: faster logging, exercise info, full-app review, smarter coaching/progress, look & feel, Arabic, accent colours, exercise library, profiles/privacy/search, friends): challenges, My Gym, personal journey; ready for more users: reporting, terms/privacy
 - Per-day target sets/reps in templates
 - CSV export for spreadsheets
 - GitHub Actions auto-deploy (`firebase init hosting:github`), offered but not set up

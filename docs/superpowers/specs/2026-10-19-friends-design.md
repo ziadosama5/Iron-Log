@@ -23,7 +23,7 @@ Challenges (sub-project 3), push notifications (paid plan), friend limits enforc
 - Both people need a username (and so a profile) to send or accept a request.
 
 ### `blocks/{blocker}_{blocked}`
-`{ blocker: uid, blocked: uid, updated: number }`. Readable and deletable only by the blocker.
+`{ blocker: uid, blocked: uid, name?: string (≤ 20, the blocked person's username), updated: number }`. Readable and deletable only by the blocker. `name` is optional so the Blocked list can show who it is after the friendship (which held the name) is deleted.
 
 ## Rules (all additions; `users/{uid}/items/*` and the sub-project 1 rules keep their meaning)
 - **friendships read/list:** only a person in `users` (`request.auth.uid in resource.data.users`). The app queries `where("users","array-contains",uid)`; nobody can read pairs they are not part of.

@@ -98,7 +98,7 @@ If a daily quota runs out, the app keeps working offline and saves the next day.
 **More › History & backup**: **Download backup** saves everything as a file, and **Restore from file** loads it into any account.
 
 ## Sharing and privacy
-People can pick a username and share a small progress summary (level, streaks, workout counts) as Private, Friends or Public; nothing is shared by default, and body data, meals and individual workouts are never shared. This is enforced by `firestore.rules` (deploy them with `firebase deploy --only firestore:rules`, and run `tests-rules/` first; it needs Java 21+).
+People can pick a username, share a small progress summary (level, streaks, workout counts) as Private, Friends or Public, and become friends by request and acceptance (a friend sees only that summary next to their own; anyone can block); nothing is shared by default, and body data, meals and individual workouts are never shared. This is enforced by `firestore.rules` (deploy them with `firebase deploy --only firestore:rules`, and run `tests-rules/` first; it needs Java 21+).
 
 ## Notes
 - **Offline:** the app caches your data on the device. You can log a workout with no signal, and it syncs when you're back online.
