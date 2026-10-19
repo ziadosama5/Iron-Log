@@ -2,6 +2,14 @@
 
 Everything planned in sub-projects 1-15 is shipped. This is what is still open, collected from every review ("deferred minors"), the specs' non-goals and the owner's ideas. Nothing here blocks normal use. The built-in Egyptian food table is a big separate project and is parked for later (see CLAUDE.md "Next step").
 
+## Unfinished projects (the big ones, none started)
+1. **Built-in Egyptian + everyday food table** (parked by the owner): pick foods with typical servings instead of typing calories; bundled data, Arabic + English search. Biggest remaining project.
+2. **Training depth:** target sets/reps and progression (per day or exercise), warm-up/drop set types, a bodyweight-exercise mode, injuries / exercises to avoid, several gyms (Home + Gym), templates adapted to the gym.
+3. **Social growth:** more challenge types (volume, PRs, streaks), rematch, chat/activity feed, notifications (need the paid plan or an alternative).
+4. **Running it for many users:** abuse protection (App Check / rate limits), quota monitoring, a report admin screen or e-mail, auto-deploy from GitHub, running rules tests and screenshot checks automatically.
+5. **Data and codebase:** CSV export; splitting the single 2,350-line `index.html` into modules.
+In progress now: the owner is testing the later features on a real phone; expect a bug-fix batch from that.
+
 ## A. Needs the owner (not code)
 1. **Read `public/privacy.html` and `public/terms.html`.** They are plain-language drafts, not legal advice. Check every promise matches what you want; consider a legal review (GDPR, Egypt's data protection law). `terms.html` does not mention challenges (the privacy policy does).
 2. **Try the later features on real phones** (journey, friends, challenges, My Gym, delete my account on a throwaway Google account, Arabic/RTL). Most of this was checked only in a headless browser with stubbed Firebase and the rules emulator.
