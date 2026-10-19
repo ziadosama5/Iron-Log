@@ -164,8 +164,14 @@ test("lookupResult: blank, invalid, and the same answer for missing and hidden",
 
 test("lookupResult: a found profile becomes a card, summary only when readable", () => {
   const prof = { username: "zed", displayName: "Zed", visibility: "public", summary: { level: 2 } };
-  assert.deepEqual(lookupResult("@Zed", { status: "found", profile: prof }), { kind: "card", card: { displayName: "Zed", username: "zed", summary: { level: 2 } } });
+  assert.deepEqual(lookupResult("@Zed", { status: "found", uid: "u2", profile: prof }), { kind: "card", card: { uid: "u2", displayName: "Zed", username: "zed", summary: { level: 2 } } });
   const noSummary = lookupResult("zed", { status: "found", profile: { username: "zed", displayName: "Zed" } });
   assert.equal(noSummary.card.summary, null);
-  assert.equal(lookupResult("Zed@Example.com", { status: "found", profile: prof }).kind, "card", "e-mail input is accepted");
+  assert.equal(lookupResult("Zed@Example.com", { status: "found", uid: "u2", profile: prof }).kind, "card", "e-mail input is accepted");
+});
+
+test("lookupResult: an existing username with an unreadable profile is a bare user; an e-mail never is", () => {
+  assert.deepEqual(lookupResult("@Hidden", { status: "hidden", uid: "u3", username: "hidden" }), { kind: "user", user: { uid: "u3", username: "hidden" } });
+  assert.deepEqual(lookupResult("hidden@example.com", { status: "hidden", uid: "u3", username: "hidden" }), { kind: "none" });
+  assert.deepEqual(lookupResult("hidden", { status: "hidden" }), { kind: "none" }, "no uid, no card");
 });

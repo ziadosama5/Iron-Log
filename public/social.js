@@ -107,13 +107,16 @@ export function shouldPublish({ visibility, last, next, lastAt, now, minGapMs = 
   return now - lastAt >= minGapMs;
 }
 
-// What the "Find a friend" box shows. A missing result and a hidden/unreadable one are the same {kind:"none"},
-// so a search can't tell whether someone exists but keeps their progress private.
+// What the "Find a friend" box shows. A username that exists but whose profile can't be read is a bare
+// {kind:"user"} (a request can still be sent); an e-mail search never reveals one, and a missing result is {kind:"none"}.
 export function lookupResult(input, outcome) {
   const raw = String(input ?? "").trim();
   if (!raw) return { kind: "empty" };
   if (!normalizeEmail(raw) && !validUsername(normalizeUsername(raw)).ok) return { kind: "invalid" };
+  if (outcome && outcome.status === "hidden" && outcome.uid && outcome.username && !normalizeEmail(raw)) {
+    return { kind: "user", user: { uid: outcome.uid, username: outcome.username } };
+  }
   if (!outcome || outcome.status !== "found" || !outcome.profile) return { kind: "none" };
   const p = outcome.profile;
-  return { kind: "card", card: { displayName: p.displayName, username: p.username, summary: p.summary || null } };
+  return { kind: "card", card: { uid: outcome.uid, displayName: p.displayName, username: p.username, summary: p.summary || null } };
 }

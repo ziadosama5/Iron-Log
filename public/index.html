@@ -454,12 +454,15 @@ const store = {
   async lookup(q){
     try{
       const raw=String(q||"").trim(), email=normalizeEmail(raw);
-      let uid=null;
+      let uid=null, byName=null;
       if(email){ const s=await getDoc(doc(fs,"emails",email)); if(s.exists()) uid=s.data().uid; }
-      else{ const name=normalizeUsername(raw); if(!validUsername(name).ok) return {status:"none"}; const s=await getDoc(doc(fs,"usernames",name)); if(s.exists()) uid=s.data().uid; }
+      else{ const name=normalizeUsername(raw); if(!validUsername(name).ok) return {status:"none"}; const s=await getDoc(doc(fs,"usernames",name)); if(s.exists()){ uid=s.data().uid; byName=name; } }
       if(!uid) return {status:"none"};
-      const p=await getDoc(doc(fs,"profiles",uid));
-      return p.exists()?{status:"found",uid,profile:p.data()}:{status:"none"};
+      try{
+        const p=await getDoc(doc(fs,"profiles",uid));
+        if(p.exists()) return {status:"found",uid,profile:p.data()};
+      }catch(e){}
+      return byName?{status:"hidden",uid,username:byName}:{status:"none"};
     }catch(e){ return {status:"none"}; }
   },
   write(id, body){
@@ -1468,7 +1471,7 @@ function findResultHtml(){
   const r=lookupResult(f.q,f.outcome);
   if(r.kind==="empty") return "";
   if(r.kind==="invalid") return `<span class="prev">Enter a username or a full e-mail address.</span>`;
-  if(r.kind==="none") return `<span class="prev">No one found</span>`;
+  if(r.kind==="none"||r.kind==="user") return `<span class="prev">No one found</span>`;
   const c=r.card;
   return `<div class="stack" style="gap:6px"><div class="row"><b class="grow">${esc(c.displayName)}</b><bdi dir="ltr" class="prev">@${esc(c.username)}</bdi></div>${c.summary?summaryLines(c.summary):`<span class="prev">Progress isn't shared with you</span>`}</div>`;
 }
