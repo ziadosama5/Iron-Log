@@ -394,7 +394,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
 const freshFriends=()=>({loaded:false,docs:[],blocks:[],data:{},open:null,confirm:null,renamed:false,q:"",found:null});
-let state = { gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
+let state = { gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -948,15 +948,20 @@ const GYM_GROUPS=[["weights","Weights"],["station","Stations"],["machine","Machi
 let gymSaveTimer=null;
 function renderGym(){
   const gym=state.settings.gym, on=new Set(Array.isArray(gym)?gym:[]), c=gymCounts(gym);
-  let h=`<h2>My Gym</h2><div class="card"><p class="prev" style="margin:0">Tick the equipment your gym has. Exercise suggestions then only offer what you can do.</p>
+  let h=`<h2>My Gym</h2><div class="card"><p class="prev" style="margin:0">Tick the equipment your gym has. Exercise suggestions then only offer what you can do. To see every exercise anyway, use Show all under the suggestions: your gym stays saved.</p>
     <span class="label">Start from</span><div class="chips">${GYM_PRESETS.map(p=>`<button class="chip" data-act="gym-preset" data-p="${p.id}" aria-pressed="${sameGym(gym,p.equipment)}">${esc(t(p.name))}</button>`).join("")}</div></div>`;
   h+=GYM_GROUPS.map(([g,label])=>`<div class="card"><h3>${label}</h3><div class="chips">${EQUIPMENT.filter(e=>e.group===g).map(e=>`<button class="chip" data-act="gym-toggle" data-id="${e.id}" aria-pressed="${on.has(e.id)}">${esc(eqLabel(e.id))}</button>`).join("")}</div></div>`).join("");
-  h+=`<div class="card"><span>${Array.isArray(gym)?esc(t("{a} of {b} items · {c} exercises available",{a:c.items,b:c.itemsTotal,c:c.exercises})):esc(t("Not set yet. Every exercise is suggested."))}</span>${Array.isArray(gym)?`<div class="row"><button class="btn small" data-act="gym-clear">Show everything</button></div>`:""}</div>`;
+  h+=`<div class="card"><span>${Array.isArray(gym)?esc(t("{a} of {b} items · {c} exercises available",{a:c.items,b:c.itemsTotal,c:c.exercises})):esc(t("Not set yet. Every exercise is suggested."))}</span>
+    <span class="prev" role="status">${state.gymStatus==="saving"?esc(t("Saving…")):state.gymStatus==="saved"?esc(t("Saved ✓")):""}</span>
+    <div class="row"><button class="btn primary" data-act="gym-done">Done</button></div></div>`;
+  if(Array.isArray(gym)) h+=state.gymConfirmClear
+    ?`<div class="card"><span>Clear your gym setup? Every exercise will be suggested again.</span><div class="row"><button class="btn small" data-act="gym-clear-no">Keep</button><button class="btn small danger" data-act="gym-clear-yes">Clear</button></div></div>`
+    :`<div class="row" style="justify-content:flex-end"><button class="btn ghost small" data-act="gym-clear">Clear my gym</button></div>`;
   $("#view-gym").innerHTML=h;
 }
 // Taps change the setting at once (suggestions follow); the Firestore write waits for a pause in tapping.
 function setGym(next){
-  state.gymEdit={gym:next}; state.settings={...state.settings,gym:next};
+  state.gymEdit={gym:next}; state.settings={...state.settings,gym:next}; state.gymStatus="saving";
   clearTimeout(gymSaveTimer);
   gymSaveTimer=setTimeout(flushGym,600);
   if(state.view==="gym") renderGym();
@@ -969,7 +974,10 @@ function gymHintHtml(){
   if(!showGymHint({gym:state.settings.gym,dismissed,synced:state.serverSynced})) return "";
   return `<div class="card"><p style="margin:0">Tell Iron Log what your gym has, so it only suggests exercises you can do.</p><div class="row"><button class="btn small primary" data-act="gym-hint-go">Set up</button><button class="btn small" data-act="gym-hint-no">Not now</button></div></div>`;
 }
-function flushGym(){ clearTimeout(gymSaveTimer); const e=state.gymEdit; state.gymEdit=null; if(e&&store.user) store.saveSettings({gym:e.gym}); }
+function flushGym(){
+  clearTimeout(gymSaveTimer); const e=state.gymEdit; state.gymEdit=null;
+  if(e&&store.user){ store.saveSettings({gym:e.gym}); state.gymStatus="saved"; if(state.view==="gym") renderGym(); }
+}
 function renderDays(){
   let h = gymHintHtml() + `<div class="row"><h2 class="grow">Training days</h2>${state.days.length?`<button class="btn small" data-act="add-day">+ Add day</button><button class="btn small" data-act="change-split">${state.pickSplit?t("Cancel"):t("Change split")}</button>`:""}</div>`;
   if (!state.days.length){
@@ -1875,7 +1883,10 @@ document.addEventListener("click",e=>{
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
     case "gym-preset":{ const p=GYM_PRESETS.find(x=>x.id===b.dataset.p); if(p) setGym([...p.equipment]); break; }
     case "gym-toggle":{ const cur=Array.isArray(state.settings.gym)?state.settings.gym:[], id=b.dataset.id; setGym(cur.includes(id)?cur.filter(x=>x!==id):[...cur,id]); break; }
-    case "gym-clear": dismissGymHint(); setGym(undefined); break;
+    case "gym-clear": state.gymConfirmClear=true; renderGym(); break;
+    case "gym-clear-no": state.gymConfirmClear=false; renderGym(); break;
+    case "gym-clear-yes": state.gymConfirmClear=false; dismissGymHint(); setGym(undefined); break;
+    case "gym-done": flushGym(); go("log"); openMore(); break;
     case "gym-hint-go": dismissGymHint(); go("gym"); break;
     case "gym-hint-no": dismissGymHint(); renderDays(); break;
     case "gym-showall": state.showAllGym=!state.showAllGym; render(); refreshSheets(); break;
