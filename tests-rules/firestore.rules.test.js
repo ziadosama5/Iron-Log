@@ -416,3 +416,117 @@ test("reports: a reported id longer than 128 characters is denied", async () => 
   const ok = "y".repeat(100);
   await assertSucceeds(setDoc(ref("u1", "reports", "u1_" + ok), report({ reported: ok })));
 });
+
+// ---- challenges/{cid} and challenges/{cid}/progress/{uid} ----
+const seedFriend = (a, b, status = "accepted") => seed(db => setDoc(doc(db, "friendships", pid(a, b)), { users: [a, b].sort(), requester: a, status, names: { [a]: "n" + a, [b]: "n" + b }, updated: 1 }));
+const chDoc = (o = {}) => ({ owner: "u1", members: ["u1", "u2", "u3"], joined: ["u1"], names: { u1: "ziad", u2: "zed", u3: "omar" }, start: "2026-10-19", weeks: 2, end: "2026-11-01", updated: 1, ...o });
+const seedCh = (o = {}) => seed(db => setDoc(doc(db, "challenges", "c1"), chDoc(o)));
+const chRef = (u, sub) => (sub ? doc(as(u, claims[u]), "challenges", "c1", "progress", sub) : doc(as(u, claims[u]), "challenges", "c1"));
+const progress = (o = {}) => ({ days: 3, updated: 1, ...o });
+
+test("challenges: the owner can create with 1 to 5 accepted friends, including the 6-member limit case", async () => {
+  await seedFriend("u1", "u2"); await seedFriend("u1", "u3");
+  await assertSucceeds(setDoc(chRef("u1"), chDoc()));
+  await assertSucceeds(setDoc(doc(as("u1", U1), "challenges", "c2"), chDoc({ members: ["u1", "u2"], names: { u1: "ziad", u2: "zed" } })));
+  for (const u of ["u4", "u5", "u6"]) await seedFriend("u1", u);
+  const six = { members: ["u1", "u2", "u3", "u4", "u5", "u6"], names: { u1: "a", u2: "b", u3: "c", u4: "d", u5: "e", u6: "f" } };
+  await assertSucceeds(setDoc(doc(as("u1", U1), "challenges", "c6"), chDoc(six)));
+});
+
+test("challenges: forged or malformed creates are denied", async () => {
+  await seedFriend("u1", "u2"); await seedFriend("u1", "u3", "pending");
+  const bad = [
+    ["pending friend invited", chDoc()],
+    ["not a friend at all", chDoc({ members: ["u1", "u9"], names: { u1: "a", u9: "b" } })],
+    ["only the owner", chDoc({ members: ["u1"], names: { u1: "a" } })],
+    ["owner is not first", chDoc({ members: ["u2", "u1"], names: { u1: "a", u2: "b" } })],
+    ["joined is not just the owner", chDoc({ members: ["u1", "u2"], joined: ["u1", "u2"], names: { u1: "a", u2: "b" } })],
+    ["created as someone else", chDoc({ owner: "u2", members: ["u2", "u1"], names: { u1: "a", u2: "b" } })],
+    ["weeks 3", chDoc({ members: ["u1", "u2"], names: { u1: "a", u2: "b" }, weeks: 3 })],
+    ["bad start", chDoc({ members: ["u1", "u2"], names: { u1: "a", u2: "b" }, start: "19/10/2026" })],
+    ["bad end", chDoc({ members: ["u1", "u2"], names: { u1: "a", u2: "b" }, end: "x" })],
+    ["a name is missing", chDoc({ members: ["u1", "u2"], names: { u1: "a" } })],
+    ["a name is too long", chDoc({ members: ["u1", "u2"], names: { u1: "a", u2: "x".repeat(21) } })],
+    ["extra key", { ...chDoc({ members: ["u1", "u2"], names: { u1: "a", u2: "b" } }), extra: 1 }]
+  ];
+  for (const [why, d] of bad) await assertFails(setDoc(chRef("u1"), d), why);
+  await seedFriend("u1", "u3");
+  for (const u of ["u4", "u5", "u6", "u7"]) await seedFriend("u1", u);
+  const seven = { members: ["u1", "u2", "u3", "u4", "u5", "u6", "u7"], names: { u1: "a", u2: "b", u3: "c", u4: "d", u5: "e", u6: "f", u7: "g" } };
+  await assertFails(setDoc(chRef("u1"), chDoc(seven)), "seven members");
+  await assertFails(setDoc(doc(anon(), "challenges", "c1"), chDoc()), "signed out");
+});
+
+test("challenges: only members can read or list; no unfiltered list", async () => {
+  await seedCh({ members: ["u1", "u2"], names: { u1: "a", u2: "b" } });
+  await assertSucceeds(getDoc(chRef("u1")));
+  await assertSucceeds(getDoc(chRef("u2")));
+  await assertFails(getDoc(chRef("u3")));
+  await assertSucceeds(getDocs(query(collection(as("u2", U2), "challenges"), where("members", "array-contains", "u2"))));
+  await assertFails(getDocs(query(collection(as("u3", U3), "challenges"), where("members", "array-contains", "u2"))));
+  await assertFails(getDocs(collection(as("u2", U2), "challenges")));
+});
+
+test("challenges: an invited member can accept once, changing only the joined list", async () => {
+  await seedCh();
+  await assertFails(updateDoc(chRef("u2"), { joined: ["u1", "u2"], start: "2026-10-20", updated: 2 }), "other field changed");
+  await assertFails(updateDoc(chRef("u2"), { joined: ["u1", "u2", "u3"], updated: 2 }), "adding someone else");
+  await assertFails(updateDoc(chRef("u2"), { joined: ["u1", "u2"], members: ["u1", "u2"], updated: 2 }), "removing a member while accepting");
+  await assertSucceeds(updateDoc(chRef("u2"), { joined: ["u1", "u2"], updated: 2 }));
+  await assertFails(updateDoc(chRef("u2"), { joined: ["u1", "u2", "u2"], updated: 3 }), "accepting twice");
+  await assertFails(updateDoc(chRef("u1"), { joined: ["u1", "u1"], updated: 3 }), "the owner accepting again");
+});
+
+test("challenges: a stranger cannot accept or change anything", async () => {
+  await seedCh({ members: ["u1", "u2"], names: { u1: "a", u2: "b" } });
+  await assertFails(updateDoc(chRef("u3"), { joined: ["u1", "u3"], updated: 2 }));
+  await assertFails(updateDoc(chRef("u3"), { members: ["u1", "u2", "u3"], joined: ["u1", "u3"], updated: 2 }));
+});
+
+test("challenges: a member can leave, the owner cannot, nobody can remove someone else", async () => {
+  await seedCh({ joined: ["u1", "u2"] });
+  await assertFails(updateDoc(chRef("u2"), { members: ["u1", "u2"], joined: ["u1", "u2"], updated: 2 }), "u2 removing u3");
+  await assertFails(updateDoc(chRef("u2"), { members: ["u1", "u3"], joined: ["u1"], weeks: 4, updated: 2 }), "leave plus another change");
+  await assertSucceeds(updateDoc(chRef("u2"), { members: ["u1", "u3"], joined: ["u1"], updated: 2 }));
+  await assertFails(updateDoc(chRef("u1"), { members: ["u3"], joined: [], updated: 3 }), "the owner leaving");
+  await assertSucceeds(updateDoc(chRef("u3"), { members: ["u1"], joined: ["u1"], updated: 3 }));
+});
+
+test("challenges: only the owner can delete", async () => {
+  await seedCh();
+  await assertFails(deleteDoc(chRef("u2")));
+  await assertSucceeds(deleteDoc(chRef("u1")));
+});
+
+test("progress: a joined member writes only their own score, within the challenge length", async () => {
+  await seedCh({ joined: ["u1", "u2"] });
+  await assertSucceeds(setDoc(chRef("u2", "u2"), progress()));
+  await assertSucceeds(setDoc(chRef("u2", "u2"), progress({ days: 14, updated: 2 })));
+  await assertFails(setDoc(chRef("u2", "u2"), progress({ days: 15 })), "over weeks*7");
+  await assertFails(setDoc(chRef("u2", "u2"), progress({ days: 29 })), "over 28");
+  await assertFails(setDoc(chRef("u2", "u2"), progress({ days: -1 })), "negative");
+  await assertFails(setDoc(chRef("u2", "u2"), progress({ days: "3" })), "string");
+  await assertFails(setDoc(chRef("u2", "u2"), { ...progress(), extra: 1 }), "extra key");
+  await assertFails(setDoc(chRef("u2", "u1"), progress()), "someone else's score");
+  await assertFails(setDoc(chRef("u3", "u3"), progress()), "invited but not joined");
+  await assertFails(setDoc(doc(as("u9", { email: "u9@x.com", email_verified: true }), "challenges", "c1", "progress", "u9"), progress()), "stranger");
+});
+
+test("progress: only joined members read or list; invited-only people and strangers cannot", async () => {
+  await seedCh({ joined: ["u1", "u2"] });
+  await seed(db => setDoc(doc(db, "challenges", "c1", "progress", "u2"), progress()));
+  await assertSucceeds(getDoc(chRef("u2", "u2")));
+  await assertSucceeds(getDoc(chRef("u1", "u2")));
+  await assertSucceeds(getDocs(collection(as("u2", U2), "challenges", "c1", "progress")));
+  await assertFails(getDoc(chRef("u3", "u2")));
+  await assertFails(getDocs(collection(as("u3", U3), "challenges", "c1", "progress")));
+});
+
+test("progress: delete by the person or the owner, not by another member", async () => {
+  await seedCh({ joined: ["u1", "u2", "u3"] });
+  await seed(db => setDoc(doc(db, "challenges", "c1", "progress", "u2"), progress()));
+  await assertFails(deleteDoc(chRef("u3", "u2")));
+  await assertSucceeds(deleteDoc(chRef("u1", "u2")));
+  await seed(db => setDoc(doc(db, "challenges", "c1", "progress", "u2"), progress()));
+  await assertSucceeds(deleteDoc(chRef("u2", "u2")));
+});

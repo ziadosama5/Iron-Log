@@ -25,6 +25,10 @@ service cloud.firestore {
     function pairPath(a, b) { return /databases/$(database)/documents/friendships/$(a < b ? a + '_' + b : b + '_' + a); }
     function blockPath(blocker, blocked) { return /databases/$(database)/documents/blocks/$(blocker + '_' + blocked); }
     function areFriends(uid) { return exists(pairPath(request.auth.uid, uid)) && get(pairPath(request.auth.uid, uid)).data.status == 'accepted'; }
+    function chPath(cid) { return /databases/$(database)/documents/challenges/$(cid); }
+    function isFriendOf(a, b) { return get(pairPath(a, b)).data.status == 'accepted'; }
+    function nameOk(names, uid) { return names[uid] is string && names[uid].size() >= 1 && names[uid].size() <= 20; }
+    function dateOk(d) { return d is string && d.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}'); }
     function otherOf(users) { return users[0] == request.auth.uid ? users[1] : users[0]; }
 
     function validUsername(n) {
@@ -167,6 +171,66 @@ service cloud.firestore {
                     && blockId == request.auth.uid + '_' + request.resource.data.blocked
                     && request.resource.data.updated is number;
       allow delete: if signedIn() && (resource == null || resource.data.blocker == request.auth.uid);
+    }
+
+    // A training-days challenge between friends. Only its members can see it; only the owner creates it (inviting
+    // accepted friends) and deletes it; an invited member can accept once or leave, and nothing else may change.
+    match /challenges/{cid} {
+      allow get, list: if signedIn() && request.auth.uid in resource.data.members;
+      allow create: if signedIn()
+                    && request.resource.data.keys().hasOnly(['owner', 'members', 'joined', 'names', 'start', 'weeks', 'end', 'updated'])
+                    && request.resource.data.keys().hasAll(['owner', 'members', 'joined', 'names', 'start', 'weeks', 'end', 'updated'])
+                    && request.resource.data.owner == request.auth.uid
+                    && request.resource.data.members is list
+                    && request.resource.data.members.size() >= 2 && request.resource.data.members.size() <= 6
+                    && request.resource.data.members[0] == request.auth.uid
+                    && request.resource.data.joined == [request.auth.uid]
+                    && request.resource.data.weeks in [1, 2, 4]
+                    && dateOk(request.resource.data.start) && dateOk(request.resource.data.end)
+                    && request.resource.data.updated is number
+                    && request.resource.data.names is map
+                    && nameOk(request.resource.data.names, request.resource.data.members[0])
+                    && nameOk(request.resource.data.names, request.resource.data.members[1])
+                    && (request.resource.data.members.size() <= 2 || nameOk(request.resource.data.names, request.resource.data.members[2]))
+                    && (request.resource.data.members.size() <= 3 || nameOk(request.resource.data.names, request.resource.data.members[3]))
+                    && (request.resource.data.members.size() <= 4 || nameOk(request.resource.data.names, request.resource.data.members[4]))
+                    && (request.resource.data.members.size() <= 5 || nameOk(request.resource.data.names, request.resource.data.members[5]))
+                    && isFriendOf(request.auth.uid, request.resource.data.members[1])
+                    && (request.resource.data.members.size() <= 2 || isFriendOf(request.auth.uid, request.resource.data.members[2]))
+                    && (request.resource.data.members.size() <= 3 || isFriendOf(request.auth.uid, request.resource.data.members[3]))
+                    && (request.resource.data.members.size() <= 4 || isFriendOf(request.auth.uid, request.resource.data.members[4]))
+                    && (request.resource.data.members.size() <= 5 || isFriendOf(request.auth.uid, request.resource.data.members[5]));
+      allow update: if signedIn()
+                    && request.auth.uid in resource.data.members
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joined', 'members', 'updated'])
+                    && request.resource.data.updated is number
+                    && (
+                      // accept: add myself to joined, nothing else
+                      (!(request.auth.uid in resource.data.joined)
+                        && request.resource.data.joined == resource.data.joined.concat([request.auth.uid])
+                        && request.resource.data.members == resource.data.members)
+                      ||
+                      // decline or leave: take myself off both lists (the owner deletes the challenge instead)
+                      (request.auth.uid != resource.data.owner
+                        && request.resource.data.members == resource.data.members.removeAll([request.auth.uid])
+                        && request.resource.data.joined == resource.data.joined.removeAll([request.auth.uid]))
+                    );
+      allow delete: if signedIn() && resource.data.owner == request.auth.uid;
+    }
+
+    // Each person's own score in a challenge (a day count only). Only joined members see the scores.
+    match /challenges/{cid}/progress/{uid} {
+      allow get, list: if signedIn() && request.auth.uid in get(chPath(cid)).data.joined;
+      allow create, update: if signedIn()
+                            && request.auth.uid == uid
+                            && request.auth.uid in get(chPath(cid)).data.joined
+                            && request.resource.data.keys().hasOnly(['days', 'updated'])
+                            && request.resource.data.keys().hasAll(['days', 'updated'])
+                            && request.resource.data.days is int
+                            && request.resource.data.days >= 0
+                            && request.resource.data.days <= get(chPath(cid)).data.weeks * 7
+                            && request.resource.data.updated is number;
+      allow delete: if signedIn() && (request.auth.uid == uid || request.auth.uid == get(chPath(cid)).data.owner);
     }
 
     // Reports about other people. Write-only: nobody can read, list or delete them in the app,
