@@ -54,6 +54,20 @@ const SPLITS = {
   ]
 };
 
+// The splits a person can pick, and the days per week each one supports.
+export const SPLIT_FAMILIES = [
+  { id: "full", name: "Full Body", days: [2, 3] },
+  { id: "upper-lower", name: "Upper / Lower", days: [2, 4, 6] },
+  { id: "ppl", name: "Push / Pull / Legs", days: [3, 6] },
+  { id: "bro", name: "Bro Split", days: [5] }
+];
+const FAMILY_SPLIT = { full: { 2: "full", 3: "full" }, "upper-lower": { 2: "upper-lower", 4: "upper-lower", 6: "upper-lower-x3" }, ppl: { 3: "ppl", 6: "ppl-x2" }, bro: { 5: "bro" } };
+// The plan split (a splitId for buildPlan) for a picked split and a days count; null when that split does not run that many days.
+export function splitFor(family, daysPerWeek) {
+  const m = Object.hasOwn(FAMILY_SPLIT, family) ? FAMILY_SPLIT[family] : null;
+  return m && Object.hasOwn(m, daysPerWeek) ? m[daysPerWeek] : null;
+}
+
 // The choices for a number of days, default first: [{id, name}].
 export function splitOptions(daysPerWeek, experience) {
   const list = SPLITS[daysPerWeek];

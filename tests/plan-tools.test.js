@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { LIB, MUSCLES, muscleOf, gymFilter, GYM_PRESETS } from "../public/exercise-library.js";
 import { AR } from "../public/lang-ar.js";
-import { EXPERIENCE, GOAL_DEFAULT_DAYS, movementFamily, buildPlan, splitOptions } from "../public/plan-tools.js";
+import { EXPERIENCE, GOAL_DEFAULT_DAYS, movementFamily, buildPlan, splitOptions, SPLIT_FAMILIES, splitFor } from "../public/plan-tools.js";
 
 const GOALS = ["fat-loss", "muscle", "recomp", "strength", "maintain"];
 const GYMS = [undefined, ...GYM_PRESETS.map(p => p.equipment)];
@@ -234,4 +234,29 @@ test("bro split: one muscle a day with more exercises for muscle goals, light fo
   assert.ok(chestH.exercises.length > chestL.exercises.length);
   assert.deepEqual(heavy.days.find(d => d.name === "Arms").focus, ["Biceps", "Triceps"]);
   assert.equal(heavy.split, "Bro Split");
+});
+
+test("SPLIT_FAMILIES: four splits to choose from, each with the days it supports", () => {
+  assert.deepEqual(SPLIT_FAMILIES.map(f => f.id), ["full", "upper-lower", "ppl", "bro"]);
+  assert.deepEqual(SPLIT_FAMILIES.map(f => f.name), ["Full Body", "Upper / Lower", "Push / Pull / Legs", "Bro Split"]);
+  assert.deepEqual(SPLIT_FAMILIES.map(f => f.days), [[2, 3], [2, 4, 6], [3, 6], [5]]);
+});
+
+test("splitFor maps a split and a days count to a plan split, always one of that day count's options", () => {
+  const want = { "full:2": "full", "full:3": "full", "upper-lower:2": "upper-lower", "upper-lower:4": "upper-lower", "upper-lower:6": "upper-lower-x3", "ppl:3": "ppl", "ppl:6": "ppl-x2", "bro:5": "bro" };
+  for (const f of SPLIT_FAMILIES) for (const d of f.days) {
+    assert.equal(splitFor(f.id, d), want[f.id + ":" + d], f.id + d);
+    for (const e of EXPERIENCE) {
+      assert.ok(splitOptions(d, e).some(o => o.id === splitFor(f.id, d)), f.id + d + e);
+      const p = buildPlan({ goal: "muscle", daysPerWeek: d, experience: e, splitId: splitFor(f.id, d) });
+      assert.equal(p.days.length, d);
+    }
+  }
+  assert.equal(splitFor("bro", 4), null, "a split with a days count it does not support");
+  assert.equal(splitFor("nope", 3), null);
+});
+
+test("choosing Push / Pull / Legs for 3 days gives Push, Pull, Legs even to a beginner", () => {
+  const p = buildPlan({ goal: "muscle", daysPerWeek: 3, experience: "beginner", splitId: splitFor("ppl", 3) });
+  assert.deepEqual(names(p), ["Push", "Pull", "Legs"]);
 });

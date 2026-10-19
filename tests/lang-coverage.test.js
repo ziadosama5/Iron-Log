@@ -144,6 +144,6 @@ test("my gym: labels shown through a condition have Arabic", () => {
 test("journey: labels, notes and split names shown through variables have Arabic", () => {
   const keys = ["Beginner", "Intermediate", "Advanced", "New to lifting, or coming back after a long break", "Training regularly for about a year or more",
     "Several years of consistent training", "Skip", "Start", "Next", "Male", "Female", "No {muscle} exercise fits your gym.", "{day} was left out: nothing in it fits your gym.",
-    "Full Body", "Push / Pull / Legs", "Upper / Lower", "Push / Pull / Legs + Upper / Lower", "Push / Pull / Legs ×2", "Push / Pull / Legs + Full Body", "Upper / Lower ×3", "Bro Split", "Bodyweight only", "Home", "Basic gym", "Full gym"];
+    "Full Body", "Push / Pull / Legs", "Upper / Lower", "Push / Pull / Legs + Upper / Lower", "Which split do you want?", "Not sure, suggest one", "Based on how many days you can train", "Every muscle each session · 2–3 days", "Upper body and lower body days · 2, 4 or 6 days", "Push, pull and leg days · 3 or 6 days", "One muscle group a day · 5 days", "Push / Pull / Legs ×2", "Push / Pull / Legs + Full Body", "Upper / Lower ×3", "Bro Split", "Bodyweight only", "Home", "Basic gym", "Full gym"];
   assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
 });
