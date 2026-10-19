@@ -102,6 +102,7 @@ svg.i.f{fill:currentColor;stroke:none}
 /* section switcher (pills) */
 #pills{margin-bottom:16px}
 .card:empty{display:none}
+.row>h2.grow{flex:1 1 150px}
 .dyn{display:contents}
 .pills{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px;margin:-2px}
 .pills::-webkit-scrollbar{display:none}
@@ -1292,7 +1293,7 @@ function tplGrid(confirmable){
     ${confirmable?"":`<button class="daypick" data-act="add-day"><span class="dayname" style="font-size:20px">Blank</span><small>Name your own days</small></button>`}</div>`;
 }
 function weekStrip(){
-  if(!state.days.some(d=>(d.weekdays||[]).length)) return `<p class="prev" style="margin:0">Tip: open a day and pick the weekdays you train it. The Workout tab will then pick today's day for you.</p>`;
+  if(!state.days.some(d=>(d.weekdays||[]).length)) return `<p class="prev" style="margin:0">Tip: open a day and pick the weekdays you train it. The Today tab will then pick today's day for you.</p>`;
   const tw=new Date().getDay();
   return `<div class="week">${WEEK.map(wd=>{ const d=dayForWeekday(wd);
     return `<div class="wd ${wd===tw?"today":""} ${d?"on":""}"><span class="label">${nameOf("weekday",WD[wd])}</span><span class="wdn">${d?esc(nameOf("day",d.name)):t("Rest")}</span></div>`; }).join("")}</div>`;

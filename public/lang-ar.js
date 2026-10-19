@@ -113,7 +113,7 @@ export const AR = {
     "Suggestions": "اقتراحات", "Pick the muscles this day trains to get exercise suggestions.": "اختر العضلات التي يدربها هذا اليوم لتظهر لك اقتراحات التمارين.",
     "Type any exercise": "اكتب أي تمرين", "Move day up": "نقل اليوم لأعلى", "Move day down": "نقل اليوم لأسفل",
     "Delete {name}?": "حذف {name}؟",
-    "Tip: open a day and pick the weekdays you train it. The Workout tab will then pick today's day for you.": "نصيحة: افتح يوماً واختر أيام الأسبوع التي تتدرب فيها عليه. سيختار تبويب التمرين يوم اليوم تلقائياً.", "Keep": "إبقاء", "Delete": "حذف", "Delete day": "حذف اليوم",
+    "Tip: open a day and pick the weekdays you train it. The Today tab will then pick today's day for you.": "نصيحة: افتح يوماً واختر أيام الأسبوع التي تتدرب فيها عليه. سيختار تبويب اليوم يوم اليوم تلقائياً.", "Keep": "إبقاء", "Delete": "حذف", "Delete day": "حذف اليوم",
 
     /* ---- Lifts (progress) ---- */
     "Progress": "التقدم", "Nothing to chart yet": "لا يوجد ما يُعرض بعد",
