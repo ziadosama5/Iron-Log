@@ -388,6 +388,7 @@ import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
+import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN } from "./challenges.js";
 import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
 import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney } from "./plan-tools.js";
@@ -408,8 +409,9 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
+const freshChallenges=()=>({loaded:false,docs:[],progress:{},open:null,last:{},lastAt:{},form:null,confirm:null});
 const freshFriends=()=>({report:null,loaded:false,docs:[],blocks:[],data:{},open:null,confirm:null,renamed:false,q:"",found:null});
-let state = { del:null, deletedNote:false, journey:null, journeyShown:false, gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
+let state = { challenges:freshChallenges(), del:null, deletedNote:false, journey:null, journeyShown:false, gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -427,13 +429,13 @@ const store = {
     getRedirectResult(auth).catch(e=>toast(signInError(e)));
     onAuthStateChanged(auth, user=>{
       if (this.unsub){ this.unsub(); this.unsub=null; }
-      this.stopFriends(); state.friends=freshFriends(); renderFriendsBadge();
+      this.stopFriends(); state.friends=freshFriends(); this.stopChallenges(); state.challenges=freshChallenges(); renderFriendsBadge();
       this.user=user; state.authed=!!user;
       showAccount(user);
       if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
       this.loadShare().then(()=>{ maybePublish(); refreshFriendNames(); if(state.view==="profile") renderProfile(); });
-      this.watchFriends();
+      this.watchFriends(); this.watchChallenges();
       this.col = collection(fs, "users", user.uid, "items");
       this.unsub = onSnapshot(this.col, { includeMetadataChanges:true }, snap=>{
         const ws=[], bs=[], food={}; let prog={}, prof={}, settings={rest:{}};
@@ -462,6 +464,25 @@ const store = {
     ];
   },
   stopFriends(){ this.fUnsub.forEach(u=>u()); this.fUnsub=[]; },
+  // Challenges I am in (members array-contains me), and the scores of the one I have open.
+  cUnsub:[], pUnsub:null,
+  watchChallenges(){
+    this.stopChallenges(); const uid=this.user.uid, c=state.challenges;
+    this.cUnsub=[ onSnapshot(query(collection(fs,"challenges"),where("members","array-contains",uid)), snap=>{
+      c.docs=snap.docs.map(d=>({id:d.id,...d.data()})); c.loaded=true; challengesChanged();
+    }, e=>console.error(e)) ];
+  },
+  stopChallenges(){ this.cUnsub.forEach(u=>u()); this.cUnsub=[]; this.stopProgress(); },
+  watchProgress(cid){
+    this.stopProgress(); const c=state.challenges; c.progress={};
+    this.pUnsub=onSnapshot(collection(fs,"challenges",cid,"progress"), snap=>{
+      const m={}; snap.docs.forEach(d=>{ const v=d.data(); m[d.id]={days:v.days,updated:v.updated}; });
+      c.progress=m; if(state.view==="challenges"&&c.open===cid){ if(typing()) renderPending=true; else renderChallenges(); }
+    }, e=>console.error(e));
+  },
+  stopProgress(){ if(this.pUnsub){ this.pUnsub(); this.pUnsub=null; } },
+  // A write plan from challenges.js as one batch (same reasons as friendAction: offline | denied | error).
+  challengeAction(plan){ return this.wiping?Promise.resolve({ok:false,reason:"error"}):this.friendAction(plan); },
   // Runs a write plan from friends.js as one batch. reason: offline | denied | error.
   async friendAction(plan){
     if(navigator.onLine===false) return {ok:false,reason:"offline"};
@@ -714,6 +735,31 @@ function loadFriendData(force){
   f.fetching=true;
   Promise.all(need.map(x=>store.friendProfile(x.uid))).then(()=>{ f.fetching=false; if(state.view==="friends"){ if(typing()) renderPending=true; else renderFriends(); } });
 }
+// My training-day count for every challenge I joined, written to my own progress document (a number, nothing else).
+// Same pattern as the profile summary: only after a server snapshot, only when the number changed, at most every 20 s per challenge.
+let progressTimer=null;
+function publishProgress(force){
+  const c=state.challenges, me=store.user&&store.user.uid;
+  if(!me||!state.authed||!state.serverSynced||store.wiping||!c.loaded) return;
+  const t=today(), now=Date.now(); let retry=0;
+  for(const ch of c.docs){
+    if(!ch.joined.includes(me)) continue;
+    const st=statusOf(ch,t); if(st==="upcoming") continue;
+    if(st==="finished"&&t>addDaysISO(ch.end,1)) continue;   // the score is final the day after the end
+    const days=countDays(state.workouts,ch.start,ch.end,t,trainedOn);
+    if(c.last[ch.id]===days) continue;
+    const wait=20000-(now-(c.lastAt[ch.id]||0));
+    if(!force&&wait>0){ retry=Math.max(retry,wait); continue; }
+    c.last[ch.id]=days; c.lastAt[ch.id]=now;
+    store.challengeAction(planProgress({cid:ch.id,me,days,now})).then(r=>{ if(!r.ok) delete c.last[ch.id]; });
+  }
+  clearTimeout(progressTimer); if(retry) progressTimer=setTimeout(()=>publishProgress(false),retry+50);
+}
+function challengesChanged(){
+  publishProgress(false); renderFriendsBadge();
+  if(state.view==="challenges"){ if(typing()) renderPending=true; else renderChallenges(); }
+}
+function renderChallenges(){}
 function renderFriends(){
   const f=state.friends, el=$("#view-friends"); if(!store.user) return;
   if(!f.loaded){ el.innerHTML=`<h2>Friends</h2><p class="prev">Loading…</p>`; return; }
@@ -2190,12 +2236,12 @@ let lastToday=today();
 function checkNewDay(){
   const t=today(); if(t===lastToday) return;
   state.date=rolloverDate(state.date,lastToday,t); state.bdate=rolloverDate(state.bdate,lastToday,t); state.cdate=rolloverDate(state.cdate,lastToday,t);
-  lastToday=t; stopEditing(); renderSoon();
+  lastToday=t; stopEditing(); renderSoon(); publishProgress(false);
 }
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkNewDay(); });
 setInterval(checkNewDay,60000);
 try{ state.deletedNote=sessionStorage.getItem("ironlog.deleted")==="1"; sessionStorage.removeItem("ironlog.deleted"); if(state.deletedNote) sessionStorage.removeItem("ironlog.wiping"); }catch(e){}
-store.init(()=>{ renderSoon(); checkBadges(); maybePublish(); refreshFriendNames(); maybeStartJourney(); });
+store.init(()=>{ renderSoon(); checkBadges(); maybePublish(); refreshFriendNames(); maybeStartJourney(); publishProgress(false); });
 })();
 </script>
 </body>
