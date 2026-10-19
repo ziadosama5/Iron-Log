@@ -19,7 +19,7 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 | 13 | Personal journey (setup questions → generated week of training days) | [spec](superpowers/specs/2026-10-19-personal-journey-design.md) | [plan](superpowers/plans/2026-10-19-personal-journey.md) | ✓ sw v21 |
 | 14 | Readiness pass (privacy policy + terms, delete my account and data, report a user) | [spec](superpowers/specs/2026-10-19-readiness-design.md) | [plan](superpowers/plans/2026-10-19-readiness.md) | ✓ sw v24 |
 | 15 | Challenges (consistency challenge between friends, live leaderboard) | [spec](superpowers/specs/2026-10-19-challenges-design.md) | [plan](superpowers/plans/2026-10-19-challenges.md) | ✓ sw v25 |
-| 16 | Redesign (five tabs, Bold Block look, levelling badges, podium, celebration cards) | [spec](superpowers/specs/2026-10-19-redesign-design.md) | [plan](superpowers/plans/2026-10-19-redesign.md) | ✓ sw v26 (built, pending deploy) |
+| 16 | Redesign (five tabs, Bold Block look, levelling badges, podium, celebration cards) | [spec](superpowers/specs/2026-10-19-redesign-design.md) | [plan](superpowers/plans/2026-10-19-redesign.md) | ✓ sw v26 |
 
 Open points (everything still to do or decide): [open-points.md](open-points.md). The built-in Egyptian food table is parked as a big later project.
 

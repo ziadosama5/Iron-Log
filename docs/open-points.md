@@ -1,4 +1,4 @@
-# Open points (as of 2026-10-19, app at sw v25 live; redesign v26 built, waiting for deploy approval)
+# Open points (as of 2026-10-19, app at sw v26, redesign live)
 
 Everything planned in sub-projects 1-15 is shipped. This is what is still open, collected from every review ("deferred minors"), the specs' non-goals and the owner's ideas. Nothing here blocks normal use. The built-in Egyptian food table is a big separate project and is parked for later (see CLAUDE.md "Next step").
 
