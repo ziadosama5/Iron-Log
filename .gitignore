@@ -1,3 +1,5 @@
 .firebase/
 .superpowers/
 node_modules/
+tools/screenshot-harness/index.html
+tools/screenshot-harness/shots/

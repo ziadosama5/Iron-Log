@@ -4,6 +4,16 @@ Gym logger web app (installable PWA) built for Ziad (Cairo, Egypt) and shared wi
 Each person signs in with Google and logs their own workouts, body measurements and InBody scans.
 Live at **https://gym-logger-85d4c.web.app** (Firebase project `gym-logger-85d4c`, free Spark plan).
 
+## How the pieces fit together (read this first)
+One page, one `state` object, one `store`. Everything below is wired through them, so a change in one place usually has a counterpart elsewhere:
+- **Sign-in → store.init:** `onAuthStateChanged` loads the private items (`onSnapshot` on `users/{uid}/items`), then `loadShare` (my `profiles/{uid}`), `watchFriends` (friendships + blocks) and `watchChallenges`. Each snapshot rebuilds `state`, then `render()`; the data callback also runs the **publishers** and one-time starters (`checkBadges`, `maybePublish`, `refreshFriendNames`, `maybeStartJourney`, `publishProgress`). Sign-out resets every part of `state`.
+- **Private vs shared:** private data lives only in `users/{uid}/items/*` (owner-only rules). Anything other people see is *derived on the phone and published by its owner*: the progress **summary** (`profiles/{uid}.summary`, only for Friends/Public), the **challenge score** (`challenges/{cid}/progress/{uid}`, a day count). Social documents (`profiles`, `usernames`, `emails`, `friendships`, `blocks`, `challenges`, `reports`) are never listed, only fetched by exact id or by an `array-contains me` query; `firestore.rules` + `tests-rules/` are the security boundary, the client is only convenience.
+- **Settings round trip:** the `settings` document is written ONLY through `settingsDoc()` (ui-helpers.js); a field must be carried in the snapshot parser, `store.saveSettings`, `settingsDoc` and `cleanSettings` (backup) or it is silently dropped (this bit My Gym once).
+- **Writes go through plans:** pure `plan*` functions (social.js, friends.js, challenges.js) return `{ops:[{op,path,data}]}`; `store.saveShare/friendAction/challengeAction` run them in one `writeBatch`. Every failure shows the same message (a block is never revealed). Writes need a connection (`navigator.onLine`).
+- **Delete my account** (`store.wipeAccount`) must know about every collection above (`wipePlan` in safety.js): add a step whenever a new top-level collection or per-user data appears, add it to the privacy policy (`privacy.html`, English + Arabic) and keep `store.wiping` guarding every background writer.
+- **Journey, My Gym, Coach, Days** share data: the journey writes `program` (days), `profile` and `settings.gym`; My Gym's `settings.gym` filters suggestions everywhere (`gymFilter`, never hides what is already in days/history); training days feed streaks, XP, badges, the shared summary and challenge scores through one rule (`trainedOn`).
+- **Language and offline:** every visible string needs an Arabic entry (`npm test` fails otherwise); every new `public/*.js` or page goes into `APP_SHELL` in sw.js and the `VERSION` is bumped on each deploy.
+
 ## Stack
 - **No build step, no framework.** One page: `public/index.html` (HTML + CSS + one `<script type="module">`), plain JS.
 - **Firebase JS SDK 10.12.2**, ES modules from `https://www.gstatic.com/firebasejs/10.12.2/...`
@@ -23,6 +33,7 @@ tools/import-exercises.mjs  dev script: downloads + recolors drawings, writes ex
 tools/draw-lib.mjs         helpers for hand-drawn figures (tapered capsules = slightly muscular body, equipment shapes)
 tools/draw-exercises.mjs   DRAWINGS: hand-drawn start/finish figures for the 14 exercises Everkinetic lacks (`"draw": true` in exercise-sources.json; the importer writes them). `node tools/draw-exercises.mjs --sheet out.html` makes a contact sheet
 tools/find-drawing.mjs     `node tools/find-drawing.mjs "leg curl"` finds Everkinetic drawings (and whether the files exist)
+tools/screenshot-harness/  dev only: runs the real page with stubbed Firebase for screenshots and write-order checks (README inside)
 tools/svg-tools.mjs         helpers for the import script (recolor, clean SVG). Unit-tested
 public/achievements.js      streaks, 24 badges (BADGES, earned dates by replaying history), XP/levels, goalProgress. Unit-tested
 public/energy.js            daily calories: weightOn, bmrFor, baselineBurn, liftMinutes/liftKcal, cardioKcal (MET table), exerciseKcal, dayEnergy. Unit-tested
@@ -147,6 +158,9 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
 - Logo: blue rounded square, white loaded barbell with a rising trend arrow above it; wordmark "IRON LOG" in Barlow Condensed 800.
 - Copy style: plain, direct, short; units kg and cm.
 
+## How a sub-project is built here
+Brainstorm in chat (one question at a time) → spec in `docs/superpowers/specs/` → plan in `docs/superpowers/plans/` → execute on a branch, test-first, one commit per task → one opus whole-branch review → fix pass (each fix RED→GREEN) → the owner approves the deploy explicitly → deploy (rules first when they changed, then hosting) → verify live → merge `--ff-only`, push, delete the branch. Dev tools: `npm test` (unit), `cd tests-rules && npm install && npm test` (rules emulator, needs Java 21; JDK at `C:\Program Files\Eclipse Adoptium\jdk-21.0.12.101-hotspot\bin`), `tools/screenshot-harness/` (the real page with stubbed Firebase, screenshots and write logs: see its README).
+
 ## Deploy / workflow
 ```
 git pull                                  # always before editing
@@ -166,9 +180,12 @@ firebase deploy --only hosting            # rules: firebase deploy --only firest
 - Phones keep old files until `sw.js` VERSION changes.
 - Home-screen icon may stay old until the app is removed and re-added.
 
+## Next step (queued, not started): built-in Egyptian food table
+Food logging today = manual kcal (+ optional protein/name) per meal (`f-YYYY-MM-DD`: `meals:[{id,name,kcal,protein}]`, Coach › Today card, `mealDraft`). Goal: pick a food (aish baladi, koshari, ful, taameya, feteer, molokhia, shawarma, sandwiches, snacks...) and get kcal/protein for a typical serving ("1 piece", "1 plate", grams) without knowing the numbers. **Decision:** a curated table bundled in the app (a few hundred Egyptian + everyday foods, Arabic + English names, search in both, per-100 g plus typical servings), NOT a live API. Research (2026-10-19): Open Food Facts is patchy for Egyptian dishes and its name search has no CORS; USDA FoodData Central is public domain with good generic foods but needs a key visible in the client (1,000 req/h per IP) and has no koshari/baklava; fatsecret/Edamam need secret keys; the real Egyptian source is the Nutrition Institute 1996 table (FAO INFOODS page). So: build from that table + recipes + USDA public-domain values; barcode lookup (Open Food Facts barcode API has CORS) could come later. Fit with the rest: a new pure module (`food-table.js`, unit-tested: search, portions, kcal scaling), a picker in the Coach Today card feeding the existing meal model (keep `name`/`kcal`/`protein` so Coach, XP, badges, summary and backups keep working), Arabic names via the i18n layer (`nameOf`-style, tests for missing Arabic), `APP_SHELL` + sw bump, backup unchanged (meals stay plain), and numbers shown as estimates with an editable portion.
+
 ## Ideas not built yet
 - Bodyweight-exercise mode; set types (warm-up / drop set)
-- Planned sub-projects (done: faster logging, exercise info, full-app review, smarter coaching/progress, look & feel, Arabic, accent colours, exercise library, profiles/privacy/search, friends, My Gym, personal journey): challenges; next: built-in Egyptian food table; ready for more users: reporting, terms/privacy
+- Done so far (sub-projects 1-15, see docs/README.md; the list below is only what is left): faster logging, exercise info, full-app review, smarter coaching/progress, look & feel, Arabic, accent colours, exercise library, profiles/privacy/search, friends, My Gym, personal journey): challenges; next: built-in Egyptian food table; ready for more users: reporting, terms/privacy
 - Per-day target sets/reps in templates
 - CSV export for spreadsheets
 - GitHub Actions auto-deploy (`firebase init hosting:github`), offered but not set up

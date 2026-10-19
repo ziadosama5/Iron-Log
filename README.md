@@ -1,13 +1,14 @@
 # Iron Log
 
 A gym logger you install on your phone. Log workouts set by set, track body weight, measurements and InBody scans, count calories in and out, and get coaching tips and achievements.
-Anyone can sign in with Google and log their own data. Each person only ever sees their own.
+Anyone can sign in with Google and log their own data. Your workouts, body data and food are private to you; if you choose, friends (or everyone) can see a small progress summary and you can challenge friends to train more days.
 
 Live: https://gym-logger-85d4c.web.app · runs free on Firebase's Spark plan · works offline.
 
 ## What it does
 
 - **Workout:** pick a training day and log one exercise at a time with big ± buttons. Sets prefill from last session, a rest timer starts after each set, and you can do exercises in any order. Add cardio (treadmill, elliptical, bike) with time and calories.
+- **Friends:** pick a username, choose who can see your progress summary (Private, Friends or Public), find people by exact username, send and accept friend requests, compare your numbers, block and report.
 - **Challenges:** challenge friends to train on more days over 1, 2 or 4 weeks, with a live leaderboard (only day counts are shared).
 - **Plan my training:** answer four quick questions (goal, days per week, gym, experience) and get a ready week of training days that fits you; new people get it on first sign-in.
 - **My Gym:** tick the equipment your gym has (or start from a preset) and exercise suggestions only offer what you can do.
@@ -15,7 +16,7 @@ Live: https://gym-logger-85d4c.web.app · runs free on Firebase's Spark plan · 
 - **Coach:** today's calories eaten vs target, calories burned (everyday + lifting + cardio), protein, quick meal logging, and tips based on your training and body data.
 - **Body:** quick weight entry, tape measurements, InBody scans and trend charts.
 - **Goals:** target weight with a finish estimate, streaks, 24 badges and levels.
-- **More:** edit training days (templates: PPL, Upper/Lower, Full Body, Bro Split), lift progress charts, history, backup/restore, light/dark theme.
+- **More:** edit training days (templates: PPL, Upper/Lower, Full Body, Bro Split), lift progress charts, history, backup/restore, English/Arabic, accent colours, light/dark theme, privacy policy and terms, delete my account.
 
 ## Folders
 
@@ -28,10 +29,11 @@ iron-log-firebase/
 │   ├── sw.js            offline cache — bump VERSION on every deploy
 │   └── firebase-config.js  ← your project config
 ├── tests/               unit tests (npm test)
-├── tools/               dev scripts: exercise info + drawings generator
+├── tests-rules/         security-rules tests in the Firebase emulator (own package.json, needs Java 21)
+├── tools/               dev scripts: exercise info + drawings generator, screenshot harness
 ├── brand/               logo source files (not served)
 ├── docs/                design specs and implementation plans
-├── firestore.rules      security: each user can only touch users/{their uid}/...
+├── firestore.rules      security: private data owner-only; profiles, friends, challenges and reports have their own rules
 ├── firebase.json        hosting + rules settings (tests run before every deploy)
 └── CLAUDE.md            detailed project notes (data model, structure, gotchas)
 ```
