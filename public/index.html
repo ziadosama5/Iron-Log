@@ -466,7 +466,6 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
   <button data-act="tab" data-tab="me"><svg class="i" aria-hidden="true"><use href="#i-me"/></svg>Me</button>
 </nav>
 <div class="toast" id="toast" popover="manual"></div>
-<datalist id="ex-list"></datalist>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -475,7 +474,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint } from "./ui-helpers.js";
+import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
@@ -1121,7 +1120,7 @@ function renderLog(){
 
   // A day with only cardio still asks which training day it is (the cardio is kept when one is picked).
   const cardioOnly = w && !w.dayId && !w.entries.length && w.dayName==="Cardio";
-  if (!w || state.pickDay || cardioOnly){ $("#view-log").innerHTML = h + dayPicker(cardioOnly&&!state.pickDay?null:w) + cardioCard() + todayCard(); fillDatalist(); refreshSheets(); syncWake(); return; }
+  if (!w || state.pickDay || cardioOnly){ $("#view-log").innerHTML = h + dayPicker(cardioOnly&&!state.pickDay?null:w) + cardioCard() + todayCard(); refreshSheets(); syncWake(); return; }
 
   const day = dayById(w.dayId), entries = w.entries, M = entries.length;
   const doneN = entries.filter(e=>e.done).length;
@@ -1147,7 +1146,7 @@ function renderLog(){
   const cardio=(w.cardio||[]), kgNow=weightOn(state.body,state.date);
   if (cardio.length) h += `<ul class="cardio-list">${cardio.map(c=>`<li><span class="grow">${cardioLabel(c.type)} · ${c.min} min · ${cardioText(c,kgNow)}</span><button class="btn ghost small danger" data-act="rm-cardio" data-id="${esc(c.id)}" aria-label="${esc(t("Delete {name} session",{name:cardioLabel(c.type)}))}">✕</button></li>`).join("")}</ul>`;
 
-  $("#view-log").innerHTML = h + todayCard(); fillDatalist(); refreshSheets(); syncWake();
+  $("#view-log").innerHTML = h + todayCard(); refreshSheets(); syncWake();
   // keep the open exercise's chip in view without scrolling the page
   const c=$("#exchips"), on=c&&c.querySelector('[aria-current="true"]');
   if(on){ const a=on.getBoundingClientRect(), b=c.getBoundingClientRect(); c.scrollLeft+=(a.left+a.width/2)-(b.left+b.width/2); }
@@ -1197,7 +1196,7 @@ function exSheetHtml(){
   if (sugg.length) h += sugg.map(g=>`<div class="stack" style="gap:6px"><span class="label">${esc(nameOf("muscle",g.muscle))}</span>${chips(g.items,"sheet:"+g.muscle)}</div>`).join("");
   else if (!day) h += `<div class="chips">${MUSCLES.map(m=>`<button class="chip" data-act="free-focus" data-m="${esc(m)}" aria-pressed="${(state.freeFocus||[]).includes(m)}">${esc(nameOf("muscle",m))}</button>`).join("")}</div>${
       (state.freeFocus||[]).length ? suggestionsFor(state.freeFocus, names).map(g=>chips(g.items,"sheet:"+g.muscle)).join("") : `<span class="prev">Pick a muscle group to see suggestions.</span>`}`;
-  return h + (day?gymNote(day.focus,names):gymNote(state.freeFocus||[],names)) + `<form class="row" id="add-ex-form" autocomplete="off"><input id="new-ex" list="ex-list" placeholder="Or type any exercise" style="flex:1 1 180px"><button class="btn primary" type="submit">Add</button></form></div>`;
+  return h + (day?gymNote(day.focus,names):gymNote(state.freeFocus||[],names)) + `<form class="row" id="add-ex-form" autocomplete="off"><input id="new-ex" list="exl-sheet" placeholder="Or type any exercise" style="flex:1 1 180px"><button class="btn primary" type="submit">Add</button></form>${exDatalist("exl-sheet",day?day.focus:(state.freeFocus||[]))}</div>`;
 }
 function cardioSheetHtml(){
   return `<div class="sheet-head"><h2>Cardio</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div>${cardioCard()}`;
@@ -1239,7 +1238,8 @@ function dayPicker(w){
     ${w?`<div class="row"><button class="btn ghost" data-act="cancel-pick">${esc(t("Keep {name}",{name:w.dayName?nameOf("day",w.dayName):t("current workout")}))}</button></div>`:""}
   </div>`;
 }
-function fillDatalist(){ $("#ex-list").innerHTML=typeaheadNames({history:exerciseNames(),dayNames:state.days.flatMap(d=>d.exercises||[]),all:ALL_EX,gym:activeGym()}).map(n=>`<option value="${esc(nameOf("ex",n))}">`).join(""); }
+// Suggestions while typing an exercise: limited to the muscles of the day (or the picked free-workout muscles); no focus = all.
+function exDatalist(id,focus){ return `<datalist id="${id}">${typeaheadNames({history:exerciseNames(),dayNames:state.days.flatMap(d=>d.exercises||[]),all:ALL_EX,gym:activeGym(),focus}).map(n=>`<option value="${esc(nameOf("ex",n))}">`).join("")}</datalist>`; }
 /* cardio card (Workout tab) */
 const CARDIO_LABEL={treadmill:"Treadmill",elliptical:"Elliptical",bike:"Bike",other:"Other"};
 const INT_LABEL={easy:"Easy",moderate:"Moderate",hard:"Hard"};
@@ -1486,7 +1486,7 @@ function renderDays(){
           <button class="btn ghost small" data-act="mv" data-id="${d.id}" data-k="${k}" data-d="1" aria-label="${esc(t("Move {name} down",{name:nameOf("ex",n)}))}" ${k===d.exercises.length-1?"disabled":""}>↓</button>
           <button class="btn ghost small danger" data-act="rm-dex" data-id="${d.id}" data-k="${k}" aria-label="${esc(t("Remove {name}",{name:nameOf("ex",n)}))}">✕</button></li>`).join("")}</ol>`:`<span class="prev">Tap suggestions below or type an exercise.</span>`}</div>
         ${(()=>{ const s=suggestionsFor(d.focus,d.exercises), note=gymNote(d.focus,d.exercises); return s.length?`<div class="stack" style="gap:10px"><span class="label">Suggestions</span>${s.map(g=>`<div class="stack" style="gap:6px"><span class="prev">${esc(nameOf("muscle",g.muscle))}</span>${chipRow(g.items,"day:"+d.id+":"+g.muscle,"add-dex",` data-id="${d.id}"`)}</div>`).join("")}${note}</div>`:(d.focus.length?note:`<span class="prev">Pick the muscles this day trains to get exercise suggestions.</span>`); })()}
-        <form class="row" data-form="add-dex" data-id="${d.id}" autocomplete="off"><input list="ex-list" placeholder="Type any exercise" style="flex:1 1 180px"><button class="btn" type="submit">Add</button></form>
+        <form class="row" data-form="add-dex" data-id="${d.id}" autocomplete="off"><input list="exl-${d.id}" placeholder="Type any exercise" style="flex:1 1 180px"><button class="btn" type="submit">Add</button></form>${exDatalist("exl-"+d.id,d.focus)}
         <div class="row" style="justify-content:space-between">
           <div class="row" style="gap:4px"><button class="btn ghost small" data-act="mv-day" data-id="${d.id}" data-d="-1" ${i===0?"disabled":""}>Move day up</button><button class="btn ghost small" data-act="mv-day" data-id="${d.id}" data-d="1" ${i===state.days.length-1?"disabled":""}>Move day down</button></div>
           ${state.confirmDayDel===d.id?`<div class="row" style="gap:6px"><span class="prev">${esc(t("Delete {name}?",{name:nameOf("day",d.name)}))}</span><button class="btn small" data-act="cancel-ddel">Keep</button><button class="btn small danger" data-act="del-day" data-id="${d.id}">Delete</button></div>`
@@ -1496,7 +1496,7 @@ function renderDays(){
     }
     h += `</div>`;
   });
-  $("#view-days").innerHTML=h; fillDatalist();
+  $("#view-days").innerHTML=h;
 }
 // Keep today's workout in step with edits to its training day:
 // new exercises are added, removed ones go if no sets were logged, order follows the day.
@@ -2011,7 +2011,7 @@ function historySummary(w,sets,v){
 }
 function backupCard(){
   let last=null; try{ last=localStorage.getItem("ironlog.lastBackup"); }catch(e){}
-  const age=last?Math.floor(daysAgo(last)):null;
+  const age=last?daysSince(last,today()):null;
   const status = last==null ? `<span class="prev" style="color:var(--danger)">No backup downloaded on this device yet.</span>`
     : age>=30 ? `<span class="prev" style="color:var(--danger)">${tn("Last backup {n} day ago. Time for a new one.","Last backup {n} days ago. Time for a new one.",age)}</span>`
     : `<span class="prev" style="color:var(--good)">${age===0?t("Last backup today."):tn("Last backup {n} day ago.","Last backup {n} days ago.",age)}</span>`;
@@ -2418,6 +2418,7 @@ document.addEventListener("click",e=>{
     case "close-ex": stopEditing(); state.openEx=null; renderLog(); break;
     case "done-ex":{
       stopEditing(); const w=ensureWorkout(); w.entries[ei].done=true; store.save(w);
+      if(state.rest&&state.rest.ex===w.entries[ei].ex) clearRest();
       const next=w.entries.slice(ei+1).concat(w.entries.slice(0,ei)).find(e=>!e.done);
       state.openEx=next?next.ex:undefined; renderLog();
       if(next){ scrollToOpen(); toast(t("Next up: {name}",{name:nameOf("ex",next.ex)})); } else { window.scrollTo({top:0,behavior:"smooth"}); toast(t("Workout complete. Nice work!")); }
@@ -2511,6 +2512,13 @@ try{ history.scrollRestoration="manual"; }catch(e){}
 window.addEventListener("offline",()=>setSync(t("Offline · saving on this phone")));
 window.addEventListener("online",()=>setSync(t("Back online · syncing…")));
 if ("serviceWorker" in navigator) {
+  // A new version takes over by itself (skipWaiting + claim), but the page already open keeps the old code. Reload once
+  // when that happens, and look for updates when the app comes back to the front; never while typing or in a sheet/flow.
+  const hadController=!!navigator.serviceWorker.controller; let reloadWanted=false;
+  const tryReload=()=>{ if(!reloadWanted||typing()||state.journey||document.querySelector("dialog[open]")) return; reloadWanted=false; location.reload(); };
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(hadController){ reloadWanted=true; tryReload(); } });
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible"){ navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{}); tryReload(); } });
+  document.addEventListener("focusout",()=>setTimeout(tryReload,500));
   window.addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(e=>console.warn("Offline cache unavailable",e)));
 }
 if(!configured) $("#signout").hidden=true;

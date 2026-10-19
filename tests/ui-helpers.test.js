@@ -53,3 +53,12 @@ test("showGymHint: only after the first sync, only while the gym is unset, never
   assert.equal(showGymHint({ gym: [], dismissed: false, synced: true }), false, "bodyweight only is a choice, not unset");
   assert.equal(showGymHint({ gym: ["barbell"], dismissed: false, synced: true }), false);
 });
+
+import { daysSince } from "../public/ui-helpers.js";
+test("daysSince counts whole calendar days and is never negative for today", () => {
+  assert.equal(daysSince("2026-10-20", "2026-10-20"), 0);
+  assert.equal(daysSince("2026-10-19", "2026-10-20"), 1);
+  assert.equal(daysSince("2026-09-20", "2026-10-20"), 30);
+  assert.equal(daysSince("2026-03-28", "2026-03-30"), 2);   // across a daylight-saving change
+  assert.equal(daysSince("2026-10-21", "2026-10-20"), 0);   // a date in the future clamps to 0
+});

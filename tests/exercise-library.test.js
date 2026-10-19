@@ -226,3 +226,12 @@ test("typeaheadNames: history and day exercises are never filtered, library name
   assert.deepEqual(typeaheadNames({ history: [], dayNames: [], all, gym: undefined }), all);
   assert.deepEqual(typeaheadNames({ history: ["Push-up"], dayNames: ["Push-up"], all, gym: [] }), ["Push-up"]);
 });
+
+test("typeaheadNames with a focus keeps only exercises of those muscles (own names too), unknown names are left out", () => {
+  const all = ["Squat", "Bench Press", "Leg Press", "Lateral Raise"];
+  const out = typeaheadNames({ history: ["Bench Press", "My Custom Move"], dayNames: ["Squat"], all, gym: null, focus: ["Quads"] });
+  assert.ok(out.includes("Squat") && out.includes("Leg Press"));
+  assert.ok(!out.includes("Bench Press") && !out.includes("Lateral Raise") && !out.includes("My Custom Move"));
+  // no focus (or an empty one) means everything, as before
+  assert.equal(typeaheadNames({ history: [], dayNames: [], all, gym: null, focus: [] }).length, 4);
+});

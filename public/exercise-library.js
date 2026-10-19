@@ -162,8 +162,10 @@ export function hiddenCount(lists, gym) {
 }
 
 // Names offered while typing an exercise: the person's own (history, days) always, library names through the gym filter.
-export function typeaheadNames({ history, dayNames, all, gym }) {
-  return [...new Set([...history, ...dayNames, ...gymFilter(all, gym)])];
+// With a focus (the muscles of the day being edited or trained) only exercises of those muscles are offered.
+export function typeaheadNames({ history, dayNames, all, gym, focus }) {
+  const names = [...new Set([...history, ...dayNames, ...gymFilter(all, gym)])];
+  return Array.isArray(focus) && focus.length ? names.filter(n => focus.includes(muscleOf(n))) : names;
 }
 
 // Same set of ids, in any order. Anything that is not an array is never the same as a list.

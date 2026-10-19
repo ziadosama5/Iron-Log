@@ -37,3 +37,9 @@ export function settingsDoc(s, now) {
 export function showGymHint({ gym, dismissed, synced }) {
   return synced === true && gym === undefined && !dismissed;
 }
+
+// Whole calendar days from a YYYY-MM-DD date to another (today by default the caller passes it); never negative.
+export function daysSince(date, today) {
+  const d = (new Date(today + "T12:00:00") - new Date(date + "T12:00:00")) / 864e5;
+  return Math.max(0, Math.round(d));
+}
