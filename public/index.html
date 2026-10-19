@@ -154,7 +154,8 @@ dialog.celebrate .face svg{width:48%;height:48%}
 dialog.celebrate .face.bronze{background:var(--bronze)} dialog.celebrate .face.silver{background:var(--silver)} dialog.celebrate .face.gold{background:var(--gold)}
 dialog.celebrate .face.lvl{background:var(--hero);color:var(--hero-ink);font:700 44px/1 var(--f-num)}
 dialog.celebrate h2{margin-bottom:6px}
-dialog.celebrate .stars{justify-content:center;margin-bottom:8px}
+dialog.celebrate .stars{display:flex;justify-content:center;margin-bottom:8px}
+dialog.celebrate .label{display:block;margin-bottom:4px}
 dialog.celebrate .stars svg{width:20px;height:20px}
 dialog.celebrate canvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none}
 @keyframes pop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
@@ -450,6 +451,8 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
   </div>
 </div>
 <dialog id="exinfo" class="sheet" aria-labelledby="exinfo-title"></dialog>
+<dialog id="familysheet" class="sheet" aria-labelledby="family-title"></dialog>
+<dialog id="celebrate" class="celebrate" aria-live="assertive"></dialog>
 <dialog id="exsheet" class="sheet" aria-label="Add an exercise"></dialog>
 <dialog id="cardiosheet" class="sheet" aria-label="Cardio"></dialog>
 <nav class="tabbar" id="nav" aria-label="Sections" hidden>
@@ -481,7 +484,8 @@ import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN, WEEK_CHOICES, 
 import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
 import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney } from "./plan-tools.js";
-import { FAMILIES, allFamilies, closestFamily, tierFor } from "./badge-art.js";
+import { FAMILIES, familyOf, allFamilies, closestFamily } from "./badge-art.js";
+import { buildCards, newWins } from "./celebrate.js";
 import { TABS, PILL_LABEL, tabOf, pillsFor, migrateView } from "./nav.js";
 import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername, lookupResult, shareLabel } from "./social.js";
 (function(){
@@ -910,14 +914,27 @@ function renderChallengePage(el){
   const prog={...c.progress}; if(ch.joined.includes(me)&&st!=="upcoming") prog[me]={days:countDays(state.workouts,ch.start,ch.end,t0,trainedOn)};
   const rows=rankMembers({members:ch.members,joined:ch.joined,progress:prog,names:ch.names}), final=t0>addDaysISO(ch.end,1), win=final?winners(rows,st):[];
   let h=`<div class="row"><button class="btn small" data-act="ch-back">Back</button></div><h2>${esc(chWeeksLabel(ch.weeks))}</h2><p class="prev" style="margin:0">${esc(chRange(ch))} · ${esc(chStatusText(ch,st))}</p>`;
-  h+=`<div class="card">${rows.map(r=>`<div class="chrow"><span class="rank">${r.rank===null?"–":r.rank}</span><span class="nm"><bdi dir="ltr">@${esc(r.name)}</bdi>${r.uid===me?" "+esc(t("(you)")):""}${r.joined?"":` <span class="prev">${esc(t("Invited"))}</span>`}</span><b>${r.days}</b>${r.joined?`<div class="chbar" role="img" aria-label="${esc(t("{n} of {m} days",{n:r.days,m:total}))}"><span style="width:${Math.min(100,Math.round(r.days/total*100))}%"></span></div>`:""}</div>`).join("")}</div>`;
+  h+=podiumHtml(rows,me)+`<div class="card">${rows.filter((r,i)=>i>=3||!r.joined).map(r=>`<div class="chrow"><span class="rank">${r.rank===null?"–":r.rank}</span><span class="nm"><bdi dir="ltr">@${esc(r.name)}</bdi>${r.uid===me?" "+esc(t("(you)")):""}${r.joined?"":` <span class="prev">${esc(t("Invited"))}</span>`}</span><b>${r.days}</b>${r.joined?`<div class="chbar" role="img" aria-label="${esc(t("{n} of {m} days",{n:r.days,m:total}))}"><span style="width:${Math.min(100,Math.round(r.days/total*100))}%"></span></div>`:""}</div>`).join("")}</div>`;
   if(st==="finished"&&!final) h+=`<p class="prev">${esc(t("Results after {d}",{d:fmtDate(addDaysISO(ch.end,1))}))}</p>`;
-  else if(st==="finished") h+=win.length?`<p><b>${esc(win.length>1?t("Winners: {name}",{name:win.map(u=>iso("@"+(ch.names[u]||"?"))).join(", ")}):t("Winner: {name}",{name:iso("@"+(ch.names[win[0]]||"?"))}))}</b></p>`:`<p class="prev">${esc(t("No winner this time."))}</p>`;
+  else if(st==="finished") h+=win.length?`<div class="winner"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg><span>${esc(win.length>1?t("Winners: {name}",{name:win.map(u=>iso("@"+(ch.names[u]||"?"))).join(", ")}):t("Winner: {name}",{name:iso("@"+(ch.names[win[0]]||"?"))}))}</span></div>`:`<p class="prev">${esc(t("No winner this time."))}</p>`;
   h+=`<p class="prev">Scores are self-reported. A final score is whatever each person last published.</p>`;
   const owner=ch.owner===me;
   h+=c.confirm?`<div class="card"><span>${esc(owner?t("Delete this challenge for everyone?"):t("Leave this challenge?"))}</span><div class="row"><button type="button" class="btn small" data-act="ch-no">Keep</button><button type="button" class="btn small danger" data-act="${owner?"ch-delete-yes":"ch-leave-yes"}" data-id="${esc(ch.id)}">${owner?"Delete":"Leave"}</button></div></div>`
     :`<div class="row"><button type="button" class="btn small danger" data-act="ch-confirm">${owner?"Delete challenge":"Leave challenge"}</button></div>`;
   el.innerHTML=h;
+  if(win.includes(me)){
+    let seenW=[]; try{ seenW=JSON.parse(lsGet("ironlog.seenWins")||"[]"); }catch(e){}
+    const fresh=newWins([{cid:ch.id,name:chRange(ch),finished:true,won:true}],Array.isArray(seenW)?seenW:[]);
+    if(fresh.length){ lsSet("ironlog.seenWins",JSON.stringify([...(Array.isArray(seenW)?seenW:[]),ch.id].slice(-50))); setTimeout(()=>showCelebrations(buildCards({wins:fresh})),250); }
+  }
+}
+function podiumHtml(rows,me){
+  const inn=rows.filter(r=>r.joined); if(inn.length<2) return "";
+  const top=inn.slice(0,3), order=top.length===3?[top[1],top[0],top[2]]:[top[1],top[0]];
+  return `<div class="podium" role="group" aria-label="${esc(t("Leaderboard"))}">${order.map(r=>{
+    const rk=Math.min(3,r.rank||3), cr=rk===1&&r.days>0?`<span class="crown"><svg class="i f" aria-hidden="true"><use href="#i-crown"/></svg></span>`:"";
+    return `<div class="step r${rk}">${cr}<span class="av" aria-hidden="true">${esc((r.name||"?").charAt(0).toUpperCase())}</span><span class="who"><bdi dir="ltr">@${esc(r.name)}</bdi>${r.uid===me?" "+esc(t("(you)")):""}</span><span class="blk">${r.rank||"–"}</span><span class="prev">${tn("{n} day","{n} days",r.days)}</span></div>`;
+  }).join("")}</div>`;
 }
 async function chDo(plan,okMsg){
   const r=await store.challengeAction(plan);
@@ -1740,14 +1757,14 @@ function balanceGood(goal,bal){
 }
 const kcalTxt=v=>v==null?"–":Math.round(v).toLocaleString("en-US");
 const signedTxt=v=>v==null?"–":(v>0?"+":v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString("en-US");
-function levelHero(){
+function levelHero(asButton=true){
   const input=goalsInput(), list=badges(input), xp=xpSummary(input,list), ts=trainingStreak(state.workouts,state.days,today());
   const cl=closestFamily(allFamilies(list)), C=2*Math.PI*25, off=C*(1-Math.min(1,Math.max(0,xp.into/xp.needed)));
-  const nxt=cl?`<div class="prev">${t("Next badge: {name}",{name:esc(nameOf("badge",cl.next.name))})} · ${esc(badgeProgress({...cl.next,earned:null}))}</div>`:"";
-  return `<button class="hero" data-act="hero-go" aria-label="${esc(t("Level {n}",{n:xp.level}))}">
+  const nxt=cl&&asButton?`<div class="prev">${t("Next badge: {name}",{name:esc(nameOf("badge",cl.next.name))})} · ${esc(badgeProgress({...cl.next,earned:null}))}</div>`:"";
+  return `<${asButton?'button class="hero" data-act="hero-go"':'div class="hero" role="group"'} aria-label="${esc(t("Level {n}",{n:xp.level}))}">
     <span class="ring"><svg viewBox="0 0 60 60" aria-hidden="true"><circle class="tr" cx="30" cy="30" r="25" fill="none" stroke-width="6"/><circle class="pr" cx="30" cy="30" r="25" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg><b>${xp.level}</b></span>
     <span class="grow stack" style="gap:3px"><span class="row" style="gap:8px"><b class="grow">${t("Level {n}",{n:xp.level})} · ${esc(nameOf("level",xp.title))}</b><span class="streakflag"><svg class="i" aria-hidden="true"><use href="#i-flame"/></svg>${tn("{n} week","{n} weeks",ts.weeks)}</span></span>
-      <span class="prev">${t("{a} / {b} XP to level {c} · +{d} XP this week",{a:xp.into.toLocaleString("en-US"),b:xp.needed.toLocaleString("en-US"),c:xp.level+1,d:xp.weekXp.toLocaleString("en-US")})}</span>${nxt}</span></button>`;
+      <span class="prev">${t("{a} / {b} XP to level {c} · +{d} XP this week",{a:xp.into.toLocaleString("en-US"),b:xp.needed.toLocaleString("en-US"),c:xp.level+1,d:xp.weekXp.toLocaleString("en-US")})}</span>${nxt}</span></${asButton?"button":"div"}>`;
 }
 function todayCard(){
   const d=state.date, p=state.profile, kg=weightOn(state.body,d), b=bmrFor(p,state.body,d);
@@ -1858,6 +1875,27 @@ function badgeProgress(b){
   if(id.startsWith("cardio")) return `${n(b.value)} / ${n(b.target)} min`;
   return `${n(b.value)} / ${n(b.target)}`;
 }
+const starsHtml=(level,of)=>Array.from({length:of},(_,i)=>`<svg class="i f ${i<level?"":"off"}" aria-hidden="true"><use href="#i-star"/></svg>`).join("");
+function familyTile(st){
+  const nm=nameOf("family",st.name), lv=t("Level {a} of {b}",{a:st.level,b:st.of});
+  return `<button class="tile ${st.tier}" data-act="family-open" data-id="${st.id}" aria-label="${esc(nm+", "+lv)}"><span class="face"><svg class="i" aria-hidden="true"><use href="#i-${st.icon}"/></svg></span><span class="stars" aria-hidden="true">${starsHtml(st.level,st.of)}</span><span class="nm">${esc(nm)}</span><span class="lv">${lv}</span>${st.next?`<span class="ebar" aria-hidden="true"><i style="width:${Math.round(st.pct*100)}%"></i></span><span class="bsub">${esc(badgeProgress({...st.next,earned:null}))}</span>`:`<span class="bsub">${t("All levels reached")}</span>`}</button>`;
+}
+function openFamily(id){
+  const fam=FAMILIES.find(x=>x.id===id); if(!fam) return;
+  const list=badges(goalsInput()), st=allFamilies(list).find(x=>x.id===id), dlg=$("#familysheet");
+  dlg.innerHTML=`<div class="sheet-head"><h2 id="family-title">${esc(nameOf("family",fam.name))}</h2><button class="btn ghost small" data-act="family-close" aria-label="Close">✕</button></div>
+    <div class="stack" style="margin-top:10px"><div class="row"><span class="stars" aria-hidden="true">${starsHtml(st.level,st.of)}</span><span class="prev">${t("Level {a} of {b}",{a:st.level,b:st.of})}</span></div>
+    <ul class="exlist">${st.steps.map((x,i)=>{ const b=list.find(y=>y.id===x.id); return `<li><span class="n">${i+1}</span><span class="t"><b>${esc(nameOf("badge",x.name))}</b></span><span class="prev">${esc(badgeProgress(b))}</span></li>`; }).join("")}</ul></div>`;
+  if(!dlg.open){ dlg.showModal(); history.pushState({family:1},""); }
+}
+function closeFamily(){ const d=$("#familysheet"); if(d.open) d.close(); }
+$("#familysheet").addEventListener("close",()=>{ if(history.state&&history.state.family) history.back(); });
+$("#familysheet").addEventListener("click",e=>{
+  if(e.target!==e.currentTarget) return;
+  const r=e.currentTarget.getBoundingClientRect();
+  if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeFamily();
+});
+window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.family)) closeFamily(); });
 function renderGoals(){
   const input=goalsInput(), list=badges(input), xp=xpSummary(input,list), g=goalProgress(input);
   const ts=trainingStreak(state.workouts,state.days,today()), fdays=foodStreak(state.food,today());
@@ -1872,30 +1910,69 @@ function renderGoals(){
     <p style="margin:0">${g.bankReached?t("Calorie target reached. Keep logging until the scale catches up."):g.finish?t("Estimated finish: {d}",{d:"<b>"+esc(fmtDateY(g.finish))+"</b>"}):g.awayFromGoal?t("At this pace you're moving away from your goal."):t("Log meals for a few days to estimate a finish date.")}</p>`;
   const dots=Array.from({length:ts.target},(_,i)=>i<ts.thisWeek?"●":"○").join("");
   const earned=list.filter(b=>b.earned).sort((a,b)=>a.earned<b.earned?1:a.earned>b.earned?-1:0), locked=list.filter(b=>!b.earned);
-  const tile=b=>`<div class="ach ${b.earned?"on":""}"><span class="medal" aria-hidden="true"></span><span class="bname">${esc(nameOf("badge",b.name))}</span><span class="prev bsub">${esc(badgeProgress(b))}</span></div>`;
   $("#view-goals").innerHTML=`<h2>Goals</h2>
-    <div class="card"><div class="row"><h3 class="grow">${t("Level {n}",{n:xp.level})} · ${nameOf("level",xp.title)}</h3><span class="num prev">${xp.xp.toLocaleString("en-US")} XP</span></div>
-      <div class="ebar" role="progressbar" aria-label="XP to next level" aria-valuemin="0" aria-valuemax="${xp.needed}" aria-valuenow="${xp.into}"><i style="width:${xp.into/xp.needed*100}%"></i></div>
-      <p class="prev" style="margin:0">${t("{a} / {b} XP to level {c} · +{d} XP this week",{a:xp.into.toLocaleString("en-US"),b:xp.needed.toLocaleString("en-US"),c:xp.level+1,d:xp.weekXp.toLocaleString("en-US")})}</p></div>
+    ${levelHero(false)}
     <div class="card"><h3>Target weight</h3>${goal}</div>
     <div class="card"><h3>Streaks</h3>
       <div class="row"><span class="grow">${t("Training: {x}",{x:"<b>"+tn("{n} week","{n} weeks",ts.weeks)+"</b>"})}</span><span class="dots" role="img" aria-label="${esc(t("{a} of {b} this week",{a:ts.thisWeek,b:ts.target}))}">${dots}</span><span class="prev">${t("{a} of {b} this week",{a:ts.thisWeek,b:ts.target})}</span></div>
       <div class="row"><span class="grow">${t("Food log: {x}",{x:"<b>"+tn("{n} day","{n} days",fdays)+"</b>"})}</span></div></div>
-    <div class="card"><h3>${t("Badges · {a} of {b}",{a:earned.length,b:list.length})}</h3><div class="achs">${earned.map(tile).join("")}${locked.map(tile).join("")}</div></div>`;
+    <div class="card"><h3>${t("Badges · {a} of {b}",{a:earned.length,b:list.length})}</h3><div class="wall">${allFamilies(list).map(familyTile).join("")}</div></div>`;
 }
 // New badges toast once (across devices). Runs only on server-confirmed data, so an empty offline
 // cache on a new device can't overwrite the saved list. First run marks existing badges silently.
+// Celebration cards: one full-screen card at a time (queue), short confetti burst, skipped for reduced motion.
+const celeQueue=[]; let celeOpen=false;
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function showCelebrations(cards){ cards.forEach(c=>celeQueue.push(c)); if(!celeOpen) nextCelebration(); }
+function nextCelebration(){
+  const d=$("#celebrate"), c=celeQueue.shift();
+  if(!c){ celeOpen=false; if(d.open) d.close(); return; }
+  celeOpen=true;
+  let face, label, title, line="", stars="";
+  if(c.kind==="badge"){
+    const fam=FAMILIES.find(x=>x.id===c.familyId);
+    face=`<div class="face ${c.tier}"><svg class="i" aria-hidden="true"><use href="#i-${fam.icon}"/></svg></div>`; stars=`<div class="stars" aria-hidden="true">${starsHtml(c.level,c.of)}</div>`;
+    label=t("New badge"); title=t("{name} · Level {n}",{name:nameOf("family",fam.name),n:c.level}); line=nameOf("badge",c.badgeName);
+  } else if(c.kind==="level"){
+    const input=goalsInput(), xp=xpSummary(input,badges(input));
+    face=`<div class="face lvl">${c.levelNow}</div>`; label=t("Level up!"); title=t("Level {n}",{n:c.levelNow}); line=nameOf("level",xp.title);
+  } else {
+    face=`<div class="face gold"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg></div>`; label=t("You won!"); title=t("You won the challenge"); line=c.challengeName||"";
+  }
+  d.innerHTML=`<canvas aria-hidden="true"></canvas>${face}${stars}<span class="label">${esc(label)}</span><h2>${esc(title)}</h2><p class="prev" style="margin:0 0 16px">${esc(line)}</p><button class="btn primary" data-act="cele-close" style="width:100%">${t("Nice!")}</button>`;
+  if(!d.open) d.showModal();
+  const b=d.querySelector("[data-act=cele-close]"); if(b) b.focus();
+  confetti(d.querySelector("canvas"));
+}
+$("#celebrate").addEventListener("close",()=>{ celeOpen=false; if(celeQueue.length) nextCelebration(); });
+function confetti(cv){
+  if(!cv||matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const dpr=Math.min(2,window.devicePixelRatio||1), W=cv.width=Math.round(innerWidth*dpr), H=cv.height=Math.round(innerHeight*dpr), ctx=cv.getContext("2d");
+  const acc=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#1f5fd1", cols=[acc,"#ffd84a","#7be0c3","#ff9c8a","#ffffff"];
+  const ps=Array.from({length:60},()=>({x:W/2,y:H*.4,vx:(Math.random()-.5)*14*dpr,vy:(-Math.random()*13-4)*dpr,s:(5+Math.random()*5)*dpr,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[Math.floor(Math.random()*cols.length)]}));
+  let t0=null;
+  (function frame(now){
+    if(t0===null) t0=now; const el=now-t0;
+    ctx.clearRect(0,0,W,H);
+    if(el>1300||!cv.isConnected) return;
+    ps.forEach(p=>{ p.vy+=.5*dpr; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.globalAlpha=Math.max(0,1-el/1300); ctx.fillStyle=p.c; ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6); ctx.restore(); });
+    requestAnimationFrame(frame);
+  })(performance.now());
+}
 let badgeRev=null;
 function checkBadges(){
   if(!state.authed||!state.serverSynced||store.wiping) return;
   if(badgeRev===state.dataRev) return;  // nothing changed since the last check
   badgeRev=state.dataRev;
-  const earned=badges(goalsInput()).filter(b=>b.earned), seen=state.settings.seenBadges;
-  if(seen===undefined){ store.saveSettings({seenBadges:earned.map(b=>b.id)}); return; }
+  const input=goalsInput(), list=badges(input), earned=list.filter(b=>b.earned), seen=state.settings.seenBadges, level=xpSummary(input,list).level;
+  if(seen===undefined){ store.saveSettings({seenBadges:earned.map(b=>b.id)}); lsSet("ironlog.level",String(level)); return; }  // first run: mark silently
   const fresh=earned.filter(b=>!seen.includes(b.id));
-  if(!fresh.length) return;
-  store.saveSettings({seenBadges:[...seen,...fresh.map(b=>b.id)]});
-  fresh.forEach((b,i)=>setTimeout(()=>toast(t("Badge earned: {name}",{name:nameOf("badge",b.name)})),i*2600));
+  if(fresh.length) store.saveSettings({seenBadges:[...seen,...fresh.map(b=>b.id)]});
+  const raw=lsGet("ironlog.level"), before=raw===null||!Number.isFinite(Number(raw))?null:Number(raw);
+  lsSet("ironlog.level",String(level));
+  const cards=buildCards({freshBadges:fresh,list,levelBefore:before,levelNow:level});
+  if(cards.length) showCelebrations(cards);
 }
 
 /* ---------- HISTORY ---------- */
@@ -1996,8 +2073,7 @@ $("#exinfo").addEventListener("click",e=>{
 });
 window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.exinfo)) closeExInfo(); });
 const SCREEN_TITLES={log:"Today",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Me",friends:"Friends",find:"Find a friend",gym:"My Gym",journey:"Plan my training",delete:"Delete my account",challenges:"Challenges"};
-// More sheet: Days, Lifts, History & backup, theme, account. Same open/close pattern as the info sheet.
-if(history.state&&(history.state.exinfo||history.state.more||history.state.sheet||history.state.journey)) history.replaceState(null,""); // reloaded while a sheet was open
+if(history.state&&(history.state.exinfo||history.state.family||history.state.sheet||history.state.journey)) history.replaceState(null,""); // reloaded while a sheet was open
 
 /* ---------- SCREEN WAKE LOCK ---------- */
 const wake = createWakeLock();
@@ -2310,6 +2386,9 @@ document.addEventListener("click",e=>{
     case "meal-name": $("#meal-name").value=state.mealDraft.name=nameOf("meal",b.dataset.name); break;
     case "rm-meal":{ const d=state.date; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderLog(); break; }
     case "hero-go": go("goals"); break;
+    case "family-open": openFamily(b.dataset.id); break;
+    case "family-close": closeFamily(); break;
+    case "cele-close": nextCelebration(); break;
     case "cardio-type": state.cardioDraft.type=b.dataset.v; renderLog(); break;
     case "cardio-int": state.cardioDraft.intensity=b.dataset.v; renderLog(); break;
     case "cardio-step":{ const d=state.cardioDraft; d.min=String(Math.max(1,Math.min(600,(parseInt(d.min,10)||0)+(+b.dataset.d)))); renderLog(); break; }
