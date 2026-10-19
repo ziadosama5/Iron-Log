@@ -16,7 +16,8 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 | 10 | Profiles, privacy and search (username, Private/Friends/Public summary, exact search) | [spec](superpowers/specs/2026-10-19-profiles-and-search-design.md) | [plan](superpowers/plans/2026-10-19-profiles-and-search.md) | ✓ sw v17 |
 | 11 | Friends (requests, friends list, a friend's progress next to yours, block) | [spec](superpowers/specs/2026-10-19-friends-design.md) | [plan](superpowers/plans/2026-10-19-friends.md) | ✓ sw v18 |
 | 12 | My Gym (equipment presets + checklist, filtered suggestions) | [spec](superpowers/specs/2026-10-19-my-gym-design.md) | [plan](superpowers/plans/2026-10-19-my-gym.md) | ✓ sw v19 |
+| 13 | Personal journey (setup questions → generated week of training days) | [spec](superpowers/specs/2026-10-19-personal-journey-design.md) | [plan](superpowers/plans/2026-10-19-personal-journey.md) | ✓ sw v21 |
 
-Next: **challenges** and the **personal journey**.
+Next: a small **readiness pass** (privacy policy, delete my data, reporting) and **challenges**.
 
 Plans describe the code at the time they were written. For how the app works today, read [CLAUDE.md](../CLAUDE.md).
