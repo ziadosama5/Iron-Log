@@ -346,6 +346,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
   <button class="more-row" data-act="more-go" data-view="days">Days<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="progress">Lifts<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="history">History &amp; backup<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+  <button class="more-row" data-act="more-journey">Plan my training<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="gym">My Gym<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="friends">Friends<span class="count" id="friends-count" hidden></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="profile">Profile and privacy<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
@@ -768,7 +769,7 @@ function gymNote(focus, exclude){
 function renderLog(){
   const w = workoutFor(state.date);
   const dateLabel = state.date===today()?t("Today"):fmtDate(state.date);
-  let h = `<div class="row">
+  let h = (state.days.length?"":journeyCard()) + `<div class="row">
     <div class="grow"><div class="label">Workout date</div><h2>${dateLabel}</h2></div>
     <input type="date" id="log-date" value="${state.date}" max="${today()}" style="width:auto">
   </div>`;
@@ -1065,9 +1066,9 @@ function flushGym(){
   if(e&&store.user){ store.saveSettings({gym:e.gym}); state.gymStatus="saved"; if(state.view==="gym") renderGym(); }
 }
 function renderDays(){
-  let h = gymHintHtml() + `<div class="row"><h2 class="grow">Training days</h2>${state.days.length?`<button class="btn small" data-act="add-day">+ Add day</button><button class="btn small" data-act="change-split">${state.pickSplit?t("Cancel"):t("Change split")}</button>`:""}</div>`;
+  let h = gymHintHtml() + `<div class="row"><h2 class="grow">Training days</h2>${state.days.length?`<button class="btn small" data-act="journey-open">Plan my training</button><button class="btn small" data-act="add-day">+ Add day</button><button class="btn small" data-act="change-split">${state.pickSplit?t("Cancel"):t("Change split")}</button>`:""}</div>`;
   if (!state.days.length){
-    h += `<p class="prev" style="margin:0">Start from a common split and edit it, or build your own from scratch.</p>${tplGrid(false)}`;
+    h += journeyCard() + `<p class="prev" style="margin:0">Start from a common split and edit it, or build your own from scratch.</p>${tplGrid(false)}`;
     $("#view-days").innerHTML=h; return;
   }
   if (state.pickSplit){
@@ -1968,6 +1969,7 @@ document.addEventListener("click",e=>{
     case "undone-ex":{ stopEditing(); const w=ensureWorkout(); w.entries[ei].done=false; state.openEx=w.entries[ei].ex; store.save(w); renderLog(); break; }
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
     case "journey-open": openJourney(false); break;
+    case "more-journey": closeMore(); setTimeout(()=>openJourney(false),150); break;
     case "jr-goal": { const j=state.journey; j.goal=b.dataset.v; if(!j.daysTouched) j.days=GOAL_DEFAULT_DAYS[j.goal]; renderJourney(); break; }
     case "jr-days": { const j=state.journey; j.days=+b.dataset.v; j.daysTouched=true; renderJourney(); break; }
     case "jr-gym": { const j=state.journey, v=b.dataset.v; if(v==="none"){ j.gymNone=true; j.gymChosen=false; j.preset=null; } else { j.gymNone=false; j.gymChosen=true; j.preset=v; } renderJourney(); break; }
