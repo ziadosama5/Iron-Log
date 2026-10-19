@@ -158,8 +158,9 @@ service cloud.firestore {
     match /blocks/{blockId} {
       allow get, list: if signedIn() && resource.data.blocker == request.auth.uid;
       allow create: if signedIn()
-                    && request.resource.data.keys().hasOnly(['blocker', 'blocked', 'updated'])
+                    && request.resource.data.keys().hasOnly(['blocker', 'blocked', 'name', 'updated'])
                     && request.resource.data.keys().hasAll(['blocker', 'blocked', 'updated'])
+                    && (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 20))
                     && request.resource.data.blocker == request.auth.uid
                     && request.resource.data.blocked is string
                     && request.resource.data.blocked != request.auth.uid

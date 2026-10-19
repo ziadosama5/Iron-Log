@@ -329,7 +329,9 @@ test("blocks: create only as the blocker with a matching id; only the blocker re
   await assertFails(setDoc(ref("u2", "blocks", "u1_u2"), { blocker: "u1", blocked: "u2", updated: 1 }));
   await assertFails(setDoc(ref("u1", "blocks", "u1_u3"), { blocker: "u1", blocked: "u2", updated: 1 }));
   await assertFails(setDoc(ref("u1", "blocks", "u1_u2"), { blocker: "u1", blocked: "u2", updated: 1, extra: 1 }));
-  await assertSucceeds(setDoc(ref("u1", "blocks", "u1_u2"), { blocker: "u1", blocked: "u2", updated: 1 }));
+  await assertFails(setDoc(ref("u1", "blocks", "u1_u2"), { blocker: "u1", blocked: "u2", name: "x".repeat(21), updated: 1 }));
+  await assertFails(setDoc(ref("u1", "blocks", "u1_u2"), { blocker: "u1", blocked: "u2", name: 5, updated: 1 }));
+  await assertSucceeds(setDoc(ref("u1", "blocks", "u1_u2"), { blocker: "u1", blocked: "u2", name: "zed", updated: 1 }));
   await assertSucceeds(getDoc(ref("u1", "blocks", "u1_u2")));
   await assertFails(getDoc(ref("u2", "blocks", "u1_u2")));
   await assertSucceeds(getDocs(query(collection(as("u1", U1), "blocks"), where("blocker", "==", "u1"))));

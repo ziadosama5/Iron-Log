@@ -32,10 +32,11 @@ test("planAccept, planRemove, planUnblock and planNameRefresh touch exactly one 
   assert.deepEqual(n.ops[0].data, { "names.u2": "zed2", updated: 4 });
 });
 
-test("planBlock sets the block first, then deletes the friendship", () => {
-  const r = planBlock({ me: "u1", other: "u2", now: 5 });
+test("planBlock sets the block first (with the person's name when known), then deletes the friendship", () => {
+  const r = planBlock({ me: "u1", other: "u2", otherName: "zed", now: 5 });
   assert.deepEqual(paths(r), ["set blocks/u1_u2", "delete friendships/u1_u2"]);
-  assert.deepEqual(r.ops[0].data, { blocker: "u1", blocked: "u2", updated: 5 });
+  assert.deepEqual(r.ops[0].data, { blocker: "u1", blocked: "u2", name: "zed", updated: 5 });
+  assert.deepEqual(planBlock({ me: "u1", other: "u2", now: 5 }).ops[0].data, { blocker: "u1", blocked: "u2", updated: 5 });
 });
 
 test("groupFriendships splits requests, friends, sent and blocked; ignores other pairs", () => {
@@ -46,12 +47,13 @@ test("groupFriendships splits requests, friends, sent and blocked; ignores other
     fd("u1", "u5", "accepted", { u1: "me", u5: "Ann" }, 2),
     fd("u7", "u8", "accepted", { u7: "x", u8: "y" }, 9)
   ];
-  const blocks = [{ blocker: "u1", blocked: "u9", updated: 4 }];
+  const blocks = [{ blocker: "u1", blocked: "u9", name: "spam", updated: 4 }];
   const g = groupFriendships(docs, "u1", blocks);
   assert.deepEqual(g.requests, [{ uid: "u2", name: "zed", updated: 5 }]);
   assert.deepEqual(g.sent, [{ uid: "u3", name: "omar", updated: 6 }]);
   assert.deepEqual(g.friends.map(f => f.name), ["Ann", "bob"]);
-  assert.deepEqual(g.blocked, [{ uid: "u9", name: null, updated: 4 }]);
+  assert.deepEqual(g.blocked, [{ uid: "u9", name: "spam", updated: 4 }]);
+  assert.equal(groupFriendships([], "u1", [{ blocker: "u1", blocked: "u8", updated: 1 }]).blocked[0].name, null);
 });
 
 test("relationTo covers all six states and a block wins over a friendship", () => {

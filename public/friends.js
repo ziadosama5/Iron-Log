@@ -22,9 +22,12 @@ export function planRemove({ me, other }) {
   return { ops: [{ op: "delete", path: pairPath(me, other) }] };
 }
 
-export function planBlock({ me, other, now }) {
+// otherName (optional) is kept on the block so the Blocked list can show who it is after the friendship is gone.
+export function planBlock({ me, other, otherName, now }) {
+  const data = { blocker: me, blocked: other, updated: now };
+  if (otherName) data.name = otherName;
   return { ops: [
-    { op: "set", path: blockPath(me, other), data: { blocker: me, blocked: other, updated: now } },
+    { op: "set", path: blockPath(me, other), data },
     { op: "delete", path: pairPath(me, other) }
   ] };
 }
@@ -53,7 +56,7 @@ export function groupFriendships(docs, me, blocks) {
     else if (d.requester === me) out.sent.push(item);
     else out.requests.push(item);
   }
-  for (const b of blocks || []) out.blocked.push({ uid: b.blocked, name: nameSeen[b.blocked] ?? null, updated: b.updated });
+  for (const b of blocks || []) out.blocked.push({ uid: b.blocked, name: b.name ?? nameSeen[b.blocked] ?? null, updated: b.updated });
   out.friends.sort((a, b) => String(a.name).toLowerCase() < String(b.name).toLowerCase() ? -1 : 1);
   for (const k of ["requests", "sent", "blocked"]) out[k].sort((a, b) => (b.updated || 0) - (a.updated || 0));
   return out;
