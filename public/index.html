@@ -328,6 +328,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
     <section id="view-friends" class="view" hidden></section>
     <section id="view-gym" class="view" hidden></section>
     <section id="view-journey" class="view" hidden></section>
+    <section id="view-delete" class="view" hidden></section>
   </main>
 </div>
 <div class="restbar" id="restbar" role="timer" aria-live="off" hidden>
@@ -359,6 +360,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
     <div class="seg" role="group" aria-label="Theme"><button data-act="theme-set" data-v="system">System</button><button data-act="theme-set" data-v="light">Light</button><button data-act="theme-set" data-v="dark">Dark</button></div></div>
   <a class="more-row" href="/privacy.html" target="_blank" rel="noopener">Privacy Policy<svg aria-hidden="true"><use href="#i-chev"/></svg></a>
   <a class="more-row" href="/terms.html" target="_blank" rel="noopener">Terms<svg aria-hidden="true"><use href="#i-chev"/></svg></a>
+  <button class="more-row" data-act="more-delete">Delete my account<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <div class="row" style="margin-top:14px"><span class="prev grow" id="acct-user" hidden></span><button class="btn secondary small" id="signout" hidden>Sign out</button></div>
 </dialog>
 <nav class="tabbar" id="nav" aria-label="Sections" hidden>
@@ -373,8 +375,8 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut, reauthenticateWithPopup, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, query, where, getDocs, terminate, clearIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
@@ -386,7 +388,7 @@ import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
-import { REPORT_REASONS, buildReport } from "./safety.js";
+import { REPORT_REASONS, buildReport, chunk, wipePlan } from "./safety.js";
 import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney } from "./plan-tools.js";
 import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername, lookupResult, shareLabel } from "./social.js";
@@ -407,7 +409,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
 const freshFriends=()=>({report:null,loaded:false,docs:[],blocks:[],data:{},open:null,confirm:null,renamed:false,q:"",found:null});
-let state = { journey:null, journeyShown:false, gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
+let state = { del:null, deletedNote:false, journey:null, journeyShown:false, gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -475,6 +477,40 @@ const store = {
     if(navigator.onLine===false) return {ok:false,reason:"offline"};
     try{ await setDoc(doc(fs,"reports",rep.id),rep.data); return {ok:true}; }
     catch(e){ console.error(e); return {ok:false,reason:"error"}; }
+  },
+  // Delete my account and data, in the order of wipePlan(). The Google account goes last; any failure stops the run and
+  // every step is safe to repeat. onStep(id) is called before each step. Returns {ok:true} or {ok:false, step, reason: cancelled|offline|error}.
+  async wipeAccount(onStep){
+    const u=this.user, uid=u.uid; let step="reauth";
+    if(navigator.onLine===false) return {ok:false,step,reason:"offline"};
+    const delAll=async refs=>{ for(const part of chunk(refs,450)){ const b=writeBatch(fs); part.forEach(r=>b.delete(r)); await b.commit(); } };
+    state.journeyShown=true;   // emptying the data must not start the setup journey
+    try{
+      onStep("reauth");
+      try{ const p=new GoogleAuthProvider(); if(u.email) p.setCustomParameters({login_hint:u.email}); await reauthenticateWithPopup(u,p); }
+      catch(e){ console.error(e); return {ok:false,step:"reauth",reason:"cancelled"}; }
+      const ps=await getDoc(doc(fs,"profiles",uid)), prof=ps.exists()?ps.data():null;
+      if(prof){
+        step="share"; onStep(step);
+        const b=writeBatch(fs), email=u.emailVerified?normalizeEmail(u.email):null;
+        b.delete(doc(fs,"profiles",uid)); b.delete(doc(fs,"usernames",prof.username));
+        if(prof.findByEmail&&email) b.delete(doc(fs,"emails",email));
+        await b.commit(); state.share.profile=null;
+      }
+      step="friendships"; onStep(step);
+      await delAll((await getDocs(query(collection(fs,"friendships"),where("users","array-contains",uid)))).docs.map(d=>d.ref));
+      step="blocks"; onStep(step);
+      await delAll((await getDocs(query(collection(fs,"blocks"),where("blocker","==",uid)))).docs.map(d=>d.ref));
+      step="items"; onStep(step);
+      await delAll((await getDocs(collection(fs,"users",uid,"items"))).docs.map(d=>d.ref));
+      step="device"; onStep(step);
+      this.stopFriends(); if(this.unsub){ this.unsub(); this.unsub=null; }
+      try{ Object.keys(localStorage).filter(k=>k.startsWith("ironlog.")).forEach(k=>localStorage.removeItem(k)); }catch(e){}
+      try{ await terminate(fs); await clearIndexedDbPersistence(fs); }catch(e){}
+      step="account"; onStep(step);
+      await deleteUser(auth.currentUser);
+      return {ok:true};
+    }catch(e){ console.error(e); return {ok:false,step,reason:"error"}; }
   },
   async friendProfile(uid){
     let p=null;
@@ -983,6 +1019,31 @@ function weekStrip(){
   return `<div class="week">${WEEK.map(wd=>{ const d=dayForWeekday(wd);
     return `<div class="wd ${wd===tw?"today":""} ${d?"on":""}"><span class="label">${nameOf("weekday",WD[wd])}</span><span class="wdn">${d?esc(nameOf("day",d.name)):t("Rest")}</span></div>`; }).join("")}</div>`;
 }
+/* ---------- DELETE MY ACCOUNT ---------- */
+function renderDelete(){
+  const d=state.del||(state.del={mode:"idle",cur:null,done:[],fail:null}), el=$("#view-delete"), offline=navigator.onLine===false;
+  let h=`<h2>Delete my account</h2><div class="card"><p style="margin:0">This permanently removes:</p><ul class="cardio-list"><li>Your workouts, body data, food and settings</li><li>Your shared profile and username</li><li>Your friendships and blocks</li><li>Your sign-in account</li></ul><p class="prev" style="margin:0">Reports you filed about others are kept. This cannot be undone.</p><div class="row"><button class="btn small" data-act="del-backup">Download backup</button></div></div>`;
+  if(d.mode==="running"||d.mode==="failed"){
+    h+=`<div class="card"><ul class="cardio-list">${wipePlan({hasProfile:!!state.share.profile||d.done.includes("share")||d.cur==="share"}).map(x=>`<li>${d.done.includes(x.id)?"✓ ":d.cur===x.id?(d.mode==="failed"?"✗ ":"… "):""}${esc(t(x.label))}</li>`).join("")}</ul></div>`;
+  }
+  if(d.mode==="failed"){
+    const f=d.fail||{}, late=f.step==="account"||f.step==="device";
+    h+=`<div class="card"><span>${esc(t(f.reason==="cancelled"?"Sign-in was cancelled.":f.reason==="offline"?"You're offline. Try again when you're back online.":late?"Your data is removed, but the sign-in account could not be deleted. Reload the app and open Delete my account again.":"Couldn't delete everything. Some of your data may already be removed. Try again."))}</span><div class="row">${late?`<button class="btn small primary" data-act="del-reload">Reload</button>`:`<button class="btn small danger" data-act="del-yes">Retry</button>`}</div></div>`;
+  }else if(d.mode==="confirm"){
+    h+=`<div class="card"><span>Delete your account and all your data? This cannot be undone.</span><div class="row"><button class="btn small" data-act="del-no">Keep</button><button class="btn small danger" data-act="del-yes">Delete</button></div></div>`;
+  }else if(d.mode==="idle"){
+    h+=`<div class="row">${offline?`<span class="prev grow">You're offline. Try again when you're back online.</span>`:""}<button class="btn danger" data-act="del-start" ${offline?"disabled":""}>Delete everything</button></div>`;
+  }
+  if(d.mode!=="running") h+=`<div class="row"><button class="btn" data-act="del-back">Back</button></div>`;
+  el.innerHTML=h;
+}
+async function runWipe(){
+  const d=state.del; d.mode="running"; d.done=[]; d.cur=null; d.fail=null; renderDelete();
+  const res=await store.wipeAccount(id=>{ if(d.cur) d.done.push(d.cur); d.cur=id; if(state.view==="delete") renderDelete(); });
+  if(res.ok){ try{ sessionStorage.setItem("ironlog.deleted","1"); }catch(e){} location.reload(); return; }
+  d.mode="failed"; d.fail=res; if(state.view==="delete") renderDelete();
+}
+
 /* ---------- JOURNEY (Plan my training) ---------- */
 const JR_EXP=[["beginner","Beginner","New to lifting, or coming back after a long break"],["intermediate","Intermediate","Training regularly for about a year or more"],["advanced","Advanced","Several years of consistent training"]];
 const jrSteps=()=>["goal","split","days","gym","experience",...(needsAbout(state.profile)?["about"]:[]),"preview"];
@@ -1672,7 +1733,7 @@ $("#exinfo").addEventListener("click",e=>{
   if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeExInfo(); // tap on the backdrop
 });
 window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.exinfo)) closeExInfo(); });
-const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Profile",friends:"Friends",gym:"My Gym",journey:"Plan my training"};
+const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Profile",friends:"Friends",gym:"My Gym",journey:"Plan my training",delete:"Delete my account"};
 // More sheet: Days, Lifts, History & backup, theme, account. Same open/close pattern as the info sheet.
 function openMore(){
   const d=$("#moresheet"), th=currentTheme();
@@ -1839,31 +1900,32 @@ async function shareResult(res,okMsg){
 }
 
 /* ---------- render + events ---------- */
-const VIEWS=["log","days","body","coach","goals","progress","history","profile","friends","gym","journey"];
+const VIEWS=["log","days","body","coach","goals","progress","history","profile","friends","gym","journey","delete"];
 function renderSignin(){
   const el=$("#view-signin");
+  const note=state.deletedNote?`<p class="prev" role="status" style="margin:0">${esc(t("Your account and data were deleted."))}</p>`:"";
   if(state.setup){ el.innerHTML=`<div class="card signin"><h2>Almost there</h2><p class="prev" style="margin:0">Paste your Firebase project's config into <b class="num">firebase-config.js</b>, then deploy again. The README walks through it step by step.</p></div>`; return; }
   el.innerHTML=`<div class="card signin" style="gap:16px">
     <svg aria-hidden="true" width="72" height="72" style="border-radius:18px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" ><defs><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2f74ea"/><stop offset="1" stop-color="#123c96"/></linearGradient></defs><rect width="512" height="512" rx="112" fill="url(#lg2)"/><rect x="76" y="327" width="360" height="22" rx="11" fill="#fff"/><rect x="126" y="263" width="40" height="150" rx="12" fill="#fff"/><rect x="91" y="286" width="30" height="104" rx="12" fill="#fff"/><rect x="70" y="312" width="12" height="52" rx="6" fill="#fff"/><rect x="346" y="263" width="40" height="150" rx="12" fill="#fff"/><rect x="391" y="286" width="30" height="104" rx="12" fill="#fff"/><rect x="430" y="312" width="12" height="52" rx="6" fill="#fff"/><path d="M120 214 L204 160 L268 186 L378 102" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/><path d="M318 96 L384 96 L384 162" fill="none" stroke="#fff" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <h2 style="font-size:30px">Iron Log</h2>
     <p class="prev" style="margin:0;font-size:15px">Log your sets, plan your training days, track body weight, measurements and InBody scans, and get coaching tips from your own data.</p>
     <button class="btn primary gbtn" data-act="signin"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34.1 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34.1 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Sign in with Google</button>
-    <p class="prev" style="margin:0">Your data is private to your account and syncs across your devices.</p>
+    <p class="prev" style="margin:0">Your data is private to your account and syncs across your devices.</p>${note}
     <p class="prev" style="margin:0">By continuing you accept the Terms and Privacy Policy below.</p>
     <div class="row" style="justify-content:center;gap:18px"><a href="/terms.html" target="_blank" rel="noopener">Terms</a><a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a></div></div>`;
 }
 function render(){
   const authed=state.authed;
-  $("#nav").hidden=!authed||state.view==="journey"; $("#view-signin").hidden=authed;
+  $("#nav").hidden=!authed||state.view==="journey"||state.view==="delete"; $("#view-signin").hidden=authed;
   if(!authed){ VIEWS.forEach(v=>$("#view-"+v).hidden=true); renderSignin(); syncWake(); return; }
   const inMore=["days","progress","history","profile","friends","gym"].includes(state.view);
   document.querySelectorAll(".tabbar button").forEach(b=>{ if(b.dataset.view===state.view||(inMore&&b.dataset.view==="more")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   $("#screen-title").textContent=t(SCREEN_TITLES[state.view]||"Iron Log");
   VIEWS.forEach(v=>$("#view-"+v).hidden=v!==state.view);
-  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory,profile:renderProfile,friends:renderFriends,gym:renderGym,journey:renderJourney})[state.view]();
+  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory,profile:renderProfile,friends:renderFriends,gym:renderGym,journey:renderJourney,delete:renderDelete})[state.view]();
   syncWake();
 }
-function go(view){ state.view=view; if(view!=="journey") try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
+function go(view){ state.view=view; if(view!=="journey"&&view!=="delete") try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
 
 let renameTimer=null;
 document.addEventListener("input",e=>{
@@ -2015,6 +2077,13 @@ document.addEventListener("click",e=>{
     case "undone-ex":{ stopEditing(); const w=ensureWorkout(); w.entries[ei].done=false; state.openEx=w.entries[ei].ex; store.save(w); renderLog(); break; }
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
     case "journey-open": openJourney(false); break;
+    case "more-delete": closeMore(); state.del=null; go("delete"); break;
+    case "del-start": state.del.mode="confirm"; renderDelete(); break;
+    case "del-no": state.del.mode="idle"; renderDelete(); break;
+    case "del-yes": runWipe(); break;
+    case "del-back": state.del=null; go("log"); break;
+    case "del-backup": exportData(); break;
+    case "del-reload": location.reload(); break;
     case "more-journey": { let opened=false; const open=()=>{ if(!opened){ opened=true; openJourney(false); } }; window.addEventListener("popstate",()=>setTimeout(open,0),{once:true}); setTimeout(open,800); closeMore(); break; }
     case "jr-goal": { const j=state.journey; j.goal=b.dataset.v; if(!j.daysTouched){ j.days=GOAL_DEFAULT_DAYS[j.goal]; j.split=null; jrFixDays(); } renderJourney(); break; }
     case "jr-days": { const j=state.journey; j.days=+b.dataset.v; j.daysTouched=true; j.split=null; renderJourney(); break; }
@@ -2084,7 +2153,7 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.matches?.("tr[data-act]")){ e.target.click(); return; } if(e.key==="Enter"){ const c=e.target.closest?.("[data-open]"); if(c&&e.target===c){ state.date=c.dataset.open; go("log"); } } });
 
-try{ const v=localStorage.getItem("ironlog.view"); if(VIEWS.includes(v)&&v!=="journey") state.view=v; }catch(e){}
+try{ const v=localStorage.getItem("ironlog.view"); if(VIEWS.includes(v)&&v!=="journey"&&v!=="delete") state.view=v; }catch(e){}
 $("#signout").addEventListener("click",()=>{ flushGym(); clearRest(); closeMore(); signOut(auth); });
 // Sheets add history entries; restoring the old scroll position when they close would undo
 // go()'s scroll-to-top (e.g. More → Lifts opening halfway down), so the app handles scrolling itself.
@@ -2115,6 +2184,7 @@ function checkNewDay(){
 }
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkNewDay(); });
 setInterval(checkNewDay,60000);
+try{ state.deletedNote=sessionStorage.getItem("ironlog.deleted")==="1"; sessionStorage.removeItem("ironlog.deleted"); }catch(e){}
 store.init(()=>{ renderSoon(); checkBadges(); maybePublish(); refreshFriendNames(); maybeStartJourney(); });
 })();
 </script>

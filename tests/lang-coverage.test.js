@@ -152,3 +152,10 @@ test("report panel: reason labels and buttons shown through variables have Arabi
   const keys = ["Inappropriate name or username", "Harassment", "Spam", "Something else", "Report", "Block this person", "Done", "Cancel"];
   assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
 });
+
+test("delete my account: progress labels and failure messages shown through variables have Arabic", () => {
+  const keys = ["Signing in again…", "Removing your shared profile…", "Removing friendships…", "Removing blocks…", "Removing your data…", "Clearing this device…", "Deleting your account…",
+    "Sign-in was cancelled.", "Your data is removed, but the sign-in account could not be deleted. Reload the app and open Delete my account again.",
+    "Couldn't delete everything. Some of your data may already be removed. Try again.", "You're offline. Try again when you're back online."];
+  assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
+});
