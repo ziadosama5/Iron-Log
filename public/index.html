@@ -543,7 +543,7 @@ const store = {
         }else{                // someone else's: my score, then I come off both lists
           const b=writeBatch(fs);
           b.delete(doc(fs,"challenges",cd.id,"progress",uid));
-          b.update(cd.ref,{members:ch.members.filter(m=>m!==uid),joined:ch.joined.filter(m=>m!==uid),updated:Date.now()});
+          b.update(cd.ref,{members:ch.members.filter(m=>m!==uid),joined:ch.joined.filter(m=>m!==uid),names:Object.fromEntries(Object.entries(ch.names||{}).filter(([m])=>m!==uid)),updated:Date.now()});
           await T(b.commit());
         }
       }
@@ -770,8 +770,9 @@ function publishProgress(force){
   for(const ch of c.docs){
     if(!ch.joined.includes(me)) continue;
     const st=statusOf(ch,t); if(st==="upcoming") continue;
-    if(st==="finished"&&t>addDaysISO(ch.end,1)) continue;   // the score is final the day after the end
-    const days=countDays(state.workouts,ch.start,ch.end,t,trainedOn);
+    if(addDaysISO(ch.start,ch.weeks*7-1)!==ch.end) continue;   // dates that do not match the length: never write
+    if(st==="finished"&&t>addDaysISO(ch.end,7)) continue;   // a week of grace after the end for late or offline scores
+    const days=Math.min(countDays(state.workouts,ch.start,ch.end,t,trainedOn),ch.weeks*7);
     if(c.last[ch.id]===days) continue;
     const wait=20000-(now-(c.lastAt[ch.id]||0));
     if(!force&&wait>0){ retry=Math.max(retry,wait); continue; }
@@ -798,13 +799,14 @@ function renderChallenges(){
   const inv=mine.filter(x=>!x.ch.joined.includes(me)&&x.st!=="finished"), act=mine.filter(x=>x.ch.joined.includes(me)&&x.st!=="finished"), fin=mine.filter(x=>x.ch.joined.includes(me)&&x.st==="finished");
   let h=`<div class="row"><h2 class="grow">Challenges</h2><button class="btn small primary" data-act="ch-new">New challenge</button></div>`;
   if(!mine.length) h+=`<div class="card"><p class="prev" style="margin:0">No challenges yet. Start one with your friends: whoever trains on more days wins.</p></div>`;
-  if(inv.length) h+=`<div class="card"><h3>Invitations</h3>${inv.map(({ch})=>`<div class="stack" style="gap:6px"><div><b>${esc(chWeeksLabel(ch.weeks))}</b> <span class="prev">${esc(chRange(ch))}</span></div><span class="prev">${esc(t("From {name}",{name:iso("@"+(ch.names[ch.owner]||"?"))}))}</span><div class="row"><button type="button" class="btn small primary" data-act="ch-accept" data-id="${esc(ch.id)}">Accept</button><button type="button" class="btn small" data-act="ch-decline" data-id="${esc(ch.id)}">Decline</button></div></div>`).join("")}</div>`;
+  if(inv.length) h+=`<div class="card"><h3>Invitations</h3>${inv.map(({ch})=>`<div class="stack" style="gap:6px"><div><b>${esc(chWeeksLabel(ch.weeks))}</b> <span class="prev">${esc(chRange(ch))}</span></div><span class="prev">${esc(t("From {name}",{name:iso("@"+(ch.names[ch.owner]||"?"))}))}</span>${ch.members.some(m=>m!==me&&m!==ch.owner)?`<span class="prev">${esc(t("With {names}",{names:ch.members.filter(m=>m!==me&&m!==ch.owner).map(m=>iso("@"+(ch.names[m]||"?"))).join(", ")}))}</span>`:""}${state.friends.blocks.some(b=>ch.members.includes(b.blocked))?`<span class="prev">${esc(t("Someone you blocked is in this challenge."))}</span>`:""}<div class="row">${state.friends.blocks.some(b=>ch.members.includes(b.blocked))?"":`<button type="button" class="btn small primary" data-act="ch-accept" data-id="${esc(ch.id)}">Accept</button>`}<button type="button" class="btn small" data-act="ch-decline" data-id="${esc(ch.id)}">Decline</button></div></div>`).join("")}</div>`;
   if(act.length) h+=`<div class="card"><h3>Active</h3>${act.map(x=>chRow(x.ch)).join("")}</div>`;
   if(fin.length) h+=`<div class="card"><h3>Finished</h3>${fin.map(x=>chRow(x.ch)).join("")}</div>`;
   el.innerHTML=h;
 }
 function chFriends(){ return groupFriendships(state.friends.docs,store.user.uid,state.friends.blocks).friends.filter(x=>x.name); }
 function renderChallengeForm(el){
+  if(!state.friends.loaded){ el.innerHTML=`<div class="row"><button class="btn small" data-act="ch-form-cancel">Cancel</button></div><h2>New challenge</h2><p class="prev">Loading…</p>`; return; }
   const f=state.challenges.form, friends=chFriends(), d=challengeDates({startChoice:f.start,weeks:f.weeks,today:today()});
   const full=chOpenCount()>=MAX_OPEN;
   let h=`<div class="row"><button class="btn small" data-act="ch-form-cancel">Cancel</button></div><h2>New challenge</h2>
@@ -822,10 +824,11 @@ function renderChallengePage(el){
   if(!ch){ c.open=null; store.stopProgress(); renderChallenges(); return; }
   const t0=today(), st=statusOf(ch,t0), total=ch.weeks*7;
   const prog={...c.progress}; if(ch.joined.includes(me)&&st!=="upcoming") prog[me]={days:countDays(state.workouts,ch.start,ch.end,t0,trainedOn)};
-  const rows=rankMembers({members:ch.members,joined:ch.joined,progress:prog,names:ch.names}), win=winners(rows,st);
+  const rows=rankMembers({members:ch.members,joined:ch.joined,progress:prog,names:ch.names}), final=t0>addDaysISO(ch.end,1), win=final?winners(rows,st):[];
   let h=`<div class="row"><button class="btn small" data-act="ch-back">Back</button></div><h2>${esc(chWeeksLabel(ch.weeks))}</h2><p class="prev" style="margin:0">${esc(chRange(ch))} · ${esc(chStatusText(ch,st))}</p>`;
   h+=`<div class="card">${rows.map(r=>`<div class="chrow"><span class="rank">${r.rank===null?"–":r.rank}</span><span class="nm"><bdi dir="ltr">@${esc(r.name)}</bdi>${r.uid===me?" "+esc(t("(you)")):""}${r.joined?"":` <span class="prev">${esc(t("Invited"))}</span>`}</span><b>${r.days}</b>${r.joined?`<div class="chbar" role="img" aria-label="${esc(t("{n} of {m} days",{n:r.days,m:total}))}"><span style="width:${Math.min(100,Math.round(r.days/total*100))}%"></span></div>`:""}</div>`).join("")}</div>`;
-  if(st==="finished") h+=win.length?`<p><b>${esc(win.length>1?t("Winners: {name}",{name:win.map(u=>"@"+(ch.names[u]||"?")).join(", ")}):t("Winner: {name}",{name:iso("@"+(ch.names[win[0]]||"?"))}))}</b></p>`:`<p class="prev">${esc(t("No winner this time."))}</p>`;
+  if(st==="finished"&&!final) h+=`<p class="prev">${esc(t("Results after {d}",{d:fmtDate(addDaysISO(ch.end,1))}))}</p>`;
+  else if(st==="finished") h+=win.length?`<p><b>${esc(win.length>1?t("Winners: {name}",{name:win.map(u=>iso("@"+(ch.names[u]||"?"))).join(", ")}):t("Winner: {name}",{name:iso("@"+(ch.names[win[0]]||"?"))}))}</b></p>`:`<p class="prev">${esc(t("No winner this time."))}</p>`;
   h+=`<p class="prev">Scores are self-reported. A final score is whatever each person last published.</p>`;
   const owner=ch.owner===me;
   h+=c.confirm?`<div class="card"><span>${esc(owner?t("Delete this challenge for everyone?"):t("Leave this challenge?"))}</span><div class="row"><button type="button" class="btn small" data-act="ch-no">Keep</button><button type="button" class="btn small danger" data-act="${owner?"ch-delete-yes":"ch-leave-yes"}" data-id="${esc(ch.id)}">${owner?"Delete":"Leave"}</button></div></div>`
@@ -857,7 +860,7 @@ function chClick(act,d){
       return; }
     case "ch-open": c.open=d.id; c.confirm=null; store.watchProgress(d.id); renderChallenges(); window.scrollTo(0,0); return;
     case "ch-back": c.open=null; c.confirm=null; store.stopProgress(); renderChallenges(); return;
-    case "ch-accept": if(ch) chDo(planAcceptChallenge({cid:ch.id,me,current:ch,now}),"You joined the challenge").then(ok=>{ if(ok) publishProgress(true); }); return;
+    case "ch-accept": if(ch&&chOpenCount()>=MAX_OPEN){ toast(t("You are already in the most challenges allowed. Finish or leave one first.")); return; } if(ch) chDo(planAcceptChallenge({cid:ch.id,me,current:ch,now}),"You joined the challenge").then(ok=>{ if(ok) publishProgress(true); }); return;
     case "ch-decline": if(ch) chDo(planLeave({cid:ch.id,me,current:ch,now}),"Declined"); return;
     case "ch-confirm": c.confirm=true; renderChallenges(); return;
     case "ch-no": c.confirm=null; renderChallenges(); return;
@@ -1183,7 +1186,7 @@ function weekStrip(){
 /* ---------- DELETE MY ACCOUNT ---------- */
 function renderDelete(){
   const d=state.del||(state.del={mode:"idle",cur:null,done:[],fail:null}), el=$("#view-delete"), offline=navigator.onLine===false;
-  let h=`<h2>Delete my account</h2><div class="card"><p style="margin:0">This permanently removes:</p><ul class="cardio-list"><li>Your workouts, body data, food and settings</li><li>Your shared profile and username</li><li>Your friendships and blocks</li><li>Your sign-in account</li></ul><p class="prev" style="margin:0">Reports you filed about others are kept. This cannot be undone.</p><div class="row"><button class="btn small" data-act="del-backup">Download backup</button></div></div>`;
+  let h=`<h2>Delete my account</h2><div class="card"><p style="margin:0">This permanently removes:</p><ul class="cardio-list"><li>Your workouts, body data, food and settings</li><li>Your shared profile and username</li><li>Your friendships and blocks</li><li>Your challenges</li><li>Your sign-in account</li></ul><p class="prev" style="margin:0">Reports you filed about others are kept. This cannot be undone.</p><div class="row"><button class="btn small" data-act="del-backup">Download backup</button></div></div>`;
   if(d.mode==="running"||d.mode==="failed"){
     h+=`<div class="card"><ul class="cardio-list">${wipePlan({hasProfile:!!state.share.profile||d.done.includes("share")||d.cur==="share"}).map(x=>`<li>${d.done.includes(x.id)?"✓ ":d.cur===x.id?(d.mode==="failed"?"✗ ":"… "):""}${esc(t(x.label))}</li>`).join("")}</ul></div>`;
   }

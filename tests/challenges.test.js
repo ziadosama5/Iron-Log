@@ -112,7 +112,7 @@ test("planCreate rejects bad input", () => {
 });
 
 test("planAccept adds me to joined once; planLeave deletes my progress first and never lets the owner leave", () => {
-  const cur = { owner: "u1", members: ["u1", "u2", "u3"], joined: ["u1"] };
+  const cur = { owner: "u1", members: ["u1", "u2", "u3"], joined: ["u1"], names: { u1: "ziad", u2: "zed", u3: "omar" } };
   const a = planAccept({ cid: "c1", me: "u2", current: cur, now: 5 });
   assert.deepEqual(paths(a), ["update challenges/c1"]);
   assert.deepEqual(a.ops[0].data, { joined: ["u1", "u2"], updated: 5 });
@@ -120,7 +120,7 @@ test("planAccept adds me to joined once; planLeave deletes my progress first and
   assert.throws(() => planAccept({ cid: "c1", me: "u9", current: cur, now: 5 }), "not invited");
   const l = planLeave({ cid: "c1", me: "u2", current: { ...cur, joined: ["u1", "u2"] }, now: 6 });
   assert.deepEqual(paths(l), ["delete challenges/c1/progress/u2", "update challenges/c1"]);
-  assert.deepEqual(l.ops[1].data, { members: ["u1", "u3"], joined: ["u1"], updated: 6 });
+  assert.deepEqual(l.ops[1].data, { members: ["u1", "u3"], joined: ["u1"], names: { u1: "ziad", u3: "omar" }, updated: 6 }, "my username leaves with me");
   assert.throws(() => planLeave({ cid: "c1", me: "u1", current: cur, now: 6 }), "owner cannot leave");
 });
 

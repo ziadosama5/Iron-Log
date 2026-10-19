@@ -86,12 +86,12 @@ export function planAccept({ cid, me, current, now }) {
   return { ops: [{ op: "update", path: chPath(cid), data: { joined: [...current.joined, me], updated: now } }] };
 }
 
-// Leaving or declining: my score goes first, then I come off both lists. The owner deletes the challenge instead.
+// Leaving or declining: my score goes first, then I come off both lists and my username comes off the names. The owner deletes the challenge instead.
 export function planLeave({ cid, me, current, now }) {
   if (me === current.owner) throw new Error("the owner deletes the challenge instead");
   return { ops: [
     { op: "delete", path: progressPath(cid, me) },
-    { op: "update", path: chPath(cid), data: { members: current.members.filter(u => u !== me), joined: current.joined.filter(u => u !== me), updated: now } }
+    { op: "update", path: chPath(cid), data: { members: current.members.filter(u => u !== me), joined: current.joined.filter(u => u !== me), names: Object.fromEntries(Object.entries(current.names || {}).filter(([u]) => u !== me)), updated: now } }
   ] };
 }
 

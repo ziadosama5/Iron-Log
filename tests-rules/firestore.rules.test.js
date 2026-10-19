@@ -470,6 +470,7 @@ test("challenges: only members can read or list; no unfiltered list", async () =
 test("challenges: an invited member can accept once, changing only the joined list", async () => {
   await seedCh();
   await assertFails(updateDoc(chRef("u2"), { joined: ["u1", "u2"], start: "2026-10-20", updated: 2 }), "other field changed");
+  await assertFails(updateDoc(chRef("u2"), { joined: ["u1", "u2"], names: { u1: "x", u2: "zed", u3: "omar" }, updated: 2 }), "accept that renames someone");
   await assertFails(updateDoc(chRef("u2"), { joined: ["u1", "u2", "u3"], updated: 2 }), "adding someone else");
   await assertFails(updateDoc(chRef("u2"), { joined: ["u1", "u2"], members: ["u1", "u2"], updated: 2 }), "removing a member while accepting");
   await assertSucceeds(updateDoc(chRef("u2"), { joined: ["u1", "u2"], updated: 2 }));
@@ -485,11 +486,14 @@ test("challenges: a stranger cannot accept or change anything", async () => {
 
 test("challenges: a member can leave, the owner cannot, nobody can remove someone else", async () => {
   await seedCh({ joined: ["u1", "u2"] });
-  await assertFails(updateDoc(chRef("u2"), { members: ["u1", "u2"], joined: ["u1", "u2"], updated: 2 }), "u2 removing u3");
-  await assertFails(updateDoc(chRef("u2"), { members: ["u1", "u3"], joined: ["u1"], weeks: 4, updated: 2 }), "leave plus another change");
-  await assertSucceeds(updateDoc(chRef("u2"), { members: ["u1", "u3"], joined: ["u1"], updated: 2 }));
-  await assertFails(updateDoc(chRef("u1"), { members: ["u3"], joined: [], updated: 3 }), "the owner leaving");
-  await assertSucceeds(updateDoc(chRef("u3"), { members: ["u1"], joined: ["u1"], updated: 3 }));
+  const nm = (...u) => Object.fromEntries(u.map(x => [x, { u1: "ziad", u2: "zed", u3: "omar" }[x]]));
+  await assertFails(updateDoc(chRef("u2"), { members: ["u1", "u2"], joined: ["u1", "u2"], names: nm("u1", "u2"), updated: 2 }), "u2 removing u3");
+  await assertFails(updateDoc(chRef("u2"), { members: ["u1", "u3"], joined: ["u1"], names: nm("u1", "u3"), weeks: 4, updated: 2 }), "leave plus another change");
+  await assertFails(updateDoc(chRef("u2"), { members: ["u1", "u3"], joined: ["u1"], updated: 2 }), "leaving but keeping my username in names");
+  await assertFails(updateDoc(chRef("u2"), { members: ["u1", "u3"], joined: ["u1"], names: nm("u1"), updated: 2 }), "leaving and removing someone else's name");
+  await assertSucceeds(updateDoc(chRef("u2"), { members: ["u1", "u3"], joined: ["u1"], names: nm("u1", "u3"), updated: 2 }));
+  await assertFails(updateDoc(chRef("u1"), { members: ["u3"], joined: [], names: nm("u3"), updated: 3 }), "the owner leaving");
+  await assertSucceeds(updateDoc(chRef("u3"), { members: ["u1"], joined: ["u1"], names: nm("u1"), updated: 3 }));
 });
 
 test("challenges: only the owner can delete", async () => {
@@ -529,4 +533,10 @@ test("progress: delete by the person or the owner, not by another member", async
   await assertSucceeds(deleteDoc(chRef("u1", "u2")));
   await seed(db => setDoc(doc(db, "challenges", "c1", "progress", "u2"), progress()));
   await assertSucceeds(deleteDoc(chRef("u2", "u2")));
+});
+
+test("challenges: the same friend cannot be invited twice", async () => {
+  await seedFriend("u1", "u2");
+  await assertFails(setDoc(chRef("u1"), chDoc({ members: ["u1", "u2", "u2"], names: { u1: "a", u2: "b" } })), "duplicate invitee");
+  await assertFails(setDoc(chRef("u1"), chDoc({ members: ["u1", "u1"], names: { u1: "a" } })), "owner listed twice");
 });

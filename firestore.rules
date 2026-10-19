@@ -183,6 +183,7 @@ service cloud.firestore {
                     && request.resource.data.owner == request.auth.uid
                     && request.resource.data.members is list
                     && request.resource.data.members.size() >= 2 && request.resource.data.members.size() <= 6
+                    && request.resource.data.members.toSet().size() == request.resource.data.members.size()
                     && request.resource.data.members[0] == request.auth.uid
                     && request.resource.data.joined == [request.auth.uid]
                     && request.resource.data.weeks in [1, 2, 4]
@@ -202,18 +203,21 @@ service cloud.firestore {
                     && (request.resource.data.members.size() <= 5 || isFriendOf(request.auth.uid, request.resource.data.members[5]));
       allow update: if signedIn()
                     && request.auth.uid in resource.data.members
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joined', 'members', 'updated'])
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joined', 'members', 'names', 'updated'])
                     && request.resource.data.updated is number
                     && (
                       // accept: add myself to joined, nothing else
                       (!(request.auth.uid in resource.data.joined)
                         && request.resource.data.joined == resource.data.joined.concat([request.auth.uid])
-                        && request.resource.data.members == resource.data.members)
+                        && request.resource.data.members == resource.data.members
+                        && request.resource.data.names == resource.data.names)
                       ||
-                      // decline or leave: take myself off both lists (the owner deletes the challenge instead)
+                      // decline or leave: take myself off both lists and my username off the names (the owner deletes the challenge instead)
                       (request.auth.uid != resource.data.owner
                         && request.resource.data.members == resource.data.members.removeAll([request.auth.uid])
-                        && request.resource.data.joined == resource.data.joined.removeAll([request.auth.uid]))
+                        && request.resource.data.joined == resource.data.joined.removeAll([request.auth.uid])
+                        && !(request.auth.uid in request.resource.data.names)
+                        && request.resource.data.names.diff(resource.data.names).affectedKeys().hasOnly([request.auth.uid]))
                     );
       allow delete: if signedIn() && resource.data.owner == request.auth.uid;
     }
