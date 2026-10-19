@@ -2,6 +2,8 @@
 
 Everything planned in sub-projects 1-16 (the redesign, sw v26) is shipped. This is what is still open, collected from every review ("deferred minors"), the specs' non-goals and the owner's ideas. Nothing here blocks normal use. The built-in Egyptian food table is a big separate project and is parked for later (see CLAUDE.md "Next step").
 
+**Next (planned 2026-10-20):** Android APK (TWA) + Google Play, preceded by the P1 fixes in [docs/reviews/2026-10-20-senior-review.md](reviews/2026-10-20-senior-review.md) (back button, touch polish, targets, text sizes, smoke tests, Google sign-in domain). The owner approved installing Android tools (JDK 17, Android SDK, emulator): list each download before installing.
+
 ## Unfinished projects (the big ones, none started)
 1. **Built-in Egyptian + everyday food table** (parked by the owner): pick foods with typical servings instead of typing calories; bundled data, Arabic + English search. Biggest remaining project.
 - *Small, optional (idea from a user case, no bug found):* make the calorie target self-explaining and adjustable: show the resting-rate source (InBody scan date or formula) and how the target is built (resting x activity + lifting + cardio + goal), an everyday activity level instead of the fixed x1.2, and a personal daily deficit/surplus. Today the app already uses a recent InBody BMR (120 days) and adds the exercise and cardio estimates, so numbers are correct; this would only remove surprise.
