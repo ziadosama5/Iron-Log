@@ -125,3 +125,13 @@ test("profile screen: messages built from dynamic keys and constants have Arabic
     "Couldn't save. Check your connection.", "Profile deleted", "Saved", "Private", "Friends", "Public", "Profile", "Username", "Choose a username"];
   assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
 });
+
+test("friends screen: labels and messages built from variables have Arabic", () => {
+  const src = read("index.html");
+  const line = src.split(/\r?\n/).find(l => l.startsWith("const CMP_LABEL="));
+  assert.ok(line, "found CMP_LABEL");
+  const labels = [...line.matchAll(/:"([^"]+)"/g)].map(m => m[1]);
+  assert.equal(labels.length, 7);
+  const keys = [...labels, "Request sent", "You are now friends", "Removed", "Blocked", "Unblocked", "Accept", "Decline", "Send request", "Cancel", "Unblock", "Open", "Remove", "Block", "Keep", "Ahead", "You"];
+  assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
+});

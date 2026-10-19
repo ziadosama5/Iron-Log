@@ -90,6 +90,15 @@ main{padding-block:18px calc(var(--tabbar) + 24px + env(safe-area-inset-bottom,0
 .tabbar button.has-dot::after{content:"";position:absolute;top:8px;inset-inline-start:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:var(--danger)}
 .more-row{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 4px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:600 16px/1 var(--f-body);cursor:pointer;text-align:left}
 .more-row svg{width:20px;height:20px;color:var(--muted)}
+.more-row .count{margin-inline-start:auto;margin-inline-end:8px;min-width:22px;padding:2px 7px;border-radius:11px;background:var(--danger);color:#fff;font:700 12px/18px var(--f-body);text-align:center}
+.fcard{display:flex;align-items:center;gap:8px;width:100%;padding:12px 0;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:inherit;text-align:start;cursor:pointer}
+.fcard svg{width:20px;height:20px;color:var(--muted);flex:none}
+[dir="rtl"] .fcard svg{transform:scaleX(-1)}
+.cmp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.cmp th,.cmp td{padding:9px 4px;text-align:center;border-bottom:1px solid var(--line)}
+.cmp th:first-child,.cmp td:first-child{text-align:start}
+.cmp th{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cmp .lead{font-weight:700;color:var(--accent)}
 .seg{display:flex;gap:4px;background:var(--sunk);border-radius:12px;padding:4px}
 .seg button{flex:1;min-height:40px;border:0;border-radius:9px;background:none;color:var(--muted);font:600 14px/1 var(--f-body);cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
@@ -309,6 +318,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
     <section id="view-progress" class="view" hidden></section>
     <section id="view-history" class="view" hidden></section>
     <section id="view-profile" class="view" hidden></section>
+    <section id="view-friends" class="view" hidden></section>
   </main>
 </div>
 <div class="restbar" id="restbar" role="timer" aria-live="off" hidden>
@@ -328,6 +338,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
   <button class="more-row" data-act="more-go" data-view="days">Days<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="progress">Lifts<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="history">History &amp; backup<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+  <button class="more-row" data-act="more-go" data-view="friends">Friends<span class="count" id="friends-count" hidden></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="profile">Profile and privacy<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <div class="stack" style="gap:6px;margin-top:14px"><span class="label">Language</span>
     <div class="seg" role="group" aria-label="Language" data-no-tr><button data-act="lang-set" data-v="en">English</button><button data-act="lang-set" data-v="ar">العربية</button></div></div>
@@ -362,7 +373,7 @@ import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
-import { groupFriendships, planNameRefresh } from "./friends.js";
+import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries } from "./friends.js";
 import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername, lookupResult, shareLabel } from "./social.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
@@ -583,7 +594,109 @@ function refreshFriendNames(){
   f.renamed=true; const me=store.user.uid, now=Date.now();
   f.docs.filter(d=>d.names&&d.names[me]!==p.username).forEach(d=>{ const other=d.users.find(u=>u!==me); store.friendAction(planNameRefresh({me,other,myName:p.username,now})); });
 }
-function renderFriends(){}
+/* ---------- FRIENDS ---------- */
+const FRIEND_CAP=100, SENT_CAP=30;
+const CMP_LABEL={level:"Level",workoutsWeek:"Workouts this week",workouts30:"Workouts in 30 days",streakWeeks:"Training streak (weeks)",volumeWeekKg:"Volume this week (kg)",prs30:"Personal records this month",workoutsTotal:"Workouts in total"};
+function friendLabel(x){
+  const d=state.friends.data[x.uid], dn=d&&d.profile?d.profile.displayName:null;
+  return `${dn?`<b>${esc(dn)}</b> `:""}<bdi dir="ltr" class="prev">${x.name?"@"+esc(x.name):esc(t("Unknown user"))}</bdi>`;
+}
+const frBtn=(act,x,label,cls="")=>`<button class="btn small ${cls}" data-act="${act}" data-uid="${esc(x.uid)}" data-name="${esc(x.name||"")}">${label}</button>`;
+function friendRow(x){
+  const d=state.friends.data[x.uid], p=d&&d.profile, sm=p&&p.summary;
+  const line=!d?"…":sm?[t("Level {n}",{n:sm.level}),tn("{n} workout this week","{n} workouts this week",sm.workoutsWeek),t("Training: {x}",{x:tn("{n} week","{n} weeks",sm.streakWeeks)})].join(" · "):t("Not sharing right now");
+  return `<button class="fcard" data-act="fr-open" data-uid="${esc(x.uid)}"><span class="grow">${friendLabel(x)}<br><span class="prev">${esc(line)}</span></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>`;
+}
+function findCardHtml(){
+  const f=state.friends, fnd=f.found; let res="";
+  if(fnd){
+    const r=lookupResult(fnd.q,fnd.outcome);
+    if(r.kind==="invalid") res=`<span class="prev">Enter a username or a full e-mail address.</span>`;
+    else if(r.kind==="none") res=`<span class="prev">No one found</span>`;
+    else if(r.kind==="card"||r.kind==="user"){
+      const c=r.kind==="card"?r.card:{uid:r.user.uid,username:r.user.username,displayName:null,summary:null};
+      const x={uid:c.uid,name:c.username}, rel=relationTo(store.user.uid,c.uid,f.docs,f.blocks);
+      const act=rel==="self"?`<span class="prev">That's you</span>`
+        :rel==="none"?frBtn("fr-request",x,"Send request","primary")
+        :rel==="sent"?`<span class="prev">Request sent</span>${frBtn("fr-cancel",x,"Cancel")}`
+        :rel==="received"?`${frBtn("fr-accept",x,"Accept","primary")}${frBtn("fr-decline",x,"Decline")}`
+        :rel==="friends"?`<span class="prev">Friends</span>${frBtn("fr-open",x,"Open")}`
+        :`<span class="prev">Blocked</span>${frBtn("fr-unblock",x,"Unblock")}`;
+      res=`<div class="stack" style="gap:6px"><div class="row"><b class="grow">${esc(c.displayName||"@"+c.username)}</b><bdi dir="ltr" class="prev">@${esc(c.username)}</bdi></div>${c.summary?summaryLines(c.summary):c.displayName?`<span class="prev">Progress isn't shared with you</span>`:""}<div class="row">${act}</div></div>`;
+    }
+  }
+  return `<form class="card" id="find-form" autocomplete="off"><h3>Find a friend</h3>
+    <div class="row"><input id="find-q" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="Username or e-mail" value="${esc(f.q||"")}" style="flex:1 1 160px"><button class="btn" type="submit">Find</button></div>
+    ${res}</form>`;
+}
+// Friends' shared profiles are read once per visit (and on Refresh), not live.
+function loadFriendData(force){
+  const f=state.friends, g=groupFriendships(f.docs,store.user.uid,f.blocks);
+  const need=g.friends.filter(x=>force||!f.data[x.uid]); if(!need.length||f.fetching) return;
+  f.fetching=true;
+  Promise.all(need.map(x=>store.friendProfile(x.uid))).then(()=>{ f.fetching=false; const ae=document.activeElement; if(state.view==="friends"&&!(ae&&ae.tagName==="INPUT")) renderFriends(); });
+}
+function renderFriends(){
+  const f=state.friends, el=$("#view-friends"); if(!store.user) return;
+  if(!f.loaded){ el.innerHTML=`<h2>Friends</h2><p class="prev">Loading…</p>`; return; }
+  const g=groupFriendships(f.docs,store.user.uid,f.blocks);
+  if(f.open){ renderFriendPage(el,g); return; }
+  loadFriendData(false);
+  let h=`<h2>Friends</h2>`+findCardHtml();
+  if(g.requests.length) h+=`<div class="card"><h3>Requests</h3>${g.requests.map(x=>`<div class="stack" style="gap:6px"><div class="row"><div class="grow">${friendLabel(x)}</div></div><div class="row">${frBtn("fr-accept",x,"Accept","primary")}${frBtn("fr-decline",x,"Decline")}${frBtn("fr-block-now",x,"Block")}</div></div>`).join("")}</div>`;
+  h+=`<div class="card"><h3>Friends</h3>${g.friends.length?g.friends.map(friendRow).join(""):`<span class="prev">No friends yet. Find someone by username above.</span>`}<div class="row" style="justify-content:flex-end"><button class="btn small" data-act="fr-refresh">Refresh</button></div></div>`;
+  if(g.sent.length) h+=`<div class="card"><h3>Sent</h3>${g.sent.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-cancel",x,"Cancel")}</div>`).join("")}</div>`;
+  if(g.blocked.length) h+=`<div class="card"><h3>Blocked</h3>${g.blocked.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-unblock",x,"Unblock")}</div>`).join("")}</div>`;
+  el.innerHTML=h;
+}
+function renderFriendPage(el,g){
+  const f=state.friends, uid=f.open, x=g.friends.find(y=>y.uid===uid);
+  if(!x){ f.open=null; f.confirm=null; renderFriends(); return; }
+  const d=f.data[uid], p=d&&d.profile, sm=p&&p.summary, who=p?p.displayName:"@"+(x.name||"");
+  if(!d) store.friendProfile(uid).then(()=>{ if(state.view==="friends"&&f.open===uid) renderFriends(); });
+  let h=`<div class="row"><button class="btn small" data-act="fr-back">Back</button></div><h2>${esc(who)}</h2>${x.name?`<bdi dir="ltr" class="prev">@${esc(x.name)}</bdi>`:""}`;
+  if(!d) h+=`<p class="prev">Loading…</p>`;
+  else if(!sm) h+=`<p class="prev">${esc(t("{name} isn't sharing right now",{name:who}))}</p>`;
+  else{
+    const cell=(r,v,lead)=>`<td class="${lead?"lead":""}">${r.key==="volumeWeekKg"?Math.round(v).toLocaleString("en-US"):v}${lead?' <span role="img" aria-label="Ahead">✓</span>':""}</td>`;
+    h+=`<div class="card"><table class="cmp"><thead><tr><th></th><th>You</th><th>${esc(who)}</th></tr></thead><tbody>${compareSummaries(currentSummary(),sm).map(r=>`<tr><td>${esc(t(CMP_LABEL[r.key]))}</td>${cell(r,r.mine,r.leader==="me")}${cell(r,r.theirs,r.leader==="them")}</tr>`).join("")}</tbody></table>
+      <span class="prev">${esc(sm.lastWorkout?t("Last workout: {d}",{d:fmtDate(sm.lastWorkout)}):t("No workouts yet"))}</span></div>`;
+  }
+  const ask=(msg,yes,label)=>`<div class="card"><span>${esc(msg)}</span><div class="row"><button class="btn small" data-act="fr-no">Keep</button>${frBtn(yes,x,label,"danger")}</div></div>`;
+  h+=f.confirm==="remove"?ask(t("Remove {name} from your friends?",{name:who}),"fr-remove-yes","Remove")
+    :f.confirm==="block"?ask(t("Block {name}? They are removed from your friends and cannot send you requests.",{name:who}),"fr-block-yes","Block")
+    :`<div class="row"><button class="btn small" data-act="fr-remove">Remove friend</button><button class="btn small danger" data-act="fr-block">Block</button></div>`;
+  el.innerHTML=h;
+}
+// One write plan, one toast. Offline and every failure share a message, so a block is never revealed.
+async function frDo(plan,okMsg){
+  const r=await store.friendAction(plan);
+  toast(t(r.ok?okMsg:r.reason==="offline"?"You're offline. Try again when you're back online.":"Couldn't save. Check your connection."));
+  return r.ok;
+}
+function frClick(act,d){
+  const f=state.friends, me=store.user.uid, now=Date.now(), g=groupFriendships(f.docs,me,f.blocks), other=d.uid, name=d.name;
+  switch(act){
+    case "fr-request":{ const mine=state.share.profile;
+      if(!mine){ toast(t("Choose a username first")); return; }
+      if(g.sent.length>=SENT_CAP){ toast(t("You have too many pending requests")); return; }
+      frDo(planRequest({me,meName:mine.username,other,otherName:name,now}),"Request sent"); return; }
+    case "fr-accept":
+      if(g.friends.length>=FRIEND_CAP){ toast(t("You have reached the friends limit")); return; }
+      frDo(planAccept({me,other,now}),"You are now friends"); return;
+    case "fr-decline": case "fr-cancel": frDo(planRemove({me,other}),"Removed"); return;
+    case "fr-block-now": frDo(planBlock({me,other,otherName:name,now}),"Blocked"); return;
+    case "fr-unblock": frDo(planUnblock({me,other}),"Unblocked"); return;
+    case "fr-open": f.open=other; f.confirm=null; renderFriends(); window.scrollTo(0,0); return;
+    case "fr-back": f.open=null; f.confirm=null; renderFriends(); return;
+    case "fr-refresh": loadFriendData(true); return;
+    case "fr-remove": f.confirm="remove"; renderFriends(); return;
+    case "fr-block": f.confirm="block"; renderFriends(); return;
+    case "fr-no": f.confirm=null; renderFriends(); return;
+    case "fr-remove-yes": frDo(planRemove({me,other}),"Removed").then(ok=>{ if(ok){ f.open=null; f.confirm=null; } renderFriends(); }); return;
+    case "fr-block-yes": frDo(planBlock({me,other,otherName:name,now}),"Blocked").then(ok=>{ if(ok){ f.open=null; f.confirm=null; } renderFriends(); }); return;
+  }
+}
 let publishTimer=null;
 function maybePublish(){
   const sh=state.share; if(!state.authed||!state.serverSynced||!sh||!sh.profile) return;
@@ -1379,7 +1492,7 @@ $("#exinfo").addEventListener("click",e=>{
   if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeExInfo(); // tap on the backdrop
 });
 window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.exinfo)) closeExInfo(); });
-const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Profile"};
+const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Profile",friends:"Friends"};
 // More sheet: Days, Lifts, History & backup, theme, account. Same open/close pattern as the info sheet.
 function openMore(){
   const d=$("#moresheet"), th=currentTheme();
@@ -1477,7 +1590,7 @@ function drawSwatches(){
     `<label class="swatch custom" aria-pressed="${custom}" title="${esc(t("Custom"))}"><input type="color" id="accent-custom" value="${custom?cur:"#1f5fd1"}" aria-label="${esc(t("Custom"))}"></label>`;
 }
 document.addEventListener("input",e=>{ if(e.target.id==="accent-custom"){ applyAccent(e.target.value); const c=e.target.closest(".swatch"); document.querySelectorAll("#accent-swatches .swatch").forEach(b=>b.setAttribute("aria-pressed",b===c)); } });
-document.addEventListener("input",e=>{ if(e.target.id==="find-q") state.share.q=e.target.value; });
+document.addEventListener("input",e=>{ if(e.target.id==="find-q") state.friends.q=e.target.value; });
 try{ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>applyAccent(currentAccent(),false)); }catch(e){}
 
 /* ---------- LANGUAGE ---------- */
@@ -1511,15 +1624,6 @@ function summaryLines(s){
     <li>${s.lastWorkout?esc(t("Last workout: {d}",{d:fmtDate(s.lastWorkout)})):esc(t("No workouts yet"))}</li>
     <li>${esc(t("Badges earned: {n}",{n:s.badges}))}</li></ul>`;
 }
-function findResultHtml(){
-  const f=state.share.found; if(!f) return "";
-  const r=lookupResult(f.q,f.outcome);
-  if(r.kind==="empty") return "";
-  if(r.kind==="invalid") return `<span class="prev">Enter a username or a full e-mail address.</span>`;
-  if(r.kind==="none"||r.kind==="user") return `<span class="prev">No one found</span>`;
-  const c=r.card;
-  return `<div class="stack" style="gap:6px"><div class="row"><b class="grow">${esc(c.displayName)}</b><bdi dir="ltr" class="prev">@${esc(c.username)}</bdi></div>${c.summary?summaryLines(c.summary):`<span class="prev">Progress isn't shared with you</span>`}</div>`;
-}
 function renderProfile(){
   const sh=state.share, p=sh.profile, el=$("#view-profile");
   let h=`<h2>Profile and privacy</h2>`;
@@ -1541,9 +1645,6 @@ function renderProfile(){
       <button class="chip" data-act="share-email" aria-pressed="${!!p.findByEmail}" ${emailOk&&!sh.busy?"":"disabled"}>Let people find me by e-mail</button>
       ${emailOk?"":`<span class="prev">Your Google account has no verified e-mail.</span>`}</div>`;
   }
-  h+=`<form class="card" id="find-form" autocomplete="off"><h3>Find a friend</h3>
-    <div class="row"><input id="find-q" inputmode="email" autocapitalize="none" spellcheck="false" placeholder="Username or e-mail" value="${esc(sh.q||"")}" style="flex:1 1 160px"><button class="btn" type="submit" ${dis}>Find</button></div>
-    ${findResultHtml()}</form>`;
   if(p) h+=`<div class="card">${sh.confirmDelete
     ?`<span class="prev">This removes your username and everything you shared. Your workouts stay private and untouched.</span><div class="row"><button class="btn small" data-act="share-delete-no">Keep</button><button class="btn small danger" data-act="share-delete-yes">Delete</button></div>`
     :`<button class="btn ghost danger" data-act="share-delete">Stop sharing and delete my profile</button>`}</div>`;
@@ -1558,7 +1659,7 @@ async function shareResult(res,okMsg){
 }
 
 /* ---------- render + events ---------- */
-const VIEWS=["log","days","body","coach","goals","progress","history","profile"];
+const VIEWS=["log","days","body","coach","goals","progress","history","profile","friends"];
 function renderSignin(){
   const el=$("#view-signin");
   if(state.setup){ el.innerHTML=`<div class="card signin"><h2>Almost there</h2><p class="prev" style="margin:0">Paste your Firebase project's config into <b class="num">firebase-config.js</b>, then deploy again. The README walks through it step by step.</p></div>`; return; }
@@ -1573,11 +1674,11 @@ function render(){
   const authed=state.authed;
   $("#nav").hidden=!authed; $("#view-signin").hidden=authed;
   if(!authed){ VIEWS.forEach(v=>$("#view-"+v).hidden=true); renderSignin(); syncWake(); return; }
-  const inMore=["days","progress","history","profile"].includes(state.view);
+  const inMore=["days","progress","history","profile","friends"].includes(state.view);
   document.querySelectorAll(".tabbar button").forEach(b=>{ if(b.dataset.view===state.view||(inMore&&b.dataset.view==="more")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   $("#screen-title").textContent=t(SCREEN_TITLES[state.view]||"Iron Log");
   VIEWS.forEach(v=>$("#view-"+v).hidden=v!==state.view);
-  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory,profile:renderProfile})[state.view]();
+  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory,profile:renderProfile,friends:renderFriends})[state.view]();
   syncWake();
 }
 function go(view){ state.view=view; try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
@@ -1611,10 +1712,10 @@ document.addEventListener("submit",e=>{
     if(p&&d!==p.displayName) runShare({...shareFields(p),displayName:d}); return;
   }
   if(f.id==="find-form"){
-    const q=$("#find-q").value; state.share.q=q;
+    const q=$("#find-q").value; state.friends.q=q;
     const r=lookupResult(q,null);
-    if(r.kind==="empty"||r.kind==="invalid"){ state.share.found={q,outcome:null}; renderProfile(); return; }
-    store.lookup(q).then(o=>{ state.share.found={q,outcome:o}; if(state.view==="profile") renderProfile(); }); return;
+    if(r.kind==="empty"||r.kind==="invalid"){ state.friends.found={q,outcome:null}; renderFriends(); return; }
+    store.lookup(q).then(o=>{ state.friends.found={q,outcome:o}; if(state.view==="friends") renderFriends(); }); return;
   }
   if(f.id==="meal-form"){
     const kRaw=$("#meal-kcal").value.trim(), pRaw=$("#meal-protein").value.trim().replace(",","."), name=reverseName("meal",$("#meal-name").value.trim());
@@ -1697,6 +1798,7 @@ document.addEventListener("click",e=>{
     case "share-vis":{ const p=state.share.profile; if(p&&p.visibility!==b.dataset.v) runShare({...shareFields(p),visibility:b.dataset.v}); break; }
     case "share-email":{ const p=state.share.profile; if(p) runShare({...shareFields(p),findByEmail:!p.findByEmail}); break; }
     case "share-delete": state.share.confirmDelete=true; renderProfile(); break;
+    case "fr-request": case "fr-accept": case "fr-decline": case "fr-cancel": case "fr-block-now": case "fr-unblock": case "fr-open": case "fr-back": case "fr-refresh": case "fr-remove": case "fr-block": case "fr-no": case "fr-remove-yes": case "fr-block-yes": frClick(b.dataset.act,b.dataset); break;
     case "share-delete-no": state.share.confirmDelete=false; renderProfile(); break;
     case "share-delete-yes": store.deleteShare().then(ok=>{ state.share.confirmDelete=false; toast(t(ok?"Profile deleted":"Couldn't save. Check your connection.")); if(state.view==="profile") renderProfile(); }); break;
     case "lang-set": applyLang(b.dataset.v); openMore(); break;
