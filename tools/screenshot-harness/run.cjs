@@ -9,16 +9,19 @@ const driver = `<script>
   window.addEventListener("load",function(){ setTimeout(function(){
     var $=function(s){return document.querySelector(s);}, click=function(s){var e=$(s); if(e) e.click();};
     var kind=go.split(":")[0], arg=go.split(":")[1];
-    if(kind==="profile"){ click('.tabbar [data-act="more-open"]'); setTimeout(function(){ click('#moresheet [data-view="profile"]'); },150); }
-    if(kind==="friends"||kind==="friend"||kind==="ffind"){ click('.tabbar [data-act="more-open"]'); setTimeout(function(){ click('#moresheet [data-view="friends"]'); setTimeout(function(){
+    var TAB={log:"today",days:"plan",gym:"plan",body:"progress",progress:"progress",goals:"progress",coach:"progress",history:"progress",friends:"friends",challenges:"friends",find:"friends",profile:"me"}, FIRST={today:"log",plan:"days",progress:"body",friends:"friends",me:"profile"};
+    var nav=function(v){ click('.tabbar [data-tab="'+TAB[v]+'"]'); if(FIRST[TAB[v]]!==v) setTimeout(function(){ click('.pill[data-view="'+v+'"]'); },60); };
+    if(kind==="view") nav(arg);
+    if(kind==="profile"){ nav("profile"); }
+    if(kind==="friends"||kind==="friend"||kind==="ffind"){ nav(kind==="ffind"?"find":"friends"); setTimeout(function(){ setTimeout(function(){
       if(kind==="friend"){ var b=$('[data-act="fr-open"][data-uid="'+arg+'"]'); if(b) b.click(); }
       var mode=go.split(":")[2]; if(kind==="friend"&&mode){ setTimeout(function(){ click('[data-act="fr-report"]'); setTimeout(function(){ click('[data-act="fr-report-reason"][data-v="spam"]'); if(mode==="send") setTimeout(function(){ click('[data-act="fr-report-send"]'); },150); },150); },250); }
       if(kind==="ffind"){ var i=$("#find-q"); if(i){ i.value=decodeURIComponent(arg); $("#find-form").requestSubmit(); } }
     },400); },150); }
-    if(kind==="days"||kind==="gym"){ click('.tabbar [data-act="more-open"]'); setTimeout(function(){ click('#moresheet [data-view="'+kind+'"]'); setTimeout(function(){ if(kind==="days"&&arg==="edit"){ click('[data-act="edit-day"]'); } if(kind==="days"&&arg==="all"){ click('[data-act="edit-day"]'); setTimeout(function(){ click('[data-act="gym-showall"]'); },200); } },300); },150); }
+    if(kind==="days"||kind==="gym"){ nav(kind); setTimeout(function(){ setTimeout(function(){ if(kind==="days"&&arg==="edit"){ click('[data-act="edit-day"]'); } if(kind==="days"&&arg==="all"){ click('[data-act="edit-day"]'); setTimeout(function(){ click('[data-act="gym-showall"]'); },200); } },300); },150); }
     if(kind==="jr"){ var seq=decodeURIComponent(go.slice(3)).split(","), i=0; (function step(){ if(i>=seq.length) return; var t=seq[i++].split(":"); var sel=t.length===1?'[data-act="jr-'+t[0]+'"]':'[data-act="jr-'+t[0]+'"][data-v="'+t[1]+'"]'; click(sel); setTimeout(step,120); })(); }
-    if(kind==="delete"&&!sessionStorage.getItem("__ranOnce")){ var dm=go.split(":")[1]||"idle"; click('.tabbar [data-act="more-open"]'); setTimeout(function(){ click('#moresheet [data-act="more-delete"]'); setTimeout(function(){ if(dm!=="idle"){ click('[data-act="del-start"]'); } if(dm==="run"){ setTimeout(function(){ click('[data-act="del-yes"]'); },100); } },300); },150); }
-    if(kind==="ch"){ var cm=go.split(":")[1]||"list"; click('.tabbar [data-act="more-open"]'); setTimeout(function(){ click('#moresheet [data-view="challenges"]'); setTimeout(function(){
+    if(kind==="delete"&&!sessionStorage.getItem("__ranOnce")){ var dm=go.split(":")[1]||"idle"; nav("profile"); setTimeout(function(){ click('[data-act="delete-open"]'); setTimeout(function(){ if(dm!=="idle"){ click('[data-act="del-start"]'); } if(dm==="run"){ setTimeout(function(){ click('[data-act="del-yes"]'); },100); } },300); },150); }
+    if(kind==="ch"){ var cm=go.split(":")[1]||"list"; nav("challenges"); setTimeout(function(){ setTimeout(function(){
       if(cm==="open") click('[data-act="ch-open"][data-id="c1"]');
       if(cm==="fin") click('[data-act="ch-open"][data-id="c3"]');
       if(cm==="new"||cm==="create"||cm==="invalid"){ click('[data-act="ch-new"]'); setTimeout(function(){ click('[data-act="ch-friend"]'); if(cm==="create") setTimeout(function(){ click('[data-act="ch-create"]'); },150); },150); }
@@ -26,7 +29,7 @@ const driver = `<script>
       if(cm==="leave"){ click('[data-act="ch-open"][data-id="c1"]'); setTimeout(function(){ click('[data-act="ch-confirm"]'); setTimeout(function(){ click('[data-act="ch-leave-yes"]'); },150); },150); }
       if(cm==="delete"){ click('[data-act="ch-open"][data-id="c3"]'); setTimeout(function(){ click('[data-act="ch-confirm"]'); setTimeout(function(){ click('[data-act="ch-delete-yes"]'); },150); },150); }
     },300); },150); }
-    if(kind==="find"){ click('.tabbar [data-act="more-open"]'); setTimeout(function(){ click('#moresheet [data-view="profile"]'); setTimeout(function(){ var i=$("#find-q"); if(i){ i.value=decodeURIComponent(arg); $("#find-form").requestSubmit(); } },200); },150); }
+    if(kind==="find"){ nav("find"); setTimeout(function(){ var i=$("#find-q"); if(i){ i.value=decodeURIComponent(arg); $("#find-form").requestSubmit(); } },300); }
   },700); setTimeout(function(){ try{ document.body.setAttribute("data-calls",localStorage.getItem("__calls")||"[]"); }catch(e){} },6000); });
 })();
 </script>`;
