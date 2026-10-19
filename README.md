@@ -16,7 +16,7 @@ Live: https://gym-logger-85d4c.web.app · runs free on Firebase's Spark plan · 
 - **Coach:** today's calories eaten vs target, calories burned (everyday + lifting + cardio), protein, quick meal logging, and tips based on your training and body data.
 - **Body:** quick weight entry, tape measurements, InBody scans and trend charts.
 - **Goals:** target weight with a finish estimate, streaks, 24 badges and levels.
-- **More:** edit training days (templates: PPL, Upper/Lower, Full Body, Bro Split), lift progress charts, history, backup/restore, English/Arabic, accent colours, light/dark theme, privacy policy and terms, delete my account.
+- **Five tabs:** Today (workout, cardio, food and calories, level), Plan (training days, My Gym, plan my training), Progress (body, lifts, goals and badges, coach, history and backup), Friends (friends, challenges, find), Me (profile and privacy, English/Arabic, accent colours, light/dark theme, privacy policy and terms, delete my account).
 
 ## Folders
 
@@ -100,7 +100,7 @@ These are the Spark (no-cost) quotas at the time of writing. Check https://fireb
 If a daily quota runs out, the app keeps working offline and saves the next day. Nothing is charged on Spark; it just pauses until the quota resets.
 
 ## Moving data between accounts
-**More › History & backup**: **Download backup** saves everything as a file, and **Restore from file** loads it into any account.
+**Progress › History** (also from Me): **Download backup** saves everything as a file, and **Restore from file** loads it into any account.
 
 ## Sharing and privacy
 The app has a Privacy Policy and Terms (`public/privacy.html`, `public/terms.html`, English and Arabic): update the contact address there if you fork it. People can delete their account and all their data in the app (**More › Delete my account**) and report other users; reports are stored in the `reports` collection, which the app cannot read: open Firestore in the Firebase console to see them. When you change `firestore.rules`, deploy them before the app: `firebase deploy --only firestore:rules`.

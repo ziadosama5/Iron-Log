@@ -1,4 +1,4 @@
-# Open points (as of 2026-10-19, app at sw v25)
+# Open points (as of 2026-10-19, app at sw v25 live; redesign v26 built, waiting for deploy approval)
 
 Everything planned in sub-projects 1-15 is shipped. This is what is still open, collected from every review ("deferred minors"), the specs' non-goals and the owner's ideas. Nothing here blocks normal use. The built-in Egyptian food table is a big separate project and is parked for later (see CLAUDE.md "Next step").
 
@@ -42,7 +42,7 @@ In progress now: the owner is testing the later features on a real phone; expect
 **Personal journey**
 - Vertical pulls and rows are not separate slots (Upper A can get Pull-up + Lat Pulldown); Pull-up is the first Back pick for beginners.
 - Bodyweight-only gyms get very short, repeated days (the library has few bodyweight back/shoulder/biceps exercises).
-- The automatic journey can leave a stale back-button entry if the More sheet was open; the skip flag is per device; focus does not move to the step heading and the dots have no "Step n of m"; a few Arabic phrases could read better.
+- The automatic journey can leave a stale back-button entry when the app opened it automatically; the skip flag is per device; focus does not move to the step heading and the dots have no "Step n of m"; a few Arabic phrases could read better.
 
 **Readiness (delete / report)**
 - No redirect fallback for re-authentication: iOS home-screen apps with popups blocked cannot delete in-app (they see a "browser blocked" message).
