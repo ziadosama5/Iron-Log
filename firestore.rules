@@ -169,6 +169,23 @@ service cloud.firestore {
       allow delete: if signedIn() && (resource == null || resource.data.blocker == request.auth.uid);
     }
 
+    // Reports about other people. Write-only: nobody can read, list or delete them in the app,
+    // the owner reads them in the Firebase console. One document per pair, so reporting again overwrites it.
+    match /reports/{reportId} {
+      allow create, update: if signedIn()
+                            && request.resource.data.keys().hasOnly(['reporter', 'reported', 'reason', 'username', 'updated'])
+                            && request.resource.data.keys().hasAll(['reporter', 'reported', 'reason', 'username', 'updated'])
+                            && request.resource.data.reporter == request.auth.uid
+                            && request.resource.data.reported is string
+                            && request.resource.data.reported != request.auth.uid
+                            && reportId == request.auth.uid + '_' + request.resource.data.reported
+                            && request.resource.data.reason in ['name', 'harassment', 'spam', 'other']
+                            && request.resource.data.username is string
+                            && request.resource.data.username.size() >= 1 && request.resource.data.username.size() <= 20
+                            && request.resource.data.updated is number;
+      allow get, list, delete: if false;
+    }
+
     // Everything else is closed.
     match /{document=**} {
       allow read, write: if false;

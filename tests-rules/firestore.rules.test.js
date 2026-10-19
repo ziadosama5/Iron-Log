@@ -368,3 +368,44 @@ test("profiles: private stays owner-only even for friends; public stays open to 
   await assertFails(getDoc(ref("u1", "profiles", "u2")));
   await assertSucceeds(getDoc(ref("u1", "profiles", "u3")));
 });
+
+// ---- reports/{reporter}_{reported}: write-only, the owner reads them in the Firebase console ----
+const report = (o = {}) => ({ reporter: "u1", reported: "u2", reason: "spam", username: "zed", updated: 1, ...o });
+const seedReport = () => seed(db => setDoc(doc(db, "reports", "u1_u2"), report()));
+
+test("reports: the reporter can write their own pair and overwrite it", async () => {
+  await assertSucceeds(setDoc(ref("u1", "reports", "u1_u2"), report()));
+  await assertSucceeds(setDoc(ref("u1", "reports", "u1_u2"), report({ reason: "harassment", updated: 2 })));
+  for (const reason of ["name", "harassment", "spam", "other"]) await assertSucceeds(setDoc(ref("u1", "reports", "u1_u2"), report({ reason })));
+});
+
+test("reports: nobody can write a report for someone else's id", async () => {
+  await assertFails(setDoc(ref("u2", "reports", "u1_u2"), report()), "the reported person writing the pair");
+  await assertFails(setDoc(ref("u3", "reports", "u1_u2"), report()), "a stranger writing the pair");
+  await assertFails(setDoc(ref("u1", "reports", "u2_u1"), report()), "id that starts with another uid");
+  await assertFails(setDoc(ref("u1", "reports", "u2_u1"), report({ reporter: "u2", reported: "u1" })), "claiming to be the other reporter");
+  await assertFails(setDoc(ref("u1", "reports", "x"), report()), "id not made of the two uids");
+  await assertFails(setDoc(doc(anon(), "reports", "u1_u2"), report()), "signed out");
+});
+
+test("reports: self-reports and malformed documents are denied", async () => {
+  await assertFails(setDoc(ref("u1", "reports", "u1_u1"), report({ reported: "u1" })), "self");
+  const bad = [
+    ["reason", report({ reason: "bad" })], ["reason number", report({ reason: 5 })],
+    ["reporter", report({ reporter: "u2" })], ["reported does not match the id", report({ reported: "u3" })],
+    ["empty username", report({ username: "" })], ["long username", report({ username: "x".repeat(21) })], ["username number", report({ username: 5 })],
+    ["updated string", report({ updated: "x" })], ["extra key", { ...report(), extra: 1 }], ["missing key", { reporter: "u1", reported: "u2", reason: "spam", updated: 1 }]
+  ];
+  for (const [why, d] of bad) await assertFails(setDoc(ref("u1", "reports", "u1_u2"), d), why);
+  await assertSucceeds(setDoc(ref("u1", "reports", "u1_u2"), report({ username: "x".repeat(20) })));
+});
+
+test("reports: nobody can read, list or delete them (only the console can)", async () => {
+  await seedReport();
+  for (const u of ["u1", "u2", "u3"]) {
+    await assertFails(getDoc(ref(u, "reports", "u1_u2")), u + " get");
+    await assertFails(getDocs(collection(as(u, claims[u]), "reports")), u + " list");
+    await assertFails(deleteDoc(ref(u, "reports", "u1_u2")), u + " delete");
+  }
+  await assertFails(getDoc(doc(anon(), "reports", "u1_u2")), "signed out get");
+});
