@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { themeAttr, sortTips, withWeight, settingsDoc } from "../public/ui-helpers.js";
+import { themeAttr, sortTips, withWeight, settingsDoc, showGymHint } from "../public/ui-helpers.js";
 
 test("themeAttr", () => {
   assert.equal(themeAttr("light"), "light");
@@ -44,4 +44,12 @@ test("settingsDoc leaves gym out when unset but keeps an empty list", () => {
 test("settingsDoc without rest or seenBadges still writes a valid doc", () => {
   assert.deepEqual(settingsDoc({}, 3), { rest: {}, updated: 3 });
   assert.equal("seenBadges" in settingsDoc({ rest: {}, gym: ["x"] }, 3), false);
+});
+
+test("showGymHint: only after the first sync, only while the gym is unset, never once dismissed", () => {
+  assert.equal(showGymHint({ gym: undefined, dismissed: false, synced: true }), true);
+  assert.equal(showGymHint({ gym: undefined, dismissed: false, synced: false }), false, "settings may not have loaded yet");
+  assert.equal(showGymHint({ gym: undefined, dismissed: true, synced: true }), false);
+  assert.equal(showGymHint({ gym: [], dismissed: false, synced: true }), false, "bodyweight only is a choice, not unset");
+  assert.equal(showGymHint({ gym: ["barbell"], dismissed: false, synced: true }), false);
 });

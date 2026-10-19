@@ -31,3 +31,9 @@ export function settingsDoc(s, now) {
   const x = s || {};
   return { rest: x.rest || {}, ...(x.seenBadges ? { seenBadges: x.seenBadges } : {}), ...(Array.isArray(x.gym) ? { gym: x.gym } : {}), updated: now };
 }
+
+// Whether the Days tab shows the "set up your gym" card: not before the first sync (settings may not
+// have loaded), only while the gym is unset (an empty list is a choice), never once dismissed.
+export function showGymHint({ gym, dismissed, synced }) {
+  return synced === true && gym === undefined && !dismissed;
+}

@@ -156,7 +156,7 @@ test("the bench and seated-row machine have names users read correctly", () => {
 });
 
 // ---- My Gym ----
-import { GYM_PRESETS, gymFilter, gymCounts, sameGym } from "../public/exercise-library.js";
+import { GYM_PRESETS, gymFilter, gymCounts, sameGym, typeaheadNames } from "../public/exercise-library.js";
 
 test("GYM_PRESETS: fixed order, real ids, nested from Bodyweight to Full gym", () => {
   assert.deepEqual(GYM_PRESETS.map(p => p.id), ["bodyweight", "home", "basic", "full"]);
@@ -218,4 +218,11 @@ test("hiddenCount: 0 when unset, counts exactly what gymFilter drops, custom nam
   assert.ok(hiddenCount([LIB.Chest], []) > 0, "a bodyweight-only gym hides machine and bar exercises");
   assert.equal(hiddenCount([LIB.Chest, LIB.Back], gym), hiddenCount([LIB.Chest], gym) + hiddenCount([LIB.Back], gym));
   assert.equal(hiddenCount([], []), 0);
+});
+
+test("typeaheadNames: history and day exercises are never filtered, library names are, no duplicates", () => {
+  const all = ["Bench Press", "Push-up", "Pec Deck"];
+  assert.deepEqual(typeaheadNames({ history: ["Cable Fly"], dayNames: ["Bench Press"], all, gym: [] }), ["Cable Fly", "Bench Press", "Push-up"]);
+  assert.deepEqual(typeaheadNames({ history: [], dayNames: [], all, gym: undefined }), all);
+  assert.deepEqual(typeaheadNames({ history: ["Push-up"], dayNames: ["Push-up"], all, gym: [] }), ["Push-up"]);
 });

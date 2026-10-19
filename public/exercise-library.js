@@ -161,6 +161,11 @@ export function hiddenCount(lists, gym) {
   return lists.reduce((n, l) => n + (l.length - gymFilter(l, gym).length), 0);
 }
 
+// Names offered while typing an exercise: the person's own (history, days) always, library names through the gym filter.
+export function typeaheadNames({ history, dayNames, all, gym }) {
+  return [...new Set([...history, ...dayNames, ...gymFilter(all, gym)])];
+}
+
 // Same set of ids, in any order. Anything that is not an array is never the same as a list.
 export function sameGym(a, b) {
   if (!Array.isArray(a) || !Array.isArray(b)) return false;

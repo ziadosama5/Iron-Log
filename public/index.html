@@ -367,10 +367,10 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc } from "./ui-helpers.js";
+import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
-import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym } from "./exercise-library.js";
+import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
@@ -415,7 +415,7 @@ const store = {
       this.stopFriends(); state.friends=freshFriends(); renderFriendsBadge();
       this.user=user; state.authed=!!user;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
       this.loadShare().then(()=>{ maybePublish(); refreshFriendNames(); if(state.view==="profile") renderProfile(); });
       this.watchFriends();
@@ -885,7 +885,7 @@ function dayPicker(w){
     ${w?`<div class="row"><button class="btn ghost" data-act="cancel-pick">${esc(t("Keep {name}",{name:w.dayName?nameOf("day",w.dayName):t("current workout")}))}</button></div>`:""}
   </div>`;
 }
-function fillDatalist(){ $("#ex-list").innerHTML=[...new Set([...exerciseNames(),...gymFilter(ALL_EX,activeGym())])].map(n=>`<option value="${esc(nameOf("ex",n))}">`).join(""); }
+function fillDatalist(){ $("#ex-list").innerHTML=typeaheadNames({history:exerciseNames(),dayNames:state.days.flatMap(d=>d.exercises||[]),all:ALL_EX,gym:activeGym()}).map(n=>`<option value="${esc(nameOf("ex",n))}">`).join(""); }
 /* cardio card (Workout tab) */
 const CARDIO_LABEL={treadmill:"Treadmill",elliptical:"Elliptical",bike:"Bike",other:"Other"};
 const INT_LABEL={easy:"Easy",moderate:"Moderate",hard:"Hard"};
@@ -958,15 +958,18 @@ function renderGym(){
 function setGym(next){
   state.gymEdit={gym:next}; state.settings={...state.settings,gym:next};
   clearTimeout(gymSaveTimer);
-  gymSaveTimer=setTimeout(()=>{ const e=state.gymEdit; state.gymEdit=null; if(e) store.saveSettings({gym:e.gym}); },600);
+  gymSaveTimer=setTimeout(flushGym,600);
   if(state.view==="gym") renderGym();
 }
 // One-time card on the Days tab until the person sets their gym (or says "Not now" on this device).
+// "Not now", "Set up" and "Show everything" all end the hint for good (this session even if storage is blocked).
+function dismissGymHint(){ state.gymHintNo=true; try{ localStorage.setItem("ironlog.gymHint","1"); }catch(e){} }
 function gymHintHtml(){
-  let dismissed=false; try{ dismissed=localStorage.getItem("ironlog.gymHint")==="1"; }catch(e){}
-  if(state.settings.gym!==undefined||dismissed) return "";
+  let dismissed=!!state.gymHintNo; try{ dismissed=dismissed||localStorage.getItem("ironlog.gymHint")==="1"; }catch(e){}
+  if(!showGymHint({gym:state.settings.gym,dismissed,synced:state.serverSynced})) return "";
   return `<div class="card"><p style="margin:0">Tell Iron Log what your gym has, so it only suggests exercises you can do.</p><div class="row"><button class="btn small primary" data-act="gym-hint-go">Set up</button><button class="btn small" data-act="gym-hint-no">Not now</button></div></div>`;
 }
+function flushGym(){ clearTimeout(gymSaveTimer); const e=state.gymEdit; state.gymEdit=null; if(e&&store.user) store.saveSettings({gym:e.gym}); }
 function renderDays(){
   let h = gymHintHtml() + `<div class="row"><h2 class="grow">Training days</h2>${state.days.length?`<button class="btn small" data-act="add-day">+ Add day</button><button class="btn small" data-act="change-split">${state.pickSplit?t("Cancel"):t("Change split")}</button>`:""}</div>`;
   if (!state.days.length){
@@ -1257,7 +1260,7 @@ function insights(){
     if(wk.length<2) add("Training","warn",tn("{n} workout in the last 7 days","{n} workouts in the last 7 days",wk.length),t("Training each muscle about twice a week gives the best results for most people. Aim for 3–4 sessions a week."));
     else add("Training","good",tn("{n} workout in the last 7 days","{n} workouts in the last 7 days",wk.length),t("Good consistency."));
     if(lows.length) add("Training","warn",t("Under-trained muscle groups"),t("These got fewer than 6 hard sets this week: <b>{list}</b>. About 10–20 sets per muscle per week works best for growth.",{list:names(lows,"muscle")}),
-      lows.flatMap(m=>gymFilter(LIB[m],state.settings.gym).slice(0,2)));
+      lows.flatMap(m=>gymFilter(LIB[m],state.settings.gym).slice(0,2)).filter((n,i,a)=>a.indexOf(n)===i));
   }
 
   // Lift progress
@@ -1325,7 +1328,7 @@ function renderCoach(){
     // Warnings first; the first 3 are shown, the rest on request.
     const shown=state.coachAllTips?list:list.slice(0,3);
     h+=`<div class="card"><h3>Tips</h3>${shown.map(i=>`<div class="insight ${i.tone}"><span class="label">${esc(t(i.sec))}</span><b>${esc(i.title)}</b><span class="prev" style="color:var(--fg)">${i.text}</span>${
-      i.chips?`<div class="chips">${i.chips.map(c=>`<button class="chip add" data-act="coach-add" data-name="${esc(c)}">${esc(nameOf("ex",c))}</button>`).join("")}</div><span class="prev">Tap to add to today's workout.</span>`:""}</div>`).join("")}${
+      i.chips&&i.chips.length?`<div class="chips">${i.chips.map(c=>`<button class="chip add" data-act="coach-add" data-name="${esc(c)}">${esc(nameOf("ex",c))}</button>`).join("")}</div><span class="prev">Tap to add to today's workout.</span>`:""}</div>`).join("")}${
       list.length>3?`<button class="btn ghost small" data-act="tips-all">${state.coachAllTips?t("Show fewer"):t("Show all tips ({n})",{n:list.length})}</button>`:""}</div>`;
   }
   h+=`<button class="btn secondary" data-act="coach-more" aria-expanded="${!!state.coachMore}">${state.coachMore?t("Hide sets per muscle and written review"):t("More from Coach")}</button>`;
@@ -1872,9 +1875,9 @@ document.addEventListener("click",e=>{
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
     case "gym-preset":{ const p=GYM_PRESETS.find(x=>x.id===b.dataset.p); if(p) setGym([...p.equipment]); break; }
     case "gym-toggle":{ const cur=Array.isArray(state.settings.gym)?state.settings.gym:[], id=b.dataset.id; setGym(cur.includes(id)?cur.filter(x=>x!==id):[...cur,id]); break; }
-    case "gym-clear": setGym(undefined); break;
-    case "gym-hint-go": go("gym"); break;
-    case "gym-hint-no": try{ localStorage.setItem("ironlog.gymHint","1"); }catch(e){} renderDays(); break;
+    case "gym-clear": dismissGymHint(); setGym(undefined); break;
+    case "gym-hint-go": dismissGymHint(); go("gym"); break;
+    case "gym-hint-no": dismissGymHint(); renderDays(); break;
     case "gym-showall": state.showAllGym=!state.showAllGym; render(); refreshSheets(); break;
     case "more-ex":{ const k=b.dataset.k; state.showAllEx=state.showAllEx||{}; state.showAllEx[k]=!state.showAllEx[k]; if(k.startsWith("day:")) renderDays(); else refreshSheets(); break; }
     case "free-focus":{ const m=b.dataset.m; const f=state.freeFocus||[]; state.freeFocus=f.includes(m)?f.filter(x=>x!==m):[...f,m]; renderLog(); break; }
@@ -1922,7 +1925,7 @@ document.addEventListener("click",e=>{
 document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.matches?.("tr[data-act]")){ e.target.click(); return; } if(e.key==="Enter"){ const c=e.target.closest?.("[data-open]"); if(c&&e.target===c){ state.date=c.dataset.open; go("log"); } } });
 
 try{ const v=localStorage.getItem("ironlog.view"); if(VIEWS.includes(v)) state.view=v; }catch(e){}
-$("#signout").addEventListener("click",()=>{ clearRest(); closeMore(); signOut(auth); });
+$("#signout").addEventListener("click",()=>{ flushGym(); clearRest(); closeMore(); signOut(auth); });
 // Sheets add history entries; restoring the old scroll position when they close would undo
 // go()'s scroll-to-top (e.g. More → Lifts opening halfway down), so the app handles scrolling itself.
 try{ history.scrollRestoration="manual"; }catch(e){}
