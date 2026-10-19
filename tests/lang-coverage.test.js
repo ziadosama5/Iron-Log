@@ -135,3 +135,8 @@ test("friends screen: labels and messages built from variables have Arabic", () 
   const keys = [...labels, "Request sent", "You are now friends", "Removed", "Blocked", "Unblocked", "Accept", "Decline", "Send request", "Cancel", "Unblock", "Open", "Remove", "Block", "Keep", "Ahead", "You"];
   assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
 });
+
+test("my gym: labels shown through a condition have Arabic", () => {
+  const keys = ["Show all", "Hide them again"];
+  assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
+});

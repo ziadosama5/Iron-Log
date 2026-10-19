@@ -368,7 +368,7 @@ import { cleanBackupItems } from "./backup.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
-import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias } from "./exercise-library.js";
+import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
@@ -392,7 +392,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
 const freshFriends=()=>({loaded:false,docs:[],blocks:[],data:{},open:null,confirm:null,renamed:false,q:"",found:null});
-let state = { friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
+let state = { showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -738,9 +738,19 @@ function chipRow(items,key,act,extra=""){
   return `<div class="chips">${v.shown.map(n=>`${chipInfo(`<button class="chip add" data-act="${act}"${extra} data-name="${esc(n)}">${esc(nameOf("ex",n))}</button>`,n)}`).join("")}</div>`+
     (items.length>6?`<button class="btn ghost small" data-act="more-ex" data-k="${esc(key)}" aria-expanded="${open}">${open?t("Show fewer"):t("Show more ({n})",{n:items.length-6})}</button>`:"");
 }
+// My Gym: the equipment filter in use (null = show everything). The "Show all" switch lasts for the session.
+const activeGym=()=>state.showAllGym?null:state.settings.gym;
 function suggestionsFor(focus, exclude){
   const ex = exclude.map(x=>x.toLowerCase());
-  return (focus||[]).map(m=>({muscle:m, items:LIB[m].filter(n=>!ex.includes(n.toLowerCase()))})).filter(g=>g.items.length);
+  return (focus||[]).map(m=>({muscle:m, items:gymFilter(LIB[m].filter(n=>!ex.includes(n.toLowerCase())),activeGym())})).filter(g=>g.items.length);
+}
+// The "Hiding N exercises" line under suggestion chips, with its switch. "" when the gym is unset or nothing is hidden.
+function gymNote(focus, exclude){
+  const gym=state.settings.gym; if(!Array.isArray(gym)) return "";
+  const ex=exclude.map(x=>x.toLowerCase());
+  const n=hiddenCount((focus||[]).map(m=>LIB[m].filter(x=>!ex.includes(x.toLowerCase()))),gym);
+  if(!n) return "";
+  return `<div class="row"><span class="prev grow">${esc(state.showAllGym?t("Showing exercises that need other equipment too."):tn("Hiding {n} exercise that needs other equipment.","Hiding {n} exercises that need other equipment.",n))}</span><button class="btn ghost small" data-act="gym-showall">${state.showAllGym?"Hide them again":"Show all"}</button></div>`;
 }
 
 /* ---------- WORKOUT ---------- */
@@ -830,7 +840,7 @@ function exSheetHtml(){
   if (sugg.length) h += sugg.map(g=>`<div class="stack" style="gap:6px"><span class="label">${esc(nameOf("muscle",g.muscle))}</span>${chips(g.items,"sheet:"+g.muscle)}</div>`).join("");
   else if (!day) h += `<div class="chips">${MUSCLES.map(m=>`<button class="chip" data-act="free-focus" data-m="${esc(m)}" aria-pressed="${(state.freeFocus||[]).includes(m)}">${esc(nameOf("muscle",m))}</button>`).join("")}</div>${
       (state.freeFocus||[]).length ? suggestionsFor(state.freeFocus, names).map(g=>chips(g.items,"sheet:"+g.muscle)).join("") : `<span class="prev">Pick a muscle group to see suggestions.</span>`}`;
-  return h + `<form class="row" id="add-ex-form" autocomplete="off"><input id="new-ex" list="ex-list" placeholder="Or type any exercise" style="flex:1 1 180px"><button class="btn primary" type="submit">Add</button></form></div>`;
+  return h + (day?gymNote(day.focus,names):gymNote(state.freeFocus||[],names)) + `<form class="row" id="add-ex-form" autocomplete="off"><input id="new-ex" list="ex-list" placeholder="Or type any exercise" style="flex:1 1 180px"><button class="btn primary" type="submit">Add</button></form></div>`;
 }
 function cardioSheetHtml(){
   return `<div class="sheet-head"><h2>Cardio</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div>${cardioCard()}`;
@@ -872,7 +882,7 @@ function dayPicker(w){
     ${w?`<div class="row"><button class="btn ghost" data-act="cancel-pick">${esc(t("Keep {name}",{name:w.dayName?nameOf("day",w.dayName):t("current workout")}))}</button></div>`:""}
   </div>`;
 }
-function fillDatalist(){ $("#ex-list").innerHTML=[...new Set([...exerciseNames(),...ALL_EX])].map(n=>`<option value="${esc(nameOf("ex",n))}">`).join(""); }
+function fillDatalist(){ $("#ex-list").innerHTML=[...new Set([...exerciseNames(),...gymFilter(ALL_EX,activeGym())])].map(n=>`<option value="${esc(nameOf("ex",n))}">`).join(""); }
 /* cardio card (Workout tab) */
 const CARDIO_LABEL={treadmill:"Treadmill",elliptical:"Elliptical",bike:"Bike",other:"Other"};
 const INT_LABEL={easy:"Easy",moderate:"Moderate",hard:"Hard"};
@@ -967,7 +977,7 @@ function renderDays(){
           <button class="btn ghost small" data-act="mv" data-id="${d.id}" data-k="${k}" data-d="-1" aria-label="${esc(t("Move {name} up",{name:nameOf("ex",n)}))}" ${k===0?"disabled":""}>↑</button>
           <button class="btn ghost small" data-act="mv" data-id="${d.id}" data-k="${k}" data-d="1" aria-label="${esc(t("Move {name} down",{name:nameOf("ex",n)}))}" ${k===d.exercises.length-1?"disabled":""}>↓</button>
           <button class="btn ghost small danger" data-act="rm-dex" data-id="${d.id}" data-k="${k}" aria-label="${esc(t("Remove {name}",{name:nameOf("ex",n)}))}">✕</button></li>`).join("")}</ol>`:`<span class="prev">Tap suggestions below or type an exercise.</span>`}</div>
-        ${(()=>{ const s=suggestionsFor(d.focus,d.exercises); return s.length?`<div class="stack" style="gap:10px"><span class="label">Suggestions</span>${s.map(g=>`<div class="stack" style="gap:6px"><span class="prev">${esc(nameOf("muscle",g.muscle))}</span>${chipRow(g.items,"day:"+d.id+":"+g.muscle,"add-dex",` data-id="${d.id}"`)}</div>`).join("")}</div>`:(d.focus.length?"":`<span class="prev">Pick the muscles this day trains to get exercise suggestions.</span>`); })()}
+        ${(()=>{ const s=suggestionsFor(d.focus,d.exercises), note=gymNote(d.focus,d.exercises); return s.length?`<div class="stack" style="gap:10px"><span class="label">Suggestions</span>${s.map(g=>`<div class="stack" style="gap:6px"><span class="prev">${esc(nameOf("muscle",g.muscle))}</span>${chipRow(g.items,"day:"+d.id+":"+g.muscle,"add-dex",` data-id="${d.id}"`)}</div>`).join("")}${note}</div>`:(d.focus.length?note:`<span class="prev">Pick the muscles this day trains to get exercise suggestions.</span>`); })()}
         <form class="row" data-form="add-dex" data-id="${d.id}" autocomplete="off"><input list="ex-list" placeholder="Type any exercise" style="flex:1 1 180px"><button class="btn" type="submit">Add</button></form>
         <div class="row" style="justify-content:space-between">
           <div class="row" style="gap:4px"><button class="btn ghost small" data-act="mv-day" data-id="${d.id}" data-d="-1" ${i===0?"disabled":""}>Move day up</button><button class="btn ghost small" data-act="mv-day" data-id="${d.id}" data-d="1" ${i===state.days.length-1?"disabled":""}>Move day down</button></div>
@@ -1220,7 +1230,7 @@ function insights(){
     if(wk.length<2) add("Training","warn",tn("{n} workout in the last 7 days","{n} workouts in the last 7 days",wk.length),t("Training each muscle about twice a week gives the best results for most people. Aim for 3–4 sessions a week."));
     else add("Training","good",tn("{n} workout in the last 7 days","{n} workouts in the last 7 days",wk.length),t("Good consistency."));
     if(lows.length) add("Training","warn",t("Under-trained muscle groups"),t("These got fewer than 6 hard sets this week: <b>{list}</b>. About 10–20 sets per muscle per week works best for growth.",{list:names(lows,"muscle")}),
-      lows.flatMap(m=>LIB[m].slice(0,2)));
+      lows.flatMap(m=>gymFilter(LIB[m],state.settings.gym).slice(0,2)));
   }
 
   // Lift progress
@@ -1439,7 +1449,7 @@ function exportData(){
     ...state.body.map(b=>({id:"b-"+b.date,data:b})),
     {id:"program",data:{days:state.days,v:PROGRAM_VERSION,updated:Date.now()}},
     {id:"profile",data:state.profile},
-    {id:"settings",data:{rest:state.settings.rest, ...(state.settings.seenBadges?{seenBadges:state.settings.seenBadges}:{}), updated:Date.now()}},
+    {id:"settings",data:settingsDoc(state.settings,Date.now())},
     ...Object.values(state.food).map(fd=>({id:"f-"+fd.date,data:{date:fd.date,meals:fd.meals,updated:Date.now()}}))
   ];
   const blob=new Blob([JSON.stringify({app:"iron-log",version:1,exported:new Date().toISOString(),items},null,1)],{type:"application/json"});
@@ -1833,6 +1843,7 @@ document.addEventListener("click",e=>{
       break; }
     case "undone-ex":{ stopEditing(); const w=ensureWorkout(); w.entries[ei].done=false; state.openEx=w.entries[ei].ex; store.save(w); renderLog(); break; }
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
+    case "gym-showall": state.showAllGym=!state.showAllGym; render(); refreshSheets(); break;
     case "more-ex":{ const k=b.dataset.k; state.showAllEx=state.showAllEx||{}; state.showAllEx[k]=!state.showAllEx[k]; if(k.startsWith("day:")) renderDays(); else refreshSheets(); break; }
     case "free-focus":{ const m=b.dataset.m; const f=state.freeFocus||[]; state.freeFocus=f.includes(m)?f.filter(x=>x!==m):[...f,m]; renderLog(); break; }
     case "change-day": stopEditing(); state.pickDay=true; renderLog(); break;

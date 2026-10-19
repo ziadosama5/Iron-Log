@@ -207,3 +207,15 @@ test("sameGym compares sets of ids", () => {
   assert.equal(sameGym([], []), true);
   assert.equal(equipmentOf("Push-up").length, 0);
 });
+
+import { hiddenCount } from "../public/exercise-library.js";
+
+test("hiddenCount: 0 when unset, counts exactly what gymFilter drops, custom names never count", () => {
+  assert.equal(hiddenCount([LIB.Chest], undefined), 0);
+  assert.equal(hiddenCount([["My Custom Lift"]], []), 0);
+  const gym = ["barbell", "bench"];
+  assert.equal(hiddenCount([LIB.Chest], gym), LIB.Chest.length - gymFilter(LIB.Chest, gym).length);
+  assert.ok(hiddenCount([LIB.Chest], []) > 0, "a bodyweight-only gym hides machine and bar exercises");
+  assert.equal(hiddenCount([LIB.Chest, LIB.Back], gym), hiddenCount([LIB.Chest], gym) + hiddenCount([LIB.Back], gym));
+  assert.equal(hiddenCount([], []), 0);
+});

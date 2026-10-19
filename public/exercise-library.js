@@ -155,6 +155,12 @@ export function gymCounts(gym) {
   return { items: new Set(ids).size, itemsTotal: EQUIPMENT.length, exercises: exercisesFor(ids).length, exercisesTotal: EXERCISES.length };
 }
 
+// How many of the names (a list per muscle) the gym filter would hide. 0 when the gym is not set.
+export function hiddenCount(lists, gym) {
+  if (!Array.isArray(gym)) return 0;
+  return lists.reduce((n, l) => n + (l.length - gymFilter(l, gym).length), 0);
+}
+
 // Same set of ids, in any order. Anything that is not an array is never the same as a list.
 export function sameGym(a, b) {
   if (!Array.isArray(a) || !Array.isArray(b)) return false;
