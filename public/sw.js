@@ -22,6 +22,8 @@ const APP_SHELL = [
   "/social.js",
   "/friends.js",
   "/plan-tools.js",
+  "/privacy.html",
+  "/terms.html",
   "/manifest.webmanifest",
   "/icon-192.png",
   "/icon-512.png",
