@@ -74,6 +74,9 @@ Scope: the live web app as it would ship inside an Android APK/TWA and later on 
 | G6 | P2 | Health data wording: the app gives fitness guidance; Play health policies expect a medical disclaimer and no medical claims. | The Coach footer already says "not medical advice"; mirror it in the store listing. |
 | G7 | P3 | A pure web app can also be offered as a Play listing without code changes; going to Capacitor later only if native notifications or sign-in force it. | Decide after the TWA is tested. |
 
+## Status (sw v31)
+Done: A1 back behaviour, A2 touch polish, A3 touch targets, B1 text sizes, E2 UI smoke tests (`tests-ui/`). Still open from P1: G1 (Google sign-in inside the TWA: needs the owner to add the new redirect URI in Google Cloud before `authDomain` can change), G2/G3 (asset links and Android tooling: part of the APK step).
+
 ## Recommended order
 1. **Before the APK (P1):** A1 back behaviour, A2 touch polish, A3 touch targets, B1 text sizes, E2 smoke tests, G1 auth domain + emulator sign-in test, G2/G3 tooling and asset links.
 2. **Before Google Play (P2):** C1-C3 accessibility, F1-F2 headers and App Check, D1-D2 performance and self-hosted fonts, A4-A7 native feel, B2-B4 manifest/splash/icon, G4-G6 store listing and deletion URL.
