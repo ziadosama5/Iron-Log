@@ -523,7 +523,7 @@ const store = {
       // From here on nothing in the app may write to this account again (badges, the summary publisher, name refresh
       // would otherwise recreate documents while they are being deleted), and the live listeners stop.
       this.wiping=true; state.journeyShown=true; try{ sessionStorage.setItem("ironlog.wiping","1"); }catch(e){}
-      this.stopFriends(); if(this.unsub){ this.unsub(); this.unsub=null; }
+      this.stopFriends(); this.stopChallenges(); if(this.unsub){ this.unsub(); this.unsub=null; }
       const ps=await T(getDoc(doc(fs,"profiles",uid))), prof=ps.exists()?ps.data():null;
       if(prof){
         step="share"; onStep(step);
@@ -534,6 +534,19 @@ const store = {
       }
       step="friendships"; onStep(step);
       await delAll((await T(getDocs(query(collection(fs,"friendships"),where("users","array-contains",uid))))).docs.map(d=>d.ref));
+      step="challenges"; onStep(step);
+      for(const cd of (await T(getDocs(query(collection(fs,"challenges"),where("members","array-contains",uid))))).docs){
+        const ch=cd.data();
+        if(ch.owner===uid){   // my challenge: every score goes first, then the challenge itself
+          await delAll((await T(getDocs(collection(fs,"challenges",cd.id,"progress")))).docs.map(d=>d.ref));
+          await delAll([cd.ref]);
+        }else{                // someone else's: my score, then I come off both lists
+          const b=writeBatch(fs);
+          b.delete(doc(fs,"challenges",cd.id,"progress",uid));
+          b.update(cd.ref,{members:ch.members.filter(m=>m!==uid),joined:ch.joined.filter(m=>m!==uid),updated:Date.now()});
+          await T(b.commit());
+        }
+      }
       step="blocks"; onStep(step);
       await delAll((await T(getDocs(query(collection(fs,"blocks"),where("blocker","==",uid))))).docs.map(d=>d.ref));
       step="items"; onStep(step);

@@ -49,3 +49,10 @@ test("the pages are cached by the service worker so they open offline", () => {
   const sw = read("sw.js");
   assert.ok(sw.includes('"/privacy.html"') && sw.includes('"/terms.html"'));
 });
+
+test("the privacy policy says challenge data is visible to the people in the challenge and is removed on leaving or deleting", () => {
+  const html = read("privacy.html"), en = block(html, "en").toLowerCase(), ar = block(html, "ar");
+  assert.ok(en.includes("challenge"), "English mentions challenges");
+  assert.ok(en.includes("training-day count") || en.includes("training days"), "English says what is shared");
+  assert.ok(/تحدي|تحديات/.test(ar), "Arabic mentions challenges");
+});

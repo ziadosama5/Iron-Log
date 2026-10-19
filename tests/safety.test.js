@@ -44,10 +44,10 @@ test("chunk splits a list into slices of at most size", () => {
 
 test("wipePlan: the Delete flow's steps in order, the account always last, the shared profile only when there is one", () => {
   const ids = c => wipePlan(c).map(s => s.id);
-  assert.deepEqual(ids({ hasProfile: true }), ["reauth", "share", "friendships", "blocks", "items", "device", "account"]);
-  assert.deepEqual(ids({ hasProfile: false }), ["reauth", "friendships", "blocks", "items", "device", "account"]);
+  assert.deepEqual(ids({ hasProfile: true }), ["reauth", "share", "friendships", "challenges", "blocks", "items", "device", "account"]);
+  assert.deepEqual(ids({ hasProfile: false }), ["reauth", "friendships", "challenges", "blocks", "items", "device", "account"]);
   assert.deepEqual(wipePlan({ hasProfile: true }).map(s => s.label), [
-    "Signing in again…", "Removing your shared profile…", "Removing friendships…", "Removing blocks…", "Removing your data…", "Clearing this device…", "Deleting your account…"]);
+    "Signing in again…", "Removing your shared profile…", "Removing friendships…", "Removing challenges…", "Removing blocks…", "Removing your data…", "Clearing this device…", "Deleting your account…"]);
 });
 
 test("withTimeout: passes the result through, rejects when it takes too long, passes errors through", async () => {

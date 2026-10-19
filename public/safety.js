@@ -47,6 +47,7 @@ export function wipePlan({ hasProfile }) {
     { id: "reauth", label: "Signing in again…" },
     ...(hasProfile ? [{ id: "share", label: "Removing your shared profile…" }] : []),
     { id: "friendships", label: "Removing friendships…" },
+    { id: "challenges", label: "Removing challenges…" },
     { id: "blocks", label: "Removing blocks…" },
     { id: "items", label: "Removing your data…" },
     { id: "device", label: "Clearing this device…" },
