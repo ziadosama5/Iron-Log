@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { MUSCLES, muscleOf, gymFilter, GYM_PRESETS } from "../public/exercise-library.js";
+import { LIB, MUSCLES, muscleOf, gymFilter, GYM_PRESETS } from "../public/exercise-library.js";
 import { AR } from "../public/lang-ar.js";
 import { EXPERIENCE, GOAL_DEFAULT_DAYS, movementFamily, buildPlan } from "../public/plan-tools.js";
 
@@ -152,4 +152,44 @@ test("mergeProfile sets the goal, adds valid body basics, and never drops the ta
   const bad = mergeProfile({ height: 170 }, { goal: "muscle", height: 5, sex: "robot" });
   assert.deepEqual(bad, { goal: "muscle", height: 170 }, "invalid values are ignored, existing ones kept");
   assert.deepEqual(mergeProfile(null, { goal: "recomp" }), { goal: "recomp" });
+});
+
+// ---- review fixes: no muscle disappears under the exercise cap; strength is a strength program ----
+const DAY_MUSCLES = {
+  Push: ["Chest", "Shoulders", "Triceps"], Pull: ["Back", "Biceps"], Legs: ["Quads", "Hamstrings & Glutes", "Calves"],
+  Upper: ["Chest", "Back", "Shoulders", "Biceps", "Triceps"], Lower: ["Quads", "Hamstrings & Glutes", "Calves", "Core"],
+  "Full Body": ["Quads", "Chest", "Back", "Shoulders", "Hamstrings & Glutes", "Core"]
+};
+const baseName = n => n.replace(/ [ABC]$/, "");
+
+test("every muscle a day trains keeps at least one exercise when the gym can work it (all goals except strength)", () => {
+  for (const goal of GOALS.filter(g => g !== "strength")) for (const daysPerWeek of [2, 3, 4, 5, 6]) for (const experience of EXPERIENCE) for (const gym of GYMS) {
+    const p = buildPlan({ goal, daysPerWeek, experience, gym });
+    for (const d of p.days) {
+      for (const m of DAY_MUSCLES[baseName(d.name)]) {
+        if (gymFilter(LIB[m], gym).length > 0) assert.ok(d.focus.includes(m), [d.name, m, goal, daysPerWeek, experience, gym ? gym.length : "all"].join("/"));
+      }
+    }
+  }
+});
+
+test("advanced muscle 4-day plan keeps arms in both Upper days", () => {
+  const p = buildPlan({ goal: "muscle", daysPerWeek: 4, experience: "advanced" });
+  for (const d of p.days.filter(x => x.name.startsWith("Upper"))) {
+    assert.ok(d.focus.includes("Biceps") && d.focus.includes("Triceps"), d.name + ": " + d.exercises.join());
+    assert.equal(d.exercises.length, 7);
+  }
+});
+
+test("strength: compounds first, rows on pull days, no arm isolation on Upper days, main lifts repeat on B days", () => {
+  const p = buildPlan({ goal: "strength", daysPerWeek: 4, experience: "intermediate" });
+  for (const d of p.days.filter(x => x.name.startsWith("Upper"))) {
+    assert.ok(!d.focus.includes("Biceps") && !d.focus.includes("Triceps"), d.name + ": " + d.exercises.join());
+  }
+  const p3 = buildPlan({ goal: "strength", daysPerWeek: 3, experience: "intermediate" });
+  const pull = p3.days.find(d => d.name === "Pull");
+  assert.ok(pull.exercises.filter(n => muscleOf(n) === "Back").length >= 2, pull.exercises.join());
+  const p6 = buildPlan({ goal: "strength", daysPerWeek: 6, experience: "advanced" });
+  const push = p6.days.find(d => d.name === "Push"), pushB = p6.days.find(d => d.name === "Push B");
+  assert.equal(pushB.exercises[0], push.exercises[0], "the main press repeats on the B day");
 });

@@ -41,7 +41,11 @@ const BIG_FOUR = ["Chest", "Back", "Quads", "Hamstrings & Glutes"];
 // Exercises per muscle in one day (see the plan's volume rules).
 function countFor(goal, experience, kind, muscle) {
   if (goal === "strength") {
+    // Main lifts only: arms get one isolation on their own push/pull day, back gets a vertical and a row on pull days.
     if (muscle === "Calves" || muscle === "Core") return 0;
+    if (muscle === "Biceps") return kind === "pull" ? 1 : 0;
+    if (muscle === "Triceps") return kind === "push" ? 1 : 0;
+    if (muscle === "Back") return kind === "pull" ? 2 : 1;
     return muscle === "Quads" && (kind === "legs" || kind === "lower") ? 2 : 1;
   }
   let n = 1;
@@ -85,16 +89,18 @@ export function buildPlan({ goal, daysPerWeek, experience, gym }) {
 
   shape.forEach(([name, kind], i) => {
     const day = { families: new Set() };
-    let exercises = [];
-    for (const m of KIND_MUSCLES[kind]) {
-      const n = countFor(goal, experience, kind, m);
-      if (n > 0) exercises.push(...pick(gymFilter(LIB[m], gym), n, day, usedInPlan));
+    // Slots in muscle order; Pull days also get one rear-delt slot. Over the cap, the biggest counts shrink first
+    // (last muscle first) so every muscle keeps an exercise before any muscle is dropped.
+    const slots = KIND_MUSCLES[kind].map(m => ({ pool: gymFilter(LIB[m], gym), n: countFor(goal, experience, kind, m) })).filter(x => x.n > 0);
+    if (kind === "pull") slots.push({ pool: gymFilter(LIB.Shoulders, gym).filter(x => /Rear Delt|Face Pull/.test(x)), n: 1 });
+    const total = () => slots.reduce((a, x) => a + x.n, 0);
+    while (total() > cap) {
+      const top = Math.max(...slots.map(x => x.n));
+      if (top > 1) slots.findLast(x => x.n === top).n--; else slots.pop();
     }
-    if (kind === "pull") {
-      const rear = gymFilter(LIB.Shoulders, gym).filter(x => /Rear Delt|Face Pull/.test(x));
-      exercises.push(...pick(rear, 1, day, usedInPlan));
-    }
-    exercises = exercises.slice(0, cap);
+    // Strength repeats its main lifts on every day that trains them; the other goals prefer variety.
+    const used = goal === "strength" ? new Set() : usedInPlan;
+    const exercises = slots.flatMap(x => pick(x.pool, x.n, day, used));
     if (!exercises.length) { notes.push({ text: "{day} was left out: nothing in it fits your gym.", params: { day: name } }); return; }
     exercises.forEach(x => usedInPlan.add(x));
     days.push({ name, focus: MUSCLES.filter(m => exercises.some(x => muscleOf(x) === m)), exercises, weekdays: [WEEKDAYS[daysPerWeek][i]] });

@@ -424,7 +424,7 @@ const store = {
       this.stopFriends(); state.friends=freshFriends(); renderFriendsBadge();
       this.user=user; state.authed=!!user;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; state.journey=null; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
       this.loadShare().then(()=>{ maybePublish(); refreshFriendNames(); if(state.view==="profile") renderProfile(); });
       this.watchFriends();
@@ -769,7 +769,7 @@ function gymNote(focus, exclude){
 function renderLog(){
   const w = workoutFor(state.date);
   const dateLabel = state.date===today()?t("Today"):fmtDate(state.date);
-  let h = (state.days.length?"":journeyCard()) + `<div class="row">
+  let h = (state.days.length||state.serverSynced!==true?"":journeyCard()) + `<div class="row">
     <div class="grow"><div class="label">Workout date</div><h2>${dateLabel}</h2></div>
     <input type="date" id="log-date" value="${state.date}" max="${today()}" style="width:auto">
   </div>`;
@@ -1014,9 +1014,9 @@ function renderJourney(){
 function journeyNext(){
   const j=state.journey, key=jrSteps()[j.step];
   if(key==="about"){
-    const a=j.about, any=a.sex||String(a.height).trim()||String(a.birthYear).trim();
+    const a=j.about, any=String(a.height).trim()||String(a.birthYear).trim()||a.sex!==(state.profile.sex||"");
     if(any&&!checkProfile({sex:a.sex,height:a.height,birthYear:a.birthYear,goal:j.goal},new Date().getFullYear()).ok){ toast(t("Fill in all four fields: height in cm (100–250) and a 4-digit birth year")); return; }
-    if(!any) j.about={sex:"",height:"",birthYear:""};
+    if(!any) j.about={sex:state.profile.sex||"",height:"",birthYear:""};
   }
   j.step++; renderJourney(); window.scrollTo(0,0);
 }
@@ -1027,7 +1027,7 @@ function journeyStart(){
   store.saveDays(plan.days.map(d=>({id:uid(),...d})));
   store.saveProfile(mergeProfile(state.profile,{goal:j.goal,...j.about}));
   if(j.gymChosen&&!j.gymNone){ const p=GYM_PRESETS.find(x=>x.id===j.preset); if(p) store.saveSettings({gym:[...p.equipment]}); }
-  state.openEx=undefined; endJourney(); go("log"); toast(t("Your plan is ready"));
+  state.openEx=undefined; state.pickSplit=false; state.editDay=null; endJourney(); go("log"); toast(t("Your plan is ready"));
 }
 
 /* ---------- MY GYM ---------- */
@@ -1645,7 +1645,7 @@ $("#moresheet").addEventListener("click",e=>{
   if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeMore();
 });
 window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.more)) closeMore(); });
-if(history.state&&(history.state.exinfo||history.state.more||history.state.sheet)) history.replaceState(null,""); // reloaded while a sheet was open
+if(history.state&&(history.state.exinfo||history.state.more||history.state.sheet||history.state.journey)) history.replaceState(null,""); // reloaded while a sheet was open
 
 /* ---------- SCREEN WAKE LOCK ---------- */
 const wake = createWakeLock();
@@ -1969,7 +1969,7 @@ document.addEventListener("click",e=>{
     case "undone-ex":{ stopEditing(); const w=ensureWorkout(); w.entries[ei].done=false; state.openEx=w.entries[ei].ex; store.save(w); renderLog(); break; }
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
     case "journey-open": openJourney(false); break;
-    case "more-journey": closeMore(); setTimeout(()=>openJourney(false),150); break;
+    case "more-journey": { let opened=false; const open=()=>{ if(!opened){ opened=true; openJourney(false); } }; window.addEventListener("popstate",()=>setTimeout(open,0),{once:true}); setTimeout(open,800); closeMore(); break; }
     case "jr-goal": { const j=state.journey; j.goal=b.dataset.v; if(!j.daysTouched) j.days=GOAL_DEFAULT_DAYS[j.goal]; renderJourney(); break; }
     case "jr-days": { const j=state.journey; j.days=+b.dataset.v; j.daysTouched=true; renderJourney(); break; }
     case "jr-gym": { const j=state.journey, v=b.dataset.v; if(v==="none"){ j.gymNone=true; j.gymChosen=false; j.preset=null; } else { j.gymNone=false; j.gymChosen=true; j.preset=v; } renderJourney(); break; }
@@ -1977,7 +1977,9 @@ document.addEventListener("click",e=>{
     case "jr-sex": state.journey.about.sex=b.dataset.v; renderJourney(); break;
     case "jr-next": journeyNext(); break;
     case "jr-back": if(state.journey.step>0){ state.journey.step--; renderJourney(); window.scrollTo(0,0); } break;
-    case "jr-skip": markJourneySkipped(); endJourney(); go("log"); break;
+    case "jr-skip":
+      if(jrSteps()[state.journey.step]==="about"){ state.journey.about={sex:state.profile.sex||"",height:"",birthYear:""}; state.journey.step++; renderJourney(); window.scrollTo(0,0); break; }
+      markJourneySkipped(); endJourney(); go("log"); break;
     case "jr-start": journeyStart(); break;
     case "gym-preset":{ const p=GYM_PRESETS.find(x=>x.id===b.dataset.p); if(p) setGym([...p.equipment]); break; }
     case "gym-toggle":{ const cur=Array.isArray(state.settings.gym)?state.settings.gym:[], id=b.dataset.id; setGym(cur.includes(id)?cur.filter(x=>x!==id):[...cur,id]); break; }
