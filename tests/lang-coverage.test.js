@@ -159,3 +159,9 @@ test("delete my account: progress labels and failure messages shown through vari
     "Couldn't delete everything. Some of your data may already be removed. Try again.", "You're offline. Try again when you're back online."];
   assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
 });
+
+test("challenges: messages and labels shown through variables have Arabic", () => {
+  const keys = ["Challenge created", "You joined the challenge", "Declined", "You left the challenge", "Challenge deleted", "Delete challenge", "Leave challenge", "Leave", "Delete", "Keep",
+    "Accept", "Decline", "Today", "Cancel", "Back", "{n} week", "{n} weeks", "Create challenge"];
+  assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
+});

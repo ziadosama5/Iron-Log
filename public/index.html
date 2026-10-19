@@ -91,6 +91,11 @@ main{padding-block:18px calc(var(--tabbar) + 24px + env(safe-area-inset-bottom,0
 .more-row{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 4px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:600 16px/1 var(--f-body);cursor:pointer;text-align:left}
 .more-row svg{width:20px;height:20px;color:var(--muted)}
 a.more-row{text-decoration:none}
+.chrow{display:grid;grid-template-columns:28px 1fr auto;gap:4px 10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.chrow .rank{font-weight:700;color:var(--muted);text-align:center}
+.chrow .nm{overflow-wrap:anywhere}
+.chbar{grid-column:2 / 4;height:8px;border-radius:4px;background:var(--sunk);overflow:hidden}
+.chbar span{display:block;height:100%;background:var(--accent);border-radius:4px}
 .jr-dots{display:flex;gap:6px;align-items:center}
 .jr-dot{width:8px;height:8px;border-radius:50%;background:var(--line)}
 .jr-dot.on{background:var(--accent)}
@@ -329,6 +334,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
     <section id="view-gym" class="view" hidden></section>
     <section id="view-journey" class="view" hidden></section>
     <section id="view-delete" class="view" hidden></section>
+    <section id="view-challenges" class="view" hidden></section>
   </main>
 </div>
 <div class="restbar" id="restbar" role="timer" aria-live="off" hidden>
@@ -350,6 +356,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
   <button class="more-row" data-act="more-go" data-view="history">History &amp; backup<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-journey">Plan my training<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="gym">My Gym<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+  <button class="more-row" data-act="more-go" data-view="challenges">Challenges<span class="count" id="challenges-count" hidden></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="friends">Friends<span class="count" id="friends-count" hidden></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="profile">Profile and privacy<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <div class="stack" style="gap:6px;margin-top:14px"><span class="label">Language</span>
@@ -388,7 +395,7 @@ import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
-import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN } from "./challenges.js";
+import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN, WEEK_CHOICES, nextSaturday, challengeDates, dayNumber, rankMembers, winners, planCreate, planAccept as planAcceptChallenge, planLeave, planDelete } from "./challenges.js";
 import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
 import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney } from "./plan-tools.js";
@@ -673,9 +680,14 @@ let tt; function toast(t){
 function currentSummary(){ return buildSummary({workouts:state.workouts,body:state.body,food:state.food,days:state.days,profile:state.profile,today:today()},Date.now()); }
 // Dot on the More tab (and the count in its sheet row) while friend requests wait for me.
 function incomingRequests(){ return state.authed&&state.friends.loaded?groupFriendships(state.friends.docs,store.user.uid,state.friends.blocks).requests.length:0; }
+function incomingChallenges(){
+  if(!state.authed||!state.challenges.loaded||!store.user) return 0; const me=store.user.uid, t=today();
+  return state.challenges.docs.filter(ch=>ch.members.includes(me)&&!ch.joined.includes(me)&&statusOf(ch,t)!=="finished").length;
+}
 function renderFriendsBadge(){
-  const n=incomingRequests(), b=document.querySelector('.tabbar [data-act="more-open"]'); if(b) b.classList.toggle("has-dot",n>0);
+  const n=incomingRequests(), m=incomingChallenges(), b=document.querySelector('.tabbar [data-act="more-open"]'); if(b) b.classList.toggle("has-dot",n+m>0);
   const c=document.getElementById("friends-count"); if(c){ c.textContent=n?String(n):""; c.hidden=!n; }
+  const k=document.getElementById("challenges-count"); if(k){ k.textContent=m?String(m):""; k.hidden=!m; }
 }
 // After a rename, put my new username into my friendship docs (once per session).
 function refreshFriendNames(){
@@ -759,7 +771,87 @@ function challengesChanged(){
   publishProgress(false); renderFriendsBadge();
   if(state.view==="challenges"){ if(typing()) renderPending=true; else renderChallenges(); }
 }
-function renderChallenges(){}
+const chWeeksLabel=n=>tn("{n} week","{n} weeks",n);
+const chRange=ch=>fmtDate(ch.start)+" – "+fmtDate(ch.end);
+function chStatusText(ch,st){ if(st==="upcoming") return t("Starts {d}",{d:fmtDate(ch.start)}); if(st==="finished") return t("Finished"); const d=dayNumber(ch,today()); return t("Day {d} of {n}",{d:d.day,n:d.total}); }
+function chOpenCount(){ const me=store.user.uid, t=today(); return state.challenges.docs.filter(ch=>ch.joined.includes(me)&&statusOf(ch,t)!=="finished").length; }
+function chRow(ch){ const st=statusOf(ch,today()); return `<button class="fcard" data-act="ch-open" data-id="${esc(ch.id)}"><span class="grow"><b>${esc(chWeeksLabel(ch.weeks))}</b> <span class="prev">${esc(chRange(ch))}</span><br><span class="prev">${esc(chStatusText(ch,st))}</span></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>`; }
+function renderChallenges(){
+  const c=state.challenges, el=$("#view-challenges"); if(!store.user) return;
+  if(!c.loaded){ el.innerHTML=`<h2>Challenges</h2><p class="prev">Loading…</p>`; return; }
+  if(c.open){ renderChallengePage(el); return; }
+  if(c.form){ renderChallengeForm(el); return; }
+  const me=store.user.uid, t0=today(), mine=c.docs.map(ch=>({ch,st:statusOf(ch,t0)}));
+  const inv=mine.filter(x=>!x.ch.joined.includes(me)&&x.st!=="finished"), act=mine.filter(x=>x.ch.joined.includes(me)&&x.st!=="finished"), fin=mine.filter(x=>x.ch.joined.includes(me)&&x.st==="finished");
+  let h=`<div class="row"><h2 class="grow">Challenges</h2><button class="btn small primary" data-act="ch-new">New challenge</button></div>`;
+  if(!mine.length) h+=`<div class="card"><p class="prev" style="margin:0">No challenges yet. Start one with your friends: whoever trains on more days wins.</p></div>`;
+  if(inv.length) h+=`<div class="card"><h3>Invitations</h3>${inv.map(({ch})=>`<div class="stack" style="gap:6px"><div><b>${esc(chWeeksLabel(ch.weeks))}</b> <span class="prev">${esc(chRange(ch))}</span></div><span class="prev">${esc(t("From {name}",{name:iso("@"+(ch.names[ch.owner]||"?"))}))}</span><div class="row"><button type="button" class="btn small primary" data-act="ch-accept" data-id="${esc(ch.id)}">Accept</button><button type="button" class="btn small" data-act="ch-decline" data-id="${esc(ch.id)}">Decline</button></div></div>`).join("")}</div>`;
+  if(act.length) h+=`<div class="card"><h3>Active</h3>${act.map(x=>chRow(x.ch)).join("")}</div>`;
+  if(fin.length) h+=`<div class="card"><h3>Finished</h3>${fin.map(x=>chRow(x.ch)).join("")}</div>`;
+  el.innerHTML=h;
+}
+function chFriends(){ return groupFriendships(state.friends.docs,store.user.uid,state.friends.blocks).friends.filter(x=>x.name); }
+function renderChallengeForm(el){
+  const f=state.challenges.form, friends=chFriends(), d=challengeDates({startChoice:f.start,weeks:f.weeks,today:today()});
+  const full=chOpenCount()>=MAX_OPEN;
+  let h=`<div class="row"><button class="btn small" data-act="ch-form-cancel">Cancel</button></div><h2>New challenge</h2>
+    <div class="card"><span class="label">How long</span><div class="chips">${WEEK_CHOICES.map(n=>`<button type="button" class="chip" data-act="ch-weeks" data-v="${n}" aria-pressed="${f.weeks===n}">${esc(chWeeksLabel(n))}</button>`).join("")}</div>
+    <span class="label">Starts</span><div class="chips"><button type="button" class="chip" data-act="ch-start" data-v="today" aria-pressed="${f.start==="today"}">Today</button><button type="button" class="chip" data-act="ch-start" data-v="saturday" aria-pressed="${f.start==="saturday"}">${esc(t("Next Saturday ({d})",{d:fmtDate(nextSaturday(today()))}))}</button></div>
+    <span class="prev">${esc(t("Runs {a} – {b}",{a:fmtDate(d.start),b:fmtDate(d.end)}))}</span></div>`;
+  h+=`<div class="card"><span class="label">Invite friends (up to 5)</span>`;
+  if(!friends.length) h+=`<p class="prev" style="margin:0">You need friends first.</p><div class="row"><button type="button" class="btn small" data-act="ch-to-friends">Open Friends</button></div>`;
+  else h+=`<div class="chips">${friends.map(x=>`<button type="button" class="chip" data-act="ch-friend" data-uid="${esc(x.uid)}" data-name="${esc(x.name)}" aria-pressed="${f.picks.some(p=>p.uid===x.uid)}">@${esc(x.name)}</button>`).join("")}</div>`;
+  h+=`</div>${full?`<p class="prev">You are already in the most challenges allowed. Finish or leave one first.</p>`:""}<div class="row"><button type="button" class="btn primary" data-act="ch-create" ${f.picks.length>=1&&!f.busy&&!full?"":"disabled"}>Create challenge</button></div>`;
+  el.innerHTML=h;
+}
+function renderChallengePage(el){
+  const c=state.challenges, ch=c.docs.find(x=>x.id===c.open), me=store.user.uid;
+  if(!ch){ c.open=null; store.stopProgress(); renderChallenges(); return; }
+  const t0=today(), st=statusOf(ch,t0), total=ch.weeks*7;
+  const prog={...c.progress}; if(ch.joined.includes(me)&&st!=="upcoming") prog[me]={days:countDays(state.workouts,ch.start,ch.end,t0,trainedOn)};
+  const rows=rankMembers({members:ch.members,joined:ch.joined,progress:prog,names:ch.names}), win=winners(rows,st);
+  let h=`<div class="row"><button class="btn small" data-act="ch-back">Back</button></div><h2>${esc(chWeeksLabel(ch.weeks))}</h2><p class="prev" style="margin:0">${esc(chRange(ch))} · ${esc(chStatusText(ch,st))}</p>`;
+  h+=`<div class="card">${rows.map(r=>`<div class="chrow"><span class="rank">${r.rank===null?"–":r.rank}</span><span class="nm"><bdi dir="ltr">@${esc(r.name)}</bdi>${r.uid===me?" "+esc(t("(you)")):""}${r.joined?"":` <span class="prev">${esc(t("Invited"))}</span>`}</span><b>${r.days}</b>${r.joined?`<div class="chbar" role="img" aria-label="${esc(t("{n} of {m} days",{n:r.days,m:total}))}"><span style="width:${Math.min(100,Math.round(r.days/total*100))}%"></span></div>`:""}</div>`).join("")}</div>`;
+  if(st==="finished") h+=win.length?`<p><b>${esc(win.length>1?t("Winners: {name}",{name:win.map(u=>"@"+(ch.names[u]||"?")).join(", ")}):t("Winner: {name}",{name:iso("@"+(ch.names[win[0]]||"?"))}))}</b></p>`:`<p class="prev">${esc(t("No winner this time."))}</p>`;
+  h+=`<p class="prev">Scores are self-reported. A final score is whatever each person last published.</p>`;
+  const owner=ch.owner===me;
+  h+=c.confirm?`<div class="card"><span>${esc(owner?t("Delete this challenge for everyone?"):t("Leave this challenge?"))}</span><div class="row"><button type="button" class="btn small" data-act="ch-no">Keep</button><button type="button" class="btn small danger" data-act="${owner?"ch-delete-yes":"ch-leave-yes"}" data-id="${esc(ch.id)}">${owner?"Delete":"Leave"}</button></div></div>`
+    :`<div class="row"><button type="button" class="btn small danger" data-act="ch-confirm">${owner?"Delete challenge":"Leave challenge"}</button></div>`;
+  el.innerHTML=h;
+}
+async function chDo(plan,okMsg){
+  const r=await store.challengeAction(plan);
+  toast(t(r.ok?okMsg:r.reason==="offline"?"You're offline. Try again when you're back online.":"Couldn't save. Check your connection."));
+  return r.ok;
+}
+function chClick(act,d){
+  const c=state.challenges, me=store.user.uid, now=Date.now(), ch=c.docs.find(x=>x.id===(d.id||c.open));
+  switch(act){
+    case "ch-new": c.form={weeks:2,start:"today",picks:[],busy:false}; c.open=null; renderChallenges(); return;
+    case "ch-form-cancel": c.form=null; renderChallenges(); return;
+    case "ch-weeks": c.form.weeks=+d.v; renderChallenges(); return;
+    case "ch-start": c.form.start=d.v; renderChallenges(); return;
+    case "ch-friend": { const p=c.form.picks, i=p.findIndex(x=>x.uid===d.uid); if(i>=0) p.splice(i,1); else if(p.length<5) p.push({uid:d.uid,name:d.name}); renderChallenges(); return; }
+    case "ch-to-friends": c.form=null; go("friends"); return;
+    case "ch-create": {
+      const f=c.form; if(!f||f.busy||f.picks.length<1) return;
+      if(chOpenCount()>=MAX_OPEN){ toast(t("You are already in the most challenges allowed. Finish or leave one first.")); return; }
+      const mine=state.share.profile&&state.share.profile.username; if(!mine){ toast(t("Choose a username first")); return; }
+      const cid=doc(collection(fs,"challenges")).id;
+      const plan=planCreate({cid,owner:me,ownerName:mine,invitees:f.picks,weeks:f.weeks,startChoice:f.start,today:today(),now});
+      f.busy=true; renderChallenges();
+      chDo(plan,"Challenge created").then(ok=>{ f.busy=false; if(ok){ c.form=null; c.open=cid; store.watchProgress(cid); publishProgress(true); } renderChallenges(); });
+      return; }
+    case "ch-open": c.open=d.id; c.confirm=null; store.watchProgress(d.id); renderChallenges(); window.scrollTo(0,0); return;
+    case "ch-back": c.open=null; c.confirm=null; store.stopProgress(); renderChallenges(); return;
+    case "ch-accept": if(ch) chDo(planAcceptChallenge({cid:ch.id,me,current:ch,now}),"You joined the challenge").then(ok=>{ if(ok) publishProgress(true); }); return;
+    case "ch-decline": if(ch) chDo(planLeave({cid:ch.id,me,current:ch,now}),"Declined"); return;
+    case "ch-confirm": c.confirm=true; renderChallenges(); return;
+    case "ch-no": c.confirm=null; renderChallenges(); return;
+    case "ch-leave-yes": if(ch) chDo(planLeave({cid:ch.id,me,current:ch,now}),"You left the challenge").then(ok=>{ if(ok){ c.open=null; c.confirm=null; store.stopProgress(); } renderChallenges(); }); return;
+    case "ch-delete-yes": if(ch) chDo(planDelete({cid:ch.id,memberUids:ch.members}),"Challenge deleted").then(ok=>{ if(ok){ c.open=null; c.confirm=null; store.stopProgress(); } renderChallenges(); }); return;
+  }
+}
 function renderFriends(){
   const f=state.friends, el=$("#view-friends"); if(!store.user) return;
   if(!f.loaded){ el.innerHTML=`<h2>Friends</h2><p class="prev">Loading…</p>`; return; }
@@ -1789,7 +1881,7 @@ $("#exinfo").addEventListener("click",e=>{
   if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeExInfo(); // tap on the backdrop
 });
 window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.exinfo)) closeExInfo(); });
-const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Profile",friends:"Friends",gym:"My Gym",journey:"Plan my training",delete:"Delete my account"};
+const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Profile",friends:"Friends",gym:"My Gym",journey:"Plan my training",delete:"Delete my account",challenges:"Challenges"};
 // More sheet: Days, Lifts, History & backup, theme, account. Same open/close pattern as the info sheet.
 function openMore(){
   const d=$("#moresheet"), th=currentTheme();
@@ -1956,7 +2048,7 @@ async function shareResult(res,okMsg){
 }
 
 /* ---------- render + events ---------- */
-const VIEWS=["log","days","body","coach","goals","progress","history","profile","friends","gym","journey","delete"];
+const VIEWS=["log","days","body","coach","goals","progress","history","profile","friends","gym","journey","delete","challenges"];
 function renderSignin(){
   const el=$("#view-signin");
   const note=state.deletedNote?`<p class="prev" role="status" style="margin:0">${esc(t("Your account and data were deleted."))}</p>`:"";
@@ -1974,11 +2066,11 @@ function render(){
   const authed=state.authed;
   $("#nav").hidden=!authed||state.view==="journey"||state.view==="delete"; $("#view-signin").hidden=authed;
   if(!authed){ VIEWS.forEach(v=>$("#view-"+v).hidden=true); renderSignin(); syncWake(); return; }
-  const inMore=["days","progress","history","profile","friends","gym"].includes(state.view);
+  const inMore=["days","progress","history","profile","friends","gym","challenges"].includes(state.view);
   document.querySelectorAll(".tabbar button").forEach(b=>{ if(b.dataset.view===state.view||(inMore&&b.dataset.view==="more")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   $("#screen-title").textContent=t(SCREEN_TITLES[state.view]||"Iron Log");
   VIEWS.forEach(v=>$("#view-"+v).hidden=v!==state.view);
-  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory,profile:renderProfile,friends:renderFriends,gym:renderGym,journey:renderJourney,delete:renderDelete})[state.view]();
+  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory,profile:renderProfile,friends:renderFriends,gym:renderGym,journey:renderJourney,delete:renderDelete,challenges:renderChallenges})[state.view]();
   syncWake();
 }
 function go(view){ state.view=view; if(view!=="journey"&&view!=="delete") try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
@@ -2133,6 +2225,7 @@ document.addEventListener("click",e=>{
     case "undone-ex":{ stopEditing(); const w=ensureWorkout(); w.entries[ei].done=false; state.openEx=w.entries[ei].ex; store.save(w); renderLog(); break; }
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
     case "journey-open": openJourney(false); break;
+    case "ch-new": case "ch-form-cancel": case "ch-weeks": case "ch-start": case "ch-friend": case "ch-to-friends": case "ch-create": case "ch-open": case "ch-back": case "ch-accept": case "ch-decline": case "ch-confirm": case "ch-no": case "ch-leave-yes": case "ch-delete-yes": chClick(b.dataset.act,b.dataset); break;
     case "more-delete": closeMore(); state.del=null; go("delete"); break;
     case "del-start": state.del.mode="confirm"; renderDelete(); break;
     case "del-no": state.del.mode="idle"; renderDelete(); break;
