@@ -22,6 +22,10 @@ service cloud.firestore {
 
     function profilePath(uid) { return /databases/$(database)/documents/profiles/$(uid); }
     function usernamePath(name) { return /databases/$(database)/documents/usernames/$(name); }
+    function pairPath(a, b) { return /databases/$(database)/documents/friendships/$(a < b ? a + '_' + b : b + '_' + a); }
+    function blockPath(blocker, blocked) { return /databases/$(database)/documents/blocks/$(blocker + '_' + blocked); }
+    function areFriends(uid) { return exists(pairPath(request.auth.uid, uid)) && get(pairPath(request.auth.uid, uid)).data.status == 'accepted'; }
+    function otherOf(users) { return users[0] == request.auth.uid ? users[1] : users[0]; }
 
     function validUsername(n) {
       return n is string
@@ -89,9 +93,10 @@ service cloud.firestore {
     }
 
     match /profiles/{uid} {
-      // Public profiles are readable by any signed-in user. private and friends are owner-only
-      // (friend reads arrive with the friends feature).
-      allow get: if signedIn() && (request.auth.uid == uid || resource.data.visibility == 'public');
+      // Public profiles are readable by any signed-in user, friends profiles by accepted friends,
+      // private ones only by the owner.
+      allow get: if signedIn() && (request.auth.uid == uid || resource.data.visibility == 'public'
+                                  || (resource.data.visibility == 'friends' && areFriends(uid)));
       allow create, update: if signedIn()
                             && request.auth.uid == uid
                             && request.resource.size() < 5000
@@ -109,6 +114,58 @@ service cloud.firestore {
       // The name doc must go in the same batch (or the profile keeps pointing at a name it no longer owns).
       allow delete: if signedIn() && request.auth.uid == uid
                     && !existsAfter(usernamePath(resource.data.username));
+    }
+
+    // A pair of people: a request (pending) the other person can accept, then friends (accepted).
+    match /friendships/{pairId} {
+      allow get, list: if signedIn() && request.auth.uid in resource.data.users;
+      allow create: if signedIn()
+                    && request.resource.data.keys().hasOnly(['users', 'requester', 'status', 'names', 'updated'])
+                    && request.resource.data.keys().hasAll(['users', 'requester', 'status', 'names', 'updated'])
+                    && request.resource.data.users is list
+                    && request.resource.data.users.size() == 2
+                    && request.resource.data.users[0] is string && request.resource.data.users[1] is string
+                    && request.resource.data.users[0] < request.resource.data.users[1]
+                    && pairId == request.resource.data.users[0] + '_' + request.resource.data.users[1]
+                    && request.auth.uid in request.resource.data.users
+                    && request.resource.data.requester == request.auth.uid
+                    && request.resource.data.status == 'pending'
+                    && request.resource.data.updated is number
+                    && request.resource.data.names is map
+                    && request.resource.data.names.keys().hasOnly(request.resource.data.users)
+                    && request.resource.data.names.keys().hasAll(request.resource.data.users)
+                    && request.resource.data.names[request.auth.uid] == get(profilePath(request.auth.uid)).data.username
+                    && get(usernamePath(request.resource.data.names[otherOf(request.resource.data.users)])).data.uid == otherOf(request.resource.data.users)
+                    && !exists(blockPath(otherOf(request.resource.data.users), request.auth.uid));
+      allow update: if signedIn()
+                    && request.auth.uid in resource.data.users
+                    && request.resource.data.keys().hasOnly(['users', 'requester', 'status', 'names', 'updated'])
+                    && request.resource.data.users == resource.data.users
+                    && request.resource.data.requester == resource.data.requester
+                    && request.resource.data.updated is number
+                    && request.resource.data.names.keys().hasOnly(resource.data.users)
+                    && ((resource.data.status == 'pending' && request.resource.data.status == 'accepted'
+                         && resource.data.requester != request.auth.uid
+                         && request.resource.data.names == resource.data.names)
+                        || (request.resource.data.status == resource.data.status
+                            && request.resource.data.names[otherOf(resource.data.users)] == resource.data.names[otherOf(resource.data.users)]
+                            && request.resource.data.names[request.auth.uid] == get(profilePath(request.auth.uid)).data.username));
+      // Decline, cancel, remove and block all delete the pair. A missing doc may be deleted (batches stay simple).
+      allow delete: if signedIn() && (resource == null || request.auth.uid in resource.data.users);
+    }
+
+    // Who I blocked. Only I can see or change it.
+    match /blocks/{blockId} {
+      allow get, list: if signedIn() && resource.data.blocker == request.auth.uid;
+      allow create: if signedIn()
+                    && request.resource.data.keys().hasOnly(['blocker', 'blocked', 'updated'])
+                    && request.resource.data.keys().hasAll(['blocker', 'blocked', 'updated'])
+                    && request.resource.data.blocker == request.auth.uid
+                    && request.resource.data.blocked is string
+                    && request.resource.data.blocked != request.auth.uid
+                    && blockId == request.auth.uid + '_' + request.resource.data.blocked
+                    && request.resource.data.updated is number;
+      allow delete: if signedIn() && (resource == null || resource.data.blocker == request.auth.uid);
     }
 
     // Everything else is closed.

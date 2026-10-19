@@ -3,7 +3,7 @@
 import { test, before, after, beforeEach } from "node:test";
 import { readFileSync } from "node:fs";
 import { initializeTestEnvironment, assertSucceeds, assertFails } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, updateDoc, deleteDoc, writeBatch, collection, getDocs } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, deleteDoc, writeBatch, collection, getDocs, query, where } from "firebase/firestore";
 
 let env;
 before(async () => {
@@ -235,4 +235,134 @@ test("orphans: deleting only the profile or only the username doc is denied (no 
 test("profile update keeping the same name still works after the orphan guards", async () => {
   await seedClaim("u1", "ziad", { visibility: "public" });
   await assertSucceeds(updateDoc(doc(as("u1", U1), "profiles", "u1"), { summary: SUMMARY, updated: 9 }));
+});
+
+// ---- friends: friendships/{pairId}, blocks/{blocker}_{blocked}, friends-only profile reads ----
+const U3 = { email: "u3@x.com", email_verified: true };
+const NAMES = { u1: "ziad", u2: "zed", u3: "omar" };
+const pid = (a, b) => (a < b ? a + "_" + b : b + "_" + a);
+const fdoc = (requester, other, status = "pending", o = {}) => ({ users: [requester, other].sort(), requester, status, names: { [requester]: NAMES[requester], [other]: NAMES[other] }, updated: 1, ...o });
+const seedPeople = async (vis = {}) => { for (const [u, n] of Object.entries(NAMES)) await seedClaim(u, n, vis[u] ? { visibility: vis[u], ...(vis[u] === "private" ? {} : { summary: SUMMARY }) } : {}); };
+const seedPair = (a, b, status = "pending") => seed(db => setDoc(doc(db, "friendships", pid(a, b)), fdoc(a, b, status)));
+const seedBlock = (blocker, blocked) => seed(db => setDoc(doc(db, "blocks", blocker + "_" + blocked), { blocker, blocked, updated: 1 }));
+const claims = { u1: U1, u2: U2, u3: U3 };
+const ref = (uid, col, id) => doc(as(uid, claims[uid]), col, id);
+
+test("friendships: a stranger cannot get or list a pair; a member can get and list with array-contains", async () => {
+  await seedPeople(); await seedPair("u1", "u2");
+  await assertFails(getDoc(ref("u3", "friendships", "u1_u2")));
+  await assertSucceeds(getDoc(ref("u1", "friendships", "u1_u2")));
+  await assertSucceeds(getDocs(query(collection(as("u1", U1), "friendships"), where("users", "array-contains", "u1"))));
+  await assertFails(getDocs(collection(as("u1", U1), "friendships")));
+  await assertFails(getDocs(query(collection(as("u3", U3), "friendships"), where("users", "array-contains", "u1"))));
+});
+
+test("friendships: a valid request is allowed", async () => {
+  await seedPeople();
+  await assertSucceeds(setDoc(ref("u1", "friendships", "u1_u2"), fdoc("u1", "u2")));
+});
+
+test("friendships: forged or malformed requests are denied", async () => {
+  await seedPeople();
+  const bad = [
+    ["requester is the other person", fdoc("u2", "u1")],
+    ["status accepted", fdoc("u1", "u2", "accepted")],
+    ["users not sorted", { ...fdoc("u1", "u2"), users: ["u2", "u1"] }],
+    ["my name is not my username", fdoc("u1", "u2", "pending", { names: { u1: "fake", u2: "zed" } })],
+    ["their name does not point at them", fdoc("u1", "u2", "pending", { names: { u1: "ziad", u2: "omar" } })],
+    ["extra key", { ...fdoc("u1", "u2"), extra: 1 }],
+    ["not a number", { ...fdoc("u1", "u2"), updated: "x" }]
+  ];
+  for (const [why, d] of bad) await assertFails(setDoc(ref("u1", "friendships", "u1_u2"), d), why);
+  await assertFails(setDoc(ref("u1", "friendships", "u2_u3"), fdoc("u2", "u3")), "not part of the pair");
+  await assertFails(setDoc(ref("u1", "friendships", "u1_u3"), fdoc("u1", "u2")), "id does not match users");
+});
+
+test("friendships: a person without a profile cannot request", async () => {
+  await seedClaim("u2", "zed");
+  await assertFails(setDoc(ref("u1", "friendships", "u1_u2"), fdoc("u1", "u2")));
+});
+
+test("friendships: blocked senders cannot request", async () => {
+  await seedPeople(); await seedBlock("u2", "u1");
+  await assertFails(setDoc(ref("u1", "friendships", "u1_u2"), fdoc("u1", "u2")));
+});
+
+test("friendships: the other side cannot overwrite a pending request as requester", async () => {
+  await seedPeople(); await seedPair("u1", "u2");
+  await assertFails(setDoc(ref("u2", "friendships", "u1_u2"), fdoc("u2", "u1")));
+});
+
+test("friendships: only the non-requester can accept, and only status and updated change", async () => {
+  await seedPeople(); await seedPair("u1", "u2");
+  await assertFails(updateDoc(ref("u1", "friendships", "u1_u2"), { status: "accepted", updated: 2 }));
+  await assertFails(updateDoc(ref("u3", "friendships", "u1_u2"), { status: "accepted", updated: 2 }));
+  await assertFails(updateDoc(ref("u2", "friendships", "u1_u2"), { status: "accepted", requester: "u2", updated: 2 }));
+  await assertFails(updateDoc(ref("u2", "friendships", "u1_u2"), { status: "accepted", "names.u1": "x", updated: 2 }));
+  await assertSucceeds(updateDoc(ref("u2", "friendships", "u1_u2"), { status: "accepted", updated: 2 }));
+});
+
+test("friendships: accepted cannot go back to pending", async () => {
+  await seedPeople(); await seedPair("u1", "u2", "accepted");
+  await assertFails(updateDoc(ref("u1", "friendships", "u1_u2"), { status: "pending", updated: 2 }));
+  await assertFails(updateDoc(ref("u2", "friendships", "u1_u2"), { status: "pending", updated: 2 }));
+  await assertFails(setDoc(ref("u1", "friendships", "u1_u2"), fdoc("u1", "u2")));
+});
+
+test("friendships: a member may refresh only their own name", async () => {
+  await seedPeople();
+  await seed(db => setDoc(doc(db, "friendships", "u1_u2"), fdoc("u1", "u2", "accepted", { names: { u1: "old", u2: "zed" } })));
+  await assertSucceeds(updateDoc(ref("u1", "friendships", "u1_u2"), { "names.u1": "ziad", updated: 3 }));
+  await assertFails(updateDoc(ref("u1", "friendships", "u1_u2"), { "names.u2": "hacked", updated: 3 }));
+  await assertFails(updateDoc(ref("u1", "friendships", "u1_u2"), { "names.u1": "notmine", updated: 3 }));
+});
+
+test("friendships: either member can delete, a stranger cannot, a missing doc can be deleted", async () => {
+  await seedPeople(); await seedPair("u1", "u2");
+  await assertFails(deleteDoc(ref("u3", "friendships", "u1_u2")));
+  await assertSucceeds(deleteDoc(ref("u2", "friendships", "u1_u2")));
+  await assertSucceeds(deleteDoc(ref("u1", "friendships", "u1_u2")));
+});
+
+test("blocks: create only as the blocker with a matching id; only the blocker reads or deletes", async () => {
+  await seedPeople();
+  await assertFails(setDoc(ref("u2", "blocks", "u1_u2"), { blocker: "u1", blocked: "u2", updated: 1 }));
+  await assertFails(setDoc(ref("u1", "blocks", "u1_u3"), { blocker: "u1", blocked: "u2", updated: 1 }));
+  await assertFails(setDoc(ref("u1", "blocks", "u1_u2"), { blocker: "u1", blocked: "u2", updated: 1, extra: 1 }));
+  await assertSucceeds(setDoc(ref("u1", "blocks", "u1_u2"), { blocker: "u1", blocked: "u2", updated: 1 }));
+  await assertSucceeds(getDoc(ref("u1", "blocks", "u1_u2")));
+  await assertFails(getDoc(ref("u2", "blocks", "u1_u2")));
+  await assertSucceeds(getDocs(query(collection(as("u1", U1), "blocks"), where("blocker", "==", "u1"))));
+  await assertFails(getDocs(query(collection(as("u2", U2), "blocks"), where("blocker", "==", "u1"))));
+  await assertFails(getDocs(collection(as("u1", U1), "blocks")));
+  await assertFails(deleteDoc(ref("u2", "blocks", "u1_u2")));
+  await assertSucceeds(deleteDoc(ref("u1", "blocks", "u1_u2")));
+});
+
+test("block batch removes the friendship and the blocked person cannot re-request", async () => {
+  await seedPeople(); await seedPair("u1", "u2", "accepted");
+  const db = as("u1", U1), b = writeBatch(db);
+  b.set(doc(db, "blocks", "u1_u2"), { blocker: "u1", blocked: "u2", updated: 2 });
+  b.delete(doc(db, "friendships", "u1_u2"));
+  await assertSucceeds(b.commit());
+  await assertFails(setDoc(ref("u2", "friendships", "u1_u2"), fdoc("u2", "u1")));
+});
+
+test("profiles: a friends-only profile is readable by accepted friends only, and not after removal", async () => {
+  await seedPeople({ u2: "friends" });
+  await assertFails(getDoc(ref("u1", "profiles", "u2")));
+  await seedPair("u1", "u2", "pending");
+  await assertFails(getDoc(ref("u1", "profiles", "u2")));
+  await seedPair("u1", "u2", "accepted");
+  await assertSucceeds(getDoc(ref("u1", "profiles", "u2")));
+  await assertFails(getDoc(ref("u3", "profiles", "u2")));
+  await assertSucceeds(getDoc(ref("u2", "profiles", "u2")));
+  await assertSucceeds(deleteDoc(ref("u1", "friendships", "u1_u2")));
+  await assertFails(getDoc(ref("u1", "profiles", "u2")));
+});
+
+test("profiles: private stays owner-only even for friends; public stays open to any signed-in user", async () => {
+  await seedPeople({ u2: "private", u3: "public" }); await seedPair("u1", "u2", "accepted");
+  await assertFails(getDoc(ref("u1", "profiles", "u2")));
+  await assertSucceeds(getDoc(ref("u1", "profiles", "u3")));
 });
