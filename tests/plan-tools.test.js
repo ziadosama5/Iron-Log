@@ -107,3 +107,49 @@ test("every generated day name has an Arabic name", () => {
     assert.ok(AR.names.day[n], n);
   }
 });
+
+import { shouldAutoJourney, needsAbout, checkProfile, mergeProfile } from "../public/plan-tools.js";
+
+test("shouldAutoJourney: only for a signed-in, fully synced person with no data who has not skipped or seen it", () => {
+  const ok = { authed: true, synced: true, days: [], workouts: [], skipped: false, shown: false };
+  assert.equal(shouldAutoJourney(ok), true);
+  assert.equal(shouldAutoJourney({ ...ok, authed: false }), false);
+  assert.equal(shouldAutoJourney({ ...ok, synced: false }), false, "a cached empty snapshot on a fresh device must not trigger it");
+  assert.equal(shouldAutoJourney({ ...ok, days: [{ id: "d1" }] }), false);
+  assert.equal(shouldAutoJourney({ ...ok, workouts: [{ id: "w-2026-10-19" }] }), false);
+  assert.equal(shouldAutoJourney({ ...ok, skipped: true }), false);
+  assert.equal(shouldAutoJourney({ ...ok, shown: true }), false);
+  assert.equal(shouldAutoJourney({ ...ok, synced: undefined }), false);
+});
+
+test("needsAbout is true when sex, height or birth year is missing", () => {
+  assert.equal(needsAbout(null), true);
+  assert.equal(needsAbout({}), true);
+  assert.equal(needsAbout({ sex: "male", height: 178, birthYear: 1996 }), false);
+  assert.equal(needsAbout({ sex: "male", height: 178 }), true);
+  assert.equal(needsAbout({ sex: "female", birthYear: 1996 }), true);
+});
+
+test("checkProfile validates like the Body tab: ranges, strings and a comma decimal", () => {
+  const Y = 2026;
+  const ok = checkProfile({ sex: "male", height: "178,5", birthYear: "1996", goal: "muscle" }, Y);
+  assert.deepEqual(ok, { ok: true, profile: { sex: "male", height: 178.5, birthYear: 1996, goal: "muscle" } });
+  assert.equal(checkProfile({ sex: "male", height: 99, birthYear: 1996, goal: "muscle" }, Y).ok, false);
+  assert.equal(checkProfile({ sex: "male", height: 251, birthYear: 1996, goal: "muscle" }, Y).ok, false);
+  assert.equal(checkProfile({ sex: "male", height: 178, birthYear: Y - 9, goal: "muscle" }, Y).ok, false);
+  assert.equal(checkProfile({ sex: "male", height: 178, birthYear: Y - 101, goal: "muscle" }, Y).ok, false);
+  assert.equal(checkProfile({ sex: "male", height: 178, birthYear: Y - 10, goal: "muscle" }, Y).ok, true);
+  assert.equal(checkProfile({ sex: "other", height: 178, birthYear: 1996, goal: "muscle" }, Y).ok, false);
+  assert.equal(checkProfile({ sex: "male", height: 178, birthYear: 1996, goal: "x" }, Y).ok, false);
+});
+
+test("mergeProfile sets the goal, adds valid body basics, and never drops the target weight", () => {
+  const existing = { sex: "female", height: 165, birthYear: 1990, goal: "maintain", goalWeight: 60, goalStart: "2026-10-01" };
+  const m = mergeProfile(existing, { goal: "strength" });
+  assert.deepEqual(m, { ...existing, goal: "strength" });
+  const fresh = mergeProfile({}, { goal: "muscle", sex: "male", height: 180, birthYear: 1995 });
+  assert.deepEqual(fresh, { goal: "muscle", sex: "male", height: 180, birthYear: 1995 });
+  const bad = mergeProfile({ height: 170 }, { goal: "muscle", height: 5, sex: "robot" });
+  assert.deepEqual(bad, { goal: "muscle", height: 170 }, "invalid values are ignored, existing ones kept");
+  assert.deepEqual(mergeProfile(null, { goal: "recomp" }), { goal: "recomp" });
+});

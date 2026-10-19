@@ -101,3 +101,42 @@ export function buildPlan({ goal, daysPerWeek, experience, gym }) {
   });
   return { split, days, notes };
 }
+
+// ---- entry rule and profile helpers ----
+
+// The automatic journey is only for a signed-in person whose data has fully synced from the server and
+// is still empty (a fresh device's cached empty snapshot must not count), once per session, unless skipped.
+export function shouldAutoJourney({ authed, synced, days, workouts, skipped, shown }) {
+  return authed === true && synced === true && Array.isArray(days) && days.length === 0
+    && Array.isArray(workouts) && workouts.length === 0 && !skipped && !shown;
+}
+
+export function needsAbout(profile) {
+  const p = profile || {};
+  return !p.sex || !p.height || !p.birthYear;
+}
+
+const toNum = v => { const n = parseFloat(String(v).replace(",", ".")); return Number.isFinite(n) ? n : null; };
+const validSex = s => s === "male" || s === "female";
+const validHeight = h => h !== null && h >= 100 && h <= 250;
+const validBirthYear = (y, year) => y !== null && Number.isInteger(y) && y >= year - 100 && y <= year - 10;
+
+// Same ranges as the Body-tab profile form.
+export function checkProfile({ sex, height, birthYear, goal }, year) {
+  const h = toNum(height), y = toNum(birthYear);
+  if (!validSex(sex) || !validHeight(h) || !validBirthYear(y, year) || !(goal in GOAL_DEFAULT_DAYS)) return { ok: false };
+  return { ok: true, profile: { sex, height: h, birthYear: y, goal } };
+}
+
+// The profile after the journey: the chosen goal plus any valid body basics; everything else (target weight
+// included) is kept as it was.
+export function mergeProfile(existing, answers) {
+  const out = { ...(existing || {}), goal: answers.goal };
+  const year = new Date().getFullYear();
+  if (validSex(answers.sex)) out.sex = answers.sex;
+  const h = toNum(answers.height);
+  if (answers.height != null && validHeight(h)) out.height = h;
+  const y = toNum(answers.birthYear);
+  if (answers.birthYear != null && validBirthYear(y, year)) out.birthYear = y;
+  return out;
+}
