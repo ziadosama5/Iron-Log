@@ -24,7 +24,7 @@ Admin screens, emailing reports, rate limiting or App Check, age verification, a
 - **Entry:** More › Delete my account (a row above Sign out), opening a full-screen view \`delete\` (no tab bar), shown only when signed in and online (offline shows "You're offline. Try again when you're back online." and the button disabled).
 - **View:** explains what is removed (everything listed below) and what stays (reports they filed); a **Download backup** button (the existing backup export); a red **Delete everything** button that asks once more inline ("This cannot be undone." with **Keep** and **Delete**).
 - **Order of work** (stop at the first failure, show "Couldn't delete everything. Nothing else was changed. Try again." and a Retry; every step is safe to run again):
-  1. Re-authenticate with Google (\`reauthenticateWithPopup\`); falls back to \`reauthenticateWithRedirect\` is **not** used (a failed or cancelled sign-in stops the flow with "Sign-in was cancelled").
+  1. Re-authenticate with Google (`reauthenticateWithPopup`). A cancelled or failed sign-in stops the flow with "Sign-in was cancelled" and nothing is deleted; there is no redirect fallback.
   2. Shared profile: the existing \`deleteShare\` batch (profile + username + e-mail doc), skipped when there is no profile.
   3. Friendships: query \`friendships where users array-contains me\`, delete each (in batches of up to 450).
   4. Blocks: query \`blocks where blocker == me\`, delete each.
