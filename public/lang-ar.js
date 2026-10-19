@@ -294,7 +294,7 @@ export const AR = {
     "Next badge: {name}": "الوسام التالي: {name}", "Food and energy": "الطعام والطاقة",
     "Level {a} of {b}": "المستوى {a} من {b}", "All levels reached": "تم الوصول إلى كل المستويات",
     "New badge": "وسام جديد", "{name} · Level {n}": "{name} · المستوى {n}", "Level up!": "ارتقيت مستوى!",
-    "You won!": "فزت!", "You won the challenge": "فزت بالتحدي", "Nice!": "رائع!"
+    "You won!": "فزت!", "Show all {n} badges": "عرض كل الأوسمة ({n})", "All badges · {a} of {b} earned": "كل الأوسمة · {a} من {b} مكتسبة", "You won the challenge": "فزت بالتحدي", "Nice!": "رائع!"
   },
   names: {
     ex: {

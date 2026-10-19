@@ -40,3 +40,25 @@ test("pill labels cover every multi-section view", () => {
   for (const id of ["plan", "progress", "friends"]) for (const v of pillsFor(id)) assert.ok(PILL_LABEL[v], v);
   for (const k of Object.keys(PILL_LABEL)) assert.ok(all.includes(k), k);
 });
+
+import { neighborTab, swipeDirection } from "../public/nav.js";
+
+test("neighborTab steps through the five tabs without wrapping", () => {
+  assert.equal(neighborTab("today", 1), "plan");
+  assert.equal(neighborTab("progress", -1), "plan");
+  assert.equal(neighborTab("me", 1), null);
+  assert.equal(neighborTab("today", -1), null);
+  assert.equal(neighborTab("nope", 1), null);
+});
+
+test("swipeDirection: left/right swipes give next/previous (mirrored in RTL), small, steep or edge swipes give 0", () => {
+  const g = o => swipeDirection({ dx: -120, dy: 10, startX: 200, width: 400, rtl: false, ...o });
+  assert.equal(g({}), 1);                       // swipe left = next tab
+  assert.equal(g({ dx: 120 }), -1);             // swipe right = previous tab
+  assert.equal(g({ rtl: true }), -1);           // mirrored in Arabic
+  assert.equal(g({ dx: 120, rtl: true }), 1);
+  assert.equal(g({ dx: -30 }), 0);              // too short
+  assert.equal(g({ dx: -120, dy: 100 }), 0);    // mostly vertical
+  assert.equal(g({ startX: 10 }), 0);           // starts at the edge (Android back gesture)
+  assert.equal(g({ startX: 395 }), 0);
+});

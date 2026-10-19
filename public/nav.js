@@ -31,3 +31,20 @@ export function pillsFor(tabId) {
 
 // Any value saved in ironlog.view (old or damaged) becomes a screen the app can draw.
 export function migrateView(saved) { return tabOf(saved) ? saved : "log"; }
+
+// The tab one step away (dir +1 = next, -1 = previous), or null at either end.
+export function neighborTab(tabId, dir) {
+  const i = TABS.findIndex(t => t.id === tabId);
+  const j = i + dir;
+  return i < 0 || j < 0 || j >= TABS.length ? null : TABS[j].id;
+}
+
+// A finished touch gesture -> +1 (next tab), -1 (previous tab) or 0 (not a tab swipe).
+// Swipe left = next in left-to-right layouts; mirrored in right-to-left (the tab bar is mirrored too).
+// Ignored: short, mostly vertical, or starting within `edge` px of a screen edge (the phone's own back gesture).
+export function swipeDirection({ dx, dy, startX, width, rtl = false, minDist = 60, edge = 24 }) {
+  if (!(Math.abs(dx) >= minDist) || Math.abs(dx) < 1.5 * Math.abs(dy)) return 0;
+  if (startX < edge || startX > width - edge) return 0;
+  const next = rtl ? dx > 0 : dx < 0;
+  return next ? 1 : -1;
+}

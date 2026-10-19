@@ -12,6 +12,8 @@ const driver = `<script>
     var TAB={log:"today",days:"plan",gym:"plan",body:"progress",progress:"progress",goals:"progress",coach:"progress",history:"progress",friends:"friends",challenges:"friends",find:"friends",profile:"me"}, FIRST={today:"log",plan:"days",progress:"body",friends:"friends",me:"profile"};
     var nav=function(v){ click('.tabbar [data-tab="'+TAB[v]+'"]'); if(FIRST[TAB[v]]!==v) setTimeout(function(){ click('.pill[data-view="'+v+'"]'); },60); };
     if(kind==="view") nav(arg);
+    if(kind==="badges"){ nav("goals"); setTimeout(function(){ click('[data-act="badges-all"]'); },200); }
+    if(kind==="swipe"){ var tg=document.querySelector("#view-log h2")||document.body, mk=function(type,x,y){ var t=new Touch({identifier:1,target:tg,clientX:x,clientY:y}); tg.dispatchEvent(new TouchEvent(type,{bubbles:true,touches:type==="touchend"?[]:[t],changedTouches:[t]})); }; mk("touchstart",arg==="left"?300:120,400); mk("touchend",arg==="left"?100:320,410); }
     if(kind==="profile"){ nav("profile"); }
     if(kind==="friends"||kind==="friend"||kind==="ffind"){ nav(kind==="ffind"?"find":"friends"); setTimeout(function(){ setTimeout(function(){
       if(kind==="friend"){ var b=$('[data-act="fr-open"][data-uid="'+arg+'"]'); if(b) b.click(); }

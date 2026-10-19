@@ -102,6 +102,18 @@ svg.i.f{fill:currentColor;stroke:none}
 /* section switcher (pills) */
 #pills{margin-bottom:16px}
 .card:empty{display:none}
+.slide-r{animation:slideR .22s ease-out}
+.slide-l{animation:slideL .22s ease-out}
+@keyframes slideR{from{transform:translateX(36px);opacity:.3}to{transform:none;opacity:1}}
+@keyframes slideL{from{transform:translateX(-36px);opacity:.3}to{transform:none;opacity:1}}
+.brow{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.brow:last-child{border-bottom:0}
+.brow .mk{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;flex:none;color:#14161c}
+.brow .mk svg{width:20px;height:20px}
+.brow .mk.bronze{background:var(--bronze)} .brow .mk.silver{background:var(--silver)} .brow .mk.gold{background:var(--gold)}
+.brow .mk.locked{background:var(--sunk);color:var(--muted);border:1.5px dashed var(--line)}
+.brow .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.brow.off .t b{color:var(--muted)}
 .row>h2.grow{flex:1 1 150px}
 .dyn{display:contents}
 .pills{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px;margin:-2px}
@@ -487,9 +499,9 @@ import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN, WEEK_CHOICES, 
 import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
 import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney } from "./plan-tools.js";
-import { FAMILIES, familyOf, allFamilies, closestFamily } from "./badge-art.js";
+import { FAMILIES, familyOf, allFamilies, closestFamily, tierFor } from "./badge-art.js";
 import { buildCards, newWins } from "./celebrate.js";
-import { TABS, PILL_LABEL, tabOf, pillsFor, migrateView } from "./nav.js";
+import { TABS, PILL_LABEL, tabOf, pillsFor, migrateView, neighborTab, swipeDirection } from "./nav.js";
 import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername, lookupResult, shareLabel } from "./social.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
@@ -1905,7 +1917,14 @@ $("#familysheet").addEventListener("click",e=>{
   if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeFamily();
 });
 window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.family)) closeFamily(); });
+function renderAllBadges(){
+  const list=badges(goalsInput()), n=list.filter(b=>b.earned).length;
+  const card=st=>`<div class="card"><button class="fcard" data-act="family-open" data-id="${st.id}" style="padding-top:0"><span class="grow stack" style="gap:4px"><b>${esc(nameOf("family",st.name))}</b><span class="row" style="gap:8px"><span class="stars" aria-hidden="true">${starsHtml(st.level,st.of)}</span><span class="prev">${t("Level {a} of {b}",{a:st.level,b:st.of})}</span></span></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+    <div>${st.steps.map((x,i)=>{ const b=list.find(y=>y.id===x.id), on=!!b.earned; return `<div class="brow ${on?"":"off"}"><span class="mk ${on?tierFor(i+1,st.of):"locked"}"><svg class="i" aria-hidden="true"><use href="#i-${on?st.icon:"lock"}"/></svg></span><span class="t"><b>${esc(nameOf("badge",x.name))}</b><span class="prev">${esc(badgeProgress(b))}</span></span></div>`; }).join("")}</div></div>`;
+  $("#view-goals").innerHTML=`<div class="row"><button class="btn small" data-act="badges-back">Back</button></div><h2>${t("All badges · {a} of {b} earned",{a:n,b:list.length})}</h2>${allFamilies(list).map(card).join("")}`;
+}
 function renderGoals(){
+  if(state.goalsAll){ renderAllBadges(); return; }
   const input=goalsInput(), list=badges(input), xp=xpSummary(input,list), g=goalProgress(input);
   const ts=trainingStreak(state.workouts,state.days,today()), fdays=foodStreak(state.food,today());
   const signed=v=>(v>0?"+":v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString("en-US");
@@ -1925,7 +1944,7 @@ function renderGoals(){
     <div class="card"><h3>Streaks</h3>
       <div class="row"><span class="grow">${t("Training: {x}",{x:"<b>"+tn("{n} week","{n} weeks",ts.weeks)+"</b>"})}</span><span class="dots" role="img" aria-label="${esc(t("{a} of {b} this week",{a:ts.thisWeek,b:ts.target}))}">${dots}</span><span class="prev">${t("{a} of {b} this week",{a:ts.thisWeek,b:ts.target})}</span></div>
       <div class="row"><span class="grow">${t("Food log: {x}",{x:"<b>"+tn("{n} day","{n} days",fdays)+"</b>"})}</span></div></div>
-    <div class="card"><h3>${t("Badges · {a} of {b}",{a:earned.length,b:list.length})}</h3><div class="wall">${allFamilies(list).map(familyTile).join("")}</div></div>`;
+    <div class="card"><h3>${t("Badges · {a} of {b}",{a:earned.length,b:list.length})}</h3><div class="wall">${allFamilies(list).map(familyTile).join("")}</div><button class="btn secondary" data-act="badges-all">${t("Show all {n} badges",{n:list.length})}</button></div>`;
 }
 // New badges toast once (across devices). Runs only on server-confirmed data, so an empty offline
 // cache on a new device can't overwrite the saved list. First run marks existing badges silently.
@@ -2274,7 +2293,7 @@ function render(){
   if(state.view==="profile") syncMe();
   syncWake();
 }
-function go(view){ state.view=view; const tb=tabOf(view); if(tb) state.tabView[tb]=view; if(view!=="journey"&&view!=="delete") try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
+function go(view){ state.view=view; if(view!=="goals") state.goalsAll=false; const tb=tabOf(view); if(tb) state.tabView[tb]=view; if(view!=="journey"&&view!=="delete") try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
 
 let renameTimer=null;
 document.addEventListener("input",e=>{
@@ -2397,6 +2416,8 @@ document.addEventListener("click",e=>{
     case "rm-meal":{ const d=state.date; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderLog(); break; }
     case "hero-go": go("goals"); break;
     case "family-open": openFamily(b.dataset.id); break;
+    case "badges-all": state.goalsAll=true; renderGoals(); window.scrollTo(0,0); break;
+    case "badges-back": state.goalsAll=false; renderGoals(); window.scrollTo(0,0); break;
     case "family-close": closeFamily(); break;
     case "cele-close": nextCelebration(); break;
     case "cardio-type": state.cardioDraft.type=b.dataset.v; renderLog(); break;
@@ -2529,6 +2550,23 @@ applyLang(currentLang(),true);
 applyAccent(currentAccent(),false);
 resumeRest();
 // Don't redraw under someone who is typing; redraw as soon as they leave the field instead.
+// Swipe left/right between the five tabs (nav.js decides the direction). Not started on inputs, steppers or anything that
+// scrolls sideways, not while a dialog is open, and not on the full-screen flows (journey, delete).
+let swipe=null;
+const scrollsSideways=el=>{ for(let n=el;n&&n!==document.body;n=n.parentElement){
+  if(n.matches&&n.matches("input,textarea,select,.bigstep,.stepper,[contenteditable]")) return true;
+  if(n.scrollWidth>n.clientWidth+1){ const ox=getComputedStyle(n).overflowX; if(ox==="auto"||ox==="scroll") return true; } } return false; };
+document.addEventListener("touchstart",e=>{ swipe=null;
+  if(e.touches.length!==1||!state.authed||!tabOf(state.view)||document.querySelector("dialog[open]")||scrollsSideways(e.target)) return;
+  swipe={x:e.touches[0].clientX,y:e.touches[0].clientY}; },{passive:true});
+document.addEventListener("touchcancel",()=>{ swipe=null; },{passive:true});
+document.addEventListener("touchend",e=>{
+  const s=swipe; swipe=null; if(!s||!e.changedTouches.length) return;
+  const dir=swipeDirection({dx:e.changedTouches[0].clientX-s.x,dy:e.changedTouches[0].clientY-s.y,startX:s.x,width:window.innerWidth,rtl:isRtl()});
+  const tab=dir&&neighborTab(tabOf(state.view),dir); if(!tab) return;
+  go(state.tabView[tab]||TABS.find(x=>x.id===tab).views[0]);
+  const el=$("#view-"+state.view); if(el){ el.classList.remove("slide-r","slide-l"); void el.offsetWidth; el.classList.add((dir>0)!==isRtl()?"slide-r":"slide-l"); }
+},{passive:true});
 const typing=()=>{ const a=document.activeElement; return !!(a&&a.matches&&a.matches("input:not([type=date]),select,textarea")); };
 let renderPending=false;
 function renderSoon(){ if(typing()){ renderPending=true; return; } renderPending=false; render(); }
