@@ -137,6 +137,6 @@ test("friends screen: labels and messages built from variables have Arabic", () 
 });
 
 test("my gym: labels shown through a condition have Arabic", () => {
-  const keys = ["Show all", "Hide them again"];
+  const keys = ["Show all", "Hide them again", "Bodyweight only", "Home", "Basic gym", "Full gym", "Weights", "Stations", "Machines"];
   assert.deepEqual(keys.filter(k => AR.ui[k] == null), []);
 });

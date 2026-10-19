@@ -319,6 +319,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
     <section id="view-history" class="view" hidden></section>
     <section id="view-profile" class="view" hidden></section>
     <section id="view-friends" class="view" hidden></section>
+    <section id="view-gym" class="view" hidden></section>
   </main>
 </div>
 <div class="restbar" id="restbar" role="timer" aria-live="off" hidden>
@@ -338,6 +339,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
   <button class="more-row" data-act="more-go" data-view="days">Days<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="progress">Lifts<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="history">History &amp; backup<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+  <button class="more-row" data-act="more-go" data-view="gym">My Gym<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="friends">Friends<span class="count" id="friends-count" hidden></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <button class="more-row" data-act="more-go" data-view="profile">Profile and privacy<svg aria-hidden="true"><use href="#i-chev"/></svg></button>
   <div class="stack" style="gap:6px;margin-top:14px"><span class="label">Language</span>
@@ -368,7 +370,7 @@ import { cleanBackupItems } from "./backup.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
-import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount } from "./exercise-library.js";
+import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
@@ -392,7 +394,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
 const freshFriends=()=>({loaded:false,docs:[],blocks:[],data:{},open:null,confirm:null,renamed:false,q:"",found:null});
-let state = { showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
+let state = { gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -424,6 +426,7 @@ const store = {
           if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}, ...(Array.isArray(v.seenBadges)?{seenBadges:v.seenBadges}:{}), ...(Array.isArray(v.gym)?{gym:v.gym}:{})}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("f-")) food[d.id.slice(2)]={date:d.id.slice(2),meals:v.meals||[]}; else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
         // One-time fix for days missing muscle tags. Only on server data, so a stale offline copy never overwrites newer edits.
         const mp=migrateProgram(prog), days=mp.days;
+        if(state.gymEdit){ if(state.gymEdit.gym===undefined) delete settings.gym; else settings.gym=state.gymEdit.gym; }
         state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings; state.food=food; state.serverSynced=!snap.metadata.fromCache;
         if(snap.docChanges().length) state.dataRev=(state.dataRev||0)+1;  // metadata-only snapshots ("saved") change nothing
         if(mp.needsSave && !snap.metadata.fromCache) this.saveDays(days);
@@ -940,8 +943,32 @@ function weekStrip(){
   return `<div class="week">${WEEK.map(wd=>{ const d=dayForWeekday(wd);
     return `<div class="wd ${wd===tw?"today":""} ${d?"on":""}"><span class="label">${nameOf("weekday",WD[wd])}</span><span class="wdn">${d?esc(nameOf("day",d.name)):t("Rest")}</span></div>`; }).join("")}</div>`;
 }
+/* ---------- MY GYM ---------- */
+const GYM_GROUPS=[["weights","Weights"],["station","Stations"],["machine","Machines"]];
+let gymSaveTimer=null;
+function renderGym(){
+  const gym=state.settings.gym, on=new Set(Array.isArray(gym)?gym:[]), c=gymCounts(gym);
+  let h=`<h2>My Gym</h2><div class="card"><p class="prev" style="margin:0">Tick the equipment your gym has. Exercise suggestions then only offer what you can do.</p>
+    <span class="label">Start from</span><div class="chips">${GYM_PRESETS.map(p=>`<button class="chip" data-act="gym-preset" data-p="${p.id}" aria-pressed="${sameGym(gym,p.equipment)}">${esc(t(p.name))}</button>`).join("")}</div></div>`;
+  h+=GYM_GROUPS.map(([g,label])=>`<div class="card"><h3>${label}</h3><div class="chips">${EQUIPMENT.filter(e=>e.group===g).map(e=>`<button class="chip" data-act="gym-toggle" data-id="${e.id}" aria-pressed="${on.has(e.id)}">${esc(eqLabel(e.id))}</button>`).join("")}</div></div>`).join("");
+  h+=`<div class="card"><span>${Array.isArray(gym)?esc(t("{a} of {b} items · {c} exercises available",{a:c.items,b:c.itemsTotal,c:c.exercises})):esc(t("Not set yet. Every exercise is suggested."))}</span>${Array.isArray(gym)?`<div class="row"><button class="btn small" data-act="gym-clear">Show everything</button></div>`:""}</div>`;
+  $("#view-gym").innerHTML=h;
+}
+// Taps change the setting at once (suggestions follow); the Firestore write waits for a pause in tapping.
+function setGym(next){
+  state.gymEdit={gym:next}; state.settings={...state.settings,gym:next};
+  clearTimeout(gymSaveTimer);
+  gymSaveTimer=setTimeout(()=>{ const e=state.gymEdit; state.gymEdit=null; if(e) store.saveSettings({gym:e.gym}); },600);
+  if(state.view==="gym") renderGym();
+}
+// One-time card on the Days tab until the person sets their gym (or says "Not now" on this device).
+function gymHintHtml(){
+  let dismissed=false; try{ dismissed=localStorage.getItem("ironlog.gymHint")==="1"; }catch(e){}
+  if(state.settings.gym!==undefined||dismissed) return "";
+  return `<div class="card"><p style="margin:0">Tell Iron Log what your gym has, so it only suggests exercises you can do.</p><div class="row"><button class="btn small primary" data-act="gym-hint-go">Set up</button><button class="btn small" data-act="gym-hint-no">Not now</button></div></div>`;
+}
 function renderDays(){
-  let h = `<div class="row"><h2 class="grow">Training days</h2>${state.days.length?`<button class="btn small" data-act="add-day">+ Add day</button><button class="btn small" data-act="change-split">${state.pickSplit?t("Cancel"):t("Change split")}</button>`:""}</div>`;
+  let h = gymHintHtml() + `<div class="row"><h2 class="grow">Training days</h2>${state.days.length?`<button class="btn small" data-act="add-day">+ Add day</button><button class="btn small" data-act="change-split">${state.pickSplit?t("Cancel"):t("Change split")}</button>`:""}</div>`;
   if (!state.days.length){
     h += `<p class="prev" style="margin:0">Start from a common split and edit it, or build your own from scratch.</p>${tplGrid(false)}`;
     $("#view-days").innerHTML=h; return;
@@ -1503,7 +1530,7 @@ $("#exinfo").addEventListener("click",e=>{
   if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeExInfo(); // tap on the backdrop
 });
 window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.exinfo)) closeExInfo(); });
-const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Profile",friends:"Friends"};
+const SCREEN_TITLES={log:"Workout",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Profile",friends:"Friends",gym:"My Gym"};
 // More sheet: Days, Lifts, History & backup, theme, account. Same open/close pattern as the info sheet.
 function openMore(){
   const d=$("#moresheet"), th=currentTheme();
@@ -1670,7 +1697,7 @@ async function shareResult(res,okMsg){
 }
 
 /* ---------- render + events ---------- */
-const VIEWS=["log","days","body","coach","goals","progress","history","profile","friends"];
+const VIEWS=["log","days","body","coach","goals","progress","history","profile","friends","gym"];
 function renderSignin(){
   const el=$("#view-signin");
   if(state.setup){ el.innerHTML=`<div class="card signin"><h2>Almost there</h2><p class="prev" style="margin:0">Paste your Firebase project's config into <b class="num">firebase-config.js</b>, then deploy again. The README walks through it step by step.</p></div>`; return; }
@@ -1685,11 +1712,11 @@ function render(){
   const authed=state.authed;
   $("#nav").hidden=!authed; $("#view-signin").hidden=authed;
   if(!authed){ VIEWS.forEach(v=>$("#view-"+v).hidden=true); renderSignin(); syncWake(); return; }
-  const inMore=["days","progress","history","profile","friends"].includes(state.view);
+  const inMore=["days","progress","history","profile","friends","gym"].includes(state.view);
   document.querySelectorAll(".tabbar button").forEach(b=>{ if(b.dataset.view===state.view||(inMore&&b.dataset.view==="more")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
   $("#screen-title").textContent=t(SCREEN_TITLES[state.view]||"Iron Log");
   VIEWS.forEach(v=>$("#view-"+v).hidden=v!==state.view);
-  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory,profile:renderProfile,friends:renderFriends})[state.view]();
+  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory,profile:renderProfile,friends:renderFriends,gym:renderGym})[state.view]();
   syncWake();
 }
 function go(view){ state.view=view; try{localStorage.setItem("ironlog.view",view);}catch(e){} render(); window.scrollTo(0,0); }
@@ -1843,6 +1870,11 @@ document.addEventListener("click",e=>{
       break; }
     case "undone-ex":{ stopEditing(); const w=ensureWorkout(); w.entries[ei].done=false; state.openEx=w.entries[ei].ex; store.save(w); renderLog(); break; }
     case "add-ex": addExerciseToWorkout(b.dataset.name); break;
+    case "gym-preset":{ const p=GYM_PRESETS.find(x=>x.id===b.dataset.p); if(p) setGym([...p.equipment]); break; }
+    case "gym-toggle":{ const cur=Array.isArray(state.settings.gym)?state.settings.gym:[], id=b.dataset.id; setGym(cur.includes(id)?cur.filter(x=>x!==id):[...cur,id]); break; }
+    case "gym-clear": setGym(undefined); break;
+    case "gym-hint-go": go("gym"); break;
+    case "gym-hint-no": try{ localStorage.setItem("ironlog.gymHint","1"); }catch(e){} renderDays(); break;
     case "gym-showall": state.showAllGym=!state.showAllGym; render(); refreshSheets(); break;
     case "more-ex":{ const k=b.dataset.k; state.showAllEx=state.showAllEx||{}; state.showAllEx[k]=!state.showAllEx[k]; if(k.startsWith("day:")) renderDays(); else refreshSheets(); break; }
     case "free-focus":{ const m=b.dataset.m; const f=state.freeFocus||[]; state.freeFocus=f.includes(m)?f.filter(x=>x!==m):[...f,m]; renderLog(); break; }
