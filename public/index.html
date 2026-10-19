@@ -989,6 +989,10 @@ function renderFriends(){
   el.innerHTML=h;
 }
 const iso=s=>"\u2068"+s+"\u2069"; // first-strong isolate: keeps "@name" in order inside Arabic text
+function duoHtml(who,mine,theirs){
+  const chip=(label,m)=>`<div class="hero" style="flex:1;min-width:0;flex-direction:column;text-align:center;gap:6px;padding:14px 8px"><span class="ring" style="width:58px;height:58px"><svg viewBox="0 0 60 60" aria-hidden="true"><circle class="tr" cx="30" cy="30" r="25" fill="none" stroke-width="6"/><circle class="pr" cx="30" cy="30" r="25" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="0"/></svg><b>${m.level}</b></span><b style="overflow-wrap:anywhere">${esc(label)}</b><span class="prev">${esc(nameOf("level",m.title))}</span><span class="row" style="justify-content:center;gap:12px"><span class="streakflag"><svg class="i" aria-hidden="true"><use href="#i-flame"/></svg>${m.streakWeeks}</span><span class="streakflag"><svg class="i" aria-hidden="true" style="color:#ffd84a"><use href="#i-trophy"/></svg>${m.badges}</span></span></div>`;
+  return `<div class="row" style="flex-wrap:nowrap;align-items:stretch">${chip(t("You"),mine)}${chip(who,theirs)}</div>`;
+}
 function renderFriendPage(el,g){
   const f=state.friends, uid=f.open, x=g.friends.find(y=>y.uid===uid);
   if(!x){ f.open=null; f.confirm=null; renderFriends(); return; }
@@ -999,7 +1003,7 @@ function renderFriendPage(el,g){
   else if(!sm) h+=`<p class="prev">${esc(t("{name} isn't sharing right now",{name:who}))}</p>`;
   else{
     const cell=(r,v,lead)=>`<td class="${lead?"lead":""}">${r.key==="volumeWeekKg"?Math.round(v).toLocaleString("en-US"):v}${lead?' <span role="img" aria-label="Ahead">✓</span>':""}</td>`;
-    h+=`<div class="card"><table class="cmp"><thead><tr><th></th><th>You</th><th>${esc(who)}</th></tr></thead><tbody>${compareSummaries(currentSummary(),sm).map(r=>`<tr><td>${esc(t(CMP_LABEL[r.key]))}</td>${cell(r,r.mine,r.leader==="me")}${cell(r,r.theirs,r.leader==="them")}</tr>`).join("")}</tbody></table>
+    h+=duoHtml(who,currentSummary(),sm)+`<div class="card"><table class="cmp"><thead><tr><th></th><th>You</th><th>${esc(who)}</th></tr></thead><tbody>${compareSummaries(currentSummary(),sm).map(r=>`<tr><td>${esc(t(CMP_LABEL[r.key]))}</td>${cell(r,r.mine,r.leader==="me")}${cell(r,r.theirs,r.leader==="them")}</tr>`).join("")}</tbody></table>
       <span class="prev">${esc(sm.lastWorkout?t("Last workout: {d}",{d:fmtDate(sm.lastWorkout)}):t("No workouts yet"))}</span></div>`;
   }
   const ask=(msg,yes,label)=>`<div class="card"><span>${esc(msg)}</span><div class="row"><button class="btn small" data-act="fr-no">Keep</button>${frBtn(yes,x,label,"danger")}</div></div>`;
