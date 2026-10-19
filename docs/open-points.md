@@ -1,6 +1,6 @@
 # Open points (as of 2026-10-19, app at sw v26, redesign live)
 
-Everything planned in sub-projects 1-15 is shipped. This is what is still open, collected from every review ("deferred minors"), the specs' non-goals and the owner's ideas. Nothing here blocks normal use. The built-in Egyptian food table is a big separate project and is parked for later (see CLAUDE.md "Next step").
+Everything planned in sub-projects 1-16 (the redesign, sw v26) is shipped. This is what is still open, collected from every review ("deferred minors"), the specs' non-goals and the owner's ideas. Nothing here blocks normal use. The built-in Egyptian food table is a big separate project and is parked for later (see CLAUDE.md "Next step").
 
 ## Unfinished projects (the big ones, none started)
 1. **Built-in Egyptian + everyday food table** (parked by the owner): pick foods with typical servings instead of typing calories; bundled data, Arabic + English search. Biggest remaining project.
@@ -53,6 +53,15 @@ In progress now: the owner is testing the later features on a real phone; expect
 - Two invitees accepting at the same instant can make one see "Couldn't save" (whole-array writes; `arrayUnion`/`arrayRemove` would avoid it).
 - Finished invitations are not shown, so they cannot be declined.
 - The owner's `names` map can carry odd labels for friends (display only).
+
+**Redesign (sw v26)**
+- Old wording still says "Body tab", "Coach tab" and "Workout tab" in a few hints and comments (they are now sections of Progress and Today).
+- The level card on Goals is a button that goes to Goals; it has an aria-label that hides its text from screen readers and a block element inside a button.
+- The celebration card has no `role="alertdialog"`, does not close on a backdrop tap, has no history entry (the Android back gesture leaves the app), and its queue survives sign-out.
+- A report started on a friend page also shows in the Find section; the pills are redrawn on every friend or challenge update (keyboard focus on a pill is lost); `#pills` and the tab bar share the label "Sections".
+- `levelHero()` recomputes badges and XP on every Today redraw (could be cached on `state.dataRev`); `header`/`body::before` have no fallback for browsers without `color-mix` (before 2023); `background-attachment:fixed` and the header blur cost on phones; tapping the current tab only scrolls to the top.
+- Dead code: `friends-count`/`challenges-count` lookups, the old `.ach*` and `.more-row .count` CSS, unused `FULLSCREEN` export. The tile aria-label joins name and level with a Latin comma (Arabic).
+- Not checked on a real phone: 320 px width in Arabic (five tab labels), tab bar + rest bar + toast over safe-area insets, confetti frame rate.
 
 **Across the app:** writes on a connection that looks online but is dead can hang without a message (timeouts exist only for delete and report).
 

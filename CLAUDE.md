@@ -115,7 +115,7 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
 - Snapshot re-render is skipped while a text input/select is focused (so typing isn't interrupted).
 
 ## Features (current)
-- **Workout tab (Focus mode):** pick a training day (or free workout). Header shows "N of M done · X min" (`elapsedMin`) + progress bar; an exercise chip row (✓ done / started / not started; tap = jump, any order); one focus card with big ± steppers (`.bigstep`, 2.5 kg / 1 rep), last-session reference, "Add set N", set table (tap to edit, PR badges, Epley e1RM), "Remove exercise"; then "✓ Done" and "Next: <name>" (`nextUnfinished`, wraps); "Workout complete" card when all done. "+ Exercise" / "+ Cardio" open bottom sheets.
+- **Today tab, workout part (Focus mode; view id `log`):** pick a training day (or free workout). Header shows "N of M done · X min" (`elapsedMin`) + progress bar; an exercise chip row (✓ done / started / not started; tap = jump, any order); one focus card with big ± steppers (`.bigstep`, 2.5 kg / 1 rep), last-session reference, "Add set N", set table (tap to edit, PR badges, Epley e1RM), "Remove exercise"; then "✓ Done" and "Next: <name>" (`nextUnfinished`, wraps); "Workout complete" card when all done. "+ Exercise" / "+ Cardio" open bottom sheets.
   - **Prefill:** set N starts from last session's set N (`prefillFor`); beyond that it repeats today's last set.
   - **Rest timer:** "Add set" starts a countdown in a bar pinned to the bottom (every tab). Rest per exercise is remembered in `settings`; defaults 3:00 big compounds, 2:30 rows/pull-ups/dips/hip thrust/incline/split squat, 1:30 others (`defaultRest`). −15s/+15s/Skip; when over: vibrate + beep + "Go" state for 60 s. No alert while the phone is locked.
   - **Edit sets:** tap a logged set row → steppers load it, "Save set"/Cancel. Saving doesn't restart the timer.
@@ -124,7 +124,7 @@ Everything for one user lives in **`users/{uid}/items/{id}`**. One collection, p
   - Everkinetic pose names are relaxation/tension, not start/finish: exercises that start at the top (squat, bench...) set `"start": "tension"` in exercise-sources.json.
 - **Days tab:** templates, rename/reorder/add/remove exercises, muscle focus → exercise suggestions, weekday assignment (week strip; today's day auto-suggested), "Change split" with confirmation, move/delete days. Editing a day syncs into today's workout if it uses that day (`syncTodayWithDay`).
 - **Body tab:** latest weight in big numbers + quick weight entry (`withWeight`), profile line, "Add measurements / scan" opens the full entry form (weight, tape measurements, InBody), trend chart per metric, recent entries table.
-- **Cardio (Workout tab):** "+ Cardio" opens a sheet (inline card under the day picker): type, minutes ±5, intensity, optional machine kcal; logged sessions listed under the buttons. A cardio-only day keeps showing the day picker.
+- **Cardio (Today tab):** "+ Cardio" opens a sheet (inline card under the day picker): type, minutes ±5, intensity, optional machine kcal; logged sessions listed under the buttons. A cardio-only day keeps showing the day picker.
 - **Toasts** are a `popover="manual"` element so they show above open sheets (fallback: plain hidden element). `history.scrollRestoration="manual"` because sheets push history entries.
 - **Food and energy card (Today tab, under the workout and cardio):** the Today date strip drives it (one date for the whole page); Eaten / Target, Burned (Everyday · Lifting · Cardio), Balance (green when it matches the goal); meals quick add (kcal, optional protein + name chips); protein vs 1.6–2.2 g/kg.
   - Target model: burned = BMR×1.2 + that day's exercise; target = burned + goal adjustment. Estimates use MET−1 (resting part is already in the baseline); machine kcal used as typed. Lifting time = first→last set +2 min, else 2.5 min/set.
@@ -195,7 +195,7 @@ Food logging today = manual kcal (+ optional protein/name) per meal (`f-YYYY-MM-
 
 ## Ideas not built yet
 - Bodyweight-exercise mode; set types (warm-up / drop set)
-- Done so far (sub-projects 1-15, see docs/README.md; the list below is only what is left): faster logging, exercise info, full-app review, smarter coaching/progress, look & feel, Arabic, accent colours, exercise library, profiles/privacy/search, friends, My Gym, personal journey): challenges; next: built-in Egyptian food table; ready for more users: reporting, terms/privacy
+- Done so far (sub-projects 1-16, see docs/README.md; the list below is only what is left): faster logging, exercise info, full-app review, smarter coaching/progress, look & feel, Arabic, accent colours, exercise library, profiles/privacy/search, friends, My Gym, personal journey): challenges; next: built-in Egyptian food table; ready for more users: reporting, terms/privacy
 - Per-day target sets/reps in templates
 - CSV export for spreadsheets
 - GitHub Actions auto-deploy (`firebase init hosting:github`), offered but not set up
