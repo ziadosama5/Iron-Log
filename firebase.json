@@ -47,12 +47,6 @@
     ],
     "predeploy": [
       "npm test"
-    ],
-    "rewrites": [
-      {
-        "source": "/.well-known/assetlinks.json",
-        "destination": "/well-known/assetlinks.json"
-      }
     ]
   },
   "emulators": {
