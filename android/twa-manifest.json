@@ -1,0 +1,42 @@
+{
+  "packageId": "app.ironlog",
+  "host": "gym-logger-85d4c.web.app",
+  "name": "Iron Log",
+  "launcherName": "Iron Log",
+  "display": "standalone",
+  "themeColor": "#1F5FD1",
+  "themeColorDark": "#0F1319",
+  "navigationColor": "#0F1115",
+  "navigationColorDark": "#0F1115",
+  "navigationDividerColor": "#0F1115",
+  "navigationDividerColorDark": "#0F1115",
+  "backgroundColor": "#F3F5F9",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://gym-logger-85d4c.web.app/icon-512.png",
+  "maskableIconUrl": "https://gym-logger-85d4c.web.app/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "C:/Android/keys/ironlog.keystore",
+    "alias": "ironlog"
+  },
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://gym-logger-85d4c.web.app/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://gym-logger-85d4c.web.app/",
+  "minSdkVersion": 24,
+  "orientation": "portrait",
+  "fingerprints": [],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "displayOverride": []
+}

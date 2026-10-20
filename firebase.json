@@ -30,10 +30,29 @@
             "value": "no-cache"
           }
         ]
+      },
+      {
+        "source": "/.well-known/assetlinks.json",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ],
     "predeploy": [
       "npm test"
+    ],
+    "rewrites": [
+      {
+        "source": "/.well-known/assetlinks.json",
+        "destination": "/well-known/assetlinks.json"
+      }
     ]
   },
   "emulators": {

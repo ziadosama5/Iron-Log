@@ -3,3 +3,11 @@
 node_modules/
 tools/screenshot-harness/index.html
 tools/screenshot-harness/shots/
+android/.gradle/
+android/build/
+android/app/build/
+android/*.apk
+android/*.aab
+android/local.properties
+android/.idea/
+android/*.idsig

@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "app.ironlog",
+    "sha256_cert_fingerprints": ["15:C6:72:90:AD:85:E2:7B:89:E2:EC:84:F4:D6:09:FC:7C:DF:41:BC:7B:27:81:CD:7E:01:D3:79:78:5D:83:0B"]
+  }
+}]
