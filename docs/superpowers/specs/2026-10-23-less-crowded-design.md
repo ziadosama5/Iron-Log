@@ -18,8 +18,8 @@ Rule for every screen below: **a headline, then at most three things, then "Show
 
 ## Progress sections
 - **Goals:** drop the second level hero (it duplicates Today and is a button with no purpose, already in open-points). Order: Target weight, Streaks, Badges. The badge wall shows the closest family and the count ("Badges · 9 of 24"), with "Show all" opening the existing all-badges page.
-- **Coach:** Today card and the top 3 tips stay; "More from Coach" starts collapsed.
-- **Body:** latest weight, quick weight, and the weight trend chart. The other metric charts sit under "More metrics"; the recent entries table shows 5 rows with "Show all".
+- **Coach:** already shows the Today card and the top 3 tips and starts "More from Coach" collapsed (state.coachMore), so nothing changes.
+- **Body:** already has one trend chart with a metric dropdown and the measurements form collapsed, so only the recent entries table changes: 5 rows with "Show all".
 - **Lifts and History:** lists show the 5 most recent with "Show more".
 - The open/closed state of these "more" blocks is kept in `state` for the session (like `state.showAllEx`), never stored.
 - Before the plan is written I will render each section with the harness and adjust these numbers to what actually looks crowded; the rule above is fixed, the exact items are not.

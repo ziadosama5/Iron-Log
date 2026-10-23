@@ -21,6 +21,8 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 | 15 | Challenges (consistency challenge between friends, live leaderboard) | [spec](superpowers/specs/2026-10-19-challenges-design.md) | [plan](superpowers/plans/2026-10-19-challenges.md) | ✓ sw v25 |
 | 16 | Redesign (five tabs, Bold Block look, levelling badges, podium, celebration cards) | [spec](superpowers/specs/2026-10-19-redesign-design.md) | [plan](superpowers/plans/2026-10-19-redesign.md) | ✓ sw v26 |
 
+| 17 | Less crowded (meals/cardio in sheets, lighter Goals, Show all lists, Friends avatars and who's-ahead strip) | [spec](superpowers/specs/2026-10-23-less-crowded-design.md) | [plan](superpowers/plans/2026-10-23-less-crowded.md) | sw v34 (not deployed until the owner approves) |
+
 Open points (everything still to do or decide): [open-points.md](open-points.md). The built-in Egyptian food table is parked as a big later project.
 
 Plans describe the code at the time they were written. For how the app works today, read [CLAUDE.md](../CLAUDE.md).
