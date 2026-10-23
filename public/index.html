@@ -440,6 +440,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
     <section id="view-signin" class="view" hidden></section>
     <section id="view-log" class="view" hidden></section>
     <section id="view-days" class="view" hidden></section>
+    <section id="view-overview" class="view" hidden></section>
     <section id="view-body" class="view" hidden></section>
     <section id="view-coach" class="view" hidden></section>
     <section id="view-goals" class="view" hidden></section>
@@ -1634,6 +1635,11 @@ function lineChart(all, series, aria, emptyMsg){
 }
 function niceStep(raw){ const p=Math.pow(10,Math.floor(Math.log10(raw||1))); const n=raw/p; return (n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*p; }
 
+/* ---------- OVERVIEW ---------- */
+function renderOverview(){
+  $("#view-overview").innerHTML=`<h2>Overview</h2>`;
+}
+
 /* ---------- BODY ---------- */
 const BF = {
   weight:{label:"Body weight",unit:"kg",g:"basic"},
@@ -2162,7 +2168,7 @@ $("#exinfo").addEventListener("click",e=>{
   if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeExInfo(); // tap on the backdrop
 });
 window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.exinfo)) closeExInfo(); });
-const SCREEN_TITLES={log:"Today",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Me",friends:"Friends",find:"Find a friend",gym:"My Gym",journey:"Plan my training",delete:"Delete my account",challenges:"Challenges"};
+const SCREEN_TITLES={log:"Today",overview:"Overview",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Me",friends:"Friends",find:"Find a friend",gym:"My Gym",journey:"Plan my training",delete:"Delete my account",challenges:"Challenges"};
 if(history.state&&(history.state.exinfo||history.state.family||history.state.sheet||history.state.journey||history.state.tab)) history.replaceState(null,""); // reloaded while a sheet was open
 
 /* ---------- SCREEN WAKE LOCK ---------- */
@@ -2319,7 +2325,7 @@ async function shareResult(res,okMsg){
 }
 
 /* ---------- render + events ---------- */
-const VIEWS=["log","days","body","coach","goals","progress","history","profile","friends","find","gym","journey","delete","challenges"];
+const VIEWS=["log","days","overview","body","coach","goals","progress","history","profile","friends","find","gym","journey","delete","challenges"];
 function renderPills(){
   const box=$("#pills"); if(!box) return;
   const list=state.authed?pillsFor(tabOf(state.view)):[];
@@ -2350,7 +2356,7 @@ function render(){
   renderPills();
   $("#screen-title").textContent=t(SCREEN_TITLES[state.view]||"Iron Log");
   VIEWS.forEach(v=>$("#view-"+v).hidden=v!==state.view);
-  ({log:renderLog,days:renderDays,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory,profile:renderProfile,friends:renderFriends,gym:renderGym,journey:renderJourney,delete:renderDelete,challenges:renderChallenges,find:renderFind})[state.view]();
+  ({log:renderLog,days:renderDays,overview:renderOverview,body:renderBody,coach:renderCoach,goals:renderGoals,progress:renderProgress,history:renderHistory,profile:renderProfile,friends:renderFriends,gym:renderGym,journey:renderJourney,delete:renderDelete,challenges:renderChallenges,find:renderFind})[state.view]();
   if(state.view==="profile") syncMe();
   syncWake();
 }

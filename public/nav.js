@@ -4,7 +4,7 @@
 export const TABS = [
   { id: "today", label: "Today", icon: "today", views: ["log"] },
   { id: "plan", label: "Plan", icon: "plan", views: ["days", "gym"] },
-  { id: "progress", label: "Progress", icon: "progress", views: ["body", "progress", "goals", "coach", "history"] },
+  { id: "progress", label: "Progress", icon: "progress", views: ["overview", "body", "progress", "goals", "coach", "history"] },
   { id: "friends", label: "Friends", icon: "friends", views: ["friends", "challenges", "find"] },
   { id: "me", label: "Me", icon: "me", views: ["profile"] },
 ];
@@ -14,7 +14,7 @@ export const FULLSCREEN = ["journey", "delete"];
 
 export const PILL_LABEL = {
   days: "Days", gym: "My Gym",
-  body: "Body", progress: "Lifts", goals: "Goals", coach: "Coach", history: "History",
+  overview: "Overview", body: "Body", progress: "Lifts", goals: "Goals", coach: "Coach", history: "History",
   friends: "Friends", challenges: "Challenges", find: "Find",
 };
 

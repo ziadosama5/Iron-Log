@@ -25,7 +25,7 @@ test("pillsFor gives sections only for multi-section tabs", () => {
   assert.deepEqual(pillsFor("today"), []);
   assert.deepEqual(pillsFor("me"), []);
   assert.deepEqual(pillsFor("plan"), ["days", "gym"]);
-  assert.deepEqual(pillsFor("progress"), ["body", "progress", "goals", "coach", "history"]);
+  assert.deepEqual(pillsFor("progress"), ["overview", "body", "progress", "goals", "coach", "history"]);
   assert.deepEqual(pillsFor("friends"), ["friends", "challenges", "find"]);
   assert.deepEqual(pillsFor("nope"), []);
 });
@@ -61,4 +61,10 @@ test("swipeDirection: left/right swipes give next/previous (mirrored in RTL), sm
   assert.equal(g({ dx: -120, dy: 100 }), 0);    // mostly vertical
   assert.equal(g({ startX: 10 }), 0);           // starts at the edge (Android back gesture)
   assert.equal(g({ startX: 395 }), 0);
+});
+
+test("Overview is the first Progress section with its own label",()=>{
+  assert.equal(tabOf("overview"), "progress");
+  assert.equal(PILL_LABEL.overview, "Overview");
+  assert.equal(migrateView("overview"), "overview");
 });

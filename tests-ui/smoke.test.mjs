@@ -49,7 +49,7 @@ test("signs in and shows Today with five tabs and no script errors", async () =>
 
 test("every tab opens its first section and shows its pills", async () => {
   const { page, ctx, errors } = await open();
-  const expect = { plan: ["Days", "My Gym"], progress: ["Body", "Lifts", "Goals", "Coach", "History"], friends: ["Friends", "Challenges", "Find"], me: [], today: [] };
+  const expect = { plan: ["Days", "My Gym"], progress: ["Overview", "Body", "Lifts", "Goals", "Coach", "History"], friends: ["Friends", "Challenges", "Find"], me: [], today: [] };
   for (const [id, pills] of Object.entries(expect)) {
     await tab(page, id);
     assert.equal(await current(page), id);
@@ -215,6 +215,15 @@ test("Friends with no friends shows an Invite a friend card that opens Find", as
   assert.ok((await page.locator("#view-friends").innerText()).toLowerCase().includes("invite a friend"));
   await page.locator('#view-friends [data-act="pill"][data-view="find"]').click();
   assert.equal(await title(page), "Find a friend");
+  await ctx.close();
+});
+
+test("the Progress tab opens on the Overview", async () => {
+  const { page, ctx, errors } = await open();
+  await tab(page, "progress");
+  assert.equal(await page.locator("#view-overview").isVisible(), true);
+  assert.equal(await title(page), "Overview");
+  assert.deepEqual(errors, []);
   await ctx.close();
 });
 

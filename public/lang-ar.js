@@ -7,7 +7,7 @@ export const AR = {
     "Loading…": "جارٍ التحميل…",
     "Workout": "التمرين", "Coach": "المدرب", "Body": "الجسم", "Goals": "الأهداف", "More": "المزيد",
     "Sections": "الأقسام",
-    "Days": "الأيام", "Lifts": "الرفعات", "History & backup": "السجل والنسخ الاحتياطي",
+    "Days": "الأيام", "Overview": "نظرة عامة", "Lifts": "الرفعات", "History & backup": "السجل والنسخ الاحتياطي",
     "Language": "اللغة", "Theme": "المظهر",
     "Equipment": "المعدات", "No equipment": "بدون معدات", "Show more ({n})": "عرض المزيد ({n})",
     "Profile and privacy": "الملف الشخصي والخصوصية", "Profile": "الملف الشخصي", "Username": "اسم المستخدم", "Choose a username": "اختر اسم مستخدم",

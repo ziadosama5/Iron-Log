@@ -9,7 +9,7 @@ const driver = `<script>
   window.addEventListener("load",function(){ setTimeout(function(){
     var $=function(s){return document.querySelector(s);}, click=function(s){var e=$(s); if(e) e.click();};
     var kind=go.split(":")[0], arg=go.split(":")[1];
-    var TAB={log:"today",days:"plan",gym:"plan",body:"progress",progress:"progress",goals:"progress",coach:"progress",history:"progress",friends:"friends",challenges:"friends",find:"friends",profile:"me"}, FIRST={today:"log",plan:"days",progress:"body",friends:"friends",me:"profile"};
+    var TAB={overview:"progress",log:"today",days:"plan",gym:"plan",body:"progress",progress:"progress",goals:"progress",coach:"progress",history:"progress",friends:"friends",challenges:"friends",find:"friends",profile:"me"}, FIRST={today:"log",plan:"days",progress:"overview",friends:"friends",me:"profile"};
     var nav=function(v){ click('.tabbar [data-tab="'+TAB[v]+'"]'); if(FIRST[TAB[v]]!==v) setTimeout(function(){ click('.pill[data-view="'+v+'"]'); },60); };
     if(kind==="view") nav(arg);
     if(kind==="wd"){ nav("days"); setTimeout(function(){ click('[data-act="wd-pick"][data-wd="'+arg+'"]'); var m=go.split(":")[2]; if(m) setTimeout(function(){ click(m==="rest"?'[data-act="wd-set"][data-id=""]':'[data-act="wd-set"][data-id="'+m+'"]'); },150); },200); }
