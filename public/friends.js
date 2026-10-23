@@ -86,3 +86,14 @@ export function compareSummaries(mine, theirs) {
     return { key, mine: m, theirs: t, leader: m > t ? "me" : m < t ? "them" : "tie" };
   });
 }
+
+// "Who's ahead this week": me and my friends by workouts this week, most first. Ties share a rank (1,2,2,4);
+// people with no shared summary come last, in the given order, with a null rank.
+export function rankWeek(me, friends) {
+  const people = [{ uid: me.uid, name: me.name, isMe: true, summary: me.summary }, ...(friends || []).map(f => ({ uid: f.uid, name: f.name, isMe: false, summary: f.summary }))]
+    .map((p, i) => ({ uid: p.uid, name: p.name, isMe: p.isMe, workoutsWeek: p.summary && Number.isFinite(Number(p.summary.workoutsWeek)) ? Number(p.summary.workoutsWeek) : null, i }));
+  const ranked = people.filter(p => p.workoutsWeek !== null).sort((a, b) => b.workoutsWeek - a.workoutsWeek || a.i - b.i);
+  ranked.forEach((p, k) => { p.rank = k > 0 && ranked[k - 1].workoutsWeek === p.workoutsWeek ? ranked[k - 1].rank : k + 1; });
+  const rest = people.filter(p => p.workoutsWeek === null).map(p => ({ ...p, rank: null }));
+  return [...ranked, ...rest].map(({ i, ...p }) => p);
+}

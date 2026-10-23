@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { themeAttr, sortTips, withWeight, settingsDoc, showGymHint } from "../public/ui-helpers.js";
+import { themeAttr, sortTips, withWeight, settingsDoc, showGymHint, initialsOf, avatarHue } from "../public/ui-helpers.js";
 
 test("themeAttr", () => {
   assert.equal(themeAttr("light"), "light");
@@ -61,4 +61,18 @@ test("daysSince counts whole calendar days and is never negative for today", () 
   assert.equal(daysSince("2026-09-20", "2026-10-20"), 30);
   assert.equal(daysSince("2026-03-28", "2026-03-30"), 2);   // across a daylight-saving change
   assert.equal(daysSince("2026-10-21", "2026-10-20"), 0);   // a date in the future clamps to 0
+});
+
+test("initialsOf: first letters of two words, first two letters of one word, ? when empty", () => {
+  assert.equal(initialsOf("zed"), "ZE");
+  assert.equal(initialsOf("Ziad Osama"), "ZO");
+  assert.equal(initialsOf(""), "?");
+  assert.equal(initialsOf("   "), "?");
+  assert.equal(Array.from(initialsOf("زياد")).length, 2);
+  assert.ok(initialsOf("🏋️").length > 0);
+});
+test("avatarHue: stable integer 0..359, names differ", () => {
+  assert.equal(avatarHue("zed"), avatarHue("zed"));
+  for (const n of ["zed", "mara", "", "زياد"]) { const h = avatarHue(n); assert.ok(Number.isInteger(h) && h >= 0 && h < 360, n); }
+  assert.notEqual(new Set(["zed", "mara", "hidden", "ziad", "omar"].map(avatarHue)).size, 1);
 });

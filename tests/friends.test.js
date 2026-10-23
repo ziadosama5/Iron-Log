@@ -90,3 +90,20 @@ test("staleNameDocs lists the pairs where my stored name differs from my usernam
   assert.deepEqual(staleNameDocs([], "u1", "ziad"), []);
   assert.deepEqual(staleNameDocs(docs, "u1", ""), [], "no username yet: nothing to refresh");
 });
+
+import { rankWeek } from "../public/friends.js";
+const sm = n => ({ workoutsWeek: n });
+
+test("rankWeek: most workouts first, ties share a rank, me is marked", () => {
+  const r = rankWeek({ uid: "me", name: "me", summary: sm(2) }, [{ uid: "a", name: "a", summary: sm(3) }, { uid: "b", name: "b", summary: sm(2) }]);
+  assert.deepEqual(r.map(x => [x.uid, x.rank, x.workoutsWeek]), [["a", 1, 3], ["me", 2, 2], ["b", 2, 2]]);
+  assert.equal(r.find(x => x.uid === "me").isMe, true);
+  assert.equal(r.find(x => x.uid === "a").isMe, false);
+});
+test("rankWeek: a friend without a summary is last with a null rank", () => {
+  const r = rankWeek({ uid: "me", name: "me", summary: sm(0) }, [{ uid: "z", name: "z", summary: null }, { uid: "a", name: "a", summary: sm(1) }]);
+  assert.deepEqual(r.map(x => [x.uid, x.rank, x.workoutsWeek]), [["a", 1, 1], ["me", 2, 0], ["z", null, null]]);
+});
+test("rankWeek: no friends gives just me with rank 1", () => {
+  assert.deepEqual(rankWeek({ uid: "me", name: "me", summary: sm(0) }, []).map(x => [x.uid, x.rank]), [["me", 1]]);
+});

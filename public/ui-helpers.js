@@ -43,3 +43,17 @@ export function daysSince(date, today) {
   const d = (new Date(today + "T12:00:00") - new Date(date + "T12:00:00")) / 864e5;
   return Math.max(0, Math.round(d));
 }
+
+// Avatar helpers: one or two letters (by code point, so Arabic and emoji work) and a stable colour per name.
+export function initialsOf(name) {
+  const words = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return "?";
+  const chars = w => Array.from(w);
+  const s = words.length > 1 ? chars(words[0])[0] + chars(words[1])[0] : chars(words[0]).slice(0, 2).join("");
+  return s.toUpperCase();
+}
+export function avatarHue(name) {
+  let h = 0;
+  for (const c of String(name || "")) h = (h * 31 + c.codePointAt(0)) % 360;
+  return h;
+}
