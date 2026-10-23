@@ -1,4 +1,5 @@
 import { weekStart } from "./challenges.js";
+import { addDays } from "./achievements.js";
 // Friends: pair ids, the exact Firestore writes for each action, and the pure view logic. No DOM, no Firebase.
 
 export function pairId(a, b) {
@@ -100,10 +101,18 @@ export function weekCount(summary, today = new Date().toISOString().slice(0, 10)
 // The leaderboard: me and my friends ranked by one metric: "week" (workouts this week), "month" (workouts in 30 days)
 // or "level" (level, ties by xp). Ties share a rank (1,2,2,4); people with no usable summary come last, in the given
 // order, with a null value and rank. An unknown metric behaves like "week".
+// Workouts in 30 days from a shared summary; one published more than 30 days ago describes an older month and counts as 0.
+export function monthCount(summary, today = new Date().toISOString().slice(0, 10)) {
+  if (!summary || summary.workouts30 == null || !Number.isFinite(Number(summary.workouts30))) return null;
+  const upd = Number(summary.updated);
+  if (Number.isFinite(upd) && upd > 0 && new Date(upd).toISOString().slice(0, 10) < addDays(today, -30)) return 0;
+  return Number(summary.workouts30);
+}
+
 export function rankBoard(me, friends, metric, today) {
   const m = metric === "month" || metric === "level" ? metric : "week";
   const num = v => (v != null && Number.isFinite(Number(v)) ? Number(v) : null);
-  const valueOf = s => !s ? null : m === "week" ? weekCount(s, today) : num(m === "month" ? s.workouts30 : s.level);
+  const valueOf = s => !s ? null : m === "week" ? weekCount(s, today) : m === "month" ? monthCount(s, today) : num(s.level);
   const people = [{ uid: me.uid, name: me.name, isMe: true, summary: me.summary }, ...(friends || []).map(f => ({ uid: f.uid, name: f.name, isMe: false, summary: f.summary }))]
     .map((p, i) => ({ uid: p.uid, name: p.name, isMe: p.isMe, value: valueOf(p.summary), xp: m === "level" ? num(p.summary && p.summary.xp) || 0 : 0, i }));
   const ranked = people.filter(p => p.value !== null).sort((a, b) => b.value - a.value || b.xp - a.xp || a.i - b.i);

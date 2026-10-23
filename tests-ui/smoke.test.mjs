@@ -271,6 +271,7 @@ test("Friends leaderboard: switch, podium with a crown, choice kept after reload
   assert.equal(await page.locator('#view-friends .seg button').count(), 3);
   assert.equal(await page.locator('#view-friends .seg [data-v="week"]').getAttribute("aria-pressed"), "true");
   assert.ok(await page.locator("#view-friends .podium .crown").count() >= 1);
+  for (const b of await page.locator("#view-friends .seg button").all()) assert.ok((await b.boundingBox()).height >= 44, "leaderboard switch is at least 44px");
   await page.locator('#view-friends .seg [data-v="level"]').click();
   assert.equal(await page.locator('#view-friends .seg [data-v="level"]').getAttribute("aria-pressed"), "true");
   assert.ok((await page.locator("#view-friends .podium").innerText()).includes("Level"));

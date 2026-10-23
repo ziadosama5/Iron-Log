@@ -174,7 +174,7 @@ export const AR = {
     "{name} is already on this day": "{name} موجود بالفعل في هذا اليوم", "New PR on {name}!": "رقم قياسي جديد في {name}!",
     "Enter 1–600 minutes and, if you have it, 1–5000 kcal": "أدخل من 1 إلى 600 دقيقة، وإن توفرت فمن 1 إلى 5000 kcal",
     "Cardio added": "تمت إضافة الكارديو", "Next up: {name}": "التالي: {name}", "Workout complete. Nice work!": "اكتمل التمرين. أحسنت!",
-    "{name} added. Tap Edit day to change anything.": "تمت إضافة {name}. اضغط تعديل اليوم لتغيير أي شيء.",
+    "{name} added. Tap a day to change anything.": "تمت إضافة {name}. اضغط على يوم لتغيير أي شيء.",
     "Switched to {name}": "تم التبديل إلى {name}", "{name} added to today's workout": "تمت إضافة {name} إلى تمرين اليوم",
     "Workout deleted": "تم حذف التمرين",
     "Sign-in cancelled": "تم إلغاء تسجيل الدخول",

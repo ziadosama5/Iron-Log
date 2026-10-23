@@ -198,9 +198,7 @@ a.more-row{text-decoration:none}
 .fcard svg{width:20px;height:20px;color:var(--muted);flex:none}
 .avatar{width:40px;height:40px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;background:hsl(var(--h) 55% 38%);color:#fff;font:700 15px/1 var(--f-num)}
 .lvchip{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
-.seg{display:flex;gap:4px;background:var(--sunk);border-radius:14px;padding:4px;margin-bottom:12px}
-.seg button{flex:1;min-height:44px;border:0;background:none;border-radius:11px;font:inherit;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
+.card>.seg{margin-bottom:12px}
 .boardrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
 .boardrow .rank{width:24px;text-align:center;font-weight:700;color:var(--muted);flex:none}
 .boardrow .nm{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;font-weight:600}
@@ -214,7 +212,7 @@ a.more-row{text-decoration:none}
 .cmp th{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .cmp .lead{font-weight:700;color:var(--accent)}
 .seg{display:flex;gap:4px;background:var(--sunk);border-radius:12px;padding:4px}
-.seg button{flex:1;min-height:40px;border:0;border-radius:9px;background:none;color:var(--muted);font:600 14px/1 var(--f-body);cursor:pointer}
+.seg button{flex:1;min-height:44px;border:0;border-radius:9px;background:none;color:var(--muted);font:600 14px/1 var(--f-body);cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
 /* big stepper: − value + with 48px round buttons (Workout focus mode) */
 .bigstep{display:flex;align-items:center;gap:8px;background:var(--sunk);border-radius:16px;padding:6px}
@@ -514,7 +512,7 @@ import { cleanBackupItems } from "./backup.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
-import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth } from "./overview.js";
+import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth, cacheKey } from "./overview.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
@@ -1532,7 +1530,7 @@ function dismissGymHint(){ state.gymHintNo=true; try{ localStorage.setItem("iron
 function gymHintHtml(){
   let dismissed=!!state.gymHintNo; try{ dismissed=dismissed||localStorage.getItem("ironlog.gymHint")==="1"; }catch(e){}
   if(!showGymHint({gym:state.settings.gym,dismissed,synced:state.serverSynced})) return "";
-  return `<div class="notice row" style="flex-wrap:nowrap;gap:8px"><span class="grow">${t("Set up your gym for better suggestions")}</span><button class="btn small primary" data-act="gym-hint-go">Set up</button><button class="btn ghost small" data-act="gym-hint-no" aria-label="${esc(t("Close"))}">✕</button></div>`;
+  return `<div class="notice row" style="flex-wrap:nowrap;gap:8px"><span class="grow">${t("Set up your gym for better suggestions")}</span><button class="btn small primary" data-act="gym-hint-go">Set up</button><button class="btn ghost small" style="min-width:44px" data-act="gym-hint-no" aria-label="${esc(t("Close"))}">✕</button></div>`;
 }
 function flushGym(){
   clearTimeout(gymSaveTimer); const e=state.gymEdit; state.gymEdit=null;
@@ -1662,7 +1660,7 @@ function niceStep(raw){ const p=Math.pow(10,Math.floor(Math.log10(raw||1))); con
 // Series are rebuilt only when the data changed (state.dataRev) or the day did.
 let ovCache=null;
 function overviewData(){
-  const td=today(), key=state.dataRev+"|"+td; if(ovCache&&ovCache.key===key) return ovCache.v;
+  const td=today(), key=cacheKey(store.user&&store.user.uid,state.dataRev,td); if(ovCache&&ovCache.key===key) return ovCache.v;
   const ws=state.workouts, weight=weightSeries(state.body,td);
   const v={weight, change:weightChange(weight,td), weeks:weeklyCounts(ws,td), cal:caloriesWeek(state.food,ws,state.body,state.profile,td), lifts:topLifts(ws,td), prs:prsThisMonth(ws,td), streak:trainingStreak(ws,state.days,td)};
   ovCache={key,v}; return v;
@@ -2628,7 +2626,7 @@ document.addEventListener("click",e=>{
     case "train-day": state.date=today(); state.view="log"; startDay(dayById(id)); go("log"); break;
     case "use-tpl":{ const i=+b.dataset.i;
       if(state.days.length){ state.confirmTpl=i; renderDays(); break; }
-      const tp=TEMPLATES[i]; store.saveDays(tp.days.map(d=>({id:uid(),...clone(d),weekdays:[]}))); state.editDay=null; renderDays(); toast(t("{name} added. Tap Edit day to change anything.",{name:nameOf("template",tp.name)})); break; }
+      const tp=TEMPLATES[i]; store.saveDays(tp.days.map(d=>({id:uid(),...clone(d),weekdays:[]}))); state.editDay=null; renderDays(); toast(t("{name} added. Tap a day to change anything.",{name:nameOf("template",tp.name)})); break; }
     case "apply-tpl":{ const tp=TEMPLATES[state.confirmTpl]; store.saveDays(tp.days.map(d=>({id:uid(),...clone(d),weekdays:[]}))); state.confirmTpl=null; state.pickSplit=false; state.editDay=null; renderDays(); window.scrollTo(0,0); toast(t("Switched to {name}",{name:nameOf("template",tp.name)})); break; }
     case "cancel-tpl": state.confirmTpl=null; renderDays(); break;
     case "change-split": closeSheet("#plansheet"); state.pickSplit=!state.pickSplit; state.confirmTpl=null; state.confirmReset=false; renderDays(); break;

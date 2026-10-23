@@ -67,3 +67,15 @@ test("prsThisMonth counts only PR events inside the last 30 days", () => {
   assert.equal(prsThisMonth(ws, TODAY), 1);
   assert.equal(prsThisMonth([], TODAY), 0);
 });
+
+import { cacheKey } from "../public/overview.js";
+test("cacheKey differs per account, data revision and day", () => {
+  assert.notEqual(cacheKey("a", 3, TODAY), cacheKey("b", 3, TODAY));
+  assert.notEqual(cacheKey("a", 3, TODAY), cacheKey("a", 4, TODAY));
+  assert.notEqual(cacheKey("a", 3, TODAY), cacheKey("a", 3, "2026-10-24"));
+  assert.equal(cacheKey("a", 3, TODAY), cacheKey("a", 3, TODAY));
+  assert.equal(typeof cacheKey(undefined, undefined, TODAY), "string");
+});
+test("weightChange is null when the latest weigh-in is itself older than the window", () => {
+  assert.equal(weightChange(weightSeries([{ date: "2026-09-01", weight: 90 }, { date: "2026-09-10", weight: 89 }], TODAY), TODAY), null);
+});

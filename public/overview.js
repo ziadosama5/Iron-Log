@@ -4,6 +4,8 @@ import { trainedOn } from "./workout-tools.js";
 import { weightOn, bmrFor, dayEnergy } from "./energy.js";
 
 export const weeklyTargetFor = weeklyTarget;
+// Key for the memoised Overview series: a different account, data revision or day must never reuse another's.
+export const cacheKey = (uid, rev, today) => [uid || "", rev || 0, today].join("|");
 const r1 = n => Math.round(n * 10) / 10;
 
 // Trained days per Saturday-to-Friday week, `weeks` entries, oldest first, the last one is the week of `today`.
@@ -30,7 +32,7 @@ export function weightSeries(body, today, span = 90) {
 export function weightChange(series, today, span = 28) {
   if (!series || !series.length) return null;
   const limit = addDays(today, -span), ref = series.filter(p => p.date <= limit).pop();
-  return ref ? r1(series[series.length - 1].weight - ref.weight) : null;
+  return ref && series[series.length - 1].date > limit ? r1(series[series.length - 1].weight - ref.weight) : null;
 }
 
 // Seven days ending `today`: kcal eaten (null = no meals logged that day) and that day's target (null = unknown).

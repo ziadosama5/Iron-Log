@@ -143,3 +143,9 @@ test("rankBoard: an unknown metric behaves like week; one person gets rank 1", (
   assert.deepEqual(a.map(x => [x.uid, x.value]), [["a", 4], ["me", 1]]);
   assert.deepEqual(rankBoard(me0, [], "level", NOW).map(x => [x.uid, x.rank]), [["me", 1]]);
 });
+
+test("rankBoard month: a summary published more than 30 days ago counts as 0", () => {
+  const stale = who("s", { workouts30: 14, level: 5, xp: 1, updated: Date.parse("2026-08-01T12:00:00Z") });
+  const r = rankBoard(me0, [stale, who("f", { workouts30: 2, level: 1, xp: 0, updated: FRESH })], "month", NOW);
+  assert.deepEqual(r.map(x => [x.uid, x.value]), [["me", 5], ["f", 2], ["s", 0]]);
+});
