@@ -11,4 +11,3 @@ android/*.aab
 android/local.properties
 android/.idea/
 android/*.idsig
-public/download/*.apk
