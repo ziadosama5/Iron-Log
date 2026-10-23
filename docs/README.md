@@ -23,6 +23,8 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 
 | 17 | Less crowded (meals/cardio in sheets, lighter Goals, Show all lists, Friends avatars and who's-ahead strip) | [spec](superpowers/specs/2026-10-23-less-crowded-design.md) | [plan](superpowers/plans/2026-10-23-less-crowded.md) | sw v34 (not deployed until the owner approves) |
 
+| 18 | Progress Overview, Friends leaderboard, calmer Plan page | [spec](superpowers/specs/2026-10-23-overview-leaderboard-plan-design.md) | [plan](superpowers/plans/2026-10-23-overview-leaderboard-plan.md) | sw v35 (not deployed until the owner approves) |
+
 Open points (everything still to do or decide): [open-points.md](open-points.md). The built-in Egyptian food table is parked as a big later project.
 
 Plans describe the code at the time they were written. For how the app works today, read [CLAUDE.md](../CLAUDE.md).
