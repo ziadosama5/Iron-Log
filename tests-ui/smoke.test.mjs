@@ -191,8 +191,7 @@ for (const [name, pill, rows, total] of [["Body entries", "body", "#view-body tr
 test("Friends: who's ahead strip, avatars, requests banner and a collapsed Manage card", async () => {
   const { page, ctx, errors } = await open();
   await tab(page, "friends");
-  const strip = page.locator("#view-friends .ahead");
-  assert.ok((await strip.innerText()).includes("You") && (await strip.innerText()).includes("Zed"));
+  assert.ok(await page.locator("#view-friends .podium").count() === 1);
   assert.ok(await page.locator("#view-friends .fcard .avatar").count() >= 1);
   assert.equal(await page.locator('#view-friends .banner [data-act="fr-accept"]').count(), 1);
   assert.equal(await page.locator('#view-friends [data-act="fr-cancel"]').count(), 0);
@@ -263,6 +262,31 @@ test("Overview with no data shows a hint in every card and no errors", async () 
   const txt = await page.locator("#view-overview").innerText();
   for (const m of ["Log your weight on two days to see the trend.", "Log a workout to start your weekly chart.", "Add meals on Today to compare with your target.", "Log a few sessions to see your strongest lifts."]) assert.ok(txt.includes(m), m);
   assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("Friends leaderboard: switch, podium with a crown, choice kept after reload", async () => {
+  const { page, ctx, errors } = await open();
+  await tab(page, "friends");
+  assert.equal(await page.locator('#view-friends .seg button').count(), 3);
+  assert.equal(await page.locator('#view-friends .seg [data-v="week"]').getAttribute("aria-pressed"), "true");
+  assert.ok(await page.locator("#view-friends .podium .crown").count() >= 1);
+  await page.locator('#view-friends .seg [data-v="level"]').click();
+  assert.equal(await page.locator('#view-friends .seg [data-v="level"]').getAttribute("aria-pressed"), "true");
+  assert.ok((await page.locator("#view-friends .podium").innerText()).includes("Level"));
+  await page.reload();
+  await page.waitForSelector(".tabbar:not([hidden])");
+  await page.waitForTimeout(900);
+  await tab(page, "friends");
+  assert.equal(await page.locator('#view-friends .seg [data-v="level"]').getAttribute("aria-pressed"), "true");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("Challenges podium still shows the crown after the shared podium refactor", async () => {
+  const { page, ctx } = await open("go=ch:open");
+  await page.waitForSelector("#view-challenges .podium");
+  assert.equal(await page.locator("#view-challenges .podium .crown").count(), 1);
   await ctx.close();
 });
 

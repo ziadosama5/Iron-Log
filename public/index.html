@@ -198,10 +198,13 @@ a.more-row{text-decoration:none}
 .fcard svg{width:20px;height:20px;color:var(--muted);flex:none}
 .avatar{width:40px;height:40px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;background:hsl(var(--h) 55% 38%);color:#fff;font:700 15px/1 var(--f-num)}
 .lvchip{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
-.ahead{display:flex;gap:12px;overflow-x:auto;padding:2px 0 4px}
-.aheadp{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:76px;text-align:center}
-.aheadp .nm{max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
-.aheadp.me .avatar{box-shadow:0 0 0 3px var(--accent)}
+.seg{display:flex;gap:4px;background:var(--sunk);border-radius:14px;padding:4px;margin-bottom:12px}
+.seg button{flex:1;min-height:44px;border:0;background:none;border-radius:11px;font:inherit;font-weight:600;font-size:14px;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:var(--shadow)}
+.boardrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.boardrow .rank{width:24px;text-align:center;font-weight:700;color:var(--muted);flex:none}
+.boardrow .nm{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;font-weight:600}
+.boardrow.me .avatar{box-shadow:0 0 0 3px var(--accent)}
 .card.banner{border:1.5px solid var(--accent);background:var(--accent-soft)}
 [dir="rtl"] .fcard svg{transform:scaleX(-1)}
 .cmp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
@@ -517,7 +520,7 @@ import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
 import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN, WEEK_CHOICES, nextSaturday, challengeDates, dayNumber, rankMembers, winners, planCreate, planAccept as planAcceptChallenge, planLeave, planDelete } from "./challenges.js";
 import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
-import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs, rankWeek, weekCount } from "./friends.js";
+import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs, rankBoard, weekCount } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney, assignWeekday } from "./plan-tools.js";
 import { FAMILIES, familyOf, allFamilies, closestFamily, tierFor } from "./badge-art.js";
 import { buildCards, newWins } from "./celebrate.js";
@@ -848,11 +851,19 @@ function friendRow(x){
   const chip=sm?` <span class="lvchip">${t("Level {n}",{n:sm.level})}</span>`:"";
   return `<button class="fcard" data-act="fr-open" data-uid="${esc(x.uid)}">${avatarHtml(personName(x))}<span class="grow">${friendLabel(x)}${chip}<br><span class="prev">${esc(line)}</span></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>`;
 }
-// "Who's ahead this week": me and my friends by workouts this week (shared summaries; mine is built here).
-function aheadStrip(g){
+// The Friends leaderboard: me and my friends ranked by This week / This month / Level (choice kept in ironlog.board).
+function boardMetric(){ if(!state.board){ const v=lsGet("ironlog.board"); state.board=v==="month"||v==="level"?v:"week"; } return state.board; }
+function boardHtml(g){
   if(!g.friends.length) return "";
-  const sp=state.share.profile, myName=sp?(sp.displayName||sp.username||""):"", rows=rankWeek({uid:store.user.uid,name:t("You"),summary:currentSummary()},g.friends.map(x=>{ const d=state.friends.data[x.uid]; return {uid:x.uid,name:personName(x),summary:d&&d.profile?d.profile.summary:null}; }));
-  return `<div class="card"><h3>Who's ahead this week</h3><div class="ahead">${rows.map(r=>`<div class="aheadp ${r.isMe?"me":""}">${avatarHtml(r.isMe?(myName||r.name):r.name)}<span class="nm">${esc(r.name)}</span><span class="prev">${r.workoutsWeek===null?"–":tn("{n} workout","{n} workouts",r.workoutsWeek)}</span><b class="rk num">${r.rank===null?"–":r.rank}</b></div>`).join("")}</div></div>`;
+  const m=boardMetric(), sp=state.share.profile, myName=sp?(sp.displayName||sp.username||""):"";
+  const rows=rankBoard({uid:store.user.uid,name:myName||t("You"),summary:currentSummary()},g.friends.map(x=>{ const d=state.friends.data[x.uid]; return {uid:x.uid,name:personName(x),summary:d&&d.profile?d.profile.summary:null}; }),m,today());
+  const txt=r=>r.value===null?"–":m==="level"?t("Level {n}",{n:r.value}):tn("{n} workout","{n} workouts",r.value);
+  const ranked=rows.filter(r=>r.value!==null), top=ranked.slice(0,3), order=top.length===3?[top[1],top[0],top[2]]:top.length===2?[top[1],top[0]]:top;
+  const who=r=>`${esc(r.name)}${r.isMe?" "+esc(t("(you)")):""}`;
+  const podium=order.length?podiumMarkup(order.map(r=>({rank:r.rank, crown:r.rank===1&&(m==="level"||r.value>0), av:esc(initialsOf(r.name)), who:who(r), valueText:esc(txt(r))}))):"";
+  const rest=rows.filter(r=>!top.includes(r));
+  const seg=[["week","This week"],["month","This month"],["level","Level"]].map(([v,l])=>`<button type="button" data-act="board-set" data-v="${v}" aria-pressed="${m===v}">${t(l)}</button>`).join("");
+  return `<div class="card"><div class="seg" role="group" aria-label="${esc(t("Leaderboard"))}">${seg}</div>${podium}${rest.map(r=>`<div class="boardrow${r.isMe?" me":""}"><span class="rank">${r.rank===null?"–":r.rank}</span>${avatarHtml(r.name)}<span class="nm">${who(r)}</span><span class="prev">${esc(txt(r))}</span></div>`).join("")}</div>`;
 }
 // The inline Report panel (reason chips, then a thank-you with an offer to block).
 function reportPanelHtml(){
@@ -973,13 +984,18 @@ function renderChallengePage(el){
     if(fresh.length){ lsSet("ironlog.seenWins",JSON.stringify([...(Array.isArray(seenW)?seenW:[]),ch.id].slice(-50))); setTimeout(()=>showCelebrations(buildCards({wins:fresh})),250); }
   }
 }
+// One podium for Challenges and Friends: steps are already in display order (2-1-3, 2-1 or just 1).
+// step = {rank, crown, av (escaped html), who (escaped html), valueText (escaped html)}.
+function podiumMarkup(steps){
+  return `<div class="podium" role="group" aria-label="${esc(t("Leaderboard"))}">${steps.map(p=>{
+    const rk=Math.min(3,p.rank||3), cr=p.crown?`<span class="crown"><svg class="i f" aria-hidden="true"><use href="#i-crown"/></svg></span>`:"";
+    return `<div class="step r${rk}">${cr}<span class="av" aria-hidden="true">${p.av}</span><span class="who">${p.who}</span><span class="blk">${p.rank||"–"}</span><span class="prev">${p.valueText}</span></div>`;
+  }).join("")}</div>`;
+}
 function podiumHtml(rows,me){
   const inn=rows.filter(r=>r.joined); if(inn.length<2) return "";
   const top=inn.slice(0,3), order=top.length===3?[top[1],top[0],top[2]]:[top[1],top[0]];
-  return `<div class="podium" role="group" aria-label="${esc(t("Leaderboard"))}">${order.map(r=>{
-    const rk=Math.min(3,r.rank||3), cr=rk===1&&r.days>0?`<span class="crown"><svg class="i f" aria-hidden="true"><use href="#i-crown"/></svg></span>`:"";
-    return `<div class="step r${rk}">${cr}<span class="av" aria-hidden="true">${esc((r.name||"?").charAt(0).toUpperCase())}</span><span class="who"><bdi dir="ltr">@${esc(r.name)}</bdi>${r.uid===me?" "+esc(t("(you)")):""}</span><span class="blk">${r.rank||"–"}</span><span class="prev">${tn("{n} day","{n} days",r.days)}</span></div>`;
-  }).join("")}</div>`;
+  return podiumMarkup(order.map(r=>({rank:r.rank, crown:(r.rank||3)===1&&r.days>0, av:esc((r.name||"?").charAt(0).toUpperCase()), who:`<bdi dir="ltr">@${esc(r.name)}</bdi>${r.uid===me?" "+esc(t("(you)")):""}`, valueText:tn("{n} day","{n} days",r.days)})));
 }
 async function chDo(plan,okMsg){
   const r=await store.challengeAction(plan);
@@ -1028,7 +1044,7 @@ function renderFriends(){
   loadFriendData(false);
   let h=`<h2>Friends</h2>`;
   if(g.requests.length) h+=`<div class="card banner"><h3>Requests</h3>${g.requests.map(x=>`<div class="stack" style="gap:6px"><div class="row">${avatarHtml(personName(x))}<div class="grow">${friendLabel(x)}</div></div><div class="row">${frBtn("fr-accept",x,"Accept","primary")}${frBtn("fr-decline",x,"Decline")}${frBtn("fr-block-now",x,"Block")}</div></div>`).join("")}</div>`;
-  h+=aheadStrip(g);
+  h+=boardHtml(g);
   if(g.friends.length) h+=`<div class="card"><h3>Friends</h3>${g.friends.map(friendRow).join("")}<div class="row" style="justify-content:flex-end"><button class="btn small" data-act="fr-refresh">Refresh</button></div></div>`;
   else h+=`<div class="card"><h3>Invite a friend</h3><span class="prev">Find someone by username or e-mail and train together.</span><div class="row"><button class="btn primary" data-act="pill" data-view="find">Find a friend</button></div></div>`;
   const manageN=g.sent.length+g.blocked.length;
@@ -2593,6 +2609,7 @@ document.addEventListener("click",e=>{
     case "gym-hint-go": dismissGymHint(); go("gym"); break;
     case "gym-hint-no": dismissGymHint(); renderDays(); break;
     case "gym-showall": state.showAllGym=!state.showAllGym; render(); refreshSheets(); break;
+    case "board-set": state.board=b.dataset.v==="month"||b.dataset.v==="level"?b.dataset.v:"week"; lsSet("ironlog.board",state.board); renderFriends(); break;
     case "more-list":{ const k=b.dataset.k; state.showMore[k]=!state.showMore[k]; ({body:renderBody,lifts:renderProgress,history:renderHistory,manage:renderFriends})[k](); break; }
     case "more-ex":{ const k=b.dataset.k; state.showAllEx=state.showAllEx||{}; state.showAllEx[k]=!state.showAllEx[k]; if(k.startsWith("day:")) renderDays(); else refreshSheets(); break; }
     case "free-focus":{ const m=b.dataset.m; const f=state.freeFocus||[]; state.freeFocus=f.includes(m)?f.filter(x=>x!==m):[...f,m]; renderLog(); break; }
