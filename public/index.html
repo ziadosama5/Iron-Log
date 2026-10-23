@@ -1144,7 +1144,7 @@ function renderLog(){
 
   // A day with only cardio still asks which training day it is (the cardio is kept when one is picked).
   const cardioOnly = w && !w.dayId && !w.entries.length && w.dayName==="Cardio";
-  if (!w || state.pickDay || cardioOnly){ $("#view-log").innerHTML = h + dayPicker(cardioOnly&&!state.pickDay?null:w) + cardioCard() + todayCard(); refreshSheets(); syncWake(); return; }
+  if (!w || state.pickDay || cardioOnly){ $("#view-log").innerHTML = h + dayPicker(cardioOnly&&!state.pickDay?null:w) + cardioRowHtml() + todayCard(); refreshSheets(); syncWake(); return; }
 
   const day = dayById(w.dayId), entries = w.entries, M = entries.length;
   const doneN = entries.filter(e=>e.done).length;
@@ -1167,8 +1167,7 @@ function renderLog(){
   else h += focusCard(w, ei);
 
   h += `<div class="row"><button class="btn secondary grow" data-act="open-exsheet">+ Exercise</button><button class="btn secondary grow" data-act="open-cardiosheet">+ Cardio</button></div>`;
-  const cardio=(w.cardio||[]), kgNow=weightOn(state.body,state.date);
-  if (cardio.length) h += `<ul class="cardio-list">${cardio.map(c=>`<li><span class="grow">${cardioLabel(c.type)} · ${c.min} min · ${cardioText(c,kgNow)}</span><button class="btn ghost small danger" data-act="rm-cardio" data-id="${esc(c.id)}" aria-label="${esc(t("Delete {name} session",{name:cardioLabel(c.type)}))}">✕</button></li>`).join("")}</ul>`;
+  h += cardioListHtml(w.cardio||[], weightOn(state.body,state.date));
 
   $("#view-log").innerHTML = h + todayCard(); refreshSheets(); syncWake();
   // keep the open exercise's chip in view without scrolling the page
@@ -1271,11 +1270,14 @@ const CARDIO_LABEL={treadmill:"Treadmill",elliptical:"Elliptical",bike:"Bike",ot
 const INT_LABEL={easy:"Easy",moderate:"Moderate",hard:"Hard"};
 const cardioLabel=ty=>nameOf("cardio",CARDIO_LABEL[ty]||"Cardio");
 function cardioText(c,kg){ const k=cardioKcal(c,kg); return c.kcal!=null?`${k} kcal`:k!=null?t("~{k} kcal est.",{k}):t("log weight for kcal"); }
+// Logged cardio sessions of the date shown on Today ("" when none).
+function cardioListHtml(list,kg){ return list.length?`<ul class="cardio-list">${list.map(c=>`<li><span class="grow">${cardioLabel(c.type)} · ${c.min} min · ${cardioText(c,kg)}</span><button class="btn ghost small danger" data-act="rm-cardio" data-id="${esc(c.id)}" aria-label="${esc(t("Delete {name} session",{name:cardioLabel(c.type)}))}">✕</button></li>`).join("")}</ul>`:""; }
+// With no workout open Today shows only this row; the form itself lives in #cardiosheet.
+function cardioRowHtml(){ const w=workoutFor(state.date); return `<div class="row"><button class="btn secondary grow" data-act="open-cardiosheet">+ Cardio</button></div>`+cardioListHtml((w&&w.cardio)||[],weightOn(state.body,state.date)); }
 function cardioCard(){
   const w=workoutFor(state.date), list=(w&&w.cardio)||[], kg=weightOn(state.body,state.date), d=state.cardioDraft;
-  const rows=list.map(c=>`<li><span class="grow">${cardioLabel(c.type)} · ${c.min} min · ${cardioText(c,kg)}</span><button class="btn ghost small danger" data-act="rm-cardio" data-id="${esc(c.id)}" aria-label="${esc(t("Delete {name} session",{name:cardioLabel(c.type)}))}">✕</button></li>`).join("");
   return `<div class="card" id="cardio-card"><h3>Cardio</h3>
-    ${rows?`<ul class="cardio-list">${rows}</ul>`:""}
+    ${cardioListHtml(list,kg)}
     <div class="stack" style="gap:6px"><span class="label">Type</span><div class="chips">${CARDIO_TYPES.map(ty=>`<button class="chip" data-act="cardio-type" data-v="${ty}" aria-pressed="${d.type===ty}">${cardioLabel(ty)}</button>`).join("")}</div></div>
     <div class="stack" style="gap:6px"><span class="label">Intensity · used when kcal is blank</span><div class="chips">${INTENSITIES.map(i=>`<button class="chip" data-act="cardio-int" data-v="${i}" aria-pressed="${d.intensity===i}">${nameOf("intensity",INT_LABEL[i])}</button>`).join("")}</div></div>
     <div class="adder cardio-adder">
@@ -1795,15 +1797,14 @@ function balanceGood(goal,bal){
 }
 const kcalTxt=v=>v==null?"–":Math.round(v).toLocaleString("en-US");
 const signedTxt=v=>v==null?"–":(v>0?"+":v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString("en-US");
-function levelHero(asButton=true){
+function levelHero(){
   const input=goalsInput(), list=badges(input), xp=xpSummary(input,list), ts=trainingStreak(state.workouts,state.days,today());
-  const cl=closestFamily(allFamilies(list)), C=2*Math.PI*25, off=C*(1-Math.min(1,Math.max(0,xp.into/xp.needed)));
-  const nxt=cl&&asButton?`<div class="prev">${t("Next badge: {name}",{name:esc(nameOf("badge",cl.next.name))})} · ${esc(badgeProgress({...cl.next,earned:null}))}</div>`:"";
+  const C=2*Math.PI*25, off=C*(1-Math.min(1,Math.max(0,xp.into/xp.needed)));
   const lab=esc(t("Level {n}",{n:xp.level}));
   return `<button class="hero" data-act="hero-go" aria-label="${lab}">
     <span class="ring"><svg viewBox="0 0 60 60" aria-hidden="true"><circle class="tr" cx="30" cy="30" r="25" fill="none" stroke-width="6"/><circle class="pr" cx="30" cy="30" r="25" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/></svg><b>${xp.level}</b></span>
     <span class="grow stack" style="gap:3px"><span class="row" style="gap:8px"><b class="grow">${t("Level {n}",{n:xp.level})} · ${esc(nameOf("level",xp.title))}</b><span class="streakflag"><svg class="i" aria-hidden="true"><use href="#i-flame"/></svg>${tn("{n} week","{n} weeks",ts.weeks)}</span></span>
-      <span class="prev">${t("{a} / {b} XP to level {c} · +{d} XP this week",{a:xp.into.toLocaleString("en-US"),b:xp.needed.toLocaleString("en-US"),c:xp.level+1,d:xp.weekXp.toLocaleString("en-US")})}</span>${nxt}</span></button>`;
+      <span class="prev">${t("{a} / {b} XP to level {c} · +{d} XP this week",{a:xp.into.toLocaleString("en-US"),b:xp.needed.toLocaleString("en-US"),c:xp.level+1,d:xp.weekXp.toLocaleString("en-US")})}</span></span></button>`;
 }
 // The energy numbers for the date shown on Today; the card and the meal sheet both use them.
 function energyView(){
@@ -2444,7 +2445,7 @@ document.addEventListener("click",e=>{
     case "set-goal": state.editProfile=true; go("body"); setTimeout(()=>document.getElementById("pf-goalw")?.focus(),0); break;
     case "meal-name": $("#meal-name").value=state.mealDraft.name=nameOf("meal",b.dataset.name); break;
     case "rm-meal":{ const d=state.date; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderLog(); break; }
-    case "hero-go": go("goals"); break;
+    case "hero-go":{ const cl=closestFamily(allFamilies(badges(goalsInput()))); if(cl) openFamily(cl.id); else go("goals"); break; }
     case "family-open": openFamily(b.dataset.id); break;
     case "badges-all": state.goalsAll=true; renderGoals(); window.scrollTo(0,0); break;
     case "badges-back": state.goalsAll=false; renderGoals(); window.scrollTo(0,0); break;

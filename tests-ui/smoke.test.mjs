@@ -155,6 +155,23 @@ test("Back closes the meal sheet and keeps a half-typed meal", async () => {
   await ctx.close();
 });
 
+test("Today without an open workout has no inline cardio form; + Cardio opens it in a sheet", async () => {
+  const { page, ctx } = await open();
+  assert.equal(await page.locator("#view-log #cardio-min").count(), 0);
+  await page.locator('#view-log [data-act="open-cardiosheet"]').first().click();
+  await page.waitForSelector("#cardiosheet[open]");
+  assert.equal(await page.locator("#cardiosheet #cardio-min").count(), 1);
+  await ctx.close();
+});
+
+test("the level hero on Today has no Next badge line and opens a badge family", async () => {
+  const { page, ctx } = await open();
+  assert.ok(!(await page.locator("#view-log .hero").first().innerText()).includes("Next badge"));
+  await page.locator("#view-log .hero").first().click();
+  await page.waitForSelector("#familysheet[open]");
+  await ctx.close();
+});
+
 test("controls meet the 44px touch target and text is at least 12px", async () => {
   const { page, ctx } = await open();
   await tab(page, "plan");
