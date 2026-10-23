@@ -103,3 +103,33 @@ export function planDelete({ cid, memberUids }) {
 export function planProgress({ cid, me, days, now }) {
   return { ops: [{ op: "set", path: progressPath(cid, me), data: { days, updated: now } }] };
 }
+
+// Where `me` stands among the people who joined: leading (gap = lead over the next person), tied for first,
+// behind the leader (gap in days) or alone. null when I have not joined.
+export function standing(rows, me) {
+  const inn = (rows || []).filter(r => r.joined), mine = inn.find(r => r.uid === me);
+  if (!mine) return null;
+  const base = { rank: mine.rank, of: inn.length };
+  if (inn.length < 2) return { kind: "alone", ...base, gap: 0, leader: mine.name };
+  const tops = inn.filter(r => r.rank === 1);
+  if (mine.rank === 1) {
+    if (tops.length > 1) return { kind: "tied", ...base, gap: 0, leader: mine.name };
+    return { kind: "leading", ...base, gap: mine.days - inn[1].days, leader: mine.name };
+  }
+  return { kind: "behind", ...base, gap: tops[0].days - mine.days, leader: tops[0].name };
+}
+
+// Time position of a challenge: day (1-based while active), days left after today, percent through, days until start.
+export function timeLeft(ch, today) {
+  const status = statusOf(ch, today), total = ch.weeks * 7;
+  if (status === "upcoming") return { status, day: null, total, left: total, pct: 0, startsIn: (toUtc(ch.start) - toUtc(today)) / 86400000 };
+  if (status === "finished") return { status, day: null, total, left: 0, pct: 100, startsIn: 0 };
+  const day = dayNumber(ch, today).day;
+  return { status, day, total, left: total - day, pct: Math.round(day / total * 100), startsIn: 0 };
+}
+
+// My final place for a results line: rank among the people who joined, null when I did not join.
+export function myResult(rows, me) {
+  const s = standing(rows, me);
+  return s ? { rank: s.rank, of: s.of } : null;
+}

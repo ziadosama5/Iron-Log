@@ -130,3 +130,32 @@ test("planDelete removes every progress document before the challenge; planProgr
   assert.deepEqual(paths(p), ["set challenges/c1/progress/u2"]);
   assert.deepEqual(p.ops[0].data, { days: 3, updated: 9 });
 });
+
+import { standing, timeLeft, myResult } from "../public/challenges.js";
+const row = (uid, name, days, rank, joined = true) => ({ uid, name, days, rank, joined });
+
+test("standing: leading with the gap to second, tied for first, behind the leader, alone, not in it", () => {
+  const rows = [row("a", "zed", 5, 1), row("me", "ziad", 2, 2), row("o", "omar", 0, null, false)];
+  assert.deepEqual(standing(rows, "a"), { kind: "leading", rank: 1, of: 2, gap: 3, leader: "zed" });
+  assert.deepEqual(standing(rows, "me"), { kind: "behind", rank: 2, of: 2, gap: 3, leader: "zed" });
+  assert.equal(standing(rows, "o"), null);
+  assert.equal(standing(rows, "nobody"), null);
+  const tie = [row("a", "zed", 4, 1), row("me", "ziad", 4, 1)];
+  assert.equal(standing(tie, "me").kind, "tied");
+  assert.deepEqual(standing([row("me", "ziad", 1, 1)], "me"), { kind: "alone", rank: 1, of: 1, gap: 0, leader: "ziad" });
+});
+
+test("timeLeft: upcoming, active (day, left, percent) and finished", () => {
+  const ch = { start: "2026-10-20", end: "2026-11-02", weeks: 2 };
+  assert.deepEqual(timeLeft(ch, "2026-10-18"), { status: "upcoming", day: null, total: 14, left: 14, pct: 0, startsIn: 2 });
+  assert.deepEqual(timeLeft(ch, "2026-10-23"), { status: "active", day: 4, total: 14, left: 10, pct: 29, startsIn: 0 });
+  assert.deepEqual(timeLeft(ch, "2026-11-02"), { status: "active", day: 14, total: 14, left: 0, pct: 100, startsIn: 0 });
+  assert.deepEqual(timeLeft(ch, "2026-11-05"), { status: "finished", day: null, total: 14, left: 0, pct: 100, startsIn: 0 });
+});
+
+test("myResult: rank and field size, null when not joined or nobody joined", () => {
+  const rows = [row("a", "zed", 5, 1), row("me", "ziad", 2, 2), row("o", "omar", 0, null, false)];
+  assert.deepEqual(myResult(rows, "me"), { rank: 2, of: 2 });
+  assert.equal(myResult(rows, "o"), null);
+  assert.equal(myResult([], "me"), null);
+});
