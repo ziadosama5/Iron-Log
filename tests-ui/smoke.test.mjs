@@ -113,7 +113,8 @@ test("all badges page lists 24 badges and goes back", async () => {
   await page.locator('[data-act="badges-all"]').click();
   assert.equal(await page.locator("#view-goals .brow").count(), 24);
   await page.locator('[data-act="badges-back"]').click();
-  assert.equal(await page.locator("#view-goals .tile").count(), 9);
+  assert.equal(await page.locator("#view-goals .tile").count(), 1);
+  assert.equal(await page.locator("#view-goals .hero").count(), 0);
   await ctx.close();
 });
 

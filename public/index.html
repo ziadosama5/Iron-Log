@@ -1967,12 +1967,11 @@ function renderGoals(){
   const dots=Array.from({length:ts.target},(_,i)=>i<ts.thisWeek?"●":"○").join("");
   const earned=list.filter(b=>b.earned).sort((a,b)=>a.earned<b.earned?1:a.earned>b.earned?-1:0), locked=list.filter(b=>!b.earned);
   $("#view-goals").innerHTML=`<h2>Goals</h2>
-    ${levelHero(false)}
     <div class="card"><h3>Target weight</h3>${goal}</div>
     <div class="card"><h3>Streaks</h3>
       <div class="row"><span class="grow">${t("Training: {x}",{x:"<b>"+tn("{n} week","{n} weeks",ts.weeks)+"</b>"})}</span><span class="dots" role="img" aria-label="${esc(t("{a} of {b} this week",{a:ts.thisWeek,b:ts.target}))}">${dots}</span><span class="prev">${t("{a} of {b} this week",{a:ts.thisWeek,b:ts.target})}</span></div>
       <div class="row"><span class="grow">${t("Food log: {x}",{x:"<b>"+tn("{n} day","{n} days",fdays)+"</b>"})}</span></div></div>
-    <div class="card"><h3>${t("Badges · {a} of {b}",{a:earned.length,b:list.length})}</h3><div class="wall">${allFamilies(list).map(familyTile).join("")}</div><button class="btn secondary" data-act="badges-all">${t("Show all {n} badges",{n:list.length})}</button></div>`;
+    <div class="card"><h3>${t("Badges · {a} of {b}",{a:earned.length,b:list.length})}</h3><div class="wall">${[closestFamily(allFamilies(list))||allFamilies(list)[0]].map(familyTile).join("")}</div><button class="btn secondary" data-act="badges-all">${t("Show all {n} badges",{n:list.length})}</button></div>`;
 }
 // New badges toast once (across devices). Runs only on server-confirmed data, so an empty offline
 // cache on a new device can't overwrite the saved list. First run marks existing badges silently.
