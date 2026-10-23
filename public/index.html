@@ -532,7 +532,7 @@ const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
 const freshChallenges=()=>({loaded:false,docs:[],progress:{},open:null,last:{},lastAt:{},form:null,confirm:null});
 const freshFriends=()=>({report:null,loaded:false,docs:[],blocks:[],data:{},open:null,confirm:null,renamed:false,q:"",found:null});
-let state = { challenges:freshChallenges(), del:null, deletedNote:false, journey:null, journeyShown:false, gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, workouts:[], days:[], body:[], profile:{}, view:"log", tabView:{}, date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
+let state = { challenges:freshChallenges(), del:null, deletedNote:false, journey:null, journeyShown:false, gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, showMore:{}, workouts:[], days:[], body:[], profile:{}, view:"log", tabView:{}, date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -1113,6 +1113,11 @@ function nextDay(){
 }
 function lastTrained(dayId){ const w=sorted().filter(w=>w.dayId===dayId && w.entries.some(e=>e.sets.length)); return w.length?w[w.length-1].date:null; }
 // Suggestion chips for one muscle: first 6, "Show more" for the rest (open state per key in state.showAllEx).
+// A long list cut to `limit` rows with a Show all / Show fewer button (open state per key in state.showMore, session only).
+function moreList(items,key,limit=5){
+  const open=!!state.showMore[key], v=visibleItems(items,open,limit);
+  return {shown:v.shown, btn:items.length>limit?`<button class="btn ghost small" data-act="more-list" data-k="${key}" aria-expanded="${open}">${open?t("Show fewer"):t("Show all ({n})",{n:items.length})}</button>`:""};
+}
 function chipRow(items,key,act,extra=""){
   const open=!!(state.showAllEx||{})[key], v=visibleItems(items,open);
   return `<div class="chips">${v.shown.map(n=>`${chipInfo(`<button class="chip add" data-act="${act}"${extra} data-name="${esc(n)}">${esc(nameOf("ex",n))}</button>`,n)}`).join("")}</div>`+
@@ -1553,6 +1558,7 @@ function renderProgress(){
   const pts=sess.map(s=>{ let best=0,top=0; s.sets.forEach(x=>{best=Math.max(best,e1rm(x.w,x.r)); top=Math.max(top,x.w);}); return {date:s.date,e1:best,top,sets:s.sets}; });
   const allBest=Math.max(...pts.map(p=>p.e1)), allTop=Math.max(...pts.map(p=>p.top));
   const first=pts[0], lastP=pts[pts.length-1];
+  const lifts=moreList([...pts].reverse(),"lifts");
   const change=pts.length>1&&first.e1?((lastP.e1-first.e1)/first.e1*100):null;
   $("#view-progress").innerHTML=`<div class="row"><h2 class="grow">Progress</h2>
     <select id="prog-ex" style="width:auto;max-width:60%">${names.sort().map(n=>`<option value="${esc(n)}" ${n===ex?"selected":""}>${esc(nameOf("ex",n))}</option>`).join("")}</select></div>
@@ -1564,8 +1570,8 @@ function renderProgress(){
   </div>
   <div class="card"><div class="legend"><span><i style="background:var(--accent)"></i>Estimated 1RM</span><span><i style="background:var(--muted)"></i>Top set weight</span></div>${chart(pts)}</div>
   <div class="card" style="overflow-x:auto"><table><thead><tr><th>Date</th><th>Sets (kg×reps)</th><th class="r">e1RM</th></tr></thead><tbody>${
-    [...pts].reverse().map(p=>`<tr><td style="white-space:nowrap">${fmtDate(p.date)}</td><td class="num" style="font-size:13px">${p.sets.map(s=>kg(s.w)+"×"+s.r).join(" · ")}</td><td class="r num">${kg(Math.round(p.e1*10)/10)}${p.e1===allBest?'<span class="pr">PR</span>':""}</td></tr>`).join("")
-  }</tbody></table></div>
+    lifts.shown.map(p=>`<tr><td style="white-space:nowrap">${fmtDate(p.date)}</td><td class="num" style="font-size:13px">${p.sets.map(s=>kg(s.w)+"×"+s.r).join(" · ")}</td><td class="r num">${kg(Math.round(p.e1*10)/10)}${p.e1===allBest?'<span class="pr">PR</span>':""}</td></tr>`).join("")
+  }</tbody></table>${lifts.btn}</div>
   <p class="prev">e1RM uses the Epley formula: weight × (1 + reps ÷ 30). It lets sets of different rep counts be compared on one line.</p>`;
 }
 function chart(pts){
@@ -1681,9 +1687,9 @@ function renderBody(){
       </div>
       ${lineChart(s,[{k,c:"var(--accent)",main:true}],t("{label} over time",{label:bfLabel(k)}),t("Add a second entry to see the trend."))}
     </div>`;
-    const rows=bodySorted().reverse().slice(0,12);
+    const more=moreList(bodySorted().reverse().slice(0,12),"body"), rows=more.shown;
     h+=`<div class="card" style="overflow-x:auto"><h3>Recent entries</h3><table><thead><tr><th>Date</th><th class="r">Weight</th><th class="r">Waist</th><th class="r">Fat %</th><th class="r">Muscle</th></tr></thead><tbody>${
-      rows.map(e=>`<tr data-bdate="${esc(e.date)}" style="cursor:pointer"><td style="white-space:nowrap">${fmtDate(e.date)}</td>${["weight","waist","pbf","smm"].map(k=>`<td class="r num">${e[k]!=null?kg(e[k]):"–"}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+      rows.map(e=>`<tr data-bdate="${esc(e.date)}" style="cursor:pointer"><td style="white-space:nowrap">${fmtDate(e.date)}</td>${["weight","waist","pbf","smm"].map(k=>`<td class="r num">${e[k]!=null?kg(e[k]):"–"}</td>`).join("")}</tr>`).join("")}</tbody></table>${more.btn}</div>`;
   } else {
     h+=`<div class="empty"><strong>No body data yet</strong>Log your weight above. Add measurements or an InBody scan whenever you have them, and the Coach tab will start using them.</div>`;
   }
@@ -2038,7 +2044,8 @@ function renderHistory(){
   if(!ws.length){ $("#view-history").innerHTML=h+`<div class="empty"><strong>No workouts yet</strong>Every day you log shows up here. Tap one to open and edit it.</div>`+backupCard(); return; }
   const week=ws.filter(w=>(Date.now()-new Date(w.date+"T12:00:00"))/864e5<7).length;
   h+=`<div class="row label" style="gap:16px"><span>${tn("{n} workout logged","{n} workouts logged",ws.length)}</span><span>${t("{n} in the last 7 days",{n:week})}</span></div><div class="stack">`;
-  ws.forEach(w=>{
+  const hist=moreList(ws,"history");
+  hist.shown.forEach(w=>{
     const done=w.entries.filter(e=>e.sets.length);
     const v=done.reduce((a,e)=>a+vol(e.sets),0), sets=done.reduce((a,e)=>a+e.sets.length,0);
     const day=dayById(w.dayId), dname=day?day.name:(w.dayName||"Free workout");
@@ -2049,7 +2056,7 @@ function renderHistory(){
         ?`<span class="prev">Delete this workout?</span><button class="btn small" data-act="cancel-del">Keep</button><button class="btn small danger" data-act="del-w" data-id="${w.id}">Delete</button>`
         :`<button class="btn ghost small danger" data-act="ask-del" data-id="${w.id}">Delete</button>`}</div></div>`;
   });
-  $("#view-history").innerHTML=h+"</div>"+backupCard();
+  $("#view-history").innerHTML=h+"</div>"+hist.btn+backupCard();
 }
 function historySummary(w,sets,v){
   const parts=[]; if(sets) parts.push(`${tn("{n} set","{n} sets",sets)} · ${kg(v)} kg`);
@@ -2511,6 +2518,7 @@ document.addEventListener("click",e=>{
     case "gym-hint-go": dismissGymHint(); go("gym"); break;
     case "gym-hint-no": dismissGymHint(); renderDays(); break;
     case "gym-showall": state.showAllGym=!state.showAllGym; render(); refreshSheets(); break;
+    case "more-list":{ const k=b.dataset.k; state.showMore[k]=!state.showMore[k]; ({body:renderBody,lifts:renderProgress,history:renderHistory})[k](); break; }
     case "more-ex":{ const k=b.dataset.k; state.showAllEx=state.showAllEx||{}; state.showAllEx[k]=!state.showAllEx[k]; if(k.startsWith("day:")) renderDays(); else refreshSheets(); break; }
     case "free-focus":{ const m=b.dataset.m; const f=state.freeFocus||[]; state.freeFocus=f.includes(m)?f.filter(x=>x!==m):[...f,m]; renderLog(); break; }
     case "change-day": stopEditing(); state.pickDay=true; renderLog(); break;

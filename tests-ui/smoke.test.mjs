@@ -173,6 +173,21 @@ test("the level hero on Today has no Next badge line and opens a badge family", 
   await ctx.close();
 });
 
+for (const [name, pill, rows, total] of [["Body entries", "body", "#view-body tr[data-bdate]", 6], ["Lifts sessions", "progress", "#view-progress tbody tr", 10], ["History workouts", "history", "#view-history [data-open]", 10]]) {
+  test(name + " show 5 rows and Show all reveals the rest", async () => {
+    const { page, ctx } = await open();
+    await tab(page, "progress");
+    await page.locator('.pill[data-view="' + pill + '"]').click();
+    assert.equal(await page.locator(rows).count(), 5);
+    await page.locator("#view-" + pill + ' [data-act="more-list"]').click();
+    assert.equal(await page.locator(rows).count(), total);
+    assert.ok((await page.locator("#view-" + pill + ' [data-act="more-list"]').innerText()).includes("Show fewer"));
+    await page.locator("#view-" + pill + ' [data-act="more-list"]').click();
+    assert.equal(await page.locator(rows).count(), 5);
+    await ctx.close();
+  });
+}
+
 test("controls meet the 44px touch target and text is at least 12px", async () => {
   const { page, ctx } = await open();
   await tab(page, "plan");
