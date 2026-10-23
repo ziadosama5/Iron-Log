@@ -97,13 +97,22 @@ export function weekCount(summary, today = new Date().toISOString().slice(0, 10)
   return Number(summary.workoutsWeek);
 }
 
-// "Who's ahead this week": me and my friends by workouts this week, most first. Ties share a rank (1,2,2,4);
-// people with no shared summary come last, in the given order, with a null rank.
-export function rankWeek(me, friends, today) {
+// The leaderboard: me and my friends ranked by one metric: "week" (workouts this week), "month" (workouts in 30 days)
+// or "level" (level, ties by xp). Ties share a rank (1,2,2,4); people with no usable summary come last, in the given
+// order, with a null value and rank. An unknown metric behaves like "week".
+export function rankBoard(me, friends, metric, today) {
+  const m = metric === "month" || metric === "level" ? metric : "week";
+  const num = v => (v != null && Number.isFinite(Number(v)) ? Number(v) : null);
+  const valueOf = s => !s ? null : m === "week" ? weekCount(s, today) : num(m === "month" ? s.workouts30 : s.level);
   const people = [{ uid: me.uid, name: me.name, isMe: true, summary: me.summary }, ...(friends || []).map(f => ({ uid: f.uid, name: f.name, isMe: false, summary: f.summary }))]
-    .map((p, i) => ({ uid: p.uid, name: p.name, isMe: p.isMe, workoutsWeek: weekCount(p.summary, today), i }));
-  const ranked = people.filter(p => p.workoutsWeek !== null).sort((a, b) => b.workoutsWeek - a.workoutsWeek || a.i - b.i);
-  ranked.forEach((p, k) => { p.rank = k > 0 && ranked[k - 1].workoutsWeek === p.workoutsWeek ? ranked[k - 1].rank : k + 1; });
-  const rest = people.filter(p => p.workoutsWeek === null).map(p => ({ ...p, rank: null }));
-  return [...ranked, ...rest].map(({ i, ...p }) => p);
+    .map((p, i) => ({ uid: p.uid, name: p.name, isMe: p.isMe, value: valueOf(p.summary), xp: m === "level" ? num(p.summary && p.summary.xp) || 0 : 0, i }));
+  const ranked = people.filter(p => p.value !== null).sort((a, b) => b.value - a.value || b.xp - a.xp || a.i - b.i);
+  ranked.forEach((p, k) => { p.rank = k > 0 && ranked[k - 1].value === p.value && ranked[k - 1].xp === p.xp ? ranked[k - 1].rank : k + 1; });
+  const rest = people.filter(p => p.value === null).map(p => ({ ...p, rank: null }));
+  return [...ranked, ...rest].map(({ i, xp, ...p }) => p);
+}
+
+// "Who's ahead this week" (workouts this week), kept for callers that want the old shape.
+export function rankWeek(me, friends, today) {
+  return rankBoard(me, friends, "week", today).map(({ value, ...p }) => ({ ...p, workoutsWeek: value }));
 }

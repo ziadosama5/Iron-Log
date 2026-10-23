@@ -118,3 +118,28 @@ test("rankWeek: a summary without a number is treated as not sharing", () => {
   const r = rankWeek({ uid: "me", name: "me", summary: { workoutsWeek: 0, updated: Date.now() } }, [{ uid: "n", name: "n", summary: { workoutsWeek: null, updated: Date.now() } }]);
   assert.deepEqual(r.map(x => [x.uid, x.rank]), [["me", 1], ["n", null]]);
 });
+
+import { rankBoard } from "../public/friends.js";
+const NOW = "2026-10-23", FRESH = Date.parse("2026-10-22T12:00:00Z");
+const who = (uid, summary) => ({ uid, name: uid, summary });
+const me0 = { uid: "me", name: "me", summary: { workoutsWeek: 1, workouts30: 5, level: 3, xp: 700, updated: FRESH } };
+
+test("rankBoard month: orders by workouts30", () => {
+  const r = rankBoard(me0, [who("a", { workoutsWeek: 0, workouts30: 12, level: 1, xp: 0, updated: FRESH }), who("b", { workoutsWeek: 0, workouts30: 2, level: 9, xp: 9000, updated: FRESH })], "month", NOW);
+  assert.deepEqual(r.map(x => [x.uid, x.value, x.rank]), [["a", 12, 1], ["me", 5, 2], ["b", 2, 3]]);
+});
+test("rankBoard level: same level is split by xp; equal level and xp share a rank", () => {
+  const r = rankBoard(me0, [who("a", { level: 3, xp: 900, updated: FRESH }), who("b", { level: 3, xp: 700, updated: FRESH })], "level", NOW);
+  assert.deepEqual(r.map(x => [x.uid, x.value, x.rank]), [["a", 3, 1], ["me", 3, 2], ["b", 3, 2]]);
+});
+test("rankBoard: a friend without a summary is last with a null rank for every metric", () => {
+  for (const m of ["week", "month", "level"]) {
+    const r = rankBoard(me0, [who("z", null)], m, NOW);
+    assert.deepEqual(r.map(x => [x.uid, x.rank]), [["me", 1], ["z", null]], m);
+  }
+});
+test("rankBoard: an unknown metric behaves like week; one person gets rank 1", () => {
+  const a = rankBoard(me0, [who("a", { workoutsWeek: 4, updated: FRESH })], "bogus", NOW);
+  assert.deepEqual(a.map(x => [x.uid, x.value]), [["a", 4], ["me", 1]]);
+  assert.deepEqual(rankBoard(me0, [], "level", NOW).map(x => [x.uid, x.rank]), [["me", 1]]);
+});
