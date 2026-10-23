@@ -291,7 +291,7 @@ export const AR = {
     "Badges · {a} of {b}": "الأوسمة · {a} من {b}", "Badge earned: {name}": "وسام جديد: {name}",
     "Appearance": "المظهر", "Your data": "بياناتك", "About and account": "حول التطبيق والحساب", "Plan": "الخطة", "Me": "أنا",
     "Leaderboard": "لوحة المتصدرين", "No friends yet. Use Find to look someone up by username.": "لا أصدقاء بعد. استخدم «بحث» للعثور على شخص باسم المستخدم.",
-    "Next badge: {name}": "الوسام التالي: {name}", "Food and energy": "الطعام والطاقة", "+ Add meal": "+ وجبة", "Show all ({n})": "عرض الكل ({n})", "Burned {a} · Balance {b} kcal": "المحروق {a} · الفرق {b} kcal",
+    "Next badge: {name}": "الوسام التالي: {name}", "Food and energy": "الطعام والطاقة", "+ Add meal": "+ وجبة", "Show all ({n})": "عرض الكل ({n})", "{n} workout": "{n} تمرين", "{n} workouts": "{n} تمارين", "Who's ahead this week": "من الأوائل هذا الأسبوع", "Manage ({n})": "إدارة ({n})", "Hide": "إخفاء", "Invite a friend": "ادعُ صديقاً", "Find someone by username or e-mail and train together.": "ابحث عن شخص باسم المستخدم أو البريد الإلكتروني وتمرنا معاً.", "Burned {a} · Balance {b} kcal": "المحروق {a} · الفرق {b} kcal",
     "Level {a} of {b}": "المستوى {a} من {b}", "All levels reached": "تم الوصول إلى كل المستويات",
     "New badge": "وسام جديد", "{name} · Level {n}": "{name} · المستوى {n}", "Level up!": "ارتقيت مستوى!",
     "You won!": "فزت!", "Show all {n} badges": "عرض كل الأوسمة ({n})", "All badges · {a} of {b} earned": "كل الأوسمة · {a} من {b} مكتسبة", "You won the challenge": "فزت بالتحدي", "Nice!": "رائع!", "Plan for {day}": "خطة يوم {day}"

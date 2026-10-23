@@ -196,6 +196,13 @@ a.more-row{text-decoration:none}
 .more-row .count{margin-inline-start:auto;margin-inline-end:8px;min-width:22px;padding:2px 7px;border-radius:11px;background:var(--danger);color:#fff;font:700 12px/18px var(--f-body);text-align:center}
 .fcard{display:flex;align-items:center;gap:8px;width:100%;padding:12px 0;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:inherit;text-align:start;cursor:pointer}
 .fcard svg{width:20px;height:20px;color:var(--muted);flex:none}
+.avatar{width:40px;height:40px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;background:hsl(var(--h) 55% 38%);color:#fff;font:700 15px/1 var(--f-num)}
+.lvchip{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.ahead{display:flex;gap:12px;overflow-x:auto;padding:2px 0 4px}
+.aheadp{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:76px;text-align:center}
+.aheadp .nm{max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.aheadp.me .avatar{box-shadow:0 0 0 3px var(--accent)}
+.banner{border:1.5px solid var(--accent);background:var(--accent-soft)}
 [dir="rtl"] .fcard svg{transform:scaleX(-1)}
 .cmp{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
 .cmp th,.cmp td{padding:9px 4px;text-align:center;border-bottom:1px solid var(--line)}
@@ -498,7 +505,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince } from "./ui-helpers.js";
+import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
@@ -508,7 +515,7 @@ import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
 import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN, WEEK_CHOICES, nextSaturday, challengeDates, dayNumber, rankMembers, winners, planCreate, planAccept as planAcceptChallenge, planLeave, planDelete } from "./challenges.js";
 import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
-import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs } from "./friends.js";
+import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs, rankWeek } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney, assignWeekday } from "./plan-tools.js";
 import { FAMILIES, familyOf, allFamilies, closestFamily, tierFor } from "./badge-art.js";
 import { buildCards, newWins } from "./celebrate.js";
@@ -830,10 +837,20 @@ function friendLabel(x){
   return `${dn?`<b>${esc(dn)}</b> `:""}<bdi dir="ltr" class="prev">${x.name?"@"+esc(x.name):esc(t("Unknown user"))}</bdi>`;
 }
 const frBtn=(act,x,label,cls="")=>`<button type="button" class="btn small ${cls}" data-act="${act}" data-uid="${esc(x.uid)}" data-name="${esc(x.name||"")}">${label}</button>`;
+// A person's name as shown: their display name when they share one, else @username (never translated).
+const personName=x=>{ const d=state.friends.data[x.uid]; return (d&&d.profile&&d.profile.displayName)||x.name||""; };
+const avatarHtml=name=>`<span class="avatar" style="--h:${avatarHue(name)}" aria-hidden="true">${esc(initialsOf(name))}</span>`;
 function friendRow(x){
   const d=state.friends.data[x.uid], p=d&&d.profile, sm=p&&p.summary;
-  const line=!d?"…":sm?[t("Level {n}",{n:sm.level}),tn("{n} workout this week","{n} workouts this week",sm.workoutsWeek),t("Training: {x}",{x:tn("{n} week","{n} weeks",sm.streakWeeks)})].join(" · "):t("Not sharing right now");
-  return `<button class="fcard" data-act="fr-open" data-uid="${esc(x.uid)}"><span class="grow">${friendLabel(x)}<br><span class="prev">${esc(line)}</span></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>`;
+  const line=!d?"…":sm?tn("{n} workout this week","{n} workouts this week",sm.workoutsWeek):t("Not sharing right now");
+  const chip=sm?` <span class="lvchip">${t("Level {n}",{n:sm.level})}</span>`:"";
+  return `<button class="fcard" data-act="fr-open" data-uid="${esc(x.uid)}">${avatarHtml(personName(x))}<span class="grow">${friendLabel(x)}${chip}<br><span class="prev">${esc(line)}</span></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>`;
+}
+// "Who's ahead this week": me and my friends by workouts this week (shared summaries; mine is built here).
+function aheadStrip(g){
+  if(!g.friends.length) return "";
+  const rows=rankWeek({uid:store.user.uid,name:t("You"),summary:currentSummary()},g.friends.map(x=>{ const d=state.friends.data[x.uid]; return {uid:x.uid,name:personName(x),summary:d&&d.profile?d.profile.summary:null}; }));
+  return `<div class="card"><h3>Who's ahead this week</h3><div class="ahead">${rows.map(r=>`<div class="aheadp ${r.isMe?"me":""}">${avatarHtml(r.name)}<span class="nm">${esc(r.name)}</span><span class="prev">${r.workoutsWeek===null?"–":tn("{n} workout","{n} workouts",r.workoutsWeek)}</span><b class="rk num">${r.rank===null?"–":r.rank}</b></div>`).join("")}</div></div>`;
 }
 // The inline Report panel (reason chips, then a thank-you with an offer to block).
 function reportPanelHtml(){
@@ -1008,10 +1025,20 @@ function renderFriends(){
   if(f.open){ renderFriendPage(el,g); return; }
   loadFriendData(false);
   let h=`<h2>Friends</h2>`;
-  if(g.requests.length) h+=`<div class="card"><h3>Requests</h3>${g.requests.map(x=>`<div class="stack" style="gap:6px"><div class="row"><div class="grow">${friendLabel(x)}</div></div><div class="row">${frBtn("fr-accept",x,"Accept","primary")}${frBtn("fr-decline",x,"Decline")}${frBtn("fr-block-now",x,"Block")}</div></div>`).join("")}</div>`;
-  h+=`<div class="card"><h3>Friends</h3>${g.friends.length?g.friends.map(friendRow).join(""):`<span class="prev">No friends yet. Use Find to look someone up by username.</span>`}<div class="row" style="justify-content:flex-end"><button class="btn small" data-act="fr-refresh">Refresh</button></div></div>`;
-  if(g.sent.length) h+=`<div class="card"><h3>Sent</h3>${g.sent.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-cancel",x,"Cancel")}</div>`).join("")}</div>`;
-  if(g.blocked.length) h+=`<div class="card"><h3>Blocked</h3>${g.blocked.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-unblock",x,"Unblock")}</div>`).join("")}</div>`;
+  if(g.requests.length) h+=`<div class="card banner"><h3>Requests</h3>${g.requests.map(x=>`<div class="stack" style="gap:6px"><div class="row">${avatarHtml(personName(x))}<div class="grow">${friendLabel(x)}</div></div><div class="row">${frBtn("fr-accept",x,"Accept","primary")}${frBtn("fr-decline",x,"Decline")}${frBtn("fr-block-now",x,"Block")}</div></div>`).join("")}</div>`;
+  h+=aheadStrip(g);
+  if(g.friends.length) h+=`<div class="card"><h3>Friends</h3>${g.friends.map(friendRow).join("")}<div class="row" style="justify-content:flex-end"><button class="btn small" data-act="fr-refresh">Refresh</button></div></div>`;
+  else h+=`<div class="card"><h3>Invite a friend</h3><span class="prev">Find someone by username or e-mail and train together.</span><div class="row"><button class="btn primary" data-act="pill" data-view="find">Find a friend</button></div></div>`;
+  const manageN=g.sent.length+g.blocked.length;
+  if(manageN){
+    const open=!!state.showMore.manage;
+    h+=`<div class="card"><button class="btn ghost" data-act="more-list" data-k="manage" aria-expanded="${open}">${open?t("Hide"):t("Manage ({n})",{n:manageN})}</button>`;
+    if(open){
+      if(g.sent.length) h+=`<h3>Sent</h3>${g.sent.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-cancel",x,"Cancel")}</div>`).join("")}`;
+      if(g.blocked.length) h+=`<h3>Blocked</h3>${g.blocked.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-unblock",x,"Unblock")}</div>`).join("")}`;
+    }
+    h+="</div>";
+  }
   el.innerHTML=h;
 }
 const iso=s=>"\u2068"+s+"\u2069"; // first-strong isolate: keeps "@name" in order inside Arabic text
@@ -2518,7 +2545,7 @@ document.addEventListener("click",e=>{
     case "gym-hint-go": dismissGymHint(); go("gym"); break;
     case "gym-hint-no": dismissGymHint(); renderDays(); break;
     case "gym-showall": state.showAllGym=!state.showAllGym; render(); refreshSheets(); break;
-    case "more-list":{ const k=b.dataset.k; state.showMore[k]=!state.showMore[k]; ({body:renderBody,lifts:renderProgress,history:renderHistory})[k](); break; }
+    case "more-list":{ const k=b.dataset.k; state.showMore[k]=!state.showMore[k]; ({body:renderBody,lifts:renderProgress,history:renderHistory,manage:renderFriends})[k](); break; }
     case "more-ex":{ const k=b.dataset.k; state.showAllEx=state.showAllEx||{}; state.showAllEx[k]=!state.showAllEx[k]; if(k.startsWith("day:")) renderDays(); else refreshSheets(); break; }
     case "free-focus":{ const m=b.dataset.m; const f=state.freeFocus||[]; state.freeFocus=f.includes(m)?f.filter(x=>x!==m):[...f,m]; renderLog(); break; }
     case "change-day": stopEditing(); state.pickDay=true; renderLog(); break;

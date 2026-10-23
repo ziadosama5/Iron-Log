@@ -188,6 +188,36 @@ for (const [name, pill, rows, total] of [["Body entries", "body", "#view-body tr
   });
 }
 
+test("Friends: who's ahead strip, avatars, requests banner and a collapsed Manage card", async () => {
+  const { page, ctx, errors } = await open();
+  await tab(page, "friends");
+  const strip = page.locator("#view-friends .ahead");
+  assert.ok((await strip.innerText()).includes("You") && (await strip.innerText()).includes("Zed"));
+  assert.ok(await page.locator("#view-friends .fcard .avatar").count() >= 1);
+  assert.equal(await page.locator('#view-friends .banner [data-act="fr-accept"]').count(), 1);
+  assert.equal(await page.locator('#view-friends [data-act="fr-cancel"]').count(), 0);
+  assert.equal(await page.locator('#view-friends [data-act="fr-unblock"]').count(), 0);
+  await page.locator('#view-friends [data-act="more-list"][data-k="manage"]').click();
+  assert.equal(await page.locator('#view-friends [data-act="fr-cancel"]').count(), 1);
+  assert.equal(await page.locator('#view-friends [data-act="fr-unblock"]').count(), 1);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("Friends with no friends shows an Invite a friend card that opens Find", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 420, height: 860 }, hasTouch: true, isMobile: true });
+  const page = await ctx.newPage();
+  await page.goto(BASE + "?mine=1");
+  await page.waitForSelector(".tabbar:not([hidden])");
+  await page.waitForTimeout(900);
+  await tab(page, "friends");
+  assert.equal(await page.locator("#view-friends .ahead").count(), 0);
+  assert.ok((await page.locator("#view-friends").innerText()).toLowerCase().includes("invite a friend"));
+  await page.locator('#view-friends [data-act="pill"][data-view="find"]').click();
+  assert.equal(await title(page), "Find a friend");
+  await ctx.close();
+});
+
 test("controls meet the 44px touch target and text is at least 12px", async () => {
   const { page, ctx } = await open();
   await tab(page, "plan");
