@@ -33,7 +33,11 @@ export function t(text, params) {
   return fill(hit != null ? hit : text, params);
 }
 
-export function tn(one, other, n, params) { return t(n === 1 ? one : other, { n, ...params }); }
+// one for exactly 1, else other. Arabic also has a dual for exactly 2: an entry named `<other>#2` (when present) wins.
+export function tn(one, other, n, params) {
+  if (n === 2) { const dual = own(dicts[current].ui, other + "#2"); if (dual != null) return fill(dual, { n, ...params }); }
+  return t(n === 1 ? one : other, { n, ...params });
+}
 
 export function nameOf(kind, name) {
   const table = own(dicts[current].names, kind);

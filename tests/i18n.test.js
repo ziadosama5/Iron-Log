@@ -6,6 +6,7 @@ const AR = {
   ui: { "Add set": "إضافة مجموعة", "Skip": "تخطي", "Close": "إغلاق", "Search": "بحث", "Weight": "الوزن", "{n} of {m} done": "{n} من {m} تم", "{n} set": "{n} مجموعة", "{n} sets": "{n} مجموعات" },
   names: { ex: { "Bench Press": "ضغط الصدر" }, muscle: { "Chest": "الصدر" } }
 };
+AR.ui["{n} sets#2"] = "مجموعتان";
 registerLang("ar", AR);
 beforeEach(() => setLang("en"));
 
@@ -150,4 +151,15 @@ test("trDom also isolates numbers in translated static text, and a leading ~ sta
   assert.equal(a.nodeValue, "⁦+15⁩ ث");
   assert.equal(b.nodeValue, "⁦~90 kcal⁩ est.");
   registerLang("ar", AR);
+});
+
+test("tn uses the Arabic dual for exactly 2 when the dictionary has one",()=>{
+  setLang("en");
+  assert.equal(tn("{n} set", "{n} sets", 2), "2 sets");
+  setLang("ar");
+  assert.equal(tn("{n} set", "{n} sets", 2), "مجموعتان");
+  assert.equal(tn("{n} set", "{n} sets", 1), "1 مجموعة");
+  assert.equal(tn("{n} set", "{n} sets", 3), "3 مجموعات");
+  assert.equal(tn("{n} set", "{n} sets", 12), "12 مجموعات");
+  setLang("en");
 });

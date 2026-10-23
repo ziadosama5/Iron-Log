@@ -52,6 +52,7 @@ test("every finished section has no untranslated or glued English text and an Ar
 test("Arabic entries keep the same {placeholders} as their English key and are not empty", () => {
   for (const [k, v] of Object.entries(AR.ui)) {
     assert.ok(String(v).trim().length > 0, `empty Arabic for "${k}"`);
+    if (k.endsWith("#2")) { assert.ok(Object.prototype.hasOwnProperty.call(AR.ui, k.slice(0, -2)), `dual "${k}" has no plural entry`); continue; }
     assert.equal(placeholders(v), placeholders(k), `placeholders differ for "${k}"`);
   }
 });
