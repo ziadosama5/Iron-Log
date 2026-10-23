@@ -126,12 +126,32 @@ test("week strip: a tapped weekday can be made a rest day", async () => {
   await ctx.close();
 });
 
-test("adding a meal on Today shows it in the list", async () => {
+test("meal form lives in a sheet; adding a meal closes it and lists the meal", async () => {
   const { page, ctx } = await open();
+  assert.equal(await page.locator("#meal-form").count(), 0);
+  await page.locator('#view-log [data-act="open-mealsheet"]').first().click();
+  await page.waitForSelector("#mealsheet[open]");
+  assert.ok(await page.locator("#meal-kcal").evaluate(el => el === document.activeElement));
   await page.locator("#meal-kcal").fill("450");
   await page.locator("#meal-form button[type=submit]").click();
   await page.waitForTimeout(300);
+  assert.equal(await page.locator("#mealsheet[open]").count(), 0);
   assert.ok((await page.locator("#view-log .cardio-list").innerText()).includes("450 kcal"));
+  await ctx.close();
+});
+
+test("Back closes the meal sheet and keeps a half-typed meal", async () => {
+  const { page, ctx } = await open();
+  await page.locator('#view-log [data-act="open-mealsheet"]').first().click();
+  await page.waitForSelector("#mealsheet[open]");
+  await page.locator("#meal-kcal").fill("300");
+  await page.goBack();
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator("#mealsheet[open]").count(), 0);
+  assert.equal(await page.title() !== "", true);
+  await page.locator('#view-log [data-act="open-mealsheet"]').first().click();
+  await page.waitForSelector("#mealsheet[open]");
+  assert.equal(await page.locator("#meal-kcal").inputValue(), "300");
   await ctx.close();
 });
 
