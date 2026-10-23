@@ -182,10 +182,10 @@ dialog.celebrate canvas{position:fixed;inset:0;width:100vw;height:100vh;pointer-
 .more-row{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 4px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:600 16px/1 var(--f-body);cursor:pointer;text-align:left}
 .more-row svg{width:20px;height:20px;color:var(--muted)}
 a.more-row{text-decoration:none}
-.chrow{display:grid;grid-template-columns:28px 1fr auto;gap:4px 10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.chrow{display:grid;grid-template-columns:32px 32px 1fr auto;gap:4px 10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
 .chrow .rank{font-weight:700;color:var(--muted);text-align:center}
 .chrow .nm{overflow-wrap:anywhere}
-.chbar{grid-column:2 / 4;height:8px;border-radius:4px;background:var(--sunk);overflow:hidden}
+.chbar{grid-column:3 / 5;height:8px;border-radius:4px;background:var(--sunk);overflow:hidden}
 .chbar span{display:block;height:100%;background:var(--accent);border-radius:4px}
 .jr-dots{display:flex;gap:6px;align-items:center}
 .jr-dot{width:8px;height:8px;border-radius:50%;background:var(--line)}
@@ -283,6 +283,33 @@ tr.setrow.editing td{background:var(--accent-soft)}
 .empty{border:1.5px dashed var(--line);border-radius:16px;padding:22px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:12px;align-items:center}
 .empty strong{display:block;color:var(--fg);font:700 18px/1.2 var(--f-display);text-transform:uppercase;letter-spacing:.04em}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
+.chcard{display:flex;align-items:flex-start;gap:12px;width:100%;min-height:44px;padding:12px 0;border:0;border-top:1px solid var(--line);background:none;color:var(--fg);font:inherit;text-align:start;cursor:pointer}
+.chcard>svg{width:20px;height:20px;color:var(--muted);flex:none;align-self:center}
+[dir="rtl"] .chcard>svg{transform:scaleX(-1)}
+.chcard .ebar{display:block}
+.chicon{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;flex:none;background:var(--accent-soft);color:var(--accent)}
+.chicon svg{width:22px;height:22px}
+.chicon.finished{background:var(--gold);color:#14161c}
+.chicon.upcoming{background:var(--sunk);color:var(--muted)}
+.chbadge{display:inline-flex;align-items:center;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;background:var(--sunk);color:var(--muted)}
+.chbadge.active{background:var(--accent-soft);color:var(--accent)}
+.chbadge.invited{background:var(--accent);color:var(--accent-ink)}
+.chbadge.finished{background:var(--gold);color:#14161c}
+.avs{display:flex;align-items:center;padding-inline-start:8px;margin-top:2px}
+.avs .avatar{width:28px;height:28px;font-size:12px;margin-inline-start:-8px;border:2px solid var(--surface)}
+.avmore{font-size:12px;color:var(--muted);margin-inline-start:6px}
+.chhero{margin-top:4px}
+.ring b svg{width:26px;height:26px;transform:none}
+.standing{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--card-border);border-radius:14px;padding:10px 12px;font-weight:600}
+.standing svg{width:22px;height:22px;color:var(--star);flex:none}
+.medal{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;font:700 14px/1 var(--f-num);color:#14161c}
+.medal.r1{background:var(--gold)} .medal.r2{background:var(--silver)} .medal.r3{background:var(--bronze)}
+.rankcell{display:grid;place-items:center}
+.chrow .avatar{width:32px;height:32px;font-size:13px}
+.note{display:flex;gap:8px;align-items:flex-start}
+.note svg{width:18px;height:18px;flex:none;margin-top:2px}
+.chip svg.i{width:16px;height:16px;margin-inline-end:6px;vertical-align:-3px}
+.chip .avatar{width:22px;height:22px;font-size:11px;margin-inline-end:6px;vertical-align:middle}
 .chip{font-size:12px;background:var(--sunk);border-radius:999px;padding:3px 10px;color:var(--muted)}
 button.chip{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:500 13px/1.2 var(--f-body);padding:7px 14px;min-height:44px;display:inline-flex;align-items:center;cursor:pointer}
 button.chip.add::before{content:"+ ";color:var(--accent);font-weight:600}
@@ -518,7 +545,7 @@ import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
-import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN, WEEK_CHOICES, nextSaturday, challengeDates, dayNumber, rankMembers, winners, planCreate, planAccept as planAcceptChallenge, planLeave, planDelete } from "./challenges.js";
+import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN, WEEK_CHOICES, nextSaturday, challengeDates, dayNumber, rankMembers, winners, standing, timeLeft, myResult, planCreate, planAccept as planAcceptChallenge, planLeave, planDelete } from "./challenges.js";
 import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
 import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs, rankBoard, weekCount } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney, assignWeekday } from "./plan-tools.js";
@@ -933,7 +960,18 @@ const chWeeksLabel=n=>tn("{n} week","{n} weeks",n);
 const chRange=ch=>fmtDate(ch.start)+" – "+fmtDate(ch.end);
 function chStatusText(ch,st){ if(st==="upcoming") return t("Starts {d}",{d:fmtDate(ch.start)}); if(st==="finished") return t("Finished"); const d=dayNumber(ch,today()); return t("Day {d} of {n}",{d:d.day,n:d.total}); }
 function chOpenCount(){ const me=store.user.uid, t=today(); return state.challenges.docs.filter(ch=>ch.joined.includes(me)&&statusOf(ch,t)!=="finished").length; }
-function chRow(ch){ const st=statusOf(ch,today()); return `<button class="fcard" data-act="ch-open" data-id="${esc(ch.id)}"><span class="grow"><b>${esc(chWeeksLabel(ch.weeks))}</b> <span class="prev">${esc(chRange(ch))}</span><br><span class="prev">${esc(chStatusText(ch,st))}</span></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>`; }
+const CH_ICON={upcoming:"calendar",active:"flame",finished:"trophy",invited:"people"};
+const chBadge=(kind,label)=>`<span class="chbadge ${kind}">${esc(label)}</span>`;
+const chStatusBadge=st=>chBadge(st,st==="active"?t("Active"):st==="finished"?t("Finished"):t("Upcoming"));
+const chIcon=kind=>`<span class="chicon ${kind}"><svg class="i" aria-hidden="true"><use href="#i-${CH_ICON[kind]}"/></svg></span>`;
+function chAvs(ch){ const n=ch.members.map(u=>ch.names[u]||"?"), more=n.length-4; return `<span class="avs">${n.slice(0,4).map(avatarHtml).join("")}${more>0?`<span class="avmore">+${more}</span>`:""}</span>`; }
+function chTimeText(ch,tl){
+  if(tl.status==="upcoming") return t("Starts {d}",{d:fmtDate(ch.start)});
+  if(tl.status==="finished") return t("Finished");
+  return [t("Day {d} of {n}",{d:tl.day,n:tl.total}), tl.left?tn("{n} day left","{n} days left",tl.left):t("Last day")].join(" · ");
+}
+function chRow(ch){ const st=statusOf(ch,today()), tl=timeLeft(ch,today());
+  return `<button class="chcard" data-act="ch-open" data-id="${esc(ch.id)}">${chIcon(st)}<span class="grow stack" style="gap:4px"><span class="row" style="gap:8px"><b class="grow">${esc(chWeeksLabel(ch.weeks))}</b>${chStatusBadge(st)}</span><span class="prev">${esc(chRange(ch))}</span>${st==="active"?`<span class="ebar" aria-hidden="true"><i style="width:${tl.pct}%"></i></span>`:""}<span class="prev">${esc(chTimeText(ch,tl))}</span>${chAvs(ch)}</span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>`; }
 function renderChallenges(){
   const c=state.challenges, el=$("#view-challenges"); if(!store.user) return;
   if(!c.loaded){ el.innerHTML=`<h2>Challenges</h2><p class="prev">Loading…</p>`; return; }
@@ -943,7 +981,7 @@ function renderChallenges(){
   const inv=mine.filter(x=>!x.ch.joined.includes(me)&&x.st!=="finished"), act=mine.filter(x=>x.ch.joined.includes(me)&&x.st!=="finished"), fin=mine.filter(x=>x.ch.joined.includes(me)&&x.st==="finished");
   let h=`<div class="row"><h2 class="grow">Challenges</h2><button class="btn small primary" data-act="ch-new">New challenge</button></div>`;
   if(!mine.length) h+=`<div class="card"><p class="prev" style="margin:0">No challenges yet. Start one with your friends: whoever trains on more days wins.</p></div>`;
-  if(inv.length) h+=`<div class="card"><h3>Invitations</h3>${inv.map(({ch})=>`<div class="stack" style="gap:6px"><div><b>${esc(chWeeksLabel(ch.weeks))}</b> <span class="prev">${esc(chRange(ch))}</span></div><span class="prev">${esc(t("From {name}",{name:iso("@"+(ch.names[ch.owner]||"?"))}))}</span>${ch.members.some(m=>m!==me&&m!==ch.owner)?`<span class="prev">${esc(t("With {names}",{names:ch.members.filter(m=>m!==me&&m!==ch.owner).map(m=>iso("@"+(ch.names[m]||"?"))).join(", ")}))}</span>`:""}${state.friends.blocks.some(b=>ch.members.includes(b.blocked))?`<span class="prev">${esc(t("Someone you blocked is in this challenge."))}</span>`:""}<div class="row">${state.friends.blocks.some(b=>ch.members.includes(b.blocked))?"":`<button type="button" class="btn small primary" data-act="ch-accept" data-id="${esc(ch.id)}">Accept</button>`}<button type="button" class="btn small" data-act="ch-decline" data-id="${esc(ch.id)}">Decline</button></div></div>`).join("")}</div>`;
+  if(inv.length) h+=`<div class="card"><h3>Invitations</h3>${inv.map(({ch})=>`<div class="stack" style="gap:6px"><div class="row" style="gap:10px;flex-wrap:nowrap">${chIcon("invited")}<div class="grow stack" style="gap:2px"><div class="row" style="gap:8px"><b class="grow">${esc(chWeeksLabel(ch.weeks))}</b>${chBadge("invited",t("Invited"))}</div><span class="prev">${esc(chRange(ch))}</span></div></div>${chAvs(ch)}<span class="prev">${esc(t("From {name}",{name:iso("@"+(ch.names[ch.owner]||"?"))}))}</span>${ch.members.some(m=>m!==me&&m!==ch.owner)?`<span class="prev">${esc(t("With {names}",{names:ch.members.filter(m=>m!==me&&m!==ch.owner).map(m=>iso("@"+(ch.names[m]||"?"))).join(", ")}))}</span>`:""}${state.friends.blocks.some(b=>ch.members.includes(b.blocked))?`<span class="prev">${esc(t("Someone you blocked is in this challenge."))}</span>`:""}<div class="row">${state.friends.blocks.some(b=>ch.members.includes(b.blocked))?"":`<button type="button" class="btn small primary" data-act="ch-accept" data-id="${esc(ch.id)}">Accept</button>`}<button type="button" class="btn small" data-act="ch-decline" data-id="${esc(ch.id)}">Decline</button></div></div>`).join("")}</div>`;
   if(act.length) h+=`<div class="card"><h3>Active</h3>${act.map(x=>chRow(x.ch)).join("")}</div>`;
   if(fin.length) h+=`<div class="card"><h3>Finished</h3>${fin.map(x=>chRow(x.ch)).join("")}</div>`;
   el.innerHTML=h;
@@ -954,12 +992,12 @@ function renderChallengeForm(el){
   const f=state.challenges.form, friends=chFriends(), d=challengeDates({startChoice:f.start,weeks:f.weeks,today:today()});
   const full=chOpenCount()>=MAX_OPEN;
   let h=`<div class="row"><button class="btn small" data-act="ch-form-cancel">Cancel</button></div><h2>New challenge</h2>
-    <div class="card"><span class="label">How long</span><div class="chips">${WEEK_CHOICES.map(n=>`<button type="button" class="chip" data-act="ch-weeks" data-v="${n}" aria-pressed="${f.weeks===n}">${esc(chWeeksLabel(n))}</button>`).join("")}</div>
-    <span class="label">Starts</span><div class="chips"><button type="button" class="chip" data-act="ch-start" data-v="today" aria-pressed="${f.start==="today"}">Today</button><button type="button" class="chip" data-act="ch-start" data-v="saturday" aria-pressed="${f.start==="saturday"}">${esc(t("Next Saturday ({d})",{d:fmtDate(nextSaturday(today()))}))}</button></div>
+    <div class="card"><span class="label">How long</span><div class="chips">${WEEK_CHOICES.map(n=>`<button type="button" class="chip" data-act="ch-weeks" data-v="${n}" aria-pressed="${f.weeks===n}"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg>${esc(chWeeksLabel(n))}</button>`).join("")}</div>
+    <span class="label">Starts</span><div class="chips"><button type="button" class="chip" data-act="ch-start" data-v="today" aria-pressed="${f.start==="today"}"><svg class="i" aria-hidden="true"><use href="#i-today"/></svg>${t("Today")}</button><button type="button" class="chip" data-act="ch-start" data-v="saturday" aria-pressed="${f.start==="saturday"}"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg>${esc(t("Next Saturday ({d})",{d:fmtDate(nextSaturday(today()))}))}</button></div>
     <span class="prev">${esc(t("Runs {a} – {b}",{a:fmtDate(d.start),b:fmtDate(d.end)}))}</span></div>`;
   h+=`<div class="card"><span class="label">Invite friends (up to 5)</span>`;
   if(!friends.length) h+=`<p class="prev" style="margin:0">You need friends first.</p><div class="row"><button type="button" class="btn small" data-act="ch-to-friends">Open Friends</button></div>`;
-  else h+=`<div class="chips">${friends.map(x=>`<button type="button" class="chip" data-act="ch-friend" data-uid="${esc(x.uid)}" data-name="${esc(x.name)}" aria-pressed="${f.picks.some(p=>p.uid===x.uid)}">@${esc(x.name)}</button>`).join("")}</div>`;
+  else h+=`<div class="chips">${friends.map(x=>`<button type="button" class="chip" data-act="ch-friend" data-uid="${esc(x.uid)}" data-name="${esc(x.name)}" aria-pressed="${f.picks.some(p=>p.uid===x.uid)}">${avatarHtml(x.name)}@${esc(x.name)}</button>`).join("")}</div>`;
   h+=`</div>${full?`<p class="prev">You are already in the most challenges allowed. Finish or leave one first.</p>`:""}<div class="row"><button type="button" class="btn primary" data-act="ch-create" ${f.picks.length>=1&&!f.busy&&!full?"":"disabled"}>Create challenge</button></div>`;
   el.innerHTML=h;
 }
@@ -969,11 +1007,17 @@ function renderChallengePage(el){
   const t0=today(), st=statusOf(ch,t0), total=ch.weeks*7;
   const prog={...c.progress}; if(ch.joined.includes(me)&&st!=="upcoming") prog[me]={days:countDays(state.workouts,ch.start,ch.end,t0,trainedOn)};
   const rows=rankMembers({members:ch.members,joined:ch.joined,progress:prog,names:ch.names}), final=t0>addDaysISO(ch.end,1), win=final?winners(rows,st):[];
-  let h=`<div class="row"><button class="btn small" data-act="ch-back">Back</button></div><h2>${esc(chWeeksLabel(ch.weeks))}</h2><p class="prev" style="margin:0">${esc(chRange(ch))} · ${esc(chStatusText(ch,st))}</p>`;
-  h+=podiumHtml(rows,me)+`<div class="card">${rows.filter((r,i)=>rows.filter(x=>x.joined).length<2||!r.joined||i>=3).map(r=>`<div class="chrow"><span class="rank">${r.rank===null?"–":r.rank}</span><span class="nm"><bdi dir="ltr">@${esc(r.name)}</bdi>${r.uid===me?" "+esc(t("(you)")):""}${r.joined?"":` <span class="prev">${esc(t("Invited"))}</span>`}</span><b>${r.days}</b>${r.joined?`<div class="chbar" role="img" aria-label="${esc(t("{n} of {m} days",{n:r.days,m:total}))}"><span style="width:${Math.min(100,Math.round(r.days/total*100))}%"></span></div>`:""}</div>`).join("")}</div>`;
+  const tl=timeLeft(ch,t0), sd=standing(rows,me), res=myResult(rows,me), won=win.includes(me);
+  const ringIn=tl.status==="active"?tl.day:`<svg class="i" aria-hidden="true"><use href="#i-${tl.status==="finished"?"trophy":"calendar"}"/></svg>`;
+  let h=`<div class="row"><button class="btn small" data-act="ch-back">Back</button></div>
+    <div class="hero chhero"><span class="ring"><svg viewBox="0 0 60 60" aria-hidden="true"><circle class="tr" cx="30" cy="30" r="25" fill="none" stroke-width="6"/><circle class="pr" cx="30" cy="30" r="25" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="${(157*(1-tl.pct/100)).toFixed(1)}"/></svg><b>${ringIn}</b></span><span class="grow stack" style="gap:3px"><b>${esc(chWeeksLabel(ch.weeks))}</b><span class="prev">${esc(chRange(ch))}</span><span class="prev">${esc(chTimeText(ch,tl))}</span></span></div>`;
+  const stLine=final&&res?{icon:won?"trophy":"star",text:t("Rank {a} of {b}",{a:res.rank,b:res.of})}
+    :st==="active"&&sd?(sd.kind==="leading"?{icon:"crown",text:tn("You're leading by {n} day","You're leading by {n} days",sd.gap)}:sd.kind==="tied"?{icon:"crown",text:t("Tied for first")}:sd.kind==="behind"?{icon:"flame",text:tn("{n} day behind {name}","{n} days behind {name}",sd.gap,{name:iso("@"+sd.leader)})}:{icon:"people",text:t("Waiting for friends to join")}):null;
+  if(stLine) h+=`<div class="standing"><svg class="i" aria-hidden="true"><use href="#i-${stLine.icon}"/></svg><span>${esc(stLine.text)}</span></div>`;
+  h+=podiumHtml(rows,me)+`<div class="card">${rows.map(r=>`<div class="chrow"><span class="rankcell">${r.rank&&r.rank<=3?`<span class="medal r${r.rank}">${r.rank}</span>`:`<span class="rank">${r.rank===null?"–":r.rank}</span>`}</span>${avatarHtml(r.name)}<span class="nm"><bdi dir="ltr">@${esc(r.name)}</bdi>${r.uid===me?" "+esc(t("(you)")):""}${r.joined?"":" "+chBadge("invited",t("Invited"))}</span><b>${r.days}</b>${r.joined?`<div class="chbar" role="img" aria-label="${esc(t("{n} of {m} days",{n:r.days,m:total}))}"><span style="width:${Math.min(100,Math.round(r.days/total*100))}%"></span></div>`:""}</div>`).join("")}</div>`;
   if(st==="finished"&&!final) h+=`<p class="prev">${esc(t("Results after {d}",{d:fmtDate(addDaysISO(ch.end,1))}))}</p>`;
   else if(st==="finished") h+=win.length?`<div class="winner"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg><span>${esc(win.length>1?t("Winners: {name}",{name:win.map(u=>iso("@"+(ch.names[u]||"?"))).join(", ")}):t("Winner: {name}",{name:iso("@"+(ch.names[win[0]]||"?"))}))}</span></div>`:`<p class="prev">${esc(t("No winner this time."))}</p>`;
-  h+=`<p class="prev">Scores are self-reported. A final score is whatever each person last published.</p>`;
+  h+=`<p class="prev note"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span>Scores are self-reported. A final score is whatever each person last published.</span></p>`;
   const owner=ch.owner===me;
   h+=c.confirm?`<div class="card"><span>${esc(owner?t("Delete this challenge for everyone?"):t("Leave this challenge?"))}</span><div class="row"><button type="button" class="btn small" data-act="ch-no">Keep</button><button type="button" class="btn small danger" data-act="${owner?"ch-delete-yes":"ch-leave-yes"}" data-id="${esc(ch.id)}">${owner?"Delete":"Leave"}</button></div></div>`
     :`<div class="row"><button type="button" class="btn small danger" data-act="ch-confirm">${owner?"Delete challenge":"Leave challenge"}</button></div>`;

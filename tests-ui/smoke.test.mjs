@@ -338,6 +338,49 @@ test("Plan: the gym hint is a slim banner that can be closed for good", async ()
   await ctx.close();
 });
 
+test("Challenge list: icon tiles, status badges, progress and avatar stacks", async () => {
+  const { page, ctx, errors } = await open("go=ch:list");
+  await page.waitForSelector("#view-challenges .chcard");
+  assert.ok(await page.locator("#view-challenges .chcard").count() >= 2);
+  assert.equal(await page.locator("#view-challenges .chcard .chicon").count(), await page.locator("#view-challenges .chcard").count());
+  const txt = await page.locator("#view-challenges").innerText();
+  for (const s of ["Active", "Finished", "Invited"]) assert.ok(txt.toLowerCase().includes(s.toLowerCase()), s);
+  assert.ok(await page.locator("#view-challenges .chcard .ebar").count() >= 1);
+  assert.ok(await page.locator("#view-challenges .avs .avatar").count() >= 1);
+  assert.equal(await page.locator("#view-challenges .chbadge").first().evaluate(e => getComputedStyle(e).position), "static", "status badges sit in the row, not absolutely positioned");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("Open challenge: hero with ring, standing line, medals and an Invited badge", async () => {
+  const { page, ctx, errors } = await open("go=ch:open");
+  await page.waitForSelector("#view-challenges .podium");
+  assert.equal(await page.locator("#view-challenges .chhero .ring").count(), 1);
+  assert.ok((await page.locator("#view-challenges .chhero").innerText()).includes("Day 4 of 14"));
+  assert.ok(/behind|leading|tied/i.test(await page.locator("#view-challenges .standing").innerText()));
+  assert.equal(await page.locator("#view-challenges .chrow").count(), 3);
+  assert.equal(await page.locator("#view-challenges .chrow .medal").count(), 2);
+  assert.equal(await page.locator("#view-challenges .chrow .chbadge").count(), 1);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("Finished challenge keeps the winner banner and shows my result", async () => {
+  const { page, ctx } = await open("go=ch:fin");
+  await page.waitForSelector("#view-challenges .winner");
+  assert.ok((await page.locator("#view-challenges .standing").innerText()).includes("Rank 2 of 2"));
+  await ctx.close();
+});
+
+test("New challenge form: icons on the chips and avatars on friends", async () => {
+  const { page, ctx } = await open("go=ch:new");
+  await page.waitForSelector('#view-challenges [data-act="ch-weeks"]');
+  assert.equal(await page.locator('#view-challenges [data-act="ch-weeks"] svg').count(), 3);
+  assert.equal(await page.locator('#view-challenges [data-act="ch-start"] svg').count(), 2);
+  assert.ok(await page.locator('#view-challenges [data-act="ch-friend"] .avatar').count() >= 1);
+  await ctx.close();
+});
+
 test("controls meet the 44px touch target and text is at least 12px", async () => {
   const { page, ctx } = await open();
   await tab(page, "plan");
