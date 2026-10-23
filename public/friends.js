@@ -1,3 +1,4 @@
+import { weekStart } from "./challenges.js";
 // Friends: pair ids, the exact Firestore writes for each action, and the pure view logic. No DOM, no Firebase.
 
 export function pairId(a, b) {
@@ -87,11 +88,20 @@ export function compareSummaries(mine, theirs) {
   });
 }
 
+// Workouts this week from a shared summary. The summary is published by its owner when they open the app, so one
+// published before this week's Saturday describes an earlier week and counts as 0. null = no usable summary.
+export function weekCount(summary, today = new Date().toISOString().slice(0, 10)) {
+  if (!summary || summary.workoutsWeek == null || !Number.isFinite(Number(summary.workoutsWeek))) return null;
+  const upd = Number(summary.updated);
+  if (Number.isFinite(upd) && upd > 0 && new Date(upd).toISOString().slice(0, 10) < weekStart(today)) return 0;
+  return Number(summary.workoutsWeek);
+}
+
 // "Who's ahead this week": me and my friends by workouts this week, most first. Ties share a rank (1,2,2,4);
 // people with no shared summary come last, in the given order, with a null rank.
-export function rankWeek(me, friends) {
+export function rankWeek(me, friends, today) {
   const people = [{ uid: me.uid, name: me.name, isMe: true, summary: me.summary }, ...(friends || []).map(f => ({ uid: f.uid, name: f.name, isMe: false, summary: f.summary }))]
-    .map((p, i) => ({ uid: p.uid, name: p.name, isMe: p.isMe, workoutsWeek: p.summary && Number.isFinite(Number(p.summary.workoutsWeek)) ? Number(p.summary.workoutsWeek) : null, i }));
+    .map((p, i) => ({ uid: p.uid, name: p.name, isMe: p.isMe, workoutsWeek: weekCount(p.summary, today), i }));
   const ranked = people.filter(p => p.workoutsWeek !== null).sort((a, b) => b.workoutsWeek - a.workoutsWeek || a.i - b.i);
   ranked.forEach((p, k) => { p.rank = k > 0 && ranked[k - 1].workoutsWeek === p.workoutsWeek ? ranked[k - 1].rank : k + 1; });
   const rest = people.filter(p => p.workoutsWeek === null).map(p => ({ ...p, rank: null }));

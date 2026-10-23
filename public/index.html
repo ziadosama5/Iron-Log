@@ -515,7 +515,7 @@ import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
 import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN, WEEK_CHOICES, nextSaturday, challengeDates, dayNumber, rankMembers, winners, planCreate, planAccept as planAcceptChallenge, planLeave, planDelete } from "./challenges.js";
 import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
-import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs, rankWeek } from "./friends.js";
+import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs, rankWeek, weekCount } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney, assignWeekday } from "./plan-tools.js";
 import { FAMILIES, familyOf, allFamilies, closestFamily, tierFor } from "./badge-art.js";
 import { buildCards, newWins } from "./celebrate.js";
@@ -842,15 +842,15 @@ const personName=x=>{ const d=state.friends.data[x.uid]; return (d&&d.profile&&d
 const avatarHtml=name=>`<span class="avatar" style="--h:${avatarHue(name)}" aria-hidden="true">${esc(initialsOf(name))}</span>`;
 function friendRow(x){
   const d=state.friends.data[x.uid], p=d&&d.profile, sm=p&&p.summary;
-  const line=!d?"…":sm?tn("{n} workout this week","{n} workouts this week",sm.workoutsWeek):t("Not sharing right now");
+  const line=!d?"…":sm?tn("{n} workout this week","{n} workouts this week",weekCount(sm)):t("Not sharing right now");
   const chip=sm?` <span class="lvchip">${t("Level {n}",{n:sm.level})}</span>`:"";
   return `<button class="fcard" data-act="fr-open" data-uid="${esc(x.uid)}">${avatarHtml(personName(x))}<span class="grow">${friendLabel(x)}${chip}<br><span class="prev">${esc(line)}</span></span><svg aria-hidden="true"><use href="#i-chev"/></svg></button>`;
 }
 // "Who's ahead this week": me and my friends by workouts this week (shared summaries; mine is built here).
 function aheadStrip(g){
   if(!g.friends.length) return "";
-  const rows=rankWeek({uid:store.user.uid,name:t("You"),summary:currentSummary()},g.friends.map(x=>{ const d=state.friends.data[x.uid]; return {uid:x.uid,name:personName(x),summary:d&&d.profile?d.profile.summary:null}; }));
-  return `<div class="card"><h3>Who's ahead this week</h3><div class="ahead">${rows.map(r=>`<div class="aheadp ${r.isMe?"me":""}">${avatarHtml(r.name)}<span class="nm">${esc(r.name)}</span><span class="prev">${r.workoutsWeek===null?"–":tn("{n} workout","{n} workouts",r.workoutsWeek)}</span><b class="rk num">${r.rank===null?"–":r.rank}</b></div>`).join("")}</div></div>`;
+  const sp=state.share.profile, myName=sp?(sp.displayName||sp.username||""):"", rows=rankWeek({uid:store.user.uid,name:t("You"),summary:currentSummary()},g.friends.map(x=>{ const d=state.friends.data[x.uid]; return {uid:x.uid,name:personName(x),summary:d&&d.profile?d.profile.summary:null}; }));
+  return `<div class="card"><h3>Who's ahead this week</h3><div class="ahead">${rows.map(r=>`<div class="aheadp ${r.isMe?"me":""}">${avatarHtml(r.isMe?(myName||r.name):r.name)}<span class="nm">${esc(r.name)}</span><span class="prev">${r.workoutsWeek===null?"–":tn("{n} workout","{n} workouts",r.workoutsWeek)}</span><b class="rk num">${r.rank===null?"–":r.rank}</b></div>`).join("")}</div></div>`;
 }
 // The inline Report panel (reason chips, then a thank-you with an offer to block).
 function reportPanelHtml(){
@@ -1032,7 +1032,7 @@ function renderFriends(){
   const manageN=g.sent.length+g.blocked.length;
   if(manageN){
     const open=!!state.showMore.manage;
-    h+=`<div class="card"><button class="btn ghost" data-act="more-list" data-k="manage" aria-expanded="${open}">${open?t("Hide"):t("Manage ({n})",{n:manageN})}</button>`;
+    h+=`<div class="card"><button class="btn ghost" data-act="more-list" data-k="manage" aria-expanded="${open}">${t("Manage ({n})",{n:manageN})}</button>`;
     if(open){
       if(g.sent.length) h+=`<h3>Sent</h3>${g.sent.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-cancel",x,"Cancel")}</div>`).join("")}`;
       if(g.blocked.length) h+=`<h3>Blocked</h3>${g.blocked.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-unblock",x,"Unblock")}</div>`).join("")}`;
@@ -1714,7 +1714,7 @@ function renderBody(){
       </div>
       ${lineChart(s,[{k,c:"var(--accent)",main:true}],t("{label} over time",{label:bfLabel(k)}),t("Add a second entry to see the trend."))}
     </div>`;
-    const more=moreList(bodySorted().reverse().slice(0,12),"body"), rows=more.shown;
+    const more=moreList(bodySorted().reverse(),"body"), rows=more.shown;
     h+=`<div class="card" style="overflow-x:auto"><h3>Recent entries</h3><table><thead><tr><th>Date</th><th class="r">Weight</th><th class="r">Waist</th><th class="r">Fat %</th><th class="r">Muscle</th></tr></thead><tbody>${
       rows.map(e=>`<tr data-bdate="${esc(e.date)}" style="cursor:pointer"><td style="white-space:nowrap">${fmtDate(e.date)}</td>${["weight","waist","pbf","smm"].map(k=>`<td class="r num">${e[k]!=null?kg(e[k]):"–"}</td>`).join("")}</tr>`).join("")}</tbody></table>${more.btn}</div>`;
   } else {

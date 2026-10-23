@@ -107,3 +107,14 @@ test("rankWeek: a friend without a summary is last with a null rank", () => {
 test("rankWeek: no friends gives just me with rank 1", () => {
   assert.deepEqual(rankWeek({ uid: "me", name: "me", summary: sm(0) }, []).map(x => [x.uid, x.rank]), [["me", 1]]);
 });
+
+test("rankWeek: a friend summary published before this week's Saturday counts as 0 this week", () => {
+  const today = "2026-10-23"; // Friday; the week started Saturday 2026-10-17
+  const stale = { workoutsWeek: 5, updated: Date.parse("2026-10-16T12:00:00Z") }, fresh = { workoutsWeek: 4, updated: Date.parse("2026-10-18T12:00:00Z") };
+  const r = rankWeek({ uid: "me", name: "me", summary: { workoutsWeek: 1, updated: Date.parse("2026-10-23T08:00:00Z") } }, [{ uid: "s", name: "s", summary: stale }, { uid: "f", name: "f", summary: fresh }], today);
+  assert.deepEqual(r.map(x => [x.uid, x.workoutsWeek, x.rank]), [["f", 4, 1], ["me", 1, 2], ["s", 0, 3]]);
+});
+test("rankWeek: a summary without a number is treated as not sharing", () => {
+  const r = rankWeek({ uid: "me", name: "me", summary: { workoutsWeek: 0, updated: Date.now() } }, [{ uid: "n", name: "n", summary: { workoutsWeek: null, updated: Date.now() } }]);
+  assert.deepEqual(r.map(x => [x.uid, x.rank]), [["me", 1], ["n", null]]);
+});
