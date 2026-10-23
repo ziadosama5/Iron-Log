@@ -56,3 +56,16 @@ test("the privacy policy says challenge data is visible to the people in the cha
   assert.ok(en.includes("training-day count") || en.includes("training days"), "English says what is shared");
   assert.ok(/تحدي|تحديات/.test(ar), "Arabic mentions challenges");
 });
+
+test("the install page links the APK without a download attribute, explains a stuck download and has a backup link, in both languages", () => {
+  const html = read("app.html"), en = block(html, "en"), ar = block(html, "ar");
+  assert.match(html, /<!doctype html>/i);
+  const apk = "https://github.com/ziadosama5/Iron-Log/releases/latest/download/iron-log.apk";
+  assert.ok(en.includes(apk) && ar.includes(apk), "APK link in both languages");
+  assert.ok(!/<a[^>]*\sdownload[\s>=]/i.test(html), "no download attribute (it does nothing across sites)");
+  const page = "https://github.com/ziadosama5/Iron-Log/releases/latest";
+  assert.ok(en.includes('href="' + page + '"') && ar.includes('href="' + page + '"'), "backup link to the release page in both languages");
+  assert.ok(/100%/.test(en) && /Downloads/.test(en), "English explains a download stuck at 100%");
+  assert.ok(/100%/.test(ar) && /[؀-ۿ]/.test(ar), "Arabic explains it too");
+  assert.equal(h2s(en), h2s(ar), "same sections in both languages");
+});
