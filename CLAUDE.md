@@ -14,6 +14,13 @@ One page, one `state` object, one `store`. Everything below is wired through the
 - **Journey, My Gym, Coach, Days** share data: the journey writes `program` (days), `profile` and `settings.gym`; My Gym's `settings.gym` filters suggestions everywhere (`gymFilter`, never hides what is already in days/history); training days feed streaks, XP, badges, the shared summary and challenge scores through one rule (`trainedOn`).
 - **Language and offline:** every visible string needs an Arabic entry (`npm test` fails otherwise); every new `public/*.js` or page goes into `APP_SHELL` in sw.js and the `VERSION` is bumped on each deploy.
 
+## Android app (TWA, shipped 2026-10-23)
+- Thin Android shell around the live site (`android/`, package `app.ironlog`, Bubblewrap). Same web code: every hosting deploy updates every installed app; only icon/name/package changes need a new APK. Spec: `docs/superpowers/specs/2026-10-20-android-apk-design.md`.
+- Google sign-in uses `authDomain = gym-logger-85d4c.web.app` (the OAuth client lists `https://gym-logger-85d4c.web.app/__/auth/handler`). `public/.well-known/assetlinks.json` (SHA-256 of the signing key) removes the URL bar; Android checks it at install time.
+- Distribution: the signed APK is a **GitHub Release asset** named `iron-log.apk` (repo is public); `public/app.html` (EN/AR) links to `.../releases/latest/download/iron-log.apk`. Firebase Spark forbids hosting `.apk` files, so never put one in `public/`. New release: build with Bubblewrap (bump `appVersionCode`), publish a release with the file named `iron-log.apk`.
+- Signing key `C:Androidkeysironlog.keystore` (never in the repo; losing it = no more updates under this package id). Tools in `C:Android` (JDK 17, SDK, Bubblewrap; `env.ps1`).
+- Google Play later: upload the `.aab`, add Play's fingerprint to assetlinks, Data safety form, account-deletion web page, $25 fee.
+
 ## Stack
 - **No build step, no framework.** One page: `public/index.html` (HTML + CSS + one `<script type="module">`), plain JS.
 - **Firebase JS SDK 10.12.2**, ES modules from `https://www.gstatic.com/firebasejs/10.12.2/...`

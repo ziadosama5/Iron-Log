@@ -2,7 +2,7 @@
 
 Everything planned in sub-projects 1-16 (the redesign, sw v26) is shipped. This is what is still open, collected from every review ("deferred minors"), the specs' non-goals and the owner's ideas. Nothing here blocks normal use. The built-in Egyptian food table is a big separate project and is parked for later (see CLAUDE.md "Next step").
 
-**Next (planned 2026-10-20):** Android APK (TWA) + Google Play, preceded by the P1 fixes in [docs/reviews/2026-10-20-senior-review.md](reviews/2026-10-20-senior-review.md) (back button, touch polish, targets, text sizes, smoke tests, Google sign-in domain). The owner approved installing Android tools (JDK 17, Android SDK, emulator): list each download before installing.
+**Done 2026-10-23:** Android APK (TWA) shipped and tested on a real phone (sign-in, no URL bar, Back). **Next:** make Today, Progress and Friends less crowded ([spec](superpowers/specs/2026-10-23-less-crowded-design.md), waiting for the owner's review, then a plan). Google Play and the signing-key backup are still open.
 
 ## Unfinished projects (the big ones, none started)
 1. **Built-in Egyptian + everyday food table** (parked by the owner): pick foods with typical servings instead of typing calories; bundled data, Arabic + English search. Biggest remaining project.
