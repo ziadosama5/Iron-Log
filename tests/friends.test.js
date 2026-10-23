@@ -149,3 +149,13 @@ test("rankBoard month: a summary published more than 30 days ago counts as 0", (
   const r = rankBoard(me0, [stale, who("f", { workouts30: 2, level: 1, xp: 0, updated: FRESH })], "month", NOW);
   assert.deepEqual(r.map(x => [x.uid, x.value]), [["me", 5], ["f", 2], ["s", 0]]);
 });
+
+import { boardReady } from "../public/friends.js";
+test("boardReady: true only when every friend's profile has been fetched (null = not sharing counts as fetched)", () => {
+  const fr = [{ uid: "a" }, { uid: "b" }];
+  assert.equal(boardReady(fr, {}), false);
+  assert.equal(boardReady(fr, { a: { profile: null } }), false);
+  assert.equal(boardReady(fr, { a: { profile: null }, b: { profile: { summary: {} } } }), true);
+  assert.equal(boardReady([], {}), true);
+  assert.equal(boardReady(fr, undefined), false);
+});

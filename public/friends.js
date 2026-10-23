@@ -109,6 +109,12 @@ export function monthCount(summary, today = new Date().toISOString().slice(0, 10
   return Number(summary.workouts30);
 }
 
+// The leaderboard is only drawn once every friend's profile has been fetched (null profile = not sharing, still fetched).
+export function boardReady(friends, data) {
+  if (!data) return false;
+  return (friends || []).every(f => Object.prototype.hasOwnProperty.call(data, f.uid) && data[f.uid] !== undefined);
+}
+
 export function rankBoard(me, friends, metric, today) {
   const m = metric === "month" || metric === "level" ? metric : "week";
   const num = v => (v != null && Number.isFinite(Number(v)) ? Number(v) : null);

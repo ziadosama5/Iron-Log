@@ -268,9 +268,12 @@ test("Overview with no data shows a hint in every card and no errors", async () 
 test("Friends leaderboard: switch, podium with a crown, choice kept after reload", async () => {
   const { page, ctx, errors } = await open();
   await tab(page, "friends");
+  await page.waitForSelector("#view-friends .podium");
   assert.equal(await page.locator('#view-friends .seg button').count(), 3);
   assert.equal(await page.locator('#view-friends .seg [data-v="week"]').getAttribute("aria-pressed"), "true");
-  assert.ok(await page.locator("#view-friends .podium .crown").count() >= 1);
+  await page.locator('#view-friends .seg [data-v="month"]').click();
+  assert.ok(await page.locator("#view-friends .podium .crown").count() >= 1, "crown on first place (month, so the test does not depend on the weekday)");
+  await page.locator('#view-friends .seg [data-v="week"]').click();
   for (const b of await page.locator("#view-friends .seg button").all()) assert.ok((await b.boundingBox()).height >= 44, "leaderboard switch is at least 44px");
   await page.locator('#view-friends .seg [data-v="level"]').click();
   assert.equal(await page.locator('#view-friends .seg [data-v="level"]').getAttribute("aria-pressed"), "true");
@@ -378,6 +381,60 @@ test("New challenge form: icons on the chips and avatars on friends", async () =
   assert.equal(await page.locator('#view-challenges [data-act="ch-weeks"] svg').count(), 3);
   assert.equal(await page.locator('#view-challenges [data-act="ch-start"] svg').count(), 2);
   assert.ok(await page.locator('#view-challenges [data-act="ch-friend"] .avatar').count() >= 1);
+  await ctx.close();
+});
+
+test("chart text is readable: at least 11.5px as rendered", async () => {
+  const { page, ctx } = await open();
+  await tab(page, "progress");
+  for (const view of ["overview", "body", "progress"]) {
+    await page.locator('.pill[data-view="' + view + '"]').click();
+    const sizes = await page.evaluate(v => [...document.querySelectorAll("#view-" + v + " svg.chart")].map(svg => {
+      const vb = svg.viewBox.baseVal, scale = svg.getBoundingClientRect().width / vb.width;
+      return [...svg.querySelectorAll("text")].map(t => parseFloat(getComputedStyle(t).fontSize) * scale);
+    }).flat(), view);
+    assert.ok(sizes.length > 0, view + " has chart text");
+    for (const s of sizes) assert.ok(s >= 11.5, view + " chart text " + s + "px");
+  }
+  await ctx.close();
+});
+
+test("the level hero label says it opens badges", async () => {
+  const { page, ctx } = await open();
+  assert.ok((await page.locator("#view-log .hero").first().getAttribute("aria-label")).toLowerCase().includes("badges"));
+  await ctx.close();
+});
+
+test("Plan my training from the Edit plan menu leaves no stale history entry", async () => {
+  const { page, ctx } = await open();
+  await tab(page, "plan");
+  await page.locator('#view-days [data-act="open-plansheet"]').click();
+  await page.waitForSelector("#plansheet[open]");
+  const len = await page.evaluate(() => history.length);
+  await page.locator('#plansheet [data-act="journey-open"]').click();
+  await page.waitForSelector("#view-journey:not([hidden])");
+  await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(() => history.length), len, "history grew by more than the journey entry");
+  await page.goBack();
+  await page.waitForTimeout(400);
+  assert.equal(await page.locator("#view-journey:not([hidden])").count(), 0);
+  assert.equal(await page.evaluate(() => !!(history.state && history.state.sheet)), false, "a sheet entry is left behind");
+  await ctx.close();
+});
+
+test("Find result card has an avatar", async () => {
+  const { page, ctx } = await open("go=find:zed");
+  await page.waitForSelector("#find-form .avatar", { timeout: 8000 });
+  await ctx.close();
+});
+
+test("week labels on the training chart are direction-safe day/month pairs",async () => {
+  const { page, ctx } = await open("lang=ar");
+  await tab(page, "progress");
+  const labels = await page.locator('#view-overview [data-card="training"] svg.chart text').allTextContents();
+  const dates = labels.filter(s => s.includes("/"));
+  assert.ok(dates.length === 8, "eight week labels, got " + dates.length);
+  for (const s of dates) assert.match(s, /^⁦\d{1,2}\/\d{1,2}⁩$/);
   await ctx.close();
 });
 

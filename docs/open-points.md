@@ -67,15 +67,8 @@ In progress now: the owner is testing the later features on a real phone; expect
 
 **Across the app:** writes on a connection that looks online but is dead can hang without a message (timeouts exist only for delete and report).
 
-## B2. Deferred from the v34/v35 reviews (small cleanups, in progress 2026-10-23)
-- Opening "Plan my training" from the Edit plan sheet can leave a stale history entry (one extra Back press).
-- SVG chart text (Overview, Lifts, Body) is about 7px on phones; the 12px rule does not reach SVG.
-- Arabic has no dual form: "2 days" reads "2 أيام" instead of "يومان" (`tn` only knows one/other).
-- The Friends podium shows only you until friends' summaries load.
-- The level hero's aria-label says "Level N" but tapping it opens a badge family.
-- `state.showMore` (Show all / Manage open state) is not reset on sign-out.
-- The Find result card has no avatar; the Overview weight stat shows "–" when the last weigh-in is older than 90 days.
-- Decided to keep: Block stays on friend-request rows.
+## B2. Review cleanups (done in v36, 2026-10-24)
+Fixed: stale history entry after Plan my training from the Edit plan menu; chart text now about 12px (viewBox close to the rendered width); Arabic dual (`tn` looks for `<other>#2`); the Friends podium waits for friends' data (`boardReady`); level hero label says it opens badges; `showMore` reset on sign-out; avatar on the Find result; Overview weight stat uses the latest weigh-in at any age; week labels are direction-safe. Kept on purpose: Block stays on request rows.
 
 ## C. Ideas not built
 - **Training:** bodyweight-exercise mode; set types (warm-up, drop set); target sets/reps per day or per exercise; progression and deloads; injuries / exercises to avoid; cardio scheduling; templates adapted to the gym; several gyms (Home + Gym).
