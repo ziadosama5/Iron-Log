@@ -290,6 +290,53 @@ test("Challenges podium still shows the crown after the shared podium refactor",
   await ctx.close();
 });
 
+test("Plan: one Edit plan button opens a sheet with the three actions; Add a day works; Back closes it", async () => {
+  const { page, ctx, errors } = await open();
+  await tab(page, "plan");
+  assert.equal(await page.locator('#view-days [data-act="open-plansheet"]').count(), 1);
+  const before = await page.locator("#view-days").innerText();
+  for (const s of ["Plan my training", "Add day", "Change split"]) assert.ok(!before.includes(s), s);
+  await page.locator('#view-days [data-act="open-plansheet"]').click();
+  await page.waitForSelector("#plansheet[open]");
+  assert.equal(await page.locator("#plansheet button[data-act]:not([data-act=sheet-close])").count(), 3);
+  await page.goBack();
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator("#plansheet[open]").count(), 0);
+  assert.equal(await current(page), "plan");
+  const cards = await page.locator("#view-days .card .daysum").count();
+  await page.locator('#view-days [data-act="open-plansheet"]').click();
+  await page.waitForSelector("#plansheet[open]");
+  await page.locator('#plansheet [data-act="add-day"]').click();
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator("#plansheet[open]").count(), 0);
+  assert.ok(await page.locator("#view-days .card.open").count() === 1);
+  assert.ok(cards >= 1);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("Plan: a day card has one tap target to open the editor and one Train button", async () => {
+  const { page, ctx } = await open();
+  await tab(page, "plan");
+  assert.equal(await page.locator('#view-days button:has-text("Edit day")').count(), 0);
+  const first = page.locator("#view-days .card").first();
+  assert.equal(await first.locator('[data-act="train-day"]').count(), 1);
+  await first.locator(".daysum").click();
+  assert.equal(await page.locator("#view-days .card.open").count(), 1);
+  await ctx.close();
+});
+
+test("Plan: the gym hint is a slim banner that can be closed for good", async () => {
+  const { page, ctx } = await open();
+  await tab(page, "plan");
+  const banner = page.locator("#view-days .notice").first();
+  const box = await banner.boundingBox();
+  assert.ok(box && box.height < 80, "banner height " + (box && box.height));
+  await page.locator('#view-days [data-act="gym-hint-no"]').click();
+  assert.equal(await page.locator('#view-days [data-act="gym-hint-no"]').count(), 0);
+  await ctx.close();
+});
+
 test("controls meet the 44px touch target and text is at least 12px", async () => {
   const { page, ctx } = await open();
   await tab(page, "plan");
