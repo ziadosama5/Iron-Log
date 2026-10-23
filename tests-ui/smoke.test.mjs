@@ -227,6 +227,45 @@ test("the Progress tab opens on the Overview", async () => {
   await ctx.close();
 });
 
+test("Overview: headline numbers and four graph cards", async () => {
+  const { page, ctx, errors } = await open();
+  await tab(page, "progress");
+  assert.equal(await page.locator("#view-overview .stats .stat").count(), 4);
+  assert.equal(await page.locator("#view-overview .ovcard").count(), 4);
+  assert.equal(await page.locator('#view-overview [data-card="weight"] svg.chart').count(), 1);
+  assert.equal(await page.locator('#view-overview [data-card="training"] rect.bar').count(), 8);
+  assert.equal(await page.locator('#view-overview [data-card="calories"] rect.bar').count(), 5);
+  assert.ok(await page.locator('#view-overview [data-card="strength"] li').count() >= 1);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+for (const [card, expected] of [["weight", "Body"], ["training", "History"], ["calories", "Today"], ["strength", "Lifts"]]) {
+  test("Overview: the " + card + " card opens " + expected, async () => {
+    const { page, ctx } = await open();
+    await tab(page, "progress");
+    await page.locator('#view-overview [data-card="' + card + '"] [data-act]').first().click();
+    await page.waitForTimeout(200);
+    assert.equal(await title(page), expected);
+    await ctx.close();
+  });
+}
+
+test("Overview with no data shows a hint in every card and no errors", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 420, height: 860 }, hasTouch: true, isMobile: true });
+  await ctx.addInitScript(() => localStorage.setItem("ironlog.journey", "skip"));
+  const page = await ctx.newPage(); const errors = [];
+  page.on("pageerror", e => errors.push(String(e)));
+  await page.goto(BASE + "?fresh=2");
+  await page.waitForSelector(".tabbar:not([hidden])");
+  await page.waitForTimeout(900);
+  await tab(page, "progress");
+  const txt = await page.locator("#view-overview").innerText();
+  for (const m of ["Log your weight on two days to see the trend.", "Log a workout to start your weekly chart.", "Add meals on Today to compare with your target.", "Log a few sessions to see your strongest lifts."]) assert.ok(txt.includes(m), m);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
 test("controls meet the 44px touch target and text is at least 12px", async () => {
   const { page, ctx } = await open();
   await tab(page, "plan");

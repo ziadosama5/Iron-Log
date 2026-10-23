@@ -509,6 +509,7 @@ import { cleanBackupItems } from "./backup.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
+import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth } from "./overview.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
@@ -1636,8 +1637,49 @@ function lineChart(all, series, aria, emptyMsg){
 function niceStep(raw){ const p=Math.pow(10,Math.floor(Math.log10(raw||1))); const n=raw/p; return (n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*p; }
 
 /* ---------- OVERVIEW ---------- */
+// Series are rebuilt only when the data changed (state.dataRev) or the day did.
+let ovCache=null;
+function overviewData(){
+  const td=today(), key=state.dataRev+"|"+td; if(ovCache&&ovCache.key===key) return ovCache.v;
+  const ws=state.workouts, weight=weightSeries(state.body,td);
+  const v={weight, change:weightChange(weight,td), weeks:weeklyCounts(ws,td), cal:caloriesWeek(state.food,ws,state.body,state.profile,td), lifts:topLifts(ws,td), prs:prsThisMonth(ws,td), streak:trainingStreak(ws,state.days,td)};
+  ovCache={key,v}; return v;
+}
+// Vertical bars: bars=[{label,value}] (value null = nothing logged), optional dashed target line, value above each bar.
+function barChart(bars,{target=null,aria,emptyMsg,fmt=v=>String(v)}){
+  if(!bars.some(b=>b.value!=null&&b.value>0)) return `<div class="empty" style="padding:16px">${emptyMsg}</div>`;
+  const W=600,H=210,L=10,R=10,T=26,B=28, n=bars.length, hasT=Number.isFinite(target)&&target>0;
+  const max=Math.max(1,...bars.map(b=>b.value||0),hasT?target:0)*1.1, bw=(W-L-R)/n, y=v=>T+(1-v/max)*(H-T-B);
+  let g=`<line x1="${L}" x2="${W-R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line)" stroke-width="1"/>`;
+  bars.forEach((b,i)=>{
+    const x=L+i*bw+bw*.16, w=bw*.68, cx=x+w/2;
+    if(b.value!=null){
+      const h=Math.max(3,y(0)-y(b.value));
+      g+=`<rect class="bar${b.value>0?"":" z"}" x="${x.toFixed(1)}" y="${(y(0)-h).toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="4" fill="${b.value>0?"var(--accent)":"var(--line)"}"/>`;
+      if(b.value>0) g+=`<text x="${cx.toFixed(1)}" y="${(y(0)-h-5).toFixed(1)}" text-anchor="middle" font-size="12" fill="var(--fg)" font-family="var(--f-num)">${esc(fmt(b.value))}</text>`;
+    }
+    g+=`<text x="${cx.toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="12" fill="var(--muted)">${esc(b.label)}</text>`;
+  });
+  if(hasT) g+=`<line x1="${L}" x2="${W-R}" y1="${y(target).toFixed(1)}" y2="${y(target).toFixed(1)}" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria)}" style="direction:ltr">${g}</svg>`;
+}
 function renderOverview(){
-  $("#view-overview").innerHTML=`<h2>Overview</h2>`;
+  const o=overviewData(), last=o.weight[o.weight.length-1], sgn=d=>(d>0?"+":"")+d;
+  const ovCard=(id,title,go,chart)=>`<div class="card ovcard" data-card="${id}"><div class="row"><h3 class="grow">${title}</h3>${go}</div>${chart}</div>`;
+  const open=(act,extra)=>`<button class="btn ghost small" data-act="${act}" ${extra}>${t("Open")}</button>`;
+  const short=d=>new Date(d+"T12:00:00").toLocaleDateString(locale(),{day:"numeric",month:"short"}), dow=d=>new Date(d+"T12:00:00").toLocaleDateString(locale(),{weekday:"short"});
+  const target=[...o.cal].reverse().map(c=>c.target).find(v=>v!=null);
+  $("#view-overview").innerHTML=`<h2>Overview</h2>
+    <div class="stats">
+      <div class="stat"><div class="label">Weight</div><div class="v">${last?kg(last.weight):"–"} <small>kg</small></div></div>
+      <div class="stat"><div class="label">vs. 4 weeks ago</div><div class="v">${o.change==null?"–":sgn(o.change)} <small>kg</small></div></div>
+      <div class="stat"><div class="label">Workouts this week</div><div class="v">${o.streak.thisWeek} <small>/ ${o.streak.target}</small></div></div>
+      <div class="stat"><div class="label">Training streak (weeks)</div><div class="v">${o.streak.weeks}</div></div>
+    </div>
+    ${ovCard("weight",t("Weight trend"),open("pill",'data-view="body"'),lineChart(o.weight,[{k:"weight",c:"var(--accent)",main:true}],t("Body weight over the last 90 days"),t("Log your weight on two days to see the trend.")))}
+    ${ovCard("training",t("Training per week"),open("pill",'data-view="history"'),barChart(o.weeks.map(w=>({label:short(w.start),value:w.count})),{target:o.streak.target,aria:t("Workouts per week, last 8 weeks"),emptyMsg:t("Log a workout to start your weekly chart.")})+`<p class="prev" style="margin:0">${t("Target: {n} days a week",{n:o.streak.target})}</p>`)}
+    ${ovCard("calories",t("Calories vs target"),open("tab",'data-tab="today"'),barChart(o.cal.map(c=>({label:dow(c.date),value:c.eaten})),{target,aria:t("Calories eaten, last 7 days"),emptyMsg:t("Add meals on Today to compare with your target."),fmt:v=>(Math.round(v/100)/10)+"k"})+(target!=null?`<p class="prev" style="margin:0">${t("Target: {n} kcal a day",{n:Math.round(target).toLocaleString("en-US")})}</p>`:""))}
+    ${ovCard("strength",t("Strength"),open("pill",'data-view="progress"'),o.lifts.length?`<ul class="cardio-list">${o.lifts.map(l=>`<li><span class="grow">${esc(nameOf("ex",l.ex))}</span><span class="num">${kg(l.best)} kg${l.change30!=null?` · ${sgn(l.change30)}`:""}</span></li>`).join("")}</ul><p class="prev" style="margin:0">${tn("{n} PR this month","{n} PRs this month",o.prs)}</p>`:`<div class="empty" style="padding:16px">${t("Log a few sessions to see your strongest lifts.")}</div>`)}`;
 }
 
 /* ---------- BODY ---------- */
