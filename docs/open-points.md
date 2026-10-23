@@ -14,7 +14,7 @@ Everything planned in sub-projects 1-16 (the redesign, sw v26) is shipped. This 
 In progress now: the owner is testing the later features on a real phone; expect a bug-fix batch from that.
 
 ## A. Needs the owner (not code)
-1. **Read `public/privacy.html` and `public/terms.html`.** They are plain-language drafts, not legal advice. Check every promise matches what you want; consider a legal review (GDPR, Egypt's data protection law). `terms.html` does not mention challenges (the privacy policy does).
+1. ~~**Read `public/privacy.html` and `public/terms.html`.**~~ **Done (owner read both, 2026-10-23).** They are plain-language drafts, not legal advice; a legal review (GDPR, Egypt's data protection law) is still optional. `terms.html` does not mention challenges (the privacy policy does).
 2. **Try the later features on real phones** (journey, friends, challenges, My Gym, delete my account on a throwaway Google account, Arabic/RTL). Most of this was checked only in a headless browser with stubbed Firebase and the rules emulator.
 3. **Read reports** in the Firebase console (Firestore › `reports`). There is no admin screen and no notification. Names on a report are free text: check them by hand.
 4. **Decide on abuse protection:** App Check / rate limiting is not set up. Each user can still write many documents within the free quota (20k writes/day shared by everyone).
