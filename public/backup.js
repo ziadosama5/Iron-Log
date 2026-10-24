@@ -1,6 +1,7 @@
 // Checks and cleans items from a backup file before they are restored. A backup file can come
 // from anywhere, so nothing in it is trusted: bad items are skipped, bad fields dropped, text cut.
 import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX } from "./energy.js";
+import { cleanTargets } from "./progression.js";
 
 const DATE_ID = /^(w|b|f)-(\d{4}-\d{2}-\d{2})$/;
 const isObj = v => v !== null && typeof v === "object" && !Array.isArray(v);
@@ -14,7 +15,7 @@ function cleanWorkout(date, d) {
     const ex = text(e.ex, 80); if (!ex) return null;
     const sets = (Array.isArray(e.sets) ? e.sets : [])
       .filter(s => isObj(s) && num(s.w, 0, 2000) && Number.isInteger(s.r) && s.r >= 1 && s.r <= 1000)
-      .map(s => (num(s.t, 1, Number.MAX_SAFE_INTEGER) ? { w: s.w, r: s.r, t: s.t } : { w: s.w, r: s.r }));
+      .map(s => ({ w: s.w, r: s.r, ...(num(s.t, 1, Number.MAX_SAFE_INTEGER) ? { t: s.t } : {}), ...(s.k === "w" || s.k === "d" ? { k: s.k } : {}) }));
     const out = { ex, sets };
     if (typeof e.done === "boolean") out.done = e.done;
     return out;
@@ -131,6 +132,8 @@ function cleanSettings(d, equipment) {
     const known = new Set(equipment), kept = [...new Set(d.gym.filter(id => typeof id === "string" && known.has(id)))];
     if (kept.length || !d.gym.length) out.gym = kept;
   }
+  const targets = cleanTargets(d.targets);
+  if (Object.keys(targets).length) out.targets = targets;
   return withUpdated(out, d);
 }
 

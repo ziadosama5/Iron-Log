@@ -76,3 +76,10 @@ test("avatarHue: stable integer 0..359, names differ", () => {
   for (const n of ["zed", "mara", "", "زياد"]) { const h = avatarHue(n); assert.ok(Number.isInteger(h) && h >= 0 && h < 360, n); }
   assert.notEqual(new Set(["zed", "mara", "hidden", "ziad", "omar"].map(avatarHue)).size, 1);
 });
+
+test("settingsDoc carries targets when there are any, leaves the key out otherwise", () => {
+  const targets = { Squat: { sets: 3, min: 5, max: 8 } };
+  assert.deepEqual(settingsDoc({ rest: {}, targets }, 1).targets, targets);
+  assert.equal("targets" in settingsDoc({ rest: {} }, 1), false);
+  assert.equal("targets" in settingsDoc({ rest: {}, targets: {} }, 1), false);
+});

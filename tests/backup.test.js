@@ -192,3 +192,18 @@ test("profile: calorie-target choices are kept when valid and dropped when not",
     const r = prof(bad); assert.equal("activity" in r, false, JSON.stringify(bad)); assert.equal("adjust" in r, false, JSON.stringify(bad));
   }
 });
+
+test("set types survive a backup: k is kept for warm-up and drop set, junk is dropped, plain sets are unchanged", () => {
+  const data = { ...W.data, entries: [{ ex: "Bench Press", sets: [
+    { w: 40, r: 10, t: 1760000000000, k: "w" }, { w: 60, r: 8, k: "d" }, { w: 60, r: 8, k: "x" }, { w: 60, r: 8, k: 1 }, { w: 60, r: 8, t: 1760000000001 }] }] };
+  const r = cleanBackupItems([{ id: W.id, data }], OPTS).items[0].data;
+  assert.deepEqual(r.entries[0].sets, [{ w: 40, r: 10, t: 1760000000000, k: "w" }, { w: 60, r: 8, k: "d" }, { w: 60, r: 8 }, { w: 60, r: 8 }, { w: 60, r: 8, t: 1760000000001 }]);
+});
+
+test("settings targets: valid ones are kept, invalid ones dropped, absent stays absent", () => {
+  const targets = { "Bench Press": { sets: 3, min: 5, max: 8 }, Squat: { sets: 3, min: 12, max: 8 }, Curl: { sets: 99, min: 1, max: 2 }, Row: "x" };
+  const r = cleanBackupItems([{ id: "settings", data: { rest: {}, targets } }], OPTS).items[0].data;
+  assert.deepEqual(r.targets, { "Bench Press": { sets: 3, min: 5, max: 8 } });
+  assert.equal("targets" in cleanBackupItems([{ id: "settings", data: { rest: {} } }], OPTS).items[0].data, false);
+  assert.equal("targets" in cleanBackupItems([{ id: "settings", data: { rest: {}, targets: { Squat: { sets: 0, min: 1, max: 1 } } } }], OPTS).items[0].data, false, "nothing valid left");
+});
