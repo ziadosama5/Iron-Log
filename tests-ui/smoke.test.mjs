@@ -1407,3 +1407,69 @@ test("injuries: with nothing avoided suggestions are exactly as before", async (
   assert.ok(!/injur/i.test(sheet));
   await ctx.close();
 });
+
+const openGym = async page => { await tab(page, "plan"); await page.locator('#pills [data-view="gym"]').click(); await page.waitForSelector("#view-gym .card"); };
+const areaChip = (page, id) => page.locator(`#view-gym [data-act="avoid-area"][data-id="${id}"]`);
+
+test("injuries: My Gym has an Injuries card with seven area chips of at least 44px", async () => {
+  const { page, ctx } = await open();
+  await openGym(page);
+  const txt = await page.locator("#view-gym").innerText();
+  assert.ok(/INJURIES/i.test(txt) && /not medical advice/i.test(txt), txt.slice(0, 200));
+  assert.equal(await page.locator('#view-gym [data-act="avoid-area"]').count(), 7);
+  const heights = await page.locator('#view-gym [data-act="avoid-area"]').evaluateAll(bs => bs.map(b => b.getBoundingClientRect().height));
+  assert.ok(heights.every(h => h >= 43.5), heights.join(","));
+  await ctx.close();
+});
+
+test("injuries: tapping an area presses its chip, counts the hidden exercises, and the suggestions follow", async () => {
+  const { page, ctx } = await open();
+  await openGym(page);
+  await areaChip(page, "wrist").click();
+  assert.equal(await areaChip(page, "wrist").getAttribute("aria-pressed"), "true");
+  assert.ok(/\d+ exercises hidden/i.test(await page.locator("#view-gym").innerText()));
+  await tab(page, "today"); await startPush(page); await openExSheet(page);
+  assert.ok(!(await page.locator("#exsheet").innerText()).includes("Incline Barbell Press"));
+  await page.locator('#exsheet [data-act="sheet-close"]').first().click();
+  await openGym(page);
+  assert.equal(await areaChip(page, "wrist").getAttribute("aria-pressed"), "true", "still chosen after leaving and coming back");
+  await areaChip(page, "wrist").click();
+  assert.equal(await areaChip(page, "wrist").getAttribute("aria-pressed"), "false");
+  await ctx.close();
+});
+
+test("injuries: an exercise can be avoided by name from the card and removed again", async () => {
+  const { page, ctx } = await open();
+  await openGym(page);
+  await page.locator("#avoid-ex").fill("barbell row");
+  await page.locator('#avoid-form button[type="submit"]').click();
+  const list = page.locator("#view-gym .avoidlist");
+  assert.ok((await list.innerText()).includes("Barbell Row"), "stored with the library spelling");
+  await page.locator('#view-gym [data-act="avoid-remove"]').first().click();
+  assert.equal(await page.locator("#view-gym .avoidlist").count() === 0 || !(await page.locator("#view-gym .avoidlist").innerText()).includes("Barbell Row"), true);
+  await ctx.close();
+});
+
+test("injuries: the exercise info sheet can start and stop avoiding an exercise", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  await page.locator('#open-card [data-act="ex-info"]').first().click();
+  await page.waitForSelector("#exinfo[open]");
+  const btn = page.locator('#exinfo [data-act="avoid-toggle"]');
+  assert.equal((await btn.innerText()).trim(), "Avoid this exercise");
+  await btn.click();
+  assert.equal((await page.locator('#exinfo [data-act="avoid-toggle"]').innerText()).trim(), "Stop avoiding");
+  await page.locator('#exinfo [data-act="exinfo-close"]').click();
+  await openGym(page);
+  assert.ok((await page.locator("#view-gym .avoidlist").innerText()).includes("Bench Press"));
+  await ctx.close();
+});
+
+test("injuries: in Arabic the area chips are translated", async () => {
+  const { page, ctx } = await open("lang=ar");
+  await openGym(page);
+  const chips = await page.locator('#view-gym [data-act="avoid-area"]').allInnerTexts();
+  assert.equal(chips.length, 7);
+  assert.ok(chips.every(c => /[؀-ۿ]/.test(c)), chips.join("|"));
+  await ctx.close();
+});

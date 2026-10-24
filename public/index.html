@@ -543,7 +543,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { cleanAvoid, avoidFilter, hiddenAvoidCount, hasAvoid } from "./injuries.js";
+import { AREAS, AREA_EN, cleanAvoid, avoidFilter, hiddenAvoidCount, hasAvoid } from "./injuries.js";
 import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore, bestBwSet, legacyBodyweight } from "./bodyweight.js";
 import { workingSets, liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
@@ -1642,11 +1642,34 @@ function journeyStart(){
 /* ---------- MY GYM ---------- */
 const GYM_GROUPS=[["weights","Weights"],["station","Stations"],["machine","Machines"]];
 let gymSaveTimer=null;
+// ---- injuries and exercises to avoid (settings.avoid, see injuries.js) ----
+const areaLabel = id => isRtl() ? nameOf("area", id) : AREA_EN[id];
+const avoidsName = name => ((state.settings.avoid && state.settings.avoid.exercises) || []).some(x => x.toLowerCase() === String(name).toLowerCase());
+// Saves at once: the choice is changed in memory and written; the filters read state.settings on every render.
+function setAvoid(next){
+  const clean = cleanAvoid(next);
+  state.settings = { ...state.settings, avoid: clean };
+  store.saveSettings({ avoid: clean });
+  render(); refreshSheets();
+}
+function injuriesCardHtml(){
+  const avoid = state.settings.avoid || {}, chosen = new Set(avoid.areas || []), names = avoid.exercises || [];
+  const hidden = hiddenAvoidCount([ALL_EX], avoid);
+  return `<div class="card"><h3>${t("Injuries")}</h3>
+    <p class="prev" style="margin:0">${t("Pick the areas that hurt. Exercises that load them are left out of suggestions. This is a filter, not medical advice.")}</p>
+    <div class="chips">${AREAS.map(a => `<button type="button" class="chip" data-act="avoid-area" data-id="${a}" aria-pressed="${chosen.has(a)}">${esc(areaLabel(a))}</button>`).join("")}</div>
+    <span class="label">${t("Exercises I avoid")}</span>
+    ${names.length ? `<ul class="avoidlist cardio-list">${names.map(n => `<li><span class="grow">${esc(nameOf("ex", n))}</span><button type="button" class="btn ghost small danger" data-act="avoid-remove" data-name="${esc(n)}" aria-label="${esc(t("Stop avoiding {name}", { name: nameOf("ex", n) }))}">✕</button></li>`).join("")}</ul>` : `<p class="prev" style="margin:0">${t("None yet.")}</p>`}
+    <form id="avoid-form" class="row" autocomplete="off"><input id="avoid-ex" list="exl-avoid" placeholder="${esc(t("Type an exercise"))}" style="flex:1 1 180px" aria-label="${esc(t("Type an exercise"))}"><button class="btn" type="submit">${t("Add")}</button></form>
+    <datalist id="exl-avoid">${ALL_EX.map(n => `<option value="${esc(nameOf("ex", n))}">`).join("")}</datalist>
+    <span class="prev" role="status">${hidden ? tn("{n} exercise hidden from suggestions", "{n} exercises hidden from suggestions", hidden) : t("Nothing hidden.")}</span></div>`;
+}
 function renderGym(){
   const gym=state.settings.gym, on=new Set(Array.isArray(gym)?gym:[]), c=gymCounts(gym);
   let h=`<h2>My Gym</h2><div class="card"><p class="prev" style="margin:0">Tick the equipment your gym has. Exercise suggestions then only offer what you can do. To see every exercise anyway, use Show all under the suggestions: your gym stays saved.</p>
     <span class="label">Start from</span><div class="chips">${GYM_PRESETS.map(p=>`<button class="chip" data-act="gym-preset" data-p="${p.id}" aria-pressed="${sameGym(gym,p.equipment)}">${esc(t(p.name))}</button>`).join("")}</div></div>`;
   h+=GYM_GROUPS.map(([g,label])=>`<div class="card"><h3>${label}</h3><div class="chips">${EQUIPMENT.filter(e=>e.group===g).map(e=>`<button class="chip" data-act="gym-toggle" data-id="${e.id}" aria-pressed="${on.has(e.id)}">${esc(eqLabel(e.id))}</button>`).join("")}</div></div>`).join("");
+  h+=injuriesCardHtml();
   h+=`<div class="card"><span>${Array.isArray(gym)?esc(t("{a} of {b} items · {c} exercises available",{a:c.items,b:c.itemsTotal,c:c.exercises})):esc(t("Not set yet. Every exercise is suggested."))}</span>
     <span class="prev" role="status">${state.gymStatus==="saving"?esc(t("Saving…")):state.gymStatus==="saved"?esc(t("Saved ✓")):""}</span>
     <div class="row"><button class="btn primary" data-act="gym-done">Done</button></div></div>`;
@@ -2667,6 +2690,7 @@ function openExInfo(name){
     <p class="ex-works">Works: <b>${info.primary.map(m=>esc(nameOf("muscle",m))).join(", ")}</b>${info.secondary.length?` <span class="prev">· ${info.secondary.map(m=>esc(nameOf("muscle",m))).join(", ")}</span>`:""}</p>
     ${(()=>{ const eq=equipmentOf(info.name); return eq?`<p class="ex-works">${t("Equipment")}: <b>${eq.length?eq.map(eqLabel).join(isRtl()?"، ":" · "):t("No equipment")}</b></p>`:""; })()}
     <ul class="ex-tips">${(isRtl()&&info.ar&&info.ar.tips?info.ar.tips:info.tips).map(tip=>`<li>${esc(tip)}</li>`).join("")}</ul>
+    <div class="row"><button type="button" class="btn small" data-act="avoid-toggle" data-name="${esc(info.name)}">${t(avoidsName(info.name)?"Stop avoiding":"Avoid this exercise")}</button></div>
     ${info.img&&!info.own?`<p class="prev ex-credit">Illustrations: Everkinetic, CC BY-SA 4.0</p>`:""}`;
   if(!dlg.open){ dlg.showModal(); history.pushState({exinfo:1},""); }
   dlg.querySelectorAll(".ex-fig").forEach(box=>{
@@ -2946,6 +2970,12 @@ document.addEventListener("submit",e=>{
     store.saveBody({...withWeight(state.body.find(e=>e.date===state.bdate),state.bdate,n), updated:Date.now()});
     renderBody(); toast(t("Saved for {d}",{d:fmtDate(state.bdate)})); return;
   }
+  if(f.id==="avoid-form"){
+    const raw=$("#avoid-ex").value.trim(); if(!raw){ toast(t("Type an exercise")); return; }
+    const name=canonical(raw), a=state.settings.avoid||{};
+    if(!avoidsName(name)) setAvoid({ ...a, exercises: [...(a.exercises||[]), name] });
+    return;
+  }
   if(f.id==="add-ex-form"){ addExerciseToWorkout($("#new-ex").value); }
   if(f.id==="profile-form"){
     const fd=new FormData(f), num=v=>{ const n=parseFloat(String(v).replace(",",".")); return isFinite(n)?n:null; };
@@ -3107,6 +3137,9 @@ document.addEventListener("click",e=>{
     case "gym-done": flushGym(); go("days"); break;
     case "gym-hint-go": dismissGymHint(); go("gym"); break;
     case "gym-hint-no": dismissGymHint(); renderDays(); break;
+    case "avoid-area":{ const a=state.settings.avoid||{}, cur=a.areas||[]; setAvoid({ ...a, areas: cur.includes(b.dataset.id) ? cur.filter(x=>x!==b.dataset.id) : [...cur, b.dataset.id] }); break; }
+    case "avoid-remove":{ const a=state.settings.avoid||{}; setAvoid({ ...a, exercises: (a.exercises||[]).filter(x=>x.toLowerCase()!==b.dataset.name.toLowerCase()) }); break; }
+    case "avoid-toggle":{ const a=state.settings.avoid||{}, name=b.dataset.name; setAvoid({ ...a, exercises: avoidsName(name) ? (a.exercises||[]).filter(x=>x.toLowerCase()!==name.toLowerCase()) : [...(a.exercises||[]), name] }); openExInfo(name); break; }
     case "gym-showall": state.showAllGym=!state.showAllGym; render(); refreshSheets(); break;
     case "board-set": state.board=b.dataset.v==="month"||b.dataset.v==="level"?b.dataset.v:"week"; lsSet("ironlog.board",state.board); renderFriends(); break;
     case "more-list":{ const k=b.dataset.k; state.showMore[k]=!state.showMore[k]; ({body:renderBody,lifts:renderProgress,history:renderHistory,manage:renderFriends})[k](); break; }
