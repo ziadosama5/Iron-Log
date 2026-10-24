@@ -524,6 +524,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 <dialog id="cardiosheet" class="sheet" aria-label="Cardio"></dialog>
 <dialog id="mealsheet" class="sheet" aria-label="Add a meal"></dialog>
 <dialog id="plansheet" class="sheet" aria-label="Edit plan"></dialog>
+<dialog id="targetsheet" class="sheet" aria-label="Your daily target"></dialog>
 <nav class="tabbar" id="nav" aria-label="Sections" hidden>
   <button data-act="tab" data-tab="today"><svg class="i" aria-hidden="true"><use href="#i-today"/></svg>Today</button>
   <button data-act="tab" data-tab="plan"><svg class="i" aria-hidden="true"><use href="#i-plan"/></svg>Plan</button>
@@ -541,7 +542,7 @@ import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
-import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
+import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX, goalAdjustment, explainTarget, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { cleanDigits, canonicalBarcode, productUrl, normalizeProduct } from "./barcode.js";
 import { FOODS, searchFoods, portionTotals, mealTotals, mealNumbers, asEntry, makeMyFood, keepOtherServings, recentFoods } from "./food-table.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
@@ -1349,7 +1350,7 @@ function cardioSheetHtml(){
 }
 // Bottom sheets for adding an exercise or cardio. Content is cleared on close (no duplicate ids)
 // and refreshed after each Workout render while open.
-function sheetHtml(id){ return id==="#exsheet"?exSheetHtml():id==="#mealsheet"?mealSheetHtml():id==="#plansheet"?planSheetHtml():cardioSheetHtml(); }
+function sheetHtml(id){ return id==="#exsheet"?exSheetHtml():id==="#mealsheet"?mealSheetHtml():id==="#plansheet"?planSheetHtml():id==="#targetsheet"?targetSheetHtml():cardioSheetHtml(); }
 // The Plan page keeps its three less-used actions here so the page itself stays calm.
 function planSheetHtml(){
   return `<div class="sheet-head"><h2>Edit plan</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div>
@@ -1363,9 +1364,10 @@ function closeSheet(id){ const d=$(id); if(d&&d.open) d.close(); }
 function refreshSheets(){
   if($("#exsheet").open) $("#exsheet").innerHTML=exSheetHtml();
   if($("#cardiosheet").open) $("#cardiosheet").innerHTML=cardioSheetHtml();
+  if($("#targetsheet").open) $("#targetsheet").innerHTML=targetSheetHtml();
   if($("#mealsheet").open&&!state.mealDraft.scan&&!$("#mealsheet").contains(document.activeElement)) $("#mealsheet").innerHTML=mealSheetHtml();
 }
-["#exsheet","#cardiosheet","#mealsheet","#plansheet"].forEach(id=>{
+["#exsheet","#cardiosheet","#mealsheet","#plansheet","#targetsheet"].forEach(id=>{
   const d=$(id);
   d.addEventListener("close",()=>{ d.innerHTML=""; if(history.state&&history.state.sheet===id) history.go(history.state.scan?-2:-1); });
   d.addEventListener("click",e=>{
@@ -1376,7 +1378,7 @@ function refreshSheets(){
 });
 $("#mealsheet").addEventListener("close",()=>{ if(state.mealDraft.scan){ stopScan(); state.mealDraft.scan=null; } if(state.mealDraft.editId) state.mealDraft=freshMealDraft(); });
 // Back gesture: close only the sheet whose history step was just left (the info panel can sit on top of a sheet).
-window.addEventListener("popstate",()=>{ if(state.mealDraft.scan&&!(history.state&&history.state.scan)){ stopScan(); state.mealDraft.scan=null; redrawMealSheet(); } ["#exsheet","#cardiosheet","#mealsheet","#plansheet"].forEach(id=>{ if(!(history.state&&history.state.sheet===id)) closeSheet(id); }); });
+window.addEventListener("popstate",()=>{ if(state.mealDraft.scan&&!(history.state&&history.state.scan)){ stopScan(); state.mealDraft.scan=null; redrawMealSheet(); } ["#exsheet","#cardiosheet","#mealsheet","#plansheet","#targetsheet"].forEach(id=>{ if(!(history.state&&history.state.sheet===id)) closeSheet(id); }); });
 function dayPicker(w){
   if (!state.days.length) return `<div class="empty"><strong>Set up your training days</strong>Split your week into days like Push, Pull and Legs. Each day keeps its own exercise list, so starting a workout is one tap.
       <div class="row" style="justify-content:center"><button class="btn primary" data-act="goto-days">Set up days</button><button class="btn" data-act="start-free">Log a free workout</button></div></div>`;
@@ -1987,7 +1989,7 @@ function energyView(){
   const e=dayEnergy({bmr:b?b.bmr:null, kg, goal:p.goal, activity:p.activity, adjust:p.adjust, workout:workoutFor(d)||null, food:state.food[d]||null});
   const missing = kg==null ? t("Log your weight in Progress › Body to see calories burned and your target.")
     : !b ? t("Fill in About you in Progress › Body to see calories burned and your target.") : "";
-  return {p, kg, e, missing, meals:(state.food[d]&&state.food[d].meals)||[]};
+  return {p, kg, e, b, missing, meals:(state.food[d]&&state.food[d].meals)||[]};
 }
 /* ---------- FOOD PICKER (meal sheet) ---------- */
 // Foods come from food-table.js (bundled) and My foods (state.myFoods). A meal is built in state.mealDraft.items (the tray)
@@ -2266,6 +2268,37 @@ document.addEventListener("input",e=>{
   else if(el.id==="scan-save"&&dr.scanFood) dr.scanFood.save=el.checked;
   else if(el.id&&el.id.startsWith("mf-")&&dr.myForm){ dr.myForm[el.id.slice(3)]=el.value; }
 });
+/* ---------- target sheet: how the daily target is built, and the two choices behind it ---------- */
+const ACT_TEXT={sitting:["Mostly sitting","Desk job, studying"],light:["Lightly active","On your feet some of the day"],active:["Fairly active","On your feet most of the day"],very:["Very active","Physical work"]};
+function targetSheetHtml(){
+  const {p,e,b,missing}=energyView(), head=`<div class="sheet-head"><h2>${t("Your daily target")}</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div>`;
+  const ex=missing||!b?null:explainTarget({bmr:b.bmr,src:b.src,activity:p.activity,goal:p.goal,adjust:p.adjust,energy:e});
+  if(!ex) return head+(missing?`<p class="prev" id="target-missing">${missing}</p>`:"");
+  const d=state.date, scan=b.src==="inbody"?state.body.filter(x=>typeof x.bmr==="number"&&x.date<=d).sort((a,c)=>a.date<c.date?-1:1).pop():null;
+  const row=(id,label,note,v,signed)=>`<div class="row" data-row="${id}"><span class="grow">${label}${note?`<small class="prev" style="display:block">${note}</small>`:""}</span><b class="num" data-v="${v}">${signed?signedTxt(v):kcalTxt(v)}</b></div>`;
+  const [rest,every,lift,cardio,goal]=ex.rows, cur=ACTIVITY_IDS.includes(p.activity)?p.activity:"sitting", own=goal.custom;
+  return head+`<div class="stack" style="gap:8px">
+    ${row("resting",t("Resting rate"),rest.src==="inbody"&&scan?t("InBody scan, {date}",{date:fmtDate(scan.date)}):t("Estimated from your height, weight and age"),rest.kcal)}
+    ${row("everyday",t("Everyday life"),t("× {f} of your resting rate",{f:every.factor}),every.kcal)}
+    ${row("lifting",t("Lifting"),"",lift.kcal)}
+    ${row("cardio",t("Cardio"),"",cardio.kcal)}
+    ${row("burned",t("Burned"),"",ex.burned)}
+    ${row("goal",t("Goal adjustment"),own?t("Your own number"):t("Default for your goal"),goal.kcal,true)}
+    ${row("target",t("Target"),"",ex.target)}
+    <h3 style="margin:8px 0 0">${t("Everyday activity")}</h3>
+    <div class="chips" role="group" aria-label="${esc(t("Everyday activity"))}">${ACTIVITY_IDS.map(id=>`<button type="button" class="chip" data-act="target-activity" data-id="${id}" aria-pressed="${id===cur}">${esc(t(ACT_TEXT[id][0]))}</button>`).join("")}</div>
+    <p class="prev" style="margin:0">${esc(t(ACT_TEXT[cur][1]))}</p>
+    <h3 style="margin:8px 0 0">${t("Daily adjustment")}</h3>
+    <div class="row" dir="ltr" style="justify-content:center;gap:12px"><button type="button" class="btn small" data-act="target-adjust" data-d="-50" aria-label="${esc(t("Less"))}">−</button><b class="num" id="target-adjust-val">${t("{n} kcal",{n:signedTxt(goal.kcal)})}</b><button type="button" class="btn small" data-act="target-adjust" data-d="50" aria-label="${esc(t("More"))}">+</button></div>
+    <p class="prev" style="margin:0">${t("Goal default: {n} kcal",{n:signedTxt(goalAdjustment(p.goal))})}</p>
+    ${own?`<button type="button" class="btn small" data-act="target-adjust-reset">${t("Use goal default")}</button>`:""}
+    <p class="prev" style="margin:0">${t("Changing these also changes how past days are judged.")}</p></div>`;
+}
+// Saves the two choices on the private profile (a patch value of undefined removes the field) and redraws the card and the open sheet.
+function saveTargetPrefs(patch){
+  const next={...state.profile,...patch}; for(const k in patch) if(patch[k]===undefined) delete next[k];
+  store.saveProfile(next); renderLog(); if($("#targetsheet").open) $("#targetsheet").innerHTML=targetSheetHtml();
+}
 function todayCard(){
   const {p,e,missing,meals}=energyView();
   const pct=e.target?Math.min(100,e.eaten/e.target*100):0, over=e.target!=null&&e.eaten>e.target?e.eaten-e.target:0;
@@ -2278,6 +2311,7 @@ function todayCard(){
       ${e.burned!=null?`<span class="prev">${t("Burned {a} · Balance {b} kcal",{a:kcalTxt(e.burned),b:bal})}</span>`:""}
       ${over?`<span class="prev">${t("Over by {n} kcal",{n:over.toLocaleString("en-US")})}</span>`:""}
     </button>
+    ${e.target!=null?`<button type="button" class="btn ghost small" data-act="target-open">${t("How is this built?")}</button>`:""}
     ${missing?`<p class="prev" style="margin:0">${missing}</p>`:""}
     ${meals.length?`<ul class="cardio-list">${meals.map((m,i)=>{ const label=m.name?nameOf("meal",m.name):t("Meal {n}",{n:mealNumbers(meals)[i]}); return `<li><span class="grow">${esc(label)} · ${m.kcal.toLocaleString("en-US")} kcal${m.protein!=null?` · ${m.protein} g`:""}</span>${m.items&&m.items.length?`<button class="btn ghost small" data-act="meal-edit" data-id="${esc(m.id)}" aria-label="${esc(t("Edit {name}",{name:label}))}">✎</button>`:""}<button class="btn ghost small danger" data-act="rm-meal" data-id="${esc(m.id)}" aria-label="${esc(t("Delete {name}",{name:label}))}">✕</button></li>`; }).join("")}</ul>`:""}
   </div>`;
@@ -2892,8 +2926,12 @@ document.addEventListener("click",e=>{
     case "next-ex":{ const w=workoutFor(state.date); const nx=w?nextUnfinished(w.entries,ei):-1; if(nx>=0){ stopEditing(); state.openEx=w.entries[nx].ex; renderLog(); scrollToOpen(); } break; }
     case "open-exsheet": openSheet("#exsheet"); break;
     case "open-cardiosheet": openSheet("#cardiosheet"); break;
-    case "sheet-close": closeSheet("#exsheet"); closeSheet("#cardiosheet"); closeSheet("#mealsheet"); closeSheet("#plansheet"); break;
+    case "sheet-close": closeSheet("#exsheet"); closeSheet("#cardiosheet"); closeSheet("#mealsheet"); closeSheet("#plansheet"); closeSheet("#targetsheet"); break;
     case "open-plansheet": openSheet("#plansheet"); break;
+    case "target-open": openSheet("#targetsheet"); break;
+    case "target-activity": if(ACTIVITY_IDS.includes(b.dataset.id)) saveTargetPrefs({activity:b.dataset.id}); break;
+    case "target-adjust":{ const cur=goalAdjustment(state.profile.goal,state.profile.adjust); saveTargetPrefs({adjust:Math.min(ADJUST_MAX,Math.max(ADJUST_MIN,cur+Number(b.dataset.d)))}); break; }
+    case "target-adjust-reset": saveTargetPrefs({adjust:undefined}); break;
     case "open-mealsheet": openSheet("#mealsheet"); { const q=$("#food-q"); if(q) q.focus(); } break;
     case "theme-set": applyTheme(b.dataset.v); syncMe(); break;
     case "share-vis":{ const p=state.share.profile; if(p&&p.visibility!==b.dataset.v) runShare({...shareFields(p),visibility:b.dataset.v}); break; }

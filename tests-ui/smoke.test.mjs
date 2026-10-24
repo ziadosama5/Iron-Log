@@ -945,3 +945,86 @@ test("small fixes: an answer that is not JSON is a failed lookup, not 'no calori
   assert.equal(await page.locator("#scan-digits").count(), 1, "still on the scan view");
   await ctx.close();
 });
+
+// ---- calorie target sheet ----
+const cardTarget = async page => Number((await page.locator("#view-log .eatsum .v small").innerText()).replace(/[^\d]/g, ""));
+const sheetNum = async (page, row) => Number(await page.locator(`#targetsheet [data-row="${row}"] .num`).getAttribute("data-v"));
+const openTarget = async page => { await page.locator('#view-log [data-act="target-open"]').click(); await page.waitForSelector("#targetsheet[open]"); };
+const pressed = async (page, id) => page.locator(`#targetsheet [data-act="target-activity"][data-id="${id}"]`).getAttribute("aria-pressed");
+
+test("target sheet: the link opens the breakdown and its numbers are the card's", async () => {
+  const { page, ctx } = await open();
+  await openTarget(page);
+  assert.equal(await sheetNum(page, "target"), await cardTarget(page));
+  assert.equal(await sheetNum(page, "burned") + await sheetNum(page, "goal"), await sheetNum(page, "target"));
+  assert.equal(await sheetNum(page, "everyday") + await sheetNum(page, "lifting") + await sheetNum(page, "cardio"), await sheetNum(page, "burned"));
+  assert.equal(await pressed(page, "sitting"), "true", "default is mostly sitting");
+  assert.ok((await page.locator("#targetsheet").innerText()).includes("Estimated from your height"), "no InBody scan in the sample data");
+  await ctx.close();
+});
+
+test("target sheet: a higher activity level raises the target, and the choice is kept", async () => {
+  const { page, ctx } = await open();
+  await openTarget(page);
+  const before = await sheetNum(page, "target"), resting = await sheetNum(page, "resting");
+  await page.locator('#targetsheet [data-act="target-activity"][data-id="active"]').click();
+  await page.waitForTimeout(200);
+  assert.equal(await pressed(page, "active"), "true");
+  assert.equal(await sheetNum(page, "target") - before, Math.round(resting * 1.4) - Math.round(resting * 1.2));
+  assert.equal(await cardTarget(page), await sheetNum(page, "target"), "the card behind follows");
+  await ctx.close();
+});
+
+test("target sheet: the daily adjustment steps by 50, zero is a choice, and the goal default comes back", async () => {
+  const { page, ctx } = await open();
+  await openTarget(page);
+  const dflt = await sheetNum(page, "goal");
+  assert.equal(await page.locator('#targetsheet [data-act="target-adjust-reset"]').count(), 0, "nothing to reset yet");
+  await page.locator('#targetsheet [data-act="target-adjust"][data-d="50"]').click();
+  await page.waitForTimeout(150);
+  assert.equal(await sheetNum(page, "goal"), dflt + 50);
+  for (let i = 0; i < 20; i++) { if (await sheetNum(page, "goal") === 0) break; await page.locator('#targetsheet [data-act="target-adjust"][data-d="50"]').click(); await page.waitForTimeout(120); }
+  assert.equal(await sheetNum(page, "goal"), 0);
+  assert.equal(await sheetNum(page, "target"), await sheetNum(page, "burned"));
+  assert.equal(await page.locator('#targetsheet [data-act="target-adjust-reset"]').count(), 1, "zero is your own choice, so it can be reset");
+  await page.locator('#targetsheet [data-act="target-adjust-reset"]').click();
+  await page.waitForTimeout(150);
+  assert.equal(await sheetNum(page, "goal"), dflt);
+  assert.equal(await page.locator('#targetsheet [data-act="target-adjust-reset"]').count(), 0);
+  await ctx.close();
+});
+
+test("target sheet: saving the About-you form keeps the activity level and the adjustment", async () => {
+  const { page, ctx } = await open();
+  await openTarget(page);
+  await page.locator('#targetsheet [data-act="target-activity"][data-id="light"]').click();
+  await page.locator('#targetsheet [data-act="target-adjust"][data-d="-50"]').click();
+  await page.waitForTimeout(200);
+  const want = await sheetNum(page, "target");
+  await page.locator('#targetsheet [data-act="sheet-close"]').click();
+  await tab(page, "progress");
+  await page.locator('#pills [data-view="body"]').click();
+  await page.locator('[data-act="edit-profile"]').click();
+  await page.locator('#profile-form button[type=submit]').click();
+  await page.waitForTimeout(300);
+  await tab(page, "today");
+  assert.equal(await cardTarget(page), want);
+  await openTarget(page);
+  assert.equal(await pressed(page, "light"), "true");
+  await ctx.close();
+});
+
+test("target sheet: without a weight there is no link, only the fill-in message", async () => {
+  const { page, ctx } = await open("fresh=1", undefined, () => localStorage.setItem("ironlog.journey", "skip"));
+  assert.equal(await page.locator('#view-log [data-act="target-open"]').count(), 0);
+  assert.ok((await page.locator("#view-log .today").innerText()).includes("Log your weight"));
+  await ctx.close();
+});
+
+test("target sheet: in Arabic it opens and the adjustment buttons keep their order", async () => {
+  const { page, ctx } = await open("lang=ar");
+  await openTarget(page);
+  const xs = async sel => page.evaluate(s => document.querySelector(s).getBoundingClientRect().x, sel);
+  assert.ok(await xs('#targetsheet [data-act="target-adjust"][data-d="-50"]') < await xs('#targetsheet [data-act="target-adjust"][data-d="50"]'), "minus is left of plus");
+  await ctx.close();
+});
