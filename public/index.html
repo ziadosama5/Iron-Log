@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#1f5fd1">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -48,7 +48,7 @@
 
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
-html{overscroll-behavior-y:contain;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html{touch-action:pan-x pan-y;overscroll-behavior-y:contain;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 button,[data-act],.pill,.chip,.tile,.exchip,.tabbar,.hero,select,summary,label.btn{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 button,.pill,.chip,.tile,.exchip,.tabbar,.hero,.week,.seg,.pills,.bigstep,.stepper,.swatch,.btn{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 input,textarea,[contenteditable]{-webkit-user-select:text;user-select:text}
@@ -227,7 +227,7 @@ h3{font:700 16px/1.1 var(--f-display);letter-spacing:.06em;text-transform:upperc
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .grow{flex:1;min-width:0}
 .stack{display:flex;flex-direction:column;gap:10px}
-input,select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0;width:100%}
+input,select{font:inherit;font-size:16px;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0;width:100%}
 input:focus-visible,select:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:600 14px/1 var(--f-body);padding:11px 14px;min-height:44px;border-radius:var(--r-btn);cursor:pointer;white-space:nowrap}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);min-height:48px}
@@ -2716,6 +2716,8 @@ $("#signout").addEventListener("click",()=>{ flushGym(); clearRest(); signOut(au
 try{ history.scrollRestoration="manual"; }catch(e){}
 window.addEventListener("offline",()=>setSync(t("Offline · saving on this phone")));
 window.addEventListener("online",()=>setSync(t("Back online · syncing…")));
+// iOS Safari ignores user-scalable=no: stop its pinch-zoom gesture.
+for(const g of ["gesturestart","gesturechange"]) document.addEventListener(g,e=>e.preventDefault());
 if ("serviceWorker" in navigator) {
   // A new version takes over by itself (skipWaiting + claim), but the page already open keeps the old code. Reload once
   // when that happens, and look for updates when the app comes back to the front; never while typing or in a sheet/flow.
