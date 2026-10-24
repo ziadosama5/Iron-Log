@@ -7,7 +7,7 @@ Everything planned in sub-projects 1-16 (the redesign, sw v26) is shipped. This 
 ## Unfinished projects (the big ones, none started)
 1. ~~**Built-in Egyptian + everyday food table**~~ **Built (sub-project 19, 2026-10-24):** 297 foods, meal builder, My foods, recents, edit a saved meal and barcode scan. Waiting for the owner's phone check (including a real camera scan) and the deploy.
 - ~~Calorie target explainer~~ **Built (sub-project 20, sw v43):** the "How is this built?" sheet on Today, everyday activity level and own daily adjustment.
-2. **Training depth:** ~~target sets/reps, progression, warm-up/drop set types~~ **built (sub-project 21, sw v44)**. Bodyweight mode **built (sub-project 22, sw v45)**. Injuries / exercises to avoid **built (sub-project 23, sw v46)**. Still open: several gyms (Home + Gym), templates adapted to the gym, per-day targets, deloads.
+2. **Training depth:** ~~target sets/reps, progression, warm-up/drop set types~~ **built (sub-project 21, sw v44)**. Bodyweight mode **built (sub-project 22, sw v45)**. Injuries / exercises to avoid **built (sub-project 23, sw v46)**. Deload suggestions **built (sub-project 24, sw v47)**. Still open: several gyms (Home + Gym), templates adapted to the gym, per-day targets.
 3. **Social growth:** more challenge types (volume, PRs, streaks), rematch, chat/activity feed, notifications (need the paid plan or an alternative).
 4. **Running it for many users:** abuse protection (App Check / rate limits), quota monitoring, a report admin screen or e-mail, auto-deploy from GitHub, running rules tests and screenshot checks automatically.
 5. **Data and codebase:** CSV export; splitting the single 2,350-line `index.html` into modules.
@@ -69,7 +69,7 @@ Fixed: scanned-food edit keeps its other servings; zero-calorie meals (water) sa
 Fixed: stale history entry after Plan my training from the Edit plan menu; chart text now about 12px (viewBox close to the rendered width); Arabic dual (`tn` looks for `<other>#2`); the Friends podium waits for friends' data (`boardReady`); level hero label says it opens badges; `showMore` reset on sign-out; avatar on the Find result; Overview weight stat uses the latest weigh-in at any age; week labels are direction-safe. Kept on purpose: Block stays on request rows.
 
 ## C. Ideas not built
-- **Training:** bodyweight-exercise mode; per-day targets; deloads and RPE; cardio scheduling; templates adapted to the gym; several gyms (Home + Gym).
+- **Training:** bodyweight-exercise mode; per-day targets; RPE; cardio scheduling; templates adapted to the gym; several gyms (Home + Gym).
 - **Food:** more foods (the table has 297; the owner can ask for more), meal templates ("my usual breakfast", easy now that saved meals keep their items), allergens / full nutrition from barcode data, macros beyond kcal and protein, shared foods.
 - **Social:** other challenge metrics (volume, PRs, streak weeks), rematch in one tap, owner removing a member, chat, an activity feed, server-side friend limits, cooldown after a decline, notifications (need the paid plan).
 - **Data and tooling:** CSV export; GitHub Actions auto-deploy (`firebase init hosting:github`); running the rules tests and screenshot checks in CI; an admin screen or e-mail for reports (needs the paid plan or manual work).

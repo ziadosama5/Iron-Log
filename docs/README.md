@@ -30,6 +30,7 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 | 21 | Set types, targets and progression (warm-up / drop set, per-exercise targets, "what to try today") | [spec](superpowers/specs/2026-10-24-set-types-and-progression-design.md) | [plan](superpowers/plans/2026-10-24-set-types-and-progression.md) | sw v44 |
 | 22 | Bodyweight mode (extra kg, assisted, holds in seconds, per-exercise switch, bodyweight stats) | [spec](superpowers/specs/2026-10-24-bodyweight-mode-design.md) | [plan](superpowers/plans/2026-10-24-bodyweight-mode.md) | sw v45 |
 | 23 | Injuries / exercises to avoid (7 body areas, joint table for all 183 exercises, avoid list, filtered suggestions and generated week, warnings) | [spec](superpowers/specs/2026-10-24-injuries-design.md) | [plan](superpowers/plans/2026-10-24-injuries.md) | sw v46 |
+| 24 | Deload suggestions (banner after 6 weeks or 3 stalled lifts, 7-day deload week with lighter advice, deload sessions kept out of Last time and stalls) | [spec](superpowers/specs/2026-10-25-deload-design.md) | [plan](superpowers/plans/2026-10-25-deload.md) | sw v47 |
 
 Open points (everything still to do or decide): [open-points.md](open-points.md).
 

@@ -16,7 +16,7 @@ The owner answered the design questions for every feature below in one session. 
 - **Marking:** body areas (shoulder, elbow, wrist, lower back, hip, knee, ankle) plus hiding single exercises. Every library exercise (183) is tagged with the joints it loads (Claude tags, the owner reviews the table).
 - **Effect:** avoided exercises disappear from suggestions, the Add exercise list, type-ahead and the generated training week (journey). Exercises already in days or history stay with a clear warning mark; nothing is ever deleted; a "show anyway" switch exists. No automatic swap.
 
-## 3. Deload suggestions
+## 3. Deload suggestions (BUILT: sub-project 24, sw v47)
 - A banner on Today suggests an easy week after 6 weeks of training in a row, or when several lifts stall. One tap to accept.
 - Accepting turns on "Deload week" for 7 days: the advice says to use about 90% of last weight for about 60% of the sets; nothing is blocked. It can be ended any time; dismissing the suggestion silences it for 4 weeks.
 - Skipped: per-day targets, automatic planned deloads.
