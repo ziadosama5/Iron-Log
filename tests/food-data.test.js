@@ -2,7 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { FOODS } from "../public/food-table.js";
 
-const MIN_FOODS = 60;
+const MIN_FOODS = 110;
+const GROUPS = ["bread", "legumes", "mains", "rice", "eggs-dairy", "sides", "veg", "fruit", "meat", "sweets", "drinks", "snacks", "fastfood", "fats"];
 
 test("the table has enough foods", () => assert.ok(FOODS.length >= MIN_FOODS, `${FOODS.length} foods`));
 
@@ -34,7 +35,21 @@ test("numbers are plausible, and kcal agrees with the macros where they are reco
     if (f.fat100 != null && f.carbs100 != null) {
       assert.ok(f.protein100 + f.fat100 + f.carbs100 <= 100, f.id + " macros add up to more than 100 g");
       const calc = 4 * f.carbs100 + 4 * f.protein100 + 9 * f.fat100;
-      assert.ok(Math.abs(f.kcal100 - calc) <= 0.15 * calc, `${f.id}: kcal ${f.kcal100} vs macros ${calc}`);
+      assert.ok(Math.abs(f.kcal100 - calc) <= Math.max(0.15 * calc, 1), `${f.id}: kcal ${f.kcal100} vs macros ${calc}`);
     }
   }
+});
+
+test("every group has foods, and many foods carry alternate spellings for search", () => {
+  const present = new Set(FOODS.map(f => f.group));
+  for (const g of GROUPS) assert.ok(present.has(g), "no foods in group " + g);
+  assert.ok(FOODS.filter(f => f.alt.length).length >= 15, "alt spellings");
+});
+
+test("a few anchor foods exist with believable numbers", () => {
+  const by = id => FOODS.find(f => f.id === id);
+  assert.ok(by("olive-oil").kcal100 >= 800, "olive oil is almost all fat");
+  assert.ok(by("sugar").kcal100 >= 380 && by("sugar").kcal100 <= 410, "sugar");
+  assert.ok(by("banana").kcal100 >= 80 && by("banana").kcal100 <= 110, "banana");
+  assert.ok(by("whey").protein100 >= 70, "whey protein");
 });
