@@ -88,3 +88,9 @@ test("every area has a unique English and Arabic name", () => {
     assert.equal(new Set(names).size, names.length);
   }
 });
+
+test("hasAvoid says whether anything is avoided", async () => {
+  const { hasAvoid } = await import("../public/injuries.js");
+  assert.equal(hasAvoid({ areas: ["knee"] }), true); assert.equal(hasAvoid({ exercises: ["Squat"] }), true);
+  for (const none of [undefined, null, {}, { areas: [], exercises: [] }, { areas: "knee" }]) assert.equal(hasAvoid(none), false, JSON.stringify(none));
+});

@@ -91,17 +91,18 @@ export function avoidedBecause(name, avoid, joints = JOINTS) {
   return { exercise: byName, areas };
 }
 
-const isActive = avoid => !!avoid && typeof avoid === "object" && ((Array.isArray(avoid.areas) && avoid.areas.length > 0) || (Array.isArray(avoid.exercises) && avoid.exercises.length > 0));
+// True when anything is avoided (at least one area or one exercise).
+export const hasAvoid = avoid => !!avoid && typeof avoid === "object" && ((Array.isArray(avoid.areas) && avoid.areas.length > 0) || (Array.isArray(avoid.exercises) && avoid.exercises.length > 0));
 
 // The names left after removing what the person avoids. Returns `names` itself when nothing is avoided.
 export function avoidFilter(names, avoid, joints = JOINTS) {
-  if (!isActive(avoid)) return names;
+  if (!hasAvoid(avoid)) return names;
   return names.filter(n => { const w = avoidedBecause(n, avoid, joints); return !w.exercise && w.areas.length === 0; });
 }
 
 // How many names the filter removes over several lists (for the "Hiding N" note).
 export function hiddenAvoidCount(lists, avoid, joints = JOINTS) {
-  if (!isActive(avoid)) return 0;
+  if (!hasAvoid(avoid)) return 0;
   return lists.reduce((n, l) => n + (l.length - avoidFilter(l, avoid, joints).length), 0);
 }
 

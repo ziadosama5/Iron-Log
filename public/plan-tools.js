@@ -1,6 +1,7 @@
 // Personal journey: builds a week of training days from a few answers. Pure (no DOM, no Firebase).
 // Rules live here so they can be tested for every combination of answers.
 import { LIB, MUSCLES, muscleOf, gymFilter } from "./exercise-library.js";
+import { avoidFilter, hasAvoid } from "./injuries.js";
 
 export const EXPERIENCE = ["beginner", "intermediate", "advanced"];
 export const GOAL_DEFAULT_DAYS = { strength: 4, muscle: 4, recomp: 4, "fat-loss": 3, maintain: 3 };
@@ -121,7 +122,8 @@ function pick(pool, n, day, usedInPlan) {
   return out;
 }
 
-export function buildPlan({ goal, daysPerWeek, experience, gym, splitId }) {
+// `avoid` (optional, from settings.avoid) takes avoided exercises and areas out of every pool, like the gym does.
+export function buildPlan({ goal, daysPerWeek, experience, gym, splitId, avoid }) {
   if (!(goal in GOAL_DEFAULT_DAYS)) throw new Error("unknown goal: " + goal);
   if (!EXPERIENCE.includes(experience)) throw new Error("unknown experience: " + experience);
   if (!Number.isInteger(daysPerWeek) || daysPerWeek < 2 || daysPerWeek > 6) throw new Error("daysPerWeek must be 2-6");
@@ -131,19 +133,20 @@ export function buildPlan({ goal, daysPerWeek, experience, gym, splitId }) {
   const { name: split, days: shape } = SPLITS[daysPerWeek].find(x => x.id === chosen.id);
   const notes = [], usedInPlan = new Set(), days = [];
   const cap = goal === "strength" ? 5 : 7;
+  const pool = names => avoidFilter(gymFilter(names, gym), avoid), why = hasAvoid(avoid) ? " and injuries" : "";
 
   // A muscle the split trains but that nothing in the gym can work.
   const trained = new Set(shape.flatMap(([, kind]) => KIND_MUSCLES[kind].filter(m => countFor(goal, experience, kind, m) > 0)));
   for (const m of MUSCLES) {
-    if (trained.has(m) && gymFilter(LIB[m], gym).length === 0) notes.push({ text: "No {muscle} exercise fits your gym.", params: { muscle: m } });
+    if (trained.has(m) && pool(LIB[m]).length === 0) notes.push({ text: "No {muscle} exercise fits your gym" + why + ".", params: { muscle: m } });
   }
 
   shape.forEach(([name, kind], i) => {
     const day = { families: new Set() };
     // Slots in muscle order; Pull days also get one rear-delt slot. Over the cap, the biggest counts shrink first
     // (last muscle first) so every muscle keeps an exercise before any muscle is dropped.
-    const slots = KIND_MUSCLES[kind].map(m => ({ pool: gymFilter(LIB[m], gym), n: countFor(goal, experience, kind, m) })).filter(x => x.n > 0);
-    if (kind === "pull") slots.push({ pool: gymFilter(LIB.Shoulders, gym).filter(x => /Rear Delt|Face Pull/.test(x)), n: 1 });
+    const slots = KIND_MUSCLES[kind].map(m => ({ pool: pool(LIB[m]), n: countFor(goal, experience, kind, m) })).filter(x => x.n > 0);
+    if (kind === "pull") slots.push({ pool: pool(LIB.Shoulders).filter(x => /Rear Delt|Face Pull/.test(x)), n: 1 });
     const total = () => slots.reduce((a, x) => a + x.n, 0);
     while (total() > cap) {
       const top = Math.max(...slots.map(x => x.n));
@@ -152,7 +155,7 @@ export function buildPlan({ goal, daysPerWeek, experience, gym, splitId }) {
     // Strength repeats its main lifts on every day that trains them; the other goals prefer variety.
     const used = goal === "strength" ? new Set() : usedInPlan;
     const exercises = slots.flatMap(x => pick(x.pool, x.n, day, used));
-    if (!exercises.length) { notes.push({ text: "{day} was left out: nothing in it fits your gym.", params: { day: name } }); return; }
+    if (!exercises.length) { notes.push({ text: "{day} was left out: nothing in it fits your gym" + why + ".", params: { day: name } }); return; }
     exercises.forEach(x => usedInPlan.add(x));
     days.push({ name, focus: MUSCLES.filter(m => exercises.some(x => muscleOf(x) === m)), exercises, weekdays: [WEEKDAYS[daysPerWeek][i]] });
   });

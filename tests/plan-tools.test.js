@@ -287,3 +287,48 @@ test("mergeProfile: changing the goal drops the person's own daily adjustment, k
   assert.equal("adjust" in changed, false); assert.equal(changed.activity, "light", "activity is not tied to the goal");
   assert.equal(mergeProfile(old, { goal: "muscle" }).adjust, 300);
 });
+
+// ---- injuries: the generated week leaves out what the person avoids ----
+import { AREAS, avoidedBecause, avoidFilter } from "../public/injuries.js";
+
+test("with an area avoided, no generated exercise loads it, for every goal x days x experience x gym", () => {
+  for (const area of AREAS) for (const goal of GOALS) for (const daysPerWeek of [2, 4, 6]) for (const experience of EXPERIENCE) for (const gym of GYMS) {
+    const avoid = { areas: [area] }, label = [area, goal, daysPerWeek, experience, gym ? gym.length : "all"].join("/");
+    const p = buildPlan({ goal, daysPerWeek, experience, gym, avoid });
+    for (const d of p.days) {
+      assert.ok(d.exercises.length > 0, "non-empty " + d.name + " " + label);
+      for (const ex of d.exercises) { const w = avoidedBecause(ex, avoid); assert.deepEqual(w.areas, [], `${ex} loads ${area} ${label}`); }
+    }
+  }
+});
+
+test("without avoid the plan is exactly what it was, and an empty avoid changes nothing", () => {
+  for (const goal of GOALS) for (const gym of GYMS) {
+    const base = buildPlan({ goal, daysPerWeek: 4, experience: "intermediate", gym });
+    assert.deepEqual(buildPlan({ goal, daysPerWeek: 4, experience: "intermediate", gym, avoid: undefined }), base);
+    assert.deepEqual(buildPlan({ goal, daysPerWeek: 4, experience: "intermediate", gym, avoid: { areas: [], exercises: [] } }), base);
+  }
+});
+
+test("avoiding a single exercise swaps it for another of the same muscle", () => {
+  const base = buildPlan({ goal: "muscle", daysPerWeek: 4, experience: "intermediate" });
+  const first = base.days[0].exercises[0];
+  const p = buildPlan({ goal: "muscle", daysPerWeek: 4, experience: "intermediate", avoid: { exercises: [first.toUpperCase()] } });
+  assert.ok(!p.days.flatMap(d => d.exercises).includes(first), first + " must not appear");
+  assert.equal(p.days[0].exercises.length, base.days[0].exercises.length, "the day keeps its size");
+});
+
+test("avoiding every area leaves notes that mention injuries, never a crash or an empty day", () => {
+  const all = { areas: AREAS };
+  const p = buildPlan({ goal: "muscle", daysPerWeek: 4, experience: "intermediate", avoid: all });
+  assert.ok(p.notes.length > 0);
+  for (const n of p.notes) assert.ok(/and injuries\.$/.test(n.text), n.text);
+  for (const d of p.days) assert.ok(d.exercises.length > 0);
+  // the old wording stays when nothing is avoided
+  const calves = buildPlan({ goal: "muscle", daysPerWeek: 4, experience: "intermediate", gym: [] });
+  for (const n of calves.notes) assert.ok(!/injuries/.test(n.text), n.text);
+});
+
+test("the new note wordings have Arabic", () => {
+  for (const k of ["No {muscle} exercise fits your gym and injuries.", "{day} was left out: nothing in it fits your gym and injuries."]) assert.ok(AR.ui[k], k);
+});

@@ -1573,7 +1573,7 @@ function jrOpt(act,v,on,label,sub){ return `<button class="jr-opt" data-act="${a
 function jrSplitId(j,opts){ if(opts.some(o=>o.id===j.split)) return j.split; const f=j.family?splitFor(j.family,j.days):null; return f&&opts.some(o=>o.id===f)?f:opts[0].id; }
 function jrPreview(j){
   const opts=splitOptions(j.days,j.experience), sid=jrSplitId(j,opts);
-  const plan=buildPlan({goal:j.goal,daysPerWeek:j.days,experience:j.experience,gym:jrGym(),splitId:sid});
+  const plan=buildPlan({goal:j.goal,daysPerWeek:j.days,experience:j.experience,gym:jrGym(),avoid:state.settings.avoid,splitId:sid});
   const gym=jrGym(), preset=Array.isArray(gym)?GYM_PRESETS.find(p=>sameGym(gym,p.equipment)):null;
   const label=preset?t(preset.name):Array.isArray(gym)?t("your My Gym list"):t("every exercise");
   let h=`<h2>Your week</h2><span class="label">Split</span><div class="chips">${opts.map(o=>`<button class="chip" data-act="jr-split" data-v="${o.id}" aria-pressed="${o.id===sid}">${esc(t(o.name))}</button>`).join("")}</div><p class="prev" style="margin:0">${esc(t("Planned for: {x}",{x:label}))}</p>`;
@@ -1624,7 +1624,7 @@ function journeyNext(){
 function journeyStart(){
   const j=state.journey; if(!j||j.busy) return; j.busy=true;
   const opts=splitOptions(j.days,j.experience), sid=jrSplitId(j,opts);
-  const plan=buildPlan({goal:j.goal,daysPerWeek:j.days,experience:j.experience,gym:jrGym(),splitId:sid});
+  const plan=buildPlan({goal:j.goal,daysPerWeek:j.days,experience:j.experience,gym:jrGym(),avoid:state.settings.avoid,splitId:sid});
   if(!plan.days.length){ j.busy=false; toast(t("No plan fits this gym. Pick a bigger gym and try again.")); return; }
   store.saveDays(plan.days.map(d=>({id:uid(),...d})));
   store.saveProfile(mergeProfile(state.profile,{goal:j.goal,...j.about}));
