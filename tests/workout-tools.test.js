@@ -154,3 +154,22 @@ test("elapsedMin from the first timed set", () => {
   assert.equal(elapsedMin({ entries: [{ sets: [{ w: 1, r: 1 }] }] }, T), null);
   assert.equal(elapsedMin(null, T), null);
 });
+
+test("prefill ignores warm-ups and drop sets, both today and in the last session", () => {
+  const last = { sets: [{ w: 40, r: 10, k: "w" }, { w: 60, r: 8 }, { w: 62.5, r: 6 }, { w: 40, r: 12, k: "d" }] };
+  assert.deepEqual(prefillFor({ sets: [] }, last), { w: "60", r: "8" }, "first working set, not the warm-up");
+  assert.deepEqual(prefillFor({ sets: [{ w: 40, r: 10, k: "w" }] }, last), { w: "60", r: "8" }, "a logged warm-up does not move the position");
+  assert.deepEqual(prefillFor({ sets: [{ w: 60, r: 8 }] }, last), { w: "62.5", r: "6" });
+  assert.deepEqual(prefillFor({ sets: [{ w: 60, r: 8 }, { w: 62.5, r: 6 }, { w: 50, r: 9, k: "d" }] }, last), { w: "62.5", r: "6" }, "repeat the last working set");
+  assert.deepEqual(prefillFor({ sets: [] }, { sets: [{ w: 40, r: 10, k: "w" }] }), { w: "20", r: "8" }, "a last session with only warm-ups is no history");
+});
+
+test("prefill with a suggestion: it starts the first working set, later sets repeat today's", () => {
+  const sug = { w: 82.5, r: 5 }, last = { sets: [{ w: 80, r: 8 }, { w: 80, r: 8 }] };
+  assert.deepEqual(prefillFor({ sets: [] }, last, sug), { w: "82.5", r: "5" });
+  assert.deepEqual(prefillFor({ sets: [{ w: 40, r: 10, k: "w" }] }, last, sug), { w: "82.5", r: "5" }, "a warm-up first still gets the suggestion");
+  assert.deepEqual(prefillFor({ sets: [{ w: 82.5, r: 5 }] }, last, sug), { w: "82.5", r: "5" }, "then today's last working set");
+  assert.deepEqual(prefillFor({ sets: [{ w: 82.5, r: 6 }] }, last, sug), { w: "82.5", r: "6" });
+  assert.deepEqual(prefillFor({ sets: [] }, null, sug), { w: "82.5", r: "5" });
+  assert.deepEqual(prefillFor({ sets: [] }, last, undefined), { w: "80", r: "8" });
+});

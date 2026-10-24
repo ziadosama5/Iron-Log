@@ -1,4 +1,5 @@
 // Workout helpers with no DOM or Firebase code, so they can be unit-tested in Node.
+import { workingSets } from "./progression.js";
 
 export const REST_MIN = 15;
 export const REST_MAX = 600;
@@ -44,11 +45,13 @@ export function fmtClock(sec) {
   return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
 }
 
-// Values for the next set: last session's set at the same position, else repeat today's last set,
-// else last session's first set, else a starter value.
-export function prefillFor(entry, last) {
-  const n = entry.sets.length;
-  const s = (last && last.sets[n]) || entry.sets[n - 1] || (last && last.sets[0]);
+// Values for the next set, from working sets only (warm-ups and drop sets are not "last time"): with a progression
+// suggestion, the first working set starts at it and later sets repeat today's last working set; otherwise last session's
+// set at the same position, else repeat today's last set, else last session's first set, else a starter value.
+export function prefillFor(entry, last, suggest) {
+  const mine = workingSets(entry.sets), prev = workingSets(last && last.sets), n = mine.length;
+  if (!n && suggest) return { w: String(Math.round(suggest.w * 100) / 100), r: String(suggest.r) };
+  const s = suggest && n ? mine[n - 1] : (prev[n] || mine[n - 1] || prev[0]);
   return s ? { w: String(Math.round(s.w * 100) / 100), r: String(s.r) } : { w: "20", r: "8" };
 }
 

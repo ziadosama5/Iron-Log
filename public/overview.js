@@ -1,6 +1,7 @@
 // Progress Overview: the series behind the headline numbers and graphs. Pure (no DOM/Firebase), unit-tested in tests/overview.test.js.
 import { weekKey, addDays, weeklyTarget, e1rm, prEvents } from "./achievements.js";
 import { trainedOn } from "./workout-tools.js";
+import { workingSets } from "./progression.js";
 import { weightOn, bmrFor, dayEnergy } from "./energy.js";
 
 export const weeklyTargetFor = weeklyTarget;
@@ -49,7 +50,7 @@ export function caloriesWeek(food, workouts, body, profile, today) {
 export function topLifts(workouts, today, n = 3) {
   const by = new Map(), cut = addDays(today, -30);
   (workouts || []).filter(w => w.date <= today).forEach(w => (w.entries || []).forEach(e => {
-    const best = Math.max(0, ...(e.sets || []).map(s => e1rm(s.w, s.r)));
+    const best = Math.max(0, ...workingSets(e.sets).map(s => e1rm(s.w, s.r)));
     if (!best) return;
     const k = String(e.ex).toLowerCase();
     if (!by.has(k)) by.set(k, { ex: e.ex, list: [] });

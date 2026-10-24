@@ -2,6 +2,7 @@
 // Pure functions (no DOM/Firebase), unit-tested in tests/achievements.test.js.
 import { trainedOn } from "./workout-tools.js";
 import { exerciseKcal, weightOn, dayEnergy, bmrFor } from "./energy.js";
+import { workingSets, volumeSets, isWorking } from "./progression.js";
 
 const pad = n => String(n).padStart(2, "0");
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -56,7 +57,7 @@ export function foodStreak(food, today) {
 export function prEvents(workouts) {
   const byEx = new Map();
   [...(workouts || [])].sort((a, b) => (a.date < b.date ? -1 : 1)).forEach(w => (w.entries || []).forEach(e => {
-    const best = Math.max(0, ...(e.sets || []).map(s => e1rm(s.w, s.r)));
+    const best = Math.max(0, ...workingSets(e.sets).map(s => e1rm(s.w, s.r)));   // warm-ups and drop sets are never a lift's best
     if (!best) return;
     const ex = String(e.ex).toLowerCase();
     if (!byEx.has(ex)) byEx.set(ex, []);
@@ -151,9 +152,9 @@ export function badges({ workouts = [], body = [], food = {}, days = [], profile
       weekCount.set(wk, (weekCount.get(wk) || 0) + 1);
       m.kcal += exerciseKcal(w, kg).total || 0;
       m.cardioMin += (w.cardio || []).reduce((a, c) => a + (c.min || 0), 0);
-      (w.entries || []).forEach(e => (e.sets || []).forEach(s => {
+      (w.entries || []).forEach(e => volumeSets(e.sets).forEach(s => {   // volume: normal + drop sets; strength ratios: normal sets
         m.volume += s.w * s.r;
-        if (kg) for (const [metric, name] of Object.entries(RATIO_LIFTS)) {
+        if (kg && isWorking(s)) for (const [metric, name] of Object.entries(RATIO_LIFTS)) {
           if (String(e.ex).toLowerCase() === name) m[metric] = Math.max(m[metric], s.w / kg);
         }
       }));

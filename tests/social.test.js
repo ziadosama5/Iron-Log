@@ -184,3 +184,10 @@ test("cleanDisplayName strips control and direction characters, squeezes spaces,
   assert.equal(cleanDisplayName("‮\u0007  "), "");
   assert.equal(cleanDisplayName(null), "");
 });
+
+test("buildSummary: volume counts normal and drop sets, not warm-ups", () => {
+  const w = { id: "w-2026-10-17", date: "2026-10-17", dayId: "d1", dayName: "Push", entries: [{ ex: "Bench Press", sets: [{ w: 100, r: 10, k: "w" }, { w: 60, r: 10 }, { w: 40, r: 10, k: "d" }] }] };
+  assert.equal(buildSummary({ ...base, workouts: [w], today: "2026-10-17" }, 1).volumeWeekKg, 1000);
+  const onlyWarm = { ...w, entries: [{ ex: "Bench Press", sets: [{ w: 100, r: 10, k: "w" }] }] };
+  assert.equal(buildSummary({ ...base, workouts: [onlyWarm], today: "2026-10-17" }, 1).volumeWeekKg, 0, "only warm-ups: no volume, no crash");
+});

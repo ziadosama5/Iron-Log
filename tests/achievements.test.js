@@ -181,3 +181,18 @@ test("goalProgress: the person's activity level changes the burn, so the calorie
   const plain = goalProgress(goalInput({ food })), active = goalProgress(goalInput({ food, profile: { ...goalInput().profile, activity: "very" } }));
   assert.ok(active.bank < plain.bank, `${active.bank} < ${plain.bank}`);
 });
+
+test("warm-ups and drop sets never make a PR; a warm-up-only exercise is harmless", () => {
+  const heavyWarm = { w: 100, r: 5, k: "w" }, heavyDrop = { w: 90, r: 5, k: "d" };
+  const ws = [wo("2026-10-01", [S(60, 5)]), wo("2026-10-03", [S(60, 5)]), wo("2026-10-05", [S(60, 5), heavyWarm, heavyDrop]), wo("2026-10-07", [{ w: 40, r: 10, k: "w" }])];
+  assert.deepEqual(prEvents(ws), []);
+  const real = [...ws.slice(0, 3), wo("2026-10-09", [S(65, 5)])];
+  assert.deepEqual(prEvents(real), [{ date: "2026-10-09", ex: "bench press" }]);
+});
+
+test("volume badges count drop sets but not warm-ups", () => {
+  const big = k => badges({ ...base, workouts: [wo("2026-10-05", [{ w: 1000, r: 100, k }], "Leg Press")] });
+  assert.equal(B(big("w"), "volume-100t").earned, null, "a warm-up adds no volume");
+  assert.equal(B(big("d"), "volume-100t").earned, "2026-10-05", "a drop set does");
+  assert.equal(B(big(undefined), "volume-100t").earned, "2026-10-05");
+});

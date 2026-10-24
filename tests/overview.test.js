@@ -87,3 +87,11 @@ test("caloriesWeek: activity level and own adjustment reach the target", () => {
   assert.ok(active > base);
   assert.equal(caloriesWeek({}, [], body, { ...profile, adjust: -300 }, TODAY)[6].target, base - 300);
 });
+
+test("topLifts: warm-ups and drop sets are not a lift's best, a warm-up-only exercise does not appear", () => {
+  const w = (date, sets, ex = "Bench Press") => ({ date, dayId: "d1", dayName: "Push", entries: [{ ex, sets }] });
+  const ws = [w("2026-10-20", [{ w: 100, r: 5, k: "w" }, { w: 90, r: 5, k: "d" }, { w: 60, r: 8 }]), w("2026-10-21", [{ w: 30, r: 10, k: "w" }], "Squat")];
+  const r = topLifts(ws, TODAY);
+  assert.deepEqual(r.map(x => x.ex), ["Bench Press"]);
+  assert.equal(r[0].best, Math.round(60 * (1 + 8 / 30) * 10) / 10);
+});
