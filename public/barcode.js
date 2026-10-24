@@ -22,6 +22,27 @@ export function validBarcode(digits) {
   return (10 - (sum % 10)) % 10 === check;
 }
 
+// The one form a product is stored and looked up under: UPC-A (12) becomes EAN-13 with a leading 0, a UPC-E (8) is expanded to
+// UPC-A first, EAN-8 and GTIN-14 stay. "" when the digits are not a valid barcode.
+function upceToUpca(d) {
+  const n = d[0], x = d.slice(1, 7), c = d[7], last = x[5];
+  const body = last <= "2" ? x.slice(0, 2) + last + "0000" + x.slice(2, 5)
+    : last === "3" ? x.slice(0, 3) + "00000" + x.slice(3, 5)
+    : last === "4" ? x.slice(0, 4) + "00000" + x[4]
+    : x.slice(0, 5) + "0000" + last;
+  return n + body + c;
+}
+export function canonicalBarcode(digits) {
+  if (typeof digits !== "string" || !/^[0-9]+$/.test(digits)) return "";
+  if (digits.length === 8) {
+    if (validBarcode(digits)) return digits;
+    if ((digits[0] === "0" || digits[0] === "1") && validBarcode(upceToUpca(digits))) return "0" + upceToUpca(digits);
+    return "";
+  }
+  if (!validBarcode(digits)) return "";
+  return digits.length === 12 ? "0" + digits : digits;
+}
+
 export function productUrl(digits) {
   return "https://world.openfoodfacts.org/api/v2/product/" + digits + ".json?fields=product_name,product_name_ar,brands,nutriments,serving_size,serving_quantity";
 }

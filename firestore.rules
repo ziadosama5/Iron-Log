@@ -79,7 +79,7 @@ service cloud.firestore {
                         || !existsAfter(usernamePath(get(profilePath(request.auth.uid)).data.username)));
       // Never edited in place. Deleting needs the profile to stop using the name in the same batch,
       // so nobody can leave orphan names behind.
-      allow delete: if signedIn() && resource.data.uid == request.auth.uid
+      allow delete: if signedIn() && (resource == null || resource.data.uid == request.auth.uid)
                     && (!existsAfter(profilePath(request.auth.uid))
                         || getAfter(profilePath(request.auth.uid)).data.username != name);
     }
@@ -93,7 +93,7 @@ service cloud.firestore {
                             && request.resource.data.keys().hasOnly(['uid'])
                             && request.resource.data.uid == request.auth.uid
                             && getAfter(profilePath(request.auth.uid)).data.findByEmail == true;
-      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && (resource == null || resource.data.uid == request.auth.uid);
     }
 
     match /profiles/{uid} {

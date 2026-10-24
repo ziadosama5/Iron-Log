@@ -22,23 +22,14 @@ In progress now: the owner is testing the later features on a real phone; expect
 
 ## B. Small known issues (deferred minors)
 **Profiles and search**
-- A failed profile load at sign-in looks like "no profile" (no retry); saving then says "taken".
-- "Delete my shared profile" can get stuck when a username or e-mail document is already gone.
 - Changing the Google e-mail leaves the old e-mail lookup document.
-- The first summary can be built before the first server sync; the summary goes stale at the Saturday week rollover until the next data change (`maybePublish` is not called from `checkNewDay`).
-- Display names may contain bidi or control characters.
-- `tests-rules/firestore-debug.log` is tracked in git (should be untracked and ignored).
 
 **Friends**
-- Both people sending a request at once shows a generic error to the second one.
-- A friend page can fetch the same profile more than once; an in-flight fetch at sign-out can land in the next account's cache.
-- No timeout on friend actions on a connection that looks online but is dead.
 - A hand-made client can befriend someone it blocked (the app does not offer it); a friend who deletes their profile leaves a stale `@name`.
 
 **My Gym**
 - The My Gym screen can redraw under a finger while tapping (values stay correct).
 - An Add exercise sheet left open over another tab can go stale after another device changes the gym.
-- Restoring a backup without the equipment option turns the gym into bodyweight-only.
 - Settings are one document: the last write wins between devices.
 
 **Personal journey**
@@ -53,26 +44,26 @@ In progress now: the owner is testing the later features on a real phone; expect
 
 **Challenges**
 - Two invitees accepting at the same instant can make one see "Couldn't save" (whole-array writes; `arrayUnion`/`arrayRemove` would avoid it).
-- Finished invitations are not shown, so they cannot be declined.
 - The owner's `names` map can carry odd labels for friends (display only).
 
 **Redesign (sw v26)**
-- Old wording still says "Body tab", "Coach tab" and "Workout tab" in a few hints and comments (they are now sections of Progress and Today).
 - The level card on Goals is a button that goes to Goals; it has an aria-label that hides its text from screen readers and a block element inside a button.
-- The celebration card has no `role="alertdialog"`, does not close on a backdrop tap, has no history entry (the Android back gesture leaves the app), and its queue survives sign-out.
-- A report started on a friend page also shows in the Find section; the pills are redrawn on every friend or challenge update (keyboard focus on a pill is lost); `#pills` and the tab bar share the label "Sections".
+- The celebration card has no history entry (the Android back gesture leaves the app).
+- A report started on a friend page also shows in the Find section.
 - `levelHero()` recomputes badges and XP on every Today redraw (could be cached on `state.dataRev`); `header`/`body::before` have no fallback for browsers without `color-mix` (before 2023); `background-attachment:fixed` and the header blur cost on phones; tapping the current tab only scrolls to the top.
-- Dead code: `friends-count`/`challenges-count` lookups, the old `.ach*` and `.more-row .count` CSS, unused `FULLSCREEN` export. The tile aria-label joins name and level with a Latin comma (Arabic).
+- The tile aria-label joins name and level with a Latin comma (Arabic). `FULLSCREEN` in nav.js is only used by its test.
 - Not checked on a real phone: 320 px width in Arabic (five tab labels), tab bar + rest bar + toast over safe-area insets, confetti frame rate.
 
 **Food table and barcode (sub-project 19)**
 - The food figures are estimates written from recipes and USDA values; the owner reviews `public/food-table.js` (the 74 `varies:true` dishes first). Open Food Facts data is user-edited and patchy for Egyptian products; implausible values are treated as "no calories on record".
 - My foods are one document (`foods`, max 200): two devices editing at once means the last write wins (same as `settings`).
-- Editing a scanned food rebuilds it from its first serving (the second serving is dropped; its grams box still covers 100 g).
 - The live camera path (BarcodeDetector on Android, the ZXing loop elsewhere) is only proven on a real phone; the tests use Chrome's fake camera and a generated EAN-13 picture.
-- Editing a meal down to zero foods shows the generic kcal message (delete the meal instead). The meal name is stored in the language it was saved in.
+- The meal name is stored in the language it was saved in.
 
 **Across the app:** writes on a connection that looks online but is dead can hang without a message (timeouts exist only for delete and report).
+
+## B3. Small-fixes batch (v42, 2026-10-24)
+Fixed: scanned-food edit keeps its other servings; zero-calorie meals (water) save, a blank typed meal says so; camera requests no longer overlap; UPC-A and EAN-13 (and UPC-E) are one product (`canonicalBarcode`); a non-JSON Open Food Facts answer is a failed lookup, repeated failure toasts are muted for 15 s; a tray with over 500 g protein is refused; the edit sheet shows the meal name in the app language; a deleted My food's serving shows its weight; a failed profile load is retried before saving; deleting a shared profile works when the username/e-mail doc is already gone (rules); display names are cleaned (`cleanDisplayName`); a request that crosses an incoming one becomes an accept; friend-profile fetches are de-duplicated and dropped after sign-out; lookups and profile saves have timeouts; a backup with unknown gym ids leaves the gym unset; expired challenge invitations can be removed; wording, dead code, celebration card (alertdialog, backdrop close, queue cleared on sign-out) and pill focus. Already fine when checked: the Saturday summary refresh (`checkNewDay` calls `maybePublish`) and `firestore-debug.log` (ignored by `*-debug.log`).
 
 ## B2. Review cleanups (done in v36, 2026-10-24)
 Fixed: stale history entry after Plan my training from the Edit plan menu; chart text now about 12px (viewBox close to the rendered width); Arabic dual (`tn` looks for `<other>#2`); the Friends podium waits for friends' data (`boardReady`); level hero label says it opens badges; `showMore` reset on sign-out; avatar on the Find result; Overview weight stat uses the latest weigh-in at any age; week labels are direction-safe. Kept on purpose: Block stays on request rows.

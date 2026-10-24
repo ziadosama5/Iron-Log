@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { cleanDigits, validBarcode, productUrl, normalizeProduct } from "../public/barcode.js";
+import { cleanDigits, validBarcode, productUrl, normalizeProduct, canonicalBarcode } from "../public/barcode.js";
 
 const FULL = { status: 1, product: { product_name: "Cola", product_name_ar: "", brands: "Fizz, Fizz Intl", serving_size: "330 ml", serving_quantity: 330,
   nutriments: { "energy-kcal_100g": 42, proteins_100g: 0 } } };
@@ -69,4 +69,18 @@ test("normalizeProduct accepts numbers sent as numeric strings, but not words", 
   assert.equal(normalizeProduct(words, "5449000000996"), null);
   assert.equal(normalizeProduct({ status: 1, product: { product_name: "Cola", nutriments: { "energy-kcal_100g": "" } } }, "5449000000996"), null, "empty string is no data");
   assert.equal(normalizeProduct({ status: 1, product: { product_name: "Cola", nutriments: { "energy-kcal_100g": 40, proteins_100g: "x" } } }, "5449000000996"), null, "protein that is not a number");
+});
+
+test("canonicalBarcode: UPC-A and EAN-13 of one product are the same code", () => {
+  assert.equal(canonicalBarcode("036000291452"), "0036000291452");
+  assert.equal(canonicalBarcode("0036000291452"), "0036000291452");
+  assert.equal(canonicalBarcode("5449000000996"), "5449000000996");
+  assert.equal(canonicalBarcode("96385074"), "96385074", "EAN-8 stays");
+  assert.equal(canonicalBarcode("036000291453"), "", "bad check digit");
+  assert.equal(canonicalBarcode("12ab"), "");
+});
+
+test("canonicalBarcode: UPC-E is expanded to UPC-A and checked with that check digit", () => {
+  assert.equal(canonicalBarcode("04252614"), "0042100005264");  // UPC-A 042100005264
+  assert.equal(canonicalBarcode("04252615"), "", "wrong check digit");
 });

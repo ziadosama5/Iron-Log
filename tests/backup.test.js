@@ -81,11 +81,11 @@ test("old workouts without t or cardio restore unchanged", () =>
 test("food docs are cleaned; doc without valid meals is skipped", () => {
   const f = { id: "f-2026-10-17", data: { date: "2026-10-17", updated: 1, meals: [
     { id: "m1", name: "Lunch", kcal: 650, protein: 45 }, { id: "m2", name: null, kcal: 300, protein: null },
-    { id: "m3", name: "x", kcal: 0, protein: null }, { id: "m4", name: "y".repeat(80), kcal: 100, protein: 900 }] } };
+    { id: "m3", name: "x", kcal: -1, protein: null }, { id: "m5", name: "Water", kcal: 0, protein: null }, { id: "m4", name: "y".repeat(80), kcal: 100, protein: 900 }] } };
   const r = cleanBackupItems([f], OPTS).items[0].data;
-  assert.deepEqual(r.meals.map(m => m.id), ["m1", "m2", "m4"]);
-  assert.equal(r.meals[2].name.length, 40);
-  assert.equal(r.meals[2].protein, null);
+  assert.deepEqual(r.meals.map(m => m.id), ["m1", "m2", "m5", "m4"]);
+  assert.equal(r.meals[3].name.length, 40);
+  assert.equal(r.meals[3].protein, null);
   assert.equal(cleanBackupItems([{ id: "f-2026-10-17", data: { date: "2026-10-17", meals: [] } }], OPTS).skipped, 1);
   assert.equal(cleanBackupItems([{ id: "f-2026-10-17", data: { date: "2026-10-16", meals: f.data.meals } }], OPTS).skipped, 1);
 });
@@ -126,9 +126,11 @@ test("settings gym that is not an array is dropped", () => {
   }
 });
 
-test("restore without an equipment option drops every gym id instead of trusting the file", () => {
+test("restore without an equipment option (or with only unknown ids) leaves the gym unset instead of bodyweight-only", () => {
   const { equipment, ...noEq } = OPTS;
-  assert.deepEqual(cleanBackupItems([{ id: "settings", data: { rest: {}, gym: ["barbell"] } }], noEq).items[0].data.gym, []);
+  assert.equal(cleanBackupItems([{ id: "settings", data: { rest: {}, gym: ["barbell"] } }], noEq).items[0].data.gym, undefined);
+  assert.equal(cleanBackupItems([{ id: "settings", data: { rest: {}, gym: ["made-up"] } }], OPTS).items[0].data.gym, undefined);
+  assert.deepEqual(cleanBackupItems([{ id: "settings", data: { rest: {}, gym: [] } }], OPTS).items[0].data.gym, [], "an explicit empty gym stays bodyweight-only");
 });
 
 const ITEM = { src: "table", ref: "ful-medames", name: "Ful medames", serving: "plate", amount: 1, grams: 250, kcal: 300, protein: 17.5 };

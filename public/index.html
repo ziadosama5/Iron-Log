@@ -193,7 +193,6 @@ a.more-row{text-decoration:none}
 .jr-opt{display:block;width:100%;text-align:start;padding:14px 16px;border:2px solid var(--line);border-radius:var(--r-card);background:var(--surface);color:var(--fg);font:600 16px/1.3 var(--f-body);cursor:pointer}
 .jr-opt small{display:block;font-weight:400;color:var(--muted);margin-top:2px}
 .jr-opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
-.more-row .count{margin-inline-start:auto;margin-inline-end:8px;min-width:22px;padding:2px 7px;border-radius:11px;background:var(--danger);color:#fff;font:700 12px/18px var(--f-body);text-align:center}
 .fcard{display:flex;align-items:center;gap:8px;width:100%;padding:12px 0;border:0;border-bottom:1px solid var(--line);background:none;color:var(--fg);font:inherit;text-align:start;cursor:pointer}
 .fcard svg{width:20px;height:20px;color:var(--muted);flex:none}
 .avatar{width:40px;height:40px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;background:hsl(var(--h) 55% 38%);color:#fff;font:700 15px/1 var(--f-num)}
@@ -416,12 +415,6 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .foodamt .amt{min-width:36px;text-align:center}
 .gbar{display:flex;flex-direction:column;gap:4px}
 .dots{letter-spacing:2px;color:var(--accent)}
-.achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
-.ach{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:10px 6px;border:1px solid var(--card-border);border-radius:14px;box-shadow:var(--shadow);background:var(--surface)}
-.ach .medal{width:30px;height:30px;border-radius:50%;background:var(--sunk);border:3px solid var(--line)}
-.ach.on .medal{background:var(--accent);border-color:var(--accent-soft)}
-.ach .bname{font-weight:600;font-size:13px;line-height:1.2}
-.ach:not(.on) .bname{color:var(--muted)}
 .cardio-adder{grid-template-columns:1fr 1fr}
 .cardio-adder .btn{grid-column:1/-1}
 .cardio-list{list-style:none;margin:0;padding:0}
@@ -476,7 +469,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 
 <div class="wrap">
   <main>
-    <nav id="pills" class="pills" aria-label="Sections" hidden></nav>
+    <nav id="pills" class="pills" aria-label="Pages in this tab" hidden></nav>
     <section id="view-signin" class="view" hidden></section>
     <section id="view-log" class="view" hidden></section>
     <section id="view-days" class="view" hidden></section>
@@ -526,7 +519,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 </div>
 <dialog id="exinfo" class="sheet" aria-labelledby="exinfo-title"></dialog>
 <dialog id="familysheet" class="sheet" aria-labelledby="family-title"></dialog>
-<dialog id="celebrate" class="celebrate" aria-live="assertive"></dialog>
+<dialog id="celebrate" class="celebrate" role="alertdialog" aria-labelledby="cele-title"></dialog>
 <dialog id="exsheet" class="sheet" aria-label="Add an exercise"></dialog>
 <dialog id="cardiosheet" class="sheet" aria-label="Cardio"></dialog>
 <dialog id="mealsheet" class="sheet" aria-label="Add a meal"></dialog>
@@ -549,8 +542,8 @@ import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtCl
 import { cleanBackupItems } from "./backup.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
-import { cleanDigits, validBarcode, productUrl, normalizeProduct } from "./barcode.js";
-import { FOODS, searchFoods, portionTotals, mealTotals, mealNumbers, asEntry, makeMyFood, recentFoods } from "./food-table.js";
+import { cleanDigits, canonicalBarcode, productUrl, normalizeProduct } from "./barcode.js";
+import { FOODS, searchFoods, portionTotals, mealTotals, mealNumbers, asEntry, makeMyFood, keepOtherServings, recentFoods } from "./food-table.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth, cacheKey } from "./overview.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
@@ -560,12 +553,12 @@ import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
 import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN, WEEK_CHOICES, nextSaturday, challengeDates, dayNumber, rankMembers, winners, standing, timeLeft, myResult, planCreate, planAccept as planAcceptChallenge, planLeave, planDelete } from "./challenges.js";
 import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
-import { planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs, rankBoard, weekCount, boardReady } from "./friends.js";
+import { pairId, planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs, rankBoard, weekCount, boardReady } from "./friends.js";
 import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney, assignWeekday } from "./plan-tools.js";
 import { FAMILIES, familyOf, allFamilies, closestFamily, tierFor } from "./badge-art.js";
 import { buildCards, newWins } from "./celebrate.js";
 import { TABS, PILL_LABEL, tabOf, pillsFor, migrateView, neighborTab, swipeDirection } from "./nav.js";
-import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername, lookupResult, shareLabel } from "./social.js";
+import { buildSummary, planShare, shouldPublish, normalizeEmail, normalizeUsername, validUsername, lookupResult, shareLabel, cleanDisplayName } from "./social.js";
 (function(){
 /* exercise library (LIB, MUSCLES, ALL_EX, TEMPLATES) lives in exercise-library.js */
 
@@ -606,7 +599,7 @@ const store = {
       this.stopFriends(); state.showMore={}; state.friends=freshFriends(); this.stopChallenges(); state.challenges=freshChallenges(); renderFriendsBadge();
       this.user=user; state.authed=!!user; authKnown=true;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.myFoods=[]; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; stopScan(); state.mealDraft=freshMealDraft(); setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.myFoods=[]; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; stopScan(); state.mealDraft=freshMealDraft(); celeQueue.length=0; setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
       this.loadShare().then(()=>{ maybePublish(); refreshFriendNames(); if(state.view==="profile") renderProfile(); });
       this.watchFriends(); this.watchChallenges();
@@ -730,21 +723,29 @@ const store = {
       return {ok:true};
     }catch(e){ console.error(e); return {ok:false,step,reason:"error"}; }
   },
-  async friendProfile(uid){
-    let p=null;
-    try{ const s=await getDoc(doc(fs,"profiles",uid)); p=s.exists()?s.data():null; }catch(e){}
-    state.friends.data[uid]={profile:p,at:Date.now()}; return p;
+  // One fetch per person at a time; an answer that arrives after sign-out or an account switch is thrown away.
+  friendProfile(uid){
+    const fr=state.friends; fr.inflight=fr.inflight||{};
+    if(fr.inflight[uid]) return fr.inflight[uid];
+    return fr.inflight[uid]=(async()=>{
+      let p=null;
+      try{ const s=await withTimeout(getDoc(doc(fs,"profiles",uid)),20000); p=s.exists()?s.data():null; }catch(e){}
+      delete fr.inflight[uid];
+      if(state.friends===fr) fr.data[uid]={profile:p,at:Date.now()};
+      return p;
+    })();
   },
   async loadShare(){
-    const sh=state.share; sh.loaded=false;
-    try{ const snap=await getDoc(doc(fs,"profiles",this.user.uid)); sh.profile=snap.exists()?snap.data():null; sh.last=(sh.profile&&sh.profile.summary)||null; sh.lastAt=0; }
-    catch(e){ console.error(e); sh.profile=null; }
+    const sh=state.share; sh.loaded=false; sh.failed=false;
+    try{ const snap=await withTimeout(getDoc(doc(fs,"profiles",this.user.uid)),20000); sh.profile=snap.exists()?snap.data():null; sh.last=(sh.profile&&sh.profile.summary)||null; sh.lastAt=0; }
+    catch(e){ console.error(e); sh.profile=null; sh.failed=true; }
     sh.loaded=true;
   },
   // next = {username, displayName, visibility, findByEmail}. Returns {ok:true} or {ok:false, reason}.
   async saveShare(next){
     if(navigator.onLine===false) return {ok:false,reason:"offline"};
     const u=this.user, sh=state.share, email=u.emailVerified?normalizeEmail(u.email):null;
+    if(sh.failed){ await this.loadShare(); if(sh.failed) return {ok:false,reason:"error"}; }  // the sign-in load failed: never save over a profile we could not read
     const summary=(next.visibility==="friends"||next.visibility==="public")?currentSummary():null;
     const plan=planShare({uid:u.uid,current:sh.profile,next,email,summary,now:Date.now()});
     if(plan.error) return {ok:false,reason:plan.error};
@@ -752,7 +753,7 @@ const store = {
     try{
       const b=writeBatch(fs);
       for(const o of plan.ops){ const ref=doc(fs,...o.path); if(o.op==="set") b.set(ref,o.data); else if(o.op==="update") b.update(ref,o.data); else b.delete(ref); }
-      await b.commit();
+      await withTimeout(b.commit(),20000);
       sh.profile=plan.ops.find(o=>o.path[0]==="profiles").data; sh.last=summary; sh.lastAt=Date.now();
       return {ok:true};
     }catch(e){ console.error(e); return {ok:false,reason:e&&e.code==="permission-denied"?"taken":"error"}; }
@@ -765,7 +766,7 @@ const store = {
       const b=writeBatch(fs), email=this.user.emailVerified?normalizeEmail(this.user.email):null;
       b.delete(doc(fs,"profiles",this.user.uid)); b.delete(doc(fs,"usernames",p.username));
       if(p.findByEmail&&email) b.delete(doc(fs,"emails",email));
-      await b.commit(); sh.profile=null; sh.last=null; return true;
+      await withTimeout(b.commit(),20000); sh.profile=null; sh.last=null; return true;
     }catch(e){ console.error(e); return false; }
   },
   // Exact username or e-mail -> {status:"found", uid, profile} or {status:"none"}. Every failure (missing,
@@ -774,11 +775,11 @@ const store = {
     try{
       const raw=String(q||"").trim(), email=normalizeEmail(raw);
       let uid=null, byName=null;
-      if(email){ const s=await getDoc(doc(fs,"emails",email)); if(s.exists()) uid=s.data().uid; }
-      else{ const name=normalizeUsername(raw); if(!validUsername(name).ok) return {status:"none"}; const s=await getDoc(doc(fs,"usernames",name)); if(s.exists()){ uid=s.data().uid; byName=name; } }
+      if(email){ const s=await withTimeout(getDoc(doc(fs,"emails",email)),20000); if(s.exists()) uid=s.data().uid; }
+      else{ const name=normalizeUsername(raw); if(!validUsername(name).ok) return {status:"none"}; const s=await withTimeout(getDoc(doc(fs,"usernames",name)),20000); if(s.exists()){ uid=s.data().uid; byName=name; } }
       if(!uid) return {status:"none"};
       try{
-        const p=await getDoc(doc(fs,"profiles",uid));
+        const p=await withTimeout(getDoc(doc(fs,"profiles",uid)),20000);
         if(p.exists()) return {status:"found",uid,profile:p.data()};
       }catch(e){}
       return byName?{status:"hidden",uid,username:byName}:{status:"none"};
@@ -860,7 +861,7 @@ let tt; function toast(t){
 /* ---------- sharing: publish the progress summary ---------- */
 // Friends/public viewers see a small summary computed here from your own data (never raw workouts or body data).
 function currentSummary(){ return buildSummary({workouts:state.workouts,body:state.body,food:state.food,days:state.days,profile:state.profile,today:today()},Date.now()); }
-// Dot on the More tab (and the count in its sheet row) while friend requests wait for me.
+// Dot on the Friends tab while friend requests or challenge invitations wait for me.
 function incomingRequests(){ return state.authed&&state.friends.loaded?groupFriendships(state.friends.docs,store.user.uid,state.friends.blocks).requests.length:0; }
 function incomingChallenges(){
   if(!state.authed||!state.challenges.loaded||!store.user) return 0; const me=store.user.uid, t=today();
@@ -868,8 +869,6 @@ function incomingChallenges(){
 }
 function renderFriendsBadge(){
   const n=incomingRequests(), m=incomingChallenges(), b=document.querySelector('.tabbar [data-tab="friends"]'); if(b) b.classList.toggle("has-dot",n+m>0); renderPills();
-  const c=document.getElementById("friends-count"); if(c){ c.textContent=n?String(n):""; c.hidden=!n; }
-  const k=document.getElementById("challenges-count"); if(k){ k.textContent=m?String(m):""; k.hidden=!m; }
 }
 // After a rename, put my new username into my friendship docs (once per session).
 function refreshFriendNames(){
@@ -995,12 +994,14 @@ function renderChallenges(){
   if(c.open){ renderChallengePage(el); return; }
   if(c.form){ renderChallengeForm(el); return; }
   const me=store.user.uid, t0=today(), mine=c.docs.map(ch=>({ch,st:statusOf(ch,t0)}));
-  const inv=mine.filter(x=>!x.ch.joined.includes(me)&&x.st!=="finished"), act=mine.filter(x=>x.ch.joined.includes(me)&&x.st!=="finished"), fin=mine.filter(x=>x.ch.joined.includes(me)&&x.st==="finished");
+  const inv=mine.filter(x=>!x.ch.joined.includes(me)&&x.st!=="finished"), act=mine.filter(x=>x.ch.joined.includes(me)&&x.st!=="finished"), fin=mine.filter(x=>x.ch.joined.includes(me)&&x.st==="finished"), old=mine.filter(x=>!x.ch.joined.includes(me)&&x.st==="finished");
   let h=`<div class="row"><h2 class="grow">Challenges</h2><button class="btn small primary" data-act="ch-new">New challenge</button></div>`;
   if(!mine.length) h+=`<div class="card"><p class="prev" style="margin:0">No challenges yet. Start one with your friends: whoever trains on more days wins.</p></div>`;
   if(inv.length) h+=`<div class="card"><h3>Invitations</h3>${inv.map(({ch})=>`<div class="stack" style="gap:6px"><div class="row" style="gap:10px;flex-wrap:nowrap">${chIcon("invited")}<div class="grow stack" style="gap:2px"><div class="row" style="gap:8px"><b class="grow">${esc(chWeeksLabel(ch.weeks))}</b>${chBadge("invited",t("Invited"))}</div><span class="prev">${esc(chRange(ch))}</span></div></div>${chAvs(ch)}<span class="prev">${esc(t("From {name}",{name:iso("@"+(ch.names[ch.owner]||"?"))}))}</span>${ch.members.some(m=>m!==me&&m!==ch.owner)?`<span class="prev">${esc(t("With {names}",{names:ch.members.filter(m=>m!==me&&m!==ch.owner).map(m=>iso("@"+(ch.names[m]||"?"))).join(", ")}))}</span>`:""}${state.friends.blocks.some(b=>ch.members.includes(b.blocked))?`<span class="prev">${esc(t("Someone you blocked is in this challenge."))}</span>`:""}<div class="row">${state.friends.blocks.some(b=>ch.members.includes(b.blocked))?"":`<button type="button" class="btn small primary" data-act="ch-accept" data-id="${esc(ch.id)}">Accept</button>`}<button type="button" class="btn small" data-act="ch-decline" data-id="${esc(ch.id)}">Decline</button></div></div>`).join("")}</div>`;
   if(act.length) h+=`<div class="card"><h3>Active</h3>${act.map(x=>chRow(x.ch)).join("")}</div>`;
   if(fin.length) h+=`<div class="card"><h3>Finished</h3>${fin.map(x=>chRow(x.ch)).join("")}</div>`;
+  // invitations never answered before the challenge ended: nothing to accept, but they can be cleared
+  if(old.length) h+=`<div class="card"><h3>Expired invitations</h3>${old.map(({ch})=>`<div class="row" style="gap:8px"><div class="grow stack" style="gap:2px"><b>${esc(chWeeksLabel(ch.weeks))}</b><span class="prev">${esc(chRange(ch))} · ${esc(t("From {name}",{name:iso("@"+(ch.names[ch.owner]||"?"))}))}</span></div><button type="button" class="btn small" data-act="ch-decline" data-id="${esc(ch.id)}">Remove</button></div>`).join("")}</div>`;
   el.innerHTML=h;
 }
 function chFriends(){ return groupFriendships(state.friends.docs,store.user.uid,state.friends.blocks).friends.filter(x=>x.name); }
@@ -1151,13 +1152,24 @@ async function frDo(plan,okMsg){
   toast(t(r.ok?okMsg:r.reason==="offline"?"You're offline. Try again when you're back online.":"Couldn't save. Check your connection."));
   return r.ok;
 }
+// If the other person already asked me (a request in the list, or one sent at the same moment), accepting beats a second request.
+async function requestFriend(me,mine,other,name,now,g){
+  if(g.requests.some(x=>x.uid===other)){ frDo(planAccept({me,other,now}),"You are now friends"); return; }
+  const r=await store.friendAction(planRequest({me,meName:mine.username,other,otherName:name,now}));
+  if(r.ok){ toast(t("Request sent")); return; }
+  if(r.reason!=="offline"){
+    try{ const s=await withTimeout(getDoc(doc(fs,"friendships",pairId(me,other))),20000);
+      if(s.exists()&&s.data().status==="pending"&&s.data().requester===other){ frDo(planAccept({me,other,now}),"You are now friends"); return; } }catch(e){}
+  }
+  toast(t(r.reason==="offline"?"You're offline. Try again when you're back online.":"Couldn't save. Check your connection."));
+}
 function frClick(act,d){
   const f=state.friends, me=store.user.uid, now=Date.now(), g=groupFriendships(f.docs,me,f.blocks), other=d.uid, name=d.name;
   switch(act){
     case "fr-request":{ const mine=state.share.profile;
       if(!mine){ toast(t("Choose a username first")); return; }
       if(g.sent.length>=SENT_CAP){ toast(t("You have too many pending requests")); return; }
-      frDo(planRequest({me,meName:mine.username,other,otherName:name,now}),"Request sent"); return; }
+      requestFriend(me,mine,other,name,now,g); return; }
     case "fr-accept":
       if(g.friends.length>=FRIEND_CAP){ toast(t("You have reached the friends limit")); return; }
       frDo(planAccept({me,other,now}),"You are now friends"); return;
@@ -1382,7 +1394,7 @@ function dayPicker(w){
 }
 // Suggestions while typing an exercise: limited to the muscles of the day (or the picked free-workout muscles); no focus = all.
 function exDatalist(id,focus){ return `<datalist id="${id}">${typeaheadNames({history:exerciseNames(),dayNames:state.days.flatMap(d=>d.exercises||[]),all:ALL_EX,gym:activeGym(),focus}).map(n=>`<option value="${esc(nameOf("ex",n))}">`).join("")}</datalist>`; }
-/* cardio card (Workout tab) */
+/* cardio card (Today tab) */
 const CARDIO_LABEL={treadmill:"Treadmill",elliptical:"Elliptical",bike:"Bike",other:"Other"};
 const INT_LABEL={easy:"Easy",moderate:"Moderate",hard:"Hard"};
 const cardioLabel=ty=>nameOf("cardio",CARDIO_LABEL[ty]||"Cardio");
@@ -1800,7 +1812,7 @@ function renderBody(){
   let h=`<h2>Body</h2>`+quickWeightCard(entry);
   if(!profileReady()||state.editProfile){
     h+=`<form class="card" id="profile-form" autocomplete="off"><h3>About you</h3>
-      <p class="prev" style="margin:0">Used to estimate calories, protein and healthy ranges on the Coach tab. Only you can see it.</p>
+      <p class="prev" style="margin:0">Used to estimate calories, protein and healthy ranges in Coach. Only you can see it.</p>
       <div class="fields">
         <label><span class="label">Sex</span><select id="pf-sex" name="sex"><option value="">Choose</option><option value="male" ${p.sex==="male"?"selected":""}>Male</option><option value="female" ${p.sex==="female"?"selected":""}>Female</option></select></label>
         <label><span class="label">Height · cm</span><input id="pf-height" name="height" inputmode="decimal" value="${p.height??""}"></label>
@@ -1848,7 +1860,7 @@ function renderBody(){
     h+=`<div class="card" style="overflow-x:auto"><h3>Recent entries</h3><table><thead><tr><th>Date</th><th class="r">Weight</th><th class="r">Waist</th><th class="r">Fat %</th><th class="r">Muscle</th></tr></thead><tbody>${
       rows.map(e=>`<tr data-bdate="${esc(e.date)}" style="cursor:pointer"><td style="white-space:nowrap">${fmtDate(e.date)}</td>${["weight","waist","pbf","smm"].map(k=>`<td class="r num">${e[k]!=null?kg(e[k]):"–"}</td>`).join("")}</tr>`).join("")}</tbody></table>${more.btn}</div>`;
   } else {
-    h+=`<div class="empty"><strong>No body data yet</strong>Log your weight above. Add measurements or an InBody scan whenever you have them, and the Coach tab will start using them.</div>`;
+    h+=`<div class="empty"><strong>No body data yet</strong>Log your weight above. Add measurements or an InBody scan whenever you have them, and Coach will start using them.</div>`;
   }
   $("#view-body").innerHTML=h;
 }
@@ -1949,7 +1961,7 @@ function insights(){
   if(wins.length) add("Training","good",t("Progressing: {list}",{list:names(wins.slice(0,3),"ex")}),t("New bests recently. Keep adding small amounts of weight or reps each week."));
   return out;
 }
-/* Today card (Coach tab): eaten vs burned vs target, from energy.js */
+/* Today card: eaten vs burned vs target, from energy.js */
 // Balance is "good" when it points the way the goal needs.
 function balanceGood(goal,bal){
   if(bal==null) return false;
@@ -1973,8 +1985,8 @@ function levelHero(){
 function energyView(){
   const d=state.date, p=state.profile, kg=weightOn(state.body,d), b=bmrFor(p,state.body,d);
   const e=dayEnergy({bmr:b?b.bmr:null, kg, goal:p.goal, workout:workoutFor(d)||null, food:state.food[d]||null});
-  const missing = kg==null ? t("Log your weight on the Body tab to see calories burned and your target.")
-    : !b ? t("Fill in About you on the Body tab to see calories burned and your target.") : "";
+  const missing = kg==null ? t("Log your weight in Progress › Body to see calories burned and your target.")
+    : !b ? t("Fill in About you in Progress › Body to see calories burned and your target.") : "";
   return {p, kg, e, missing, meals:(state.food[d]&&state.food[d].meals)||[]};
 }
 /* ---------- FOOD PICKER (meal sheet) ---------- */
@@ -1992,7 +2004,7 @@ const servingLabel=(e,s)=>e.group==="mine"||!isRtl()?s.en:s.ar;
 function itemLabel(it){ const e=it.src==="table"?FOODS.find(f=>f.id===it.ref):null; return e?foodLabel(e):it.name; }
 function itemAmountText(it){
   if(it.serving==="g") return t("{n} g",{n:it.amount});
-  const e=foodEntry(it.src,it.ref), s=e&&e.servings.find(x=>x.id===it.serving), label=s?servingLabel(e,s):it.serving;
+  const e=foodEntry(it.src,it.ref), s=e&&e.servings.find(x=>x.id===it.serving), label=s?servingLabel(e,s):it.grams!=null?t("{n} g",{n:it.grams}):t("Serving");  // the food was deleted: show its weight, never the serving id
   return it.amount===1?label:t("{n} × {label}",{n:it.amount,label});
 }
 const gramsNumber=dr=>Number(String(dr.grams).trim().replace(",","."));
@@ -2091,7 +2103,7 @@ function addDraftFood(){
   const sel=draftSel(dr), tot=portionTotals(e,sel); if(!tot) return;
   dr.items.push({src:dr.open.src,ref:dr.open.src==="scan"?e.barcode:e.id,name:e.en,serving:sel.serving,amount:sel.serving==="g"?sel.grams:sel.amount,grams:tot.grams,kcal:tot.kcal,protein:tot.protein});
   if(dr.open.src==="scan"&&dr.scanFood){
-    if(dr.scanFood.save&&!state.myFoods.some(f=>f.barcode===e.barcode)){ if(state.myFoods.length<200) store.saveFoods([...state.myFoods,dr.scanFood.food]); else toast(t("You can save up to {n} foods.",{n:200})); }
+    if(dr.scanFood.save&&!state.myFoods.some(f=>f.barcode&&canonicalBarcode(f.barcode)===canonicalBarcode(e.barcode))){ if(state.myFoods.length<200) store.saveFoods([...state.myFoods,dr.scanFood.food]); else toast(t("You can save up to {n} foods.",{n:200})); }
     dr.scanFood=null;
   }
   dr.open=null; dr.query=""; dr.grams=""; dr.showAll=false; redrawMealSheet();
@@ -2107,7 +2119,7 @@ function trayStep(i,dir){
 /* ---------- barcode scan (inside the meal sheet) ---------- */
 // The camera picture is read on the phone and never stored or sent; only the barcode digits go to Open Food Facts.
 // BarcodeDetector is used where the browser has it (Chrome on Android); otherwise the vendored ZXing library is loaded on first use.
-const scanner={stream:null,timer:null,busy:false,last:"",lastAt:0};
+const scanner={stream:null,timer:null,busy:false,starting:false,last:"",lastAt:0};
 function stopScan(){
   clearInterval(scanner.timer); scanner.timer=null; scanner.busy=false;
   if(scanner.stream){ scanner.stream.getTracks().forEach(tr=>tr.stop()); scanner.stream=null; }
@@ -2122,14 +2134,15 @@ function setScanCamera(mode){ const sc=state.mealDraft.scan; if(sc) sc.camera=mo
 function setScanBusy(on){ const b=document.querySelector("#scan-form button"); if(b) b.disabled=on; }
 function scanUnavailable(){ setScanCamera("off"); setScanMsg(t("Camera not available. Type the number instead.")); }
 async function startScan(){
-  const sc=state.mealDraft.scan; if(!sc) return;
+  const sc=state.mealDraft.scan; if(!sc||scanner.starting) return;  // one camera request at a time
   stopScan();
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ scanUnavailable(); return; }
   setScanCamera("starting"); setScanMsg(t("Starting the camera…"));
-  let stream;
+  let stream; scanner.starting=true;
   try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false}); }
-  catch(e){ if(state.mealDraft.scan===sc) scanUnavailable(); return; }
-  if(state.mealDraft.scan!==sc){ stream.getTracks().forEach(tr=>tr.stop()); return; }  // closed while the permission question was open
+  catch(e){ scanner.starting=false; if(state.mealDraft.scan===sc) scanUnavailable(); else if(state.mealDraft.scan) startScan(); return; }
+  scanner.starting=false;
+  if(state.mealDraft.scan!==sc){ stream.getTracks().forEach(tr=>tr.stop()); if(state.mealDraft.scan) startScan(); return; }  // closed while the permission question was open (a newer scan view waits for its own camera)  // closed while the permission question was open
   scanner.stream=stream;
   const v=document.getElementById("scan-video"); v.srcObject=stream; v.play().catch(()=>{});
   setScanCamera("on"); setScanMsg(t("Point the camera at the barcode."));
@@ -2148,8 +2161,8 @@ async function startScan(){
 }
 // The same code seen again within 3 seconds is ignored (the camera keeps reading it while the lookup runs).
 function onScanned(raw){
-  const d=cleanDigits(raw), now=Date.now();
-  if(!validBarcode(d)||(d===scanner.last&&now-scanner.lastAt<3000)) return;
+  const d=canonicalBarcode(cleanDigits(raw)), now=Date.now();
+  if(!d||(d===scanner.last&&now-scanner.lastAt<3000)) return;
   scanner.last=d; scanner.lastAt=now; lookupBarcode(d);
 }
 function openScan(){
@@ -2165,18 +2178,18 @@ function finishScan(sf,digits){
 }
 async function lookupBarcode(raw){
   const sc=state.mealDraft.scan; if(!sc||sc.busy) return;
-  const d=cleanDigits(raw);
-  if(!validBarcode(d)){ setScanMsg(t("That number isn't a valid barcode")); return; }
-  const saved=state.myFoods.find(f=>f.barcode===d);
-  if(saved){ finishScan({food:saved,save:false},d); return; }
+  const d=canonicalBarcode(cleanDigits(raw));
+  if(!d){ setScanMsg(t("That number isn't a valid barcode")); return; }
+  const saved=state.myFoods.find(f=>f.barcode&&canonicalBarcode(f.barcode)===d);
+  if(saved){ finishScan({food:saved,save:false},saved.barcode); return; }
   if(navigator.onLine===false){ toast(t("You're offline. Try again when you're back online.")); return; }
   sc.busy=true; setScanBusy(true); setScanMsg(t("Looking it up…"));
   let json=null, failed=false;
-  try{ const r=await withTimeout(fetch(productUrl(d)),20000); failed=r.status>=500; try{ json=await r.json(); }catch(e){ json=null; } }
+  try{ const r=await withTimeout(fetch(productUrl(d)),20000); failed=r.status>=500; try{ json=await r.json(); }catch(e){ failed=true; } }  // an answer that is not JSON is a failed lookup, not "no calories"
   catch(e){ failed=true; }
   if(state.mealDraft.scan!==sc) return;  // closed meanwhile
   sc.busy=false; setScanBusy(false); setScanMsg("");
-  if(failed){ toast(t("Couldn't look that up. Check your connection.")); return; }
+  if(failed){ scanner.lastAt=Date.now()+12000; toast(t("Couldn't look that up. Check your connection.")); return; }  // the camera keeps seeing this code: stay quiet about it for 15 s
   const food=normalizeProduct(json,d);
   if(food){ finishScan({food,save:true},d); return; }
   // unknown product, or no calories on record: type them once and they are kept
@@ -2214,7 +2227,7 @@ function foodClick(act,d){
     case "tray-remove": dr.items.splice(Number(d.i),1); redrawMealSheet(); return;
     case "meal-edit":{
       const day=state.date, m=((state.food[day]&&state.food[day].meals)||[]).find(x=>x.id===d.id); if(!m||!m.items||!m.items.length) return;
-      state.mealDraft={...freshMealDraft(),items:m.items.map(i=>({...i})),name:m.name||"",editId:m.id,editDate:day};
+      state.mealDraft={...freshMealDraft(),items:m.items.map(i=>({...i})),name:m.name?nameOf("meal",m.name):"",editId:m.id,editDate:day};
       openSheet("#mealsheet"); return; }
     case "scan-open": openScan(); return;
     case "scan-close": closeScan(); redrawMealSheet(); return;
@@ -2239,7 +2252,7 @@ function foodClick(act,d){
       const food=makeMyFood({id:f.id||undefined,name:f.name,kcal:num(f.kcal),protein:opt(f.protein),servingName:f.serving,grams:opt(f.grams),barcode:f.barcode});
       if(!food){ toast(t("Check the numbers and try again")); return; }
       if(!f.id&&state.myFoods.length>=200){ toast(t("You can save up to {n} foods.",{n:200})); return; }
-      store.saveFoods(f.id?state.myFoods.map(x=>x.id===f.id?food:x):[...state.myFoods,food]);
+      store.saveFoods(f.id?state.myFoods.map(x=>x.id===f.id?keepOtherServings(x,food):x):[...state.myFoods,food]);
       dr.myForm=null; dr.query=food.name; dr.open=null; redrawMealSheet(); return; }
     case "myfood-delete": store.saveFoods(state.myFoods.filter(x=>x.id!==d.ref)); dr.open=null; toast(t("Food deleted")); redrawFoodResults(); return;
     case "manual-toggle": dr.manual=true; redrawMealSheet(); { const k=$("#meal-kcal"); if(k) k.focus(); } return;
@@ -2272,7 +2285,7 @@ function todayCard(){
 function renderCoach(){
   const list=sortTips(insights());
   let h=`<h2>Coach</h2>`;
-  if(!profileReady()) h+=`<div class="notice">Add your sex, height, birth year and goal on the Body tab for calorie targets and personalised ranges. <button class="btn small" data-act="goto-body" style="margin-inline-start:6px">Go to Body</button></div>`;
+  if(!profileReady()) h+=`<div class="notice">Add your sex, height, birth year and goal in Progress › Body for calorie targets and personalised ranges. <button class="btn small" data-act="goto-body" style="margin-inline-start:6px">Go to Body</button></div>`;
   if(!list.length){
     h+=`<div class="empty"><strong>Nothing to analyse yet</strong>Log a few workouts and your body weight, and suggestions will show up here.</div>`;
   } else {
@@ -2419,12 +2432,14 @@ function nextCelebration(){
   } else {
     face=`<div class="face gold"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg></div>`; label=t("You won!"); title=t("You won the challenge"); line=c.challengeName||"";
   }
-  d.innerHTML=`<canvas aria-hidden="true"></canvas>${face}${stars}<span class="label">${esc(label)}</span><h2>${esc(title)}</h2><p class="prev" style="margin:0 0 16px">${esc(line)}</p><button class="btn primary" data-act="cele-close" style="width:100%">${t("Nice!")}</button>`;
+  d.innerHTML=`<canvas aria-hidden="true"></canvas>${face}${stars}<span class="label">${esc(label)}</span><h2 id="cele-title">${esc(title)}</h2><p class="prev" style="margin:0 0 16px">${esc(line)}</p><button class="btn primary" data-act="cele-close" style="width:100%">${t("Nice!")}</button>`;
   if(!d.open) d.showModal();
   const b=d.querySelector("[data-act=cele-close]"); if(b) b.focus();
   confetti(d.querySelector("canvas"));
 }
 $("#celebrate").addEventListener("close",()=>{ celeOpen=false; if(celeQueue.length) nextCelebration(); });
+// A tap outside the card closes it too.
+$("#celebrate").addEventListener("click",e=>{ const d=e.currentTarget, r=d.getBoundingClientRect(); if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) d.close(); });
 function confetti(cv){
   if(!cv||matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   const dpr=Math.min(2,window.devicePixelRatio||1), W=cv.width=Math.round(innerWidth*dpr), H=cv.height=Math.round(innerHeight*dpr), ctx=cv.getContext("2d");
@@ -2716,9 +2731,13 @@ function renderPills(){
   const box=$("#pills"); if(!box) return;
   const list=state.authed?pillsFor(tabOf(state.view)):[];
   box.hidden=!list.length;
-  if(!list.length){ box.innerHTML=""; return; }
+  if(!list.length){ box.innerHTML=""; delete box.dataset.html; return; }
   const n=incomingRequests(), m=incomingChallenges();
-  box.innerHTML=list.map(v=>{ const c=v==="friends"?n:v==="challenges"?m:0; return `<button class="pill" data-act="pill" data-view="${v}" aria-pressed="${v===state.view}">${esc(t(PILL_LABEL[v]))}${c?`<span class="count">${c}</span>`:""}</button>`; }).join("");
+  const html=list.map(v=>{ const c=v==="friends"?n:v==="challenges"?m:0; return `<button class="pill" data-act="pill" data-view="${v}" aria-pressed="${v===state.view}">${esc(t(PILL_LABEL[v]))}${c?`<span class="count">${c}</span>`:""}</button>`; }).join("");
+  if(box.dataset.html===html) return;  // unchanged: leave the buttons alone so keyboard focus stays
+  const focused=document.activeElement&&box.contains(document.activeElement)?document.activeElement.dataset.view:null;
+  box.innerHTML=html; box.dataset.html=html;
+  if(focused){ const b=box.querySelector(`[data-view="${focused}"]`); if(b) b.focus(); }
 }
 function renderSignin(){
   const el=$("#view-signin");
@@ -2772,10 +2791,10 @@ document.addEventListener("submit",e=>{
     if(!v.ok){ toast(t(USERNAME_MSG[v.reason])); return; }
     const p=state.share.profile, first=String((store.user&&store.user.displayName)||"").split(" ")[0];
     if(p&&p.username===n) return;
-    runShare({username:n,displayName:p?p.displayName:(first||n).slice(0,40),visibility:p?p.visibility:"private",findByEmail:p?p.findByEmail:false}); return;
+    runShare({username:n,displayName:p?p.displayName:(cleanDisplayName(first)||n).slice(0,40),visibility:p?p.visibility:"private",findByEmail:p?p.findByEmail:false}); return;
   }
   if(f.id==="name-form"){
-    const d=$("#pf-display").value.trim().slice(0,40), p=state.share.profile;
+    const d=cleanDisplayName($("#pf-display").value), p=state.share.profile;
     if(!d){ toast(t("Enter a display name")); return; }
     if(p&&d!==p.displayName) runShare({...shareFields(p),displayName:d}); return;
   }
@@ -2787,15 +2806,17 @@ document.addEventListener("submit",e=>{
   }
   if(f.id==="scan-form"){ const sc=state.mealDraft.scan; if(sc){ sc.digits=$("#scan-digits").value; lookupBarcode(sc.digits); } return; }
   if(f.id==="meal-form"){
-    const dr=state.mealDraft, name=reverseName("meal",$("#meal-name").value.trim()), bad=()=>toast(t("Enter 1–5000 kcal (protein 0–500 g)"));
+    const dr=state.mealDraft, name=reverseName("meal",$("#meal-name").value.trim()), bad=()=>toast(t("Enter 0–5000 kcal (protein 0–500 g)"));
     let meal;
     if(dr.items.length){
       const tot=mealTotals(dr.items);
-      if(!(tot.kcal>=1&&tot.kcal<=5000)||name.length>40){ bad(); return; }
+      if(!(tot.kcal>=0&&tot.kcal<=5000)||(tot.protein!==null&&!(tot.protein<=500))||name.length>40){ bad(); return; }
       meal={id:uid(), name:name||null, kcal:tot.kcal, protein:tot.protein, items:dr.items.map(i=>({...i}))};
     } else {
-      const kEl=$("#meal-kcal"), pEl=$("#meal-protein"), k=Number(kEl?kEl.value.trim():""), pRaw=pEl?pEl.value.trim().replace(",","."):"", p=pRaw===""?null:Number(pRaw);
-      if(!(Number.isInteger(k)&&k>=1&&k<=5000) || (p!==null&&!(Number.isFinite(p)&&p>=0&&p<=500)) || name.length>40){ bad(); return; }
+      const kEl=$("#meal-kcal"), pEl=$("#meal-protein");
+      if(!kEl||kEl.value.trim()===""){ toast(t(dr.editId?"Add a food, or delete the meal":"Add a food, or type kcal yourself")); return; }
+      const k=Number(kEl.value.trim()), pRaw=pEl?pEl.value.trim().replace(",","."):"", p=pRaw===""?null:Number(pRaw);
+      if(!(Number.isInteger(k)&&k>=0&&k<=5000) || (p!==null&&!(Number.isFinite(p)&&p>=0&&p<=500)) || name.length>40){ bad(); return; }
       meal={id:uid(), name:name||null, kcal:k, protein:p};
     }
     const d=dr.editId?dr.editDate:state.date, cur=(state.food[d]&&state.food[d].meals)||[];

@@ -785,3 +785,11 @@ export function makeMyFood({ id, name, kcal, protein, servingName, grams, barcod
   if (barcode) out.barcode = barcode;
   return out;
 }
+
+// An edited My food is rebuilt from its first serving; the other gram servings of the old food (a scanned product's
+// "100 g") are kept after it, so editing never loses a way to log it. Foods with fixed per-serving numbers keep just the one.
+export function keepOtherServings(old, edited) {
+  if (!old || !edited || !edited.per100 || !Array.isArray(old.servings)) return edited;
+  const rest = old.servings.slice(1).filter(s => s && s.grams && s.id !== "s1");
+  return { ...edited, servings: [...edited.servings, ...rest].slice(0, 5) };
+}

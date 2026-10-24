@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { FOODS, normalizeText, makeMyFood, searchFoods, portionTotals, mealTotals, mealNumbers, recentFoods, asEntry } from "../public/food-table.js";
+import { FOODS, normalizeText, makeMyFood, searchFoods, portionTotals, mealTotals, mealNumbers, recentFoods, asEntry, keepOtherServings } from "../public/food-table.js";
 
 // kcal100 250, protein100 8: a 40 g piece = 100 kcal / 3.2 g
 const bread = { id: "bread", en: "Baladi bread", ar: "عيش بلدي", alt: [], group: "bread", kcal100: 250, protein100: 8,
@@ -128,4 +128,20 @@ test("mealNumbers numbers only the meals without a name", () => {
   assert.deepEqual(mealNumbers([]), []);
   assert.deepEqual(mealNumbers(undefined), []);
   assert.deepEqual(mealNumbers([{ name: null }, { name: "Breakfast" }, { name: "" }, {}, { name: "Dinner" }]), [1, null, 2, 3, null]);
+});
+
+test("keepOtherServings: an edited food keeps its other gram servings", () => {
+  const old = { id: "scan-1", name: "Cola", per100: { kcal: 42, protein: 0 }, barcode: "5449000000996",
+    servings: [{ id: "pkg", name: "330 ml can", grams: 330 }, { id: "g100", name: "100 g", grams: 100 }] };
+  const edited = makeMyFood({ id: "scan-1", name: "Cola", kcal: 150, protein: 0, servingName: "1 can", grams: 330, barcode: "5449000000996" });
+  const r = keepOtherServings(old, edited);
+  assert.deepEqual(r.servings.map(s => s.id), ["s1", "g100"], "the first serving is the edited one, the rest stay");
+  assert.equal(r.servings[0].name, "1 can");
+  // fixed-kcal food: other servings have no grams meaning, so nothing is added
+  const fixed = makeMyFood({ id: "m", name: "Bar", kcal: 200, protein: null, servingName: "1 bar" });
+  assert.deepEqual(keepOtherServings(old, fixed), fixed);
+  assert.deepEqual(keepOtherServings(null, edited), edited);
+  // never more than 5 servings
+  const many = { ...old, servings: Array.from({ length: 6 }, (_, i) => ({ id: "x" + i, name: "n" + i, grams: 10 + i })) };
+  assert.equal(keepOtherServings(many, edited).servings.length, 5);
 });

@@ -556,3 +556,15 @@ test("My foods: users/{uid}/items/foods is owner-only, and a full 200-food list 
   await assertSucceeds(setDoc(doc(as("u1", U1), "users/u1/items/f-2026-10-24"), { date: "2026-10-24", meals: Array.from({ length: 20 }, (_, i) => ({ id: "m" + i, name: "Meal " + i, kcal: 2240, protein: 68, items })), updated: 1 }));
   await assertSucceeds(deleteDoc(doc(as("u1", U1), "users/u1/items/foods")));
 });
+
+test("deleting my profile works when the username or e-mail document is already gone", async () => {
+  await seed(async db => { await setDoc(doc(db, "profiles", "u1"), profile({ username: "ziad", findByEmail: true })); });
+  const db = as("u1", U1), b = writeBatch(db);
+  b.delete(doc(db, "profiles", "u1")); b.delete(doc(db, "usernames", "ziad")); b.delete(doc(db, "emails", "u1@x.com"));
+  await assertSucceeds(b.commit());
+});
+
+test("a missing username document still cannot be deleted while my profile keeps using that name", async () => {
+  await seed(async db => { await setDoc(doc(db, "profiles", "u1"), profile({ username: "ziad" })); });
+  await assertFails(deleteDoc(doc(as("u1", U1), "usernames", "ziad")));
+});

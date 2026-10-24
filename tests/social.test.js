@@ -175,3 +175,12 @@ test("lookupResult: an existing username with an unreadable profile is a bare us
   assert.deepEqual(lookupResult("hidden@example.com", { status: "hidden", uid: "u3", username: "hidden" }), { kind: "none" });
   assert.deepEqual(lookupResult("hidden", { status: "hidden" }), { kind: "none" }, "no uid, no card");
 });
+
+test("cleanDisplayName strips control and direction characters, squeezes spaces, cuts at 40", async () => {
+  const { cleanDisplayName } = await import("../public/social.js");
+  assert.equal(cleanDisplayName("  Ziad‮  Osama\u0000 \n"), "Ziad Osama");
+  assert.equal(cleanDisplayName("‏أحمد⁦ علي⁩"), "أحمد علي");
+  assert.equal(cleanDisplayName("x".repeat(60)).length, 40);
+  assert.equal(cleanDisplayName("‮\u0007  "), "");
+  assert.equal(cleanDisplayName(null), "");
+});

@@ -533,7 +533,7 @@ test("food picker: a tray over 5000 kcal is refused and nothing is saved", async
   await page.locator("#meal-form button[type=submit]").click();
   await page.waitForTimeout(300);
   assert.equal(await page.locator("#mealsheet[open]").count(), 1, "sheet stays open");
-  assert.ok((await page.locator("#toast").innerText()).includes("1–5000"));
+  assert.ok((await page.locator("#toast").innerText()).includes("0–5000"));
   await page.locator('[data-act="sheet-close"]').first().click();
   assert.equal(await page.locator("#view-log .cardio-list li").count(), before);
   await ctx.close();
@@ -900,5 +900,48 @@ test("meal names: unnamed meals are 'Meal 1', 'Meal 2'..., a named meal keeps it
   list = await labels();
   assert.ok(list.includes("Breakfast"), "the named meal keeps its name: " + list.join(" | "));
   assert.equal(nums(list).at(-1), before + 1, "the next unnamed meal skips the named one");
+  await ctx.close();
+});
+
+// ---- small-fixes batch ----
+test("small fixes: a zero-calorie meal (water) can be saved, an empty typed meal cannot", async () => {
+  const { page, ctx } = await open();
+  await openMealSheet(page);
+  await page.locator('[data-act="manual-toggle"]').click();
+  await page.locator("#meal-form button[type=submit]").click();
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator("#mealsheet[open]").count(), 1, "blank kcal is not 0 kcal");
+  assert.ok((await page.locator("#toast").innerText()).includes("Add a food"));
+  await page.locator('[data-act="sheet-close"]').first().click();
+  await openMealSheet(page);
+  await addFood(page, "water", "water");
+  await saveBuiltMeal(page);
+  assert.equal(await page.locator("#mealsheet[open]").count(), 0, "saved");
+  assert.ok((await page.locator("#view-log .cardio-list").innerText()).includes("0 kcal"));
+  await ctx.close();
+});
+
+test("small fixes: a UPC-A number is looked up as EAN-13 and found again under either form", async () => {
+  const { page, ctx } = await open("", undefined, NO_CAMERA);
+  const urls = []; await ctx.route("https://world.openfoodfacts.org/**", route => { urls.push(route.request().url()); return route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify(COLA) }); });
+  await openMealSheet(page); await openScan(page);
+  await findCode(page, "036000291452");
+  await page.waitForSelector("#food-add");
+  assert.ok(urls[0].includes("/0036000291452.json"), urls[0]);
+  await page.locator("#food-add").click();
+  await openScan(page); await findCode(page, "0036000291452");
+  await page.waitForSelector("#food-add");
+  assert.equal(urls.length, 1, "the saved food is found by the other form of the code");
+  await ctx.close();
+});
+
+test("small fixes: an answer that is not JSON is a failed lookup, not 'no calories on record'", async () => {
+  const { page, ctx } = await open("", undefined, NO_CAMERA);
+  await ctx.route("https://world.openfoodfacts.org/**", route => route.fulfill({ status: 200, contentType: "text/html", headers: { "access-control-allow-origin": "*" }, body: "<html>maintenance</html>" }));
+  await openMealSheet(page); await openScan(page);
+  await findCode(page, "5449000000996");
+  await page.waitForFunction(() => /look that up/.test(document.querySelector("#toast")?.textContent || ""));
+  assert.equal(await page.locator("#mf-name").count(), 0, "no My food form");
+  assert.equal(await page.locator("#scan-digits").count(), 1, "still on the scan view");
   await ctx.close();
 });

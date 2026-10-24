@@ -39,7 +39,7 @@ function cleanMealItem(i) {
 
 function cleanFood(date, d) {
   if (d.date !== date || !Array.isArray(d.meals)) return null;
-  const meals = d.meals.filter(m => isObj(m) && text(m.id, 40) && num(m.kcal, 1, 5000))
+  const meals = d.meals.filter(m => isObj(m) && text(m.id, 40) && num(m.kcal, 0, 5000))
     .map(m => {
       const out = { id: m.id.slice(0, 40), name: text(m.name, 40), kcal: m.kcal, protein: num(m.protein, 0, 500) ? m.protein : null };
       const items = (Array.isArray(m.items) ? m.items : []).map(cleanMealItem).filter(Boolean).slice(0, 20);
@@ -123,8 +123,10 @@ function cleanSettings(d, equipment) {
   const out = { rest };
   if (Array.isArray(d.seenBadges)) out.seenBadges = d.seenBadges.filter(s => typeof s === "string" && s.length <= 40).slice(0, 200);
   if (Array.isArray(d.gym)) {
-    const known = new Set(equipment);
-    out.gym = [...new Set(d.gym.filter(id => typeof id === "string" && known.has(id)))];
+    // Ids the app does not know (or no equipment list at all) leave the gym unset, never "bodyweight only": an empty list in the
+    // file is the only way to get that.
+    const known = new Set(equipment), kept = [...new Set(d.gym.filter(id => typeof id === "string" && known.has(id)))];
+    if (kept.length || !d.gym.length) out.gym = kept;
   }
   return withUpdated(out, d);
 }

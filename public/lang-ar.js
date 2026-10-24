@@ -6,7 +6,7 @@ export const AR = {
     /* ---- shell: header, tab bar, More sheet, rest bar ---- */
     "Loading…": "جارٍ التحميل…",
     "Workout": "التمرين", "Coach": "المدرب", "Body": "الجسم", "Goals": "الأهداف", "More": "المزيد",
-    "Sections": "الأقسام",
+    "Sections": "الأقسام", "Pages in this tab": "صفحات هذا التبويب",
     "Days": "الأيام", "Overview": "نظرة عامة", "Level {n} · view badges": "المستوى {n} · عرض الأوسمة", "{n} sets#2": "مجموعتان", "{n} weeks#2": "أسبوعان", "{n} days#2": "يومان", "{n} workouts#2": "تمرينان", "{n} days left#2": "باقي يومان", "{n} days behind {name}#2": "متأخر يومان عن {name}", "You're leading by {n} days#2": "أنت في الصدارة بفارق يومين", "{n} workouts this week#2": "تمرينان هذا الأسبوع", "{n} PRs this month#2": "رقمان قياسيان هذا الشهر", "{n} workouts logged#2": "تمرينان مسجلان", "Target: {n} day a week": "الهدف: {n} يوم في الأسبوع", "Target: {n} days a week#2": "الهدف: يومان في الأسبوع", "Active": "نشط", "Upcoming": "قادم", "Last day": "اليوم الأخير", "{n} day left": "باقي {n} يوم", "{n} days left": "باقي {n} أيام", "Rank {a} of {b}": "المركز {a} من {b}", "You're leading by {n} day": "أنت في الصدارة بفارق {n} يوم", "You're leading by {n} days": "أنت في الصدارة بفارق {n} أيام", "Tied for first": "تعادل على المركز الأول", "{n} day behind {name}": "متأخر {n} يوم عن {name}", "{n} days behind {name}": "متأخر {n} أيام عن {name}", "Waiting for friends to join": "في انتظار انضمام الأصدقاء", "Edit plan": "تعديل الخطة", "Add a day": "إضافة يوم", "Set up your gym for better suggestions": "حدّد معدات ناديك لاقتراحات أفضل", "No exercises yet. Tap the day to add some.": "لا توجد تمارين بعد. اضغط على اليوم لإضافة بعضها.", "This week": "هذا الأسبوع", "This month": "هذا الشهر", "Weight trend": "اتجاه الوزن", "Training per week": "التمرين أسبوعياً", "Calories vs target": "السعرات مقابل الهدف", "Strength": "القوة", "Log your weight on two days to see the trend.": "سجّل وزنك في يومين لترى الاتجاه.", "Log a workout to start your weekly chart.": "سجّل تمريناً لتبدأ المخطط الأسبوعي.", "Add meals on Today to compare with your target.": "أضف وجبات في تبويب اليوم لمقارنتها بهدفك.", "Log a few sessions to see your strongest lifts.": "سجّل بعض الحصص لترى أقوى رفعاتك.", "Target: {n} days a week": "الهدف: {n} أيام في الأسبوع", "Target: {n} kcal a day": "الهدف: {n} kcal في اليوم", "{n} PR this month": "{n} رقم قياسي هذا الشهر", "{n} PRs this month": "{n} أرقام قياسية هذا الشهر", "Body weight over the last 90 days": "وزن الجسم خلال آخر 90 يوماً", "Workouts per week, last 8 weeks": "التمارين أسبوعياً في آخر 8 أسابيع", "Calories eaten, last 7 days": "السعرات المتناولة في آخر 7 أيام", "Lifts": "الرفعات", "History & backup": "السجل والنسخ الاحتياطي",
     "Language": "اللغة", "Theme": "المظهر",
     "Equipment": "المعدات", "No equipment": "بدون معدات", "Show more ({n})": "عرض المزيد ({n})",
@@ -164,7 +164,7 @@ export const AR = {
     "Couldn't save. Check your connection.": "تعذّر الحفظ. تحقق من اتصالك.",
 
     /* ---- Messages ---- */
-    "Enter 1–5000 kcal (protein 0–500 g)": "أدخل من 1 إلى 5000 kcal (البروتين من 0 إلى 500 g)",
+    "Enter 0–5000 kcal (protein 0–500 g)": "أدخل من 0 إلى 5000 kcal (البروتين من 0 إلى 500 g)", "Expired invitations": "دعوات منتهية", "Add a food, or delete the meal": "أضف طعامًا أو احذف الوجبة", "Add a food, or type kcal yourself": "أضف طعامًا أو اكتب السعرات بنفسك",
     "Scan": "مسح ضوئي", "Scan a barcode": "مسح الباركود", "Type the number": "اكتب الرقم", "Start camera": "تشغيل الكاميرا", "Camera stopped.": "توقفت الكاميرا.",
     "Camera not available. Type the number instead.": "الكاميرا غير متاحة. اكتب الرقم بدلاً من ذلك.", "Starting the camera…": "جارٍ تشغيل الكاميرا…",
     "Point the camera at the barcode.": "وجّه الكاميرا نحو الباركود.", "Scanner not available. Type the number instead.": "الماسح غير متاح. اكتب الرقم بدلاً من ذلك.",
@@ -204,7 +204,7 @@ export const AR = {
     "today": "اليوم", "Latest weight": "آخر وزن", "Save": "حفظ", "{d} kg vs 4 weeks ago": "{d} kg مقارنة بـ 4 أسابيع",
     "No weight logged yet": "لم يُسجَّل وزن بعد", "Weight for {day} in kg": "الوزن ليوم {day} بالكيلوجرام", "Weight for {day} · kg": "الوزن ليوم {day} · kg",
     "About you": "عنك",
-    "Used to estimate calories, protein and healthy ranges on the Coach tab. Only you can see it.": "تُستخدم لتقدير السعرات والبروتين والنطاقات الصحية في تبويب المدرب. أنت وحدك من يراها.",
+    "Used to estimate calories, protein and healthy ranges in Coach. Only you can see it.": "تُستخدم لتقدير السعرات والبروتين والنطاقات الصحية في المدرب. أنت وحدك من يراها.",
     "Sex": "الجنس", "Choose": "اختر", "Male": "ذكر", "Female": "أنثى", "Height · cm": "الطول · cm", "Birth year": "سنة الميلاد",
     "Main goal": "الهدف الرئيسي", "Target weight · kg": "الوزن المستهدف · kg", "Edit": "تعديل", "{n} yrs": "{n} سنة",
     "Goal: {goal}": "الهدف: {goal}", "Target {n} kg": "المستهدف {n} kg",
@@ -217,14 +217,14 @@ export const AR = {
     "{label} over time": "{label} عبر الزمن", "Add a second entry to see the trend.": "أضف قياساً ثانياً لرؤية الاتجاه.",
     "Recent entries": "آخر القياسات", "Weight": "الوزن", "Waist": "الخصر", "Fat %": "الدهون %", "Muscle": "العضلات",
     "No body data yet": "لا توجد بيانات للجسم بعد",
-    "Log your weight above. Add measurements or an InBody scan whenever you have them, and the Coach tab will start using them.": "سجّل وزنك بالأعلى. أضف القياسات أو فحص InBody متى توفرت، وسيبدأ تبويب المدرب باستخدامها.",
+    "Log your weight above. Add measurements or an InBody scan whenever you have them, and Coach will start using them.": "سجّل وزنك بالأعلى. أضف القياسات أو فحص InBody متى توفرت، وسيبدأ المدرب باستخدامها.",
     "Body weight": "وزن الجسم", "Chest": "الصدر", "Hips": "الوركان", "Neck": "الرقبة", "Arm (flexed)": "الذراع (مشدودة)", "Thigh": "الفخذ", "Calf": "السمانة",
     "Skeletal muscle mass": "كتلة العضلات الهيكلية", "Body fat mass": "كتلة دهون الجسم", "Body fat": "دهون الجسم",
     "Visceral fat level": "مستوى الدهون الحشوية", "Basal metabolic rate": "معدل الأيض الأساسي", "Total body water": "ماء الجسم الكلي", "InBody score": "درجة InBody",
 
     /* ---- Coach: Today card ---- */
-    "Log your weight on the Body tab to see calories burned and your target.": "سجّل وزنك في تبويب الجسم لترى السعرات المحروقة وهدفك.",
-    "Fill in About you on the Body tab to see calories burned and your target.": "املأ قسم \"عنك\" في تبويب الجسم لترى السعرات المحروقة وهدفك.",
+    "Log your weight in Progress › Body to see calories burned and your target.": "سجّل وزنك في التقدم ‹ الجسم لترى السعرات المحروقة وهدفك.",
+    "Fill in About you in Progress › Body to see calories burned and your target.": "املأ قسم \"عنك\" في التقدم ‹ الجسم لترى السعرات المحروقة وهدفك.",
     "Eaten": "المتناول", "Burned": "المحروق", "Balance": "الفرق", "Add a meal": "إضافة وجبة", "Protein g": "البروتين g", "Name": "الاسم", "Add meal": "إضافة الوجبة",
     "Everyday {a} · Lifting {b} · Cardio {c}": "اليومي {a} · الحديد {b} · الكارديو {c}", "Eaten vs target": "المتناول مقابل الهدف",
     "Over by {n} kcal": "زيادة بمقدار {n} kcal",
@@ -233,7 +233,7 @@ export const AR = {
 
     /* ---- Coach ---- */
     "Training": "التدريب",
-    "Add your sex, height, birth year and goal on the Body tab for calorie targets and personalised ranges.": "أضف جنسك وطولك وسنة ميلادك وهدفك في تبويب الجسم للحصول على أهداف السعرات ونطاقات مخصصة لك.",
+    "Add your sex, height, birth year and goal in Progress › Body for calorie targets and personalised ranges.": "أضف جنسك وطولك وسنة ميلادك وهدفك في التقدم ‹ الجسم للحصول على أهداف السعرات ونطاقات مخصصة لك.",
     "Go to Body": "اذهب إلى الجسم", "Nothing to analyse yet": "لا يوجد ما يُحلَّل بعد",
     "Log a few workouts and your body weight, and suggestions will show up here.": "سجّل بعض التمارين ووزن جسمك وستظهر الاقتراحات هنا.",
     "Tips": "نصائح", "Tap to add to today's workout.": "اضغط للإضافة إلى تمرين اليوم.", "Show fewer": "عرض أقل", "Show all tips ({n})": "عرض كل النصائح ({n})",

@@ -120,3 +120,9 @@ export function lookupResult(input, outcome) {
   const p = outcome.profile;
   return { kind: "card", card: { uid: outcome.uid, displayName: p.displayName, username: p.username, summary: p.summary || null } };
 }
+
+// A display name as typed: control characters and invisible direction marks removed (they could flip or hide text around the
+// name on other people's screens), spaces squeezed, at most 40 characters. "" when nothing is left.
+export function cleanDisplayName(s) {
+  return String(s ?? "").replace(/[\u0000-\u001F\u007F-\u009F​-‏‪-‮⁦-⁩﻿]/g, " ").replace(/\s+/g, " ").trim().slice(0, 40).trim();
+}
