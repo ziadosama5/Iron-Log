@@ -83,3 +83,10 @@ test("settingsDoc carries targets when there are any, leaves the key out otherwi
   assert.equal("targets" in settingsDoc({ rest: {} }, 1), false);
   assert.equal("targets" in settingsDoc({ rest: {}, targets: {} }, 1), false);
 });
+
+test("settingsDoc carries the bodyweight overrides when there are any", () => {
+  const bodyweight = { "Barbell Row": true, "Push-up": false };
+  assert.deepEqual(settingsDoc({ rest: {}, bodyweight }, 1).bodyweight, bodyweight);
+  assert.equal("bodyweight" in settingsDoc({ rest: {} }, 1), false);
+  assert.equal("bodyweight" in settingsDoc({ rest: {}, bodyweight: {} }, 1), false);
+});

@@ -207,3 +207,25 @@ test("settings targets: valid ones are kept, invalid ones dropped, absent stays 
   assert.equal("targets" in cleanBackupItems([{ id: "settings", data: { rest: {} } }], OPTS).items[0].data, false);
   assert.equal("targets" in cleanBackupItems([{ id: "settings", data: { rest: {}, targets: { Squat: { sets: 0, min: 1, max: 1 } } } }], OPTS).items[0].data, false, "nothing valid left");
 });
+
+test("bodyweight entries: bw is kept, a negative extra load only on them, old backups unchanged", () => {
+  const sets = [{ w: -20, r: 8 }, { w: 0, r: 12 }, { w: 10, r: 6 }, { w: -501, r: 5 }, { w: 2001, r: 5 }];
+  const bwData = { ...W.data, entries: [{ ex: "Pull-up", bw: true, sets }] };
+  const r = cleanBackupItems([{ id: W.id, data: bwData }], OPTS).items[0].data;
+  assert.equal(r.entries[0].bw, true);
+  assert.deepEqual(r.entries[0].sets, [{ w: -20, r: 8 }, { w: 0, r: 12 }, { w: 10, r: 6 }]);
+  const plain = cleanBackupItems([{ id: W.id, data: { ...W.data, entries: [{ ex: "Bench Press", sets }] } }], OPTS).items[0].data;
+  assert.equal("bw" in plain.entries[0], false, "no flag on a weighted entry");
+  assert.deepEqual(plain.entries[0].sets, [{ w: 0, r: 12 }, { w: 10, r: 6 }], "a negative load is not allowed on a weighted entry");
+  for (const junk of [false, "yes", 1, null]) {
+    const x = cleanBackupItems([{ id: W.id, data: { ...W.data, entries: [{ ex: "Pull-up", bw: junk, sets: [{ w: 0, r: 5 }] }] } }], OPTS).items[0].data;
+    assert.equal("bw" in x.entries[0], false, String(junk));
+  }
+});
+
+test("settings bodyweight overrides: booleans kept, junk dropped, absent stays absent", () => {
+  const r = cleanBackupItems([{ id: "settings", data: { rest: {}, bodyweight: { "Barbell Row": true, "Push-up": false, A: "yes", B: 1 } } }], OPTS).items[0].data;
+  assert.deepEqual(r.bodyweight, { "Barbell Row": true, "Push-up": false });
+  assert.equal("bodyweight" in cleanBackupItems([{ id: "settings", data: { rest: {} } }], OPTS).items[0].data, false);
+  assert.equal("bodyweight" in cleanBackupItems([{ id: "settings", data: { rest: {}, bodyweight: { A: "yes" } } }], OPTS).items[0].data, false, "nothing valid left");
+});

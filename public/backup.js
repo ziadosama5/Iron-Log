@@ -2,6 +2,7 @@
 // from anywhere, so nothing in it is trusted: bad items are skipped, bad fields dropped, text cut.
 import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX } from "./energy.js";
 import { cleanTargets } from "./progression.js";
+import { cleanBodyweight } from "./bodyweight.js";
 
 const DATE_ID = /^(w|b|f)-(\d{4}-\d{2}-\d{2})$/;
 const isObj = v => v !== null && typeof v === "object" && !Array.isArray(v);
@@ -13,10 +14,12 @@ function cleanWorkout(date, d) {
   if (d.date !== date || !Array.isArray(d.entries)) return null;
   const entries = d.entries.filter(isObj).map(e => {
     const ex = text(e.ex, 80); if (!ex) return null;
+    const bw = e.bw === true;   // bodyweight entry: the weight is extra kg and may be negative (assisted)
     const sets = (Array.isArray(e.sets) ? e.sets : [])
-      .filter(s => isObj(s) && num(s.w, 0, 2000) && Number.isInteger(s.r) && s.r >= 1 && s.r <= 1000)
+      .filter(s => isObj(s) && num(s.w, bw ? -500 : 0, 2000) && Number.isInteger(s.r) && s.r >= 1 && s.r <= 1000)
       .map(s => ({ w: s.w, r: s.r, ...(num(s.t, 1, Number.MAX_SAFE_INTEGER) ? { t: s.t } : {}), ...(s.k === "w" || s.k === "d" ? { k: s.k } : {}) }));
     const out = { ex, sets };
+    if (bw) out.bw = true;
     if (typeof e.done === "boolean") out.done = e.done;
     return out;
   }).filter(Boolean);
@@ -134,6 +137,8 @@ function cleanSettings(d, equipment) {
   }
   const targets = cleanTargets(d.targets);
   if (Object.keys(targets).length) out.targets = targets;
+  const bodyweight = cleanBodyweight(d.bodyweight);
+  if (Object.keys(bodyweight).length) out.bodyweight = bodyweight;
   return withUpdated(out, d);
 }
 

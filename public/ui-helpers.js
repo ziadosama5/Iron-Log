@@ -29,7 +29,7 @@ export function visibleItems(items, expanded, limit = 6) {
 // save (rest times, badges seen, gym) never drops another. gym: absent = not set, [] = bodyweight only.
 export function settingsDoc(s, now) {
   const x = s || {};
-  return { rest: x.rest || {}, ...(x.seenBadges ? { seenBadges: x.seenBadges } : {}), ...(Array.isArray(x.gym) ? { gym: x.gym } : {}), ...(x.targets && Object.keys(x.targets).length ? { targets: x.targets } : {}), updated: now };
+  return { rest: x.rest || {}, ...(x.seenBadges ? { seenBadges: x.seenBadges } : {}), ...(Array.isArray(x.gym) ? { gym: x.gym } : {}), ...(x.targets && Object.keys(x.targets).length ? { targets: x.targets } : {}), ...(x.bodyweight && Object.keys(x.bodyweight).length ? { bodyweight: x.bodyweight } : {}), updated: now };
 }
 
 // Whether the Days tab shows the "set up your gym" card: not before the first sync (settings may not
