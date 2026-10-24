@@ -18,6 +18,9 @@ if (["1", "2"].includes(new URLSearchParams(location.search).get("bw"))) add("w-
 // ?bw=3: only an old pull-up session that was logged with the body weight typed in (80 kg), nothing flagged
 if (new URLSearchParams(location.search).get("bw") === "3") add("w-" + day(4), { date: day(4), dayId: "d2", dayName: "Pull", updated: T, entries: [{ ex: "Pull-up", sets: [S(80, 5, 30), S(80, 5, 25), S(80, 5, 20)] }] });
 if (new URLSearchParams(location.search).get("bw") === "2") add("w-" + day(4), { date: day(4), dayId: "d2", dayName: "Pull", updated: T, entries: [{ ex: "Pull-up", sets: [S(0, 5, 30), S(0, 5, 25), S(0, 5, 20)] }] });
+// ?deloadwk=1: yesterday's workout was a deload week session (light Bench Press, flagged)
+if (new URLSearchParams(location.search).get("deloadwk")) { const it = items.find(x => x.id === "w-" + day(1)), orig = it.data();
+  const flagged = { ...orig, deload: true, entries: orig.entries.map(e => e.ex === "Bench Press" ? { ...e, sets: [S(30, 8, 50), S(30, 8, 45), S(30, 8, 40)] } : e) }; it.data = () => flagged; }
 for (let i = 0; i < 6; i++) { const date = day(i * 5); add("b-" + date, { date, weight: 86 - i * 0.6, waist: 92 - i * 0.4, updated: T }); }
 for (let i = 1; i < 6; i++) add("f-" + day(i), { date: day(i), meals: [{ id: "x" + i, name: "Lunch", kcal: 2100, protein: 150 }] });
 

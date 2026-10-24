@@ -1621,3 +1621,19 @@ test("plan my training: finishing a run saves the answers, so the next run opens
   assert.equal(await page.locator("#view-journey .card").count(), 6, "six days, as chosen last time");
   await ctx.close();
 });
+
+// ---- deload ----
+test("deload: Last time skips a deload-week session, Lifts still lists it", async () => {
+  const { page, ctx } = await open("deloadwk=1");
+  await startPush(page);
+  const prev = await page.locator("#open-card .prev").first().innerText();
+  assert.ok(prev.includes("Last time") && prev.includes("61×8") && !prev.includes("30×8"), prev);
+  await ctx.close();
+  const b = await open("deloadwk=1");
+  await tab(b.page, "progress");
+  await b.page.locator('#pills [data-view="progress"]').click();
+  await b.page.waitForSelector("#prog-ex");
+  await b.page.locator("#prog-ex").selectOption("Bench Press");
+  assert.ok((await b.page.locator("#view-progress").innerText()).includes("30×8"), "the light session is still training history");
+  await b.ctx.close();
+});

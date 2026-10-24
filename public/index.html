@@ -545,7 +545,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { cleanDeload, deloadDate } from "./deload.js";
+import { cleanDeload, deloadDate, stalledLifts } from "./deload.js";
 import { AREAS, AREA_EN, cleanAvoid, avoidFilter, avoidedBecause, hiddenAvoidCount, hasAvoid } from "./injuries.js";
 import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore, bestBwSet, legacyBodyweight } from "./bodyweight.js";
 import { workingSets, liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
@@ -1230,7 +1230,7 @@ function sessionsFor(ex){ return exerciseSessions(sorted(),ex,same); }   // work
 const sessionBw = (s,ex) => s.bw===true || (s.bw===undefined && bwDefault(ex));
 // Sessions from before bodyweight mode count as bodyweight with weight 0 (what their weight meant is unknown), so an old "80 kg" never becomes 80 kg extra.
 const sessionsOfKind = (ex,bw) => sessionsFor(ex).filter(x=>sessionBw(x,ex)===bw).map(x=>bw&&x.bw===undefined?legacyBodyweight(x):x);
-function lastBefore(ex,date,bw=false){ const s=sessionsOfKind(ex,bw).filter(x=>x.date<date); return s[s.length-1]||null; }
+function lastBefore(ex,date,bw=false){ const s=sessionsOfKind(ex,bw).filter(x=>x.date<date&&!x.deload); return s[s.length-1]||null; }   // a deload week is not "last time": the next normal week continues from the numbers before it
 function bestBefore(ex,date,bw=false){ let b=0; sessionsOfKind(ex,bw).filter(x=>x.date<date).forEach(x=>x.sets.forEach(s=>b=Math.max(b,bw?bwScore(s):e1rm(s.w,s.r)))); return b; }
 // Bodyweight exercises (extra kg, see bodyweight.js): an entry that has sets keeps the kind it was logged as; before the first set the library or the switch decides.
 const isBw = e => e.sets.length ? !!e.bw : bwFor(state.settings, e.ex);
@@ -2076,13 +2076,13 @@ function insights(){
   }
 
   // Lift progress
-  const stalls=[], wins=[];
+  const stalls=stalledLifts(state.workouts), wins=[];   // one stall rule, shared with the deload suggestion (deload weeks and bodyweight lifts are ignored)
   exerciseNames().forEach(ex=>{
-    if(bwFor(state.settings,ex)) return;   // bodyweight lifts have no one-rep max to stall on
-    const s=sessionsOfKind(ex,false).map(x=>({date:x.date,b:Math.max(...x.sets.map(z=>e1rm(z.w,z.r)))}));
+    if(bwFor(state.settings,ex)||stalls.some(n=>n.toLowerCase()===ex.toLowerCase())) return;   // bodyweight lifts have no one-rep max
+    const s=sessionsOfKind(ex,false).filter(x=>!x.deload).map(x=>({date:x.date,b:Math.max(...x.sets.map(z=>e1rm(z.w,z.r)))}));
     if(s.length<4) return;
     const before=Math.max(...s.slice(0,-3).map(x=>x.b)), recent=Math.max(...s.slice(-3).map(x=>x.b));
-    if(recent<=before*1.005) stalls.push(ex); else if(s[s.length-1].b>=recent) wins.push(ex);
+    if(recent>before*1.005&&s[s.length-1].b>=recent) wins.push(ex);
   });
   if(stalls.length) add("Training","warn",t("Stalled: {list}",{list:names(stalls.slice(0,3),"ex")}),t("No new best in the last 3 sessions. Try dropping the weight about 10% and building back up, switching rep range (for example from 5s to 8s), or adding a set. Sleep and calories matter too."));
   if(wins.length) add("Training","good",t("Progressing: {list}",{list:names(wins.slice(0,3),"ex")}),t("New bests recently. Keep adding small amounts of weight or reps each week."));

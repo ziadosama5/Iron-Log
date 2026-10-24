@@ -89,3 +89,10 @@ test("deloadAdvice: lighter weight for weighted lifts, sets only for bodyweight 
   for (const last of [null, undefined, [], [S(40, 10, "w")]]) assert.equal(deloadAdvice({ last, target }), null, JSON.stringify(last));
   assert.equal(deloadAdvice({ last: [S(0, 15)], target }), null, "a weighted lift with no weight");
 });
+
+test("Coach uses the shared stall rule and Last time skips deload sessions (source guards)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const src = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
+  assert.ok(src.includes("stalledLifts(state.workouts)"), "Coach calls stalledLifts");
+  assert.ok(/function lastBefore\([^)]*\)\{[^}]*!x\.deload/.test(src), "lastBefore skips deload sessions");
+});
