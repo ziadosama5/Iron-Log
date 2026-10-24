@@ -6,7 +6,7 @@ Everything planned in sub-projects 1-16 (the redesign, sw v26) is shipped. This 
 
 ## Unfinished projects (the big ones, none started)
 1. ~~**Built-in Egyptian + everyday food table**~~ **Built (sub-project 19, 2026-10-24):** 297 foods, meal builder, My foods, recents, edit a saved meal and barcode scan. Waiting for the owner's phone check (including a real camera scan) and the deploy.
-- *Small, optional (idea from a user case, no bug found):* make the calorie target self-explaining and adjustable: show the resting-rate source (InBody scan date or formula) and how the target is built (resting x activity + lifting + cardio + goal), an everyday activity level instead of the fixed x1.2, and a personal daily deficit/surplus. Today the app already uses a recent InBody BMR (120 days) and adds the exercise and cardio estimates, so numbers are correct; this would only remove surprise.
+- ~~Calorie target explainer~~ **Built (sub-project 20, sw v43):** the "How is this built?" sheet on Today, everyday activity level and own daily adjustment.
 2. **Training depth:** target sets/reps and progression (per day or exercise), warm-up/drop set types, a bodyweight-exercise mode, injuries / exercises to avoid, several gyms (Home + Gym), templates adapted to the gym.
 3. **Social growth:** more challenge types (volume, PRs, streaks), rematch, chat/activity feed, notifications (need the paid plan or an alternative).
 4. **Running it for many users:** abuse protection (App Check / rate limits), quota monitoring, a report admin screen or e-mail, auto-deploy from GitHub, running rules tests and screenshot checks automatically.

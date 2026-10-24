@@ -25,7 +25,8 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 
 | 18 | Progress Overview, Friends leaderboard, calmer Plan page | [spec](superpowers/specs/2026-10-23-overview-leaderboard-plan-design.md) | [plan](superpowers/plans/2026-10-23-overview-leaderboard-plan.md) | sw v35 (not deployed until the owner approves) |
 
-| 19 | Food table, meal builder and barcode scan (297 foods, My foods, recent foods, edit a saved meal, Open Food Facts lookup) | [spec](superpowers/specs/2026-10-24-food-table-design.md) | [plan](superpowers/plans/2026-10-24-food-table.md) | sw v41 (not deployed yet; needs the phone check) |
+| 19 | Food table, meal builder and barcode scan (297 foods, My foods, recent foods, edit a saved meal, Open Food Facts lookup) | [spec](superpowers/specs/2026-10-24-food-table-design.md) | [plan](superpowers/plans/2026-10-24-food-table.md) | live, sw v41 |
+| 20 | Calorie target explainer (breakdown sheet, everyday activity level, own daily adjustment) | [spec](superpowers/specs/2026-10-24-calorie-target-explainer-design.md) | [plan](superpowers/plans/2026-10-24-calorie-target-explainer.md) | sw v43 |
 
 Open points (everything still to do or decide): [open-points.md](open-points.md).
 
