@@ -13,6 +13,7 @@ const APP_SHELL = [
   "/exercise-library.js",
   "/exercise-info.js",
   "/backup.js",
+  "/food-table.js",
   "/energy.js",
   "/achievements.js",
   "/nav.js",

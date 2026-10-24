@@ -63,6 +63,7 @@ test("mealTotals and defaultMealName", () => {
   assert.equal(defaultMealName([{ name: "Ful" }, { name: "Bread" }, { name: "Taameya" }, { name: "Salad" }]), "Ful + Bread + Taameya");
   assert.equal(defaultMealName([{ name: "x".repeat(30) }, { name: "y".repeat(30) }]).length, 40);
   assert.equal(defaultMealName([]), "");
+  assert.equal(defaultMealName([{ name: "Ful medames (fava beans with oil)" }, { name: "Baladi bread" }]), "Ful medames + Baladi bread", "parentheses are dropped");
 });
 
 test("recentFoods: newest first, last 14 days, one per src+ref, ignores meals without items", () => {

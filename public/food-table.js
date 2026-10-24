@@ -373,7 +373,7 @@ export function mealTotals(items) {
 }
 
 export function defaultMealName(items) {
-  return (items || []).slice(0, 3).map(i => i.name).join(" + ").slice(0, 40);
+  return (items || []).slice(0, 3).map(i => String(i.name).replace(/\s*\([^)]*\)/g, "").trim()).join(" + ").slice(0, 40);
 }
 
 const dayShift = (iso, days) => { const d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10); };

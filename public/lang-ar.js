@@ -165,7 +165,13 @@ export const AR = {
 
     /* ---- Messages ---- */
     "Enter 1–5000 kcal (protein 0–500 g)": "أدخل من 1 إلى 5000 kcal (البروتين من 0 إلى 500 g)",
-    "Meal added": "تمت إضافة الوجبة", "Body weight needs a number": "وزن الجسم يحتاج إلى رقم",
+    "This meal": "هذه الوجبة", "Pick foods below, or type kcal yourself": "اختر أطعمة من الأسفل، أو اكتب السعرات بنفسك",
+    "Search foods": "ابحث عن طعام", "No foods found. Try another spelling, or type kcal yourself.": "لا توجد أطعمة. جرّب كتابة أخرى، أو اكتب السعرات بنفسك.",
+    "Type kcal yourself": "اكتب السعرات بنفسك", "Grams": "جرامات", "Check the amount": "تحقق من الكمية",
+    "{kcal} kcal": "{kcal} kcal", "{kcal} kcal · {p} g protein": "{kcal} kcal · بروتين {p} g", "{n} g": "{n} g", "{n} × {label}": "{n} × {label}",
+    "Less": "أقل", "Less of {name}": "كمية أقل من {name}", "More of {name}": "كمية أكثر من {name}",
+    "A meal can have up to {n} foods.": "يمكن أن تحتوي الوجبة على {n} أطعمة كحد أقصى.",
+    "Meal added": "تمت إضافة الوجبة","Body weight needs a number": "وزن الجسم يحتاج إلى رقم",
     "Saved for {d}": "تم الحفظ ليوم {d}", "Saved": "تم الحفظ", "Entry saved for {d}": "تم حفظ القياس ليوم {d}", "Entry deleted": "تم حذف القياس",
     "Target weight must be 30–300 kg": "يجب أن يكون الوزن المستهدف بين 30 و300 kg",
     "Fill in all four fields: height in cm (100–250) and a 4-digit birth year": "املأ الحقول الأربعة: الطول بالسنتيمتر (100–250) وسنة الميلاد من 4 أرقام",

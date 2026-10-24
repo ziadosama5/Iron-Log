@@ -132,7 +132,9 @@ test("meal form lives in a sheet; adding a meal closes it and lists the meal", a
   assert.equal(await page.locator("#meal-form").count(), 0);
   await page.locator('#view-log [data-act="open-mealsheet"]').first().click();
   await page.waitForSelector("#mealsheet[open]");
-  assert.ok(await page.locator("#meal-kcal").evaluate(el => el === document.activeElement));
+  assert.ok(await page.locator("#food-q").evaluate(el => el === document.activeElement), "search box is focused");
+  assert.equal(await page.locator("#meal-kcal").count(), 0, "kcal box is behind the toggle");
+  await page.locator('[data-act="manual-toggle"]').click();
   await page.locator("#meal-kcal").fill("450");
   await page.locator("#meal-form button[type=submit]").click();
   await page.waitForTimeout(300);
@@ -145,6 +147,7 @@ test("Back closes the meal sheet and keeps a half-typed meal", async () => {
   const { page, ctx } = await open();
   await page.locator('#view-log [data-act="open-mealsheet"]').first().click();
   await page.waitForSelector("#mealsheet[open]");
+  await page.locator('[data-act="manual-toggle"]').click();
   await page.locator("#meal-kcal").fill("300");
   await page.goBack();
   await page.waitForTimeout(300);
@@ -444,6 +447,105 @@ test("controls meet the 44px touch target and text is at least 12px", async () =
   const small = await page.evaluate(() => [...document.querySelectorAll("#view-days .btn, #view-days button.chip, .pill, .tabbar button")].filter(e => e.offsetParent).map(e => [e.textContent.trim().slice(0, 20), Math.round(e.getBoundingClientRect().height)]).filter(([, h]) => h < 44));
   assert.deepEqual(small, []);
   const tiny = await page.evaluate(() => [...document.querySelectorAll("main *, .tabbar *")].filter(e => e.children.length === 0 && e.textContent.trim() && e.offsetParent && parseFloat(getComputedStyle(e).fontSize) < 12).map(e => e.className || e.tagName).slice(0, 5));
+  assert.deepEqual(tiny, []);
+  await ctx.close();
+});
+
+// ---- food picker (meal sheet) ----
+const openMealSheet = async page => { await page.locator('#view-log [data-act="open-mealsheet"]').first().click(); await page.waitForSelector("#mealsheet[open]"); };
+const addFood = async (page, query, ref) => {
+  await page.locator("#food-q").fill(query);
+  await page.locator(`#food-results [data-act="food-open"][data-ref="${ref}"]`).click();
+  await page.locator("#food-add").click();
+};
+const trayKcal = async page => Number((await page.locator("#tray-total").innerText()).match(/([\d,]+) kcal/)[1].replace(",", ""));
+
+test("food picker: search, open a food, add it to the tray", async () => {
+  const { page, ctx, errors } = await open();
+  await openMealSheet(page);
+  assert.ok((await page.locator("#meal-tray").innerText()).includes("Pick foods below"));
+  await page.locator("#food-q").fill("ful");
+  assert.ok(await page.locator('#food-results [data-ref="ful-medames"]').count() >= 1);
+  await page.locator('#food-results [data-act="food-open"][data-ref="ful-medames"]').click();
+  assert.ok(await page.locator("#food-preview").innerText().then(x => /kcal/.test(x)));
+  await page.locator("#food-add").click();
+  assert.equal(await page.locator("#meal-tray .trayrow").count(), 1);
+  assert.ok(await trayKcal(page) > 100);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("food picker: Arabic text finds Egyptian foods even in the English app", async () => {
+  const { page, ctx } = await open();
+  await openMealSheet(page);
+  await page.locator("#food-q").fill("كشري");
+  assert.equal(await page.locator('#food-results [data-ref="koshari"]').count(), 1);
+  await page.locator("#food-q").fill("zzzzqq");
+  assert.ok((await page.locator("#food-results").innerText()).includes("No foods found"));
+  await ctx.close();
+});
+
+test("food picker: a meal built from two foods is saved with the tray total", async () => {
+  const { page, ctx } = await open();
+  const before = await page.locator("#view-log .cardio-list li").count();
+  await openMealSheet(page);
+  await addFood(page, "ful", "ful-medames");
+  await addFood(page, "baladi", "aish-baladi");
+  assert.equal(await page.locator("#meal-tray .trayrow").count(), 2);
+  const total = await trayKcal(page);
+  await page.locator("#meal-form button[type=submit]").click();
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator("#mealsheet[open]").count(), 0);
+  const items = page.locator("#view-log .cardio-list li");
+  assert.equal(await items.count(), before + 1);
+  const text = await items.last().innerText();
+  assert.ok(text.includes(" + "), text);
+  assert.ok(text.includes(total.toLocaleString("en-US") + " kcal"), text + " vs " + total);
+  await ctx.close();
+});
+
+test("food picker: bad grams cannot be added; steppers change the tray row", async () => {
+  const { page, ctx } = await open();
+  await openMealSheet(page);
+  await page.locator("#food-q").fill("rice");
+  await page.locator('#food-results [data-act="food-open"][data-ref="rice-white"]').click();
+  for (const bad of ["0", "abc", "-5", "99999"]) { await page.locator("#food-grams").fill(bad); assert.equal(await page.locator("#food-add").isDisabled(), true, bad); }
+  await page.locator("#food-grams").fill("");
+  await page.locator("#food-add").click();
+  const one = await trayKcal(page);
+  await page.locator('#meal-tray [data-act="tray-step"][data-d="1"]').first().click();
+  assert.ok(await trayKcal(page) > one, "plus makes it bigger");
+  await page.locator('#meal-tray [data-act="tray-remove"]').first().click();
+  assert.equal(await page.locator("#meal-tray .trayrow").count(), 0);
+  await ctx.close();
+});
+
+test("food picker: a tray over 5000 kcal is refused and nothing is saved", async () => {
+  const { page, ctx } = await open();
+  const before = await page.locator("#view-log .cardio-list li").count();
+  await openMealSheet(page);
+  await page.locator("#food-q").fill("olive oil");
+  await page.locator('#food-results [data-act="food-open"][data-ref="olive-oil"]').click();
+  await page.locator("#food-grams").fill("600");
+  await page.locator("#food-add").click();
+  await page.locator("#meal-form button[type=submit]").click();
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator("#mealsheet[open]").count(), 1, "sheet stays open");
+  assert.ok((await page.locator("#toast").innerText()).includes("1–5000"));
+  await page.locator('[data-act="sheet-close"]').first().click();
+  assert.equal(await page.locator("#view-log .cardio-list li").count(), before);
+  await ctx.close();
+});
+
+test("food picker: touch targets are at least 44px and text at least 12px", async () => {
+  const { page, ctx } = await open();
+  await openMealSheet(page);
+  await addFood(page, "ful", "ful-medames");
+  await page.locator("#food-q").fill("rice");
+  await page.locator('#food-results [data-act="food-open"][data-ref="rice-white"]').click();
+  const small = await page.evaluate(() => [...document.querySelectorAll("#mealsheet button, #mealsheet input")].filter(e => e.offsetParent).map(e => [e.id || e.textContent.trim().slice(0, 20), Math.round(e.getBoundingClientRect().height)]).filter(([, h]) => h < 44));
+  assert.deepEqual(small, []);
+  const tiny = await page.evaluate(() => [...document.querySelectorAll("#mealsheet *")].filter(e => e.children.length === 0 && e.textContent.trim() && e.offsetParent && parseFloat(getComputedStyle(e).fontSize) < 12).map(e => e.textContent.trim().slice(0, 30)));
   assert.deepEqual(tiny, []);
   await ctx.close();
 });
