@@ -1360,6 +1360,7 @@ function refreshSheets(){
     if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeSheet(id);
   });
 });
+$("#mealsheet").addEventListener("close",()=>{ if(state.mealDraft.editId) state.mealDraft=freshMealDraft(); });
 // Back gesture: close only the sheet whose history step was just left (the info panel can sit on top of a sheet).
 window.addEventListener("popstate",()=>{ ["#exsheet","#cardiosheet","#mealsheet","#plansheet"].forEach(id=>{ if(!(history.state&&history.state.sheet===id)) closeSheet(id); }); });
 function dayPicker(w){
@@ -1978,7 +1979,7 @@ function energyView(){
 // Foods come from food-table.js (bundled) and My foods (state.myFoods). A meal is built in state.mealDraft.items (the tray)
 // and saved with its totals; every item is a snapshot, so later edits to the table never change old days.
 const TRAY_MAX=20, FOOD_SHOWN=6;
-function freshMealDraft(){ return {kcal:"",protein:"",name:"",items:[],query:"",open:null,serving:"",amount:1,grams:"",showAll:false,manual:false,myForm:null}; }
+function freshMealDraft(){ return {kcal:"",protein:"",name:"",items:[],query:"",open:null,serving:"",amount:1,grams:"",showAll:false,manual:false,myForm:null,editId:null,editDate:null}; }
 const myEntries=()=>state.myFoods.map(asEntry);
 const foodEntry=(src,ref)=>src==="table"?FOODS.find(f=>f.id===ref):myEntries().find(e=>e.id===ref);
 const srcOf=e=>e.group==="mine"?"mine":"table";
@@ -2053,7 +2054,7 @@ function myFormHtml(){
 function mealSheetHtml(){
   const {kg,e}=energyView(), dr=state.mealDraft, manualOpen=!dr.items.length&&(dr.manual||dr.kcal!==""||dr.protein!=="");
   const ph=dr.items.length?defaultMealName(dr.items.map(i=>({name:itemLabel(i)}))):t("optional");
-  return `<div class="sheet-head"><h2>Add a meal</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div>
+  return `<div class="sheet-head"><h2>${t(dr.editId?"Edit meal":"Add a meal")}</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div>
     ${e.burned!=null?`<p class="prev" style="margin:0">${t("Everyday {a} · Lifting {b} · Cardio {c}",{a:kcalTxt(e.baseline),b:kcalTxt(e.lift),c:kcalTxt(e.cardio)})}</p>`:""}
     ${e.protein!=null?`<p style="margin:0">${kg?t("Protein <b>{a} g</b> of {b}–{c} g",{a:Math.round(e.protein),b:Math.round(kg*1.6),c:Math.round(kg*2.2)}):t("Protein <b>{a} g</b>",{a:Math.round(e.protein)})}</p>`:""}
     ${dr.myForm?myFormHtml():""}
@@ -2068,7 +2069,7 @@ function mealSheetHtml(){
           <label><span class="label">kcal</span><input id="meal-kcal" inputmode="numeric" value="${esc(dr.kcal)}"></label>
           <label><span class="label">Protein g</span><input id="meal-protein" inputmode="numeric" placeholder="optional" value="${esc(dr.protein)}"></label></div>`:""}
         <label><span class="label">Name</span><input id="meal-name" maxlength="40" placeholder="${esc(ph)}" value="${esc(dr.name)}"></label>
-        <button class="btn primary" type="submit">Add meal</button>
+        <button class="btn primary" type="submit">${t(dr.editId?"Save meal":"Add meal")}</button>
       </form>
     </div>`;
 }
@@ -2109,6 +2110,10 @@ function foodClick(act,d){
     case "food-more": dr.showAll=true; redrawFoodResults(); return;
     case "tray-step": trayStep(Number(d.i),Number(d.d)); redrawMealSheet(); return;
     case "tray-remove": dr.items.splice(Number(d.i),1); redrawMealSheet(); return;
+    case "meal-edit":{
+      const day=state.date, m=((state.food[day]&&state.food[day].meals)||[]).find(x=>x.id===d.id); if(!m||!m.items||!m.items.length) return;
+      state.mealDraft={...freshMealDraft(),items:m.items.map(i=>({...i})),name:m.name||"",editId:m.id,editDate:day};
+      openSheet("#mealsheet"); return; }
     case "recent-add":{
       const it=recentFoods(Object.values(state.food),today(),8).find(x=>x.src+":"+x.ref===d.key); if(!it) return;
       if(dr.items.length>=TRAY_MAX){ toast(t("A meal can have up to {n} foods.",{n:TRAY_MAX})); return; }
@@ -2153,7 +2158,7 @@ function todayCard(){
       ${over?`<span class="prev">${t("Over by {n} kcal",{n:over.toLocaleString("en-US")})}</span>`:""}
     </button>
     ${missing?`<p class="prev" style="margin:0">${missing}</p>`:""}
-    ${meals.length?`<ul class="cardio-list">${meals.map(m=>`<li><span class="grow">${esc(m.name?nameOf("meal",m.name):t("Meal"))} · ${m.kcal.toLocaleString("en-US")} kcal${m.protein!=null?` · ${m.protein} g`:""}${m.items&&m.items.length?`<span class="prev" style="display:block">${esc(m.items.map(itemLabel).join(" · "))}</span>`:""}</span><button class="btn ghost small danger" data-act="rm-meal" data-id="${esc(m.id)}" aria-label="${esc(t("Delete {name}",{name:m.name?nameOf("meal",m.name):t("meal")}))}">✕</button></li>`).join("")}</ul>`:""}
+    ${meals.length?`<ul class="cardio-list">${meals.map(m=>`<li><span class="grow">${esc(m.name?nameOf("meal",m.name):t("Meal"))} · ${m.kcal.toLocaleString("en-US")} kcal${m.protein!=null?` · ${m.protein} g`:""}${m.items&&m.items.length?`<span class="prev" style="display:block">${esc(m.items.map(itemLabel).join(" · "))}</span>`:""}</span>${m.items&&m.items.length?`<button class="btn ghost small" data-act="meal-edit" data-id="${esc(m.id)}" aria-label="${esc(t("Edit {name}",{name:m.name?nameOf("meal",m.name):t("meal")}))}">✎</button>`:""}<button class="btn ghost small danger" data-act="rm-meal" data-id="${esc(m.id)}" aria-label="${esc(t("Delete {name}",{name:m.name?nameOf("meal",m.name):t("meal")}))}">✕</button></li>`).join("")}</ul>`:""}
   </div>`;
 }
 function renderCoach(){
@@ -2684,8 +2689,10 @@ document.addEventListener("submit",e=>{
       if(!(Number.isInteger(k)&&k>=1&&k<=5000) || (p!==null&&!(Number.isFinite(p)&&p>=0&&p<=500)) || name.length>40){ bad(); return; }
       meal={id:uid(), name:name||null, kcal:k, protein:p};
     }
-    const d=state.date;
-    store.saveFood({date:d, meals:[...((state.food[d]&&state.food[d].meals)||[]), meal]}); state.mealDraft=freshMealDraft(); closeSheet("#mealsheet"); renderLog(); toast(t("Meal added")); return;
+    const d=dr.editId?dr.editDate:state.date, cur=(state.food[d]&&state.food[d].meals)||[];
+    if(dr.editId) meal.id=dr.editId;
+    const meals=dr.editId&&cur.some(x=>x.id===dr.editId)?cur.map(x=>x.id===dr.editId?meal:x):[...cur,meal];
+    store.saveFood({date:d, meals}); state.mealDraft=freshMealDraft(); closeSheet("#mealsheet"); renderLog(); toast(t(dr.editId?"Meal updated":"Meal added")); return;
   }
   if(f.id==="quickw-form"){
     const n=parseFloat(String($("#quickw").value).trim().replace(",","."));
@@ -2766,7 +2773,7 @@ document.addEventListener("click",e=>{
     case "lang-set": applyLang(b.dataset.v); syncMe(); drawSwatches(); break;
     case "accent-set": applyAccent(b.dataset.v); drawSwatches(); break;
     case "set-goal": state.editProfile=true; go("body"); setTimeout(()=>document.getElementById("pf-goalw")?.focus(),0); break;
-    case "food-open": case "food-serving": case "food-amount": case "food-add": case "food-more": case "tray-step": case "tray-remove": case "manual-toggle": case "recent-add": case "myfood-new": case "myfood-cancel": case "myfood-edit": case "myfood-save": case "myfood-delete": foodClick(b.dataset.act,b.dataset); break;
+    case "food-open": case "food-serving": case "food-amount": case "food-add": case "food-more": case "tray-step": case "tray-remove": case "manual-toggle": case "recent-add": case "myfood-new": case "myfood-cancel": case "myfood-edit": case "myfood-save": case "myfood-delete": case "meal-edit": foodClick(b.dataset.act,b.dataset); break;
     case "meal-name": $("#meal-name").value=state.mealDraft.name=nameOf("meal",b.dataset.name); break;
     case "rm-meal":{ const d=state.date; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderLog(); break; }
     case "hero-go":{ const cl=closestFamily(allFamilies(badges(goalsInput()))); if(cl) openFamily(cl.id); else go("goals"); break; }

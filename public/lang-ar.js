@@ -165,7 +165,8 @@ export const AR = {
 
     /* ---- Messages ---- */
     "Enter 1–5000 kcal (protein 0–500 g)": "أدخل من 1 إلى 5000 kcal (البروتين من 0 إلى 500 g)",
-    "Mine": "طعامي", "Recent": "الأخيرة", "+ My food": "+ طعامي", "Serving": "الحصة", "1 serving": "حصة واحدة",
+    "Edit meal": "تعديل الوجبة", "Save meal": "حفظ الوجبة", "Meal updated": "تم تحديث الوجبة", "Edit {name}": "تعديل {name}",
+    "Mine": "طعامي","Recent": "الأخيرة", "+ My food": "+ طعامي", "Serving": "الحصة", "1 serving": "حصة واحدة",
     "kcal and protein are for one serving. Add grams to log by weight too.": "السعرات والبروتين لحصة واحدة. أضف الجرامات لتسجيل الوزن أيضاً.",
     "Save food": "حفظ الطعام", "Edit my food": "تعديل طعامي", "New food": "طعام جديد", "Check the numbers and try again": "تحقق من الأرقام وحاول مرة أخرى",
     "You can save up to {n} foods.": "يمكنك حفظ {n} طعام كحد أقصى.", "Food deleted": "تم حذف الطعام",

@@ -625,3 +625,75 @@ test("My foods: create, find with a Mine tag, add, edit, delete (saved meals kee
   assert.ok((await page.locator("#view-log .cardio-list").innerText()).includes("Protein bar"));
   await ctx.close();
 });
+
+const saveBuiltMeal = async page => { await page.locator("#meal-form button[type=submit]").click(); await page.waitForTimeout(300); };
+const mealRows = page => page.locator("#view-log .cardio-list li");
+
+test("edit a saved meal: pencil only on built meals, saving replaces the same meal", async () => {
+  const { page, ctx } = await open();
+  // a hand-typed meal: no pencil
+  await openMealSheet(page);
+  await page.locator('[data-act="manual-toggle"]').click();
+  await page.locator("#meal-kcal").fill("450");
+  await saveBuiltMeal(page);
+  assert.equal(await page.locator('#view-log [data-act="meal-edit"]').count(), 0, "no pencil on a typed meal");
+  // a built meal: pencil
+  const before = await mealRows(page).count();
+  await openMealSheet(page);
+  await addFood(page, "ful", "ful-medames");
+  await addFood(page, "baladi", "aish-baladi");
+  const total = await trayKcal(page);
+  await saveBuiltMeal(page);
+  assert.equal(await mealRows(page).count(), before + 1);
+  assert.equal(await page.locator('#view-log [data-act="meal-edit"]').count(), 1);
+  await page.locator('#view-log [data-act="meal-edit"]').click();
+  await page.waitForSelector("#mealsheet[open]");
+  assert.equal(await page.locator("#meal-tray .trayrow").count(), 2, "both foods are back in the tray");
+  assert.equal(await trayKcal(page), total);
+  await page.locator('#meal-tray [data-act="tray-step"][data-d="1"]').first().click();
+  const bigger = await trayKcal(page);
+  assert.ok(bigger > total);
+  await saveBuiltMeal(page);
+  assert.equal(await mealRows(page).count(), before + 1, "still one meal, not two");
+  assert.ok((await mealRows(page).last().innerText()).includes(bigger.toLocaleString("en-US") + " kcal"));
+  await ctx.close();
+});
+
+test("edit a saved meal: closing without saving changes nothing and the next new meal starts empty", async () => {
+  const { page, ctx } = await open();
+  await openMealSheet(page);
+  await addFood(page, "ful", "ful-medames");
+  await saveBuiltMeal(page);
+  const text = await mealRows(page).last().innerText();
+  await page.locator('#view-log [data-act="meal-edit"]').click();
+  await page.waitForSelector("#mealsheet[open]");
+  await page.locator('#meal-tray [data-act="tray-remove"]').first().click();
+  await page.locator('[data-act="sheet-close"]').first().click();
+  await page.waitForTimeout(200);
+  assert.equal(await mealRows(page).last().innerText(), text);
+  await openMealSheet(page);
+  assert.equal(await page.locator("#meal-tray .trayrow").count(), 0, "a new meal does not inherit the edit");
+  assert.equal(await page.locator("#mealsheet h2").textContent(), "Add a meal");
+  await ctx.close();
+});
+
+test("edit a saved meal: a food that was deleted from My foods still opens and can be stepped", async () => {
+  const { page, ctx } = await open();
+  await openMealSheet(page);
+  await myFoodForm(page, { name: "Date bar", kcal: "200", protein: "4", serving: "1 bar" });
+  await page.locator("#food-q").fill("date bar");
+  await page.locator('#food-results [data-act="food-open"][data-src="mine"]').first().click();
+  await page.locator("#food-add").click();
+  await saveBuiltMeal(page);
+  await openMealSheet(page);
+  await page.locator("#food-q").fill("date bar");
+  await page.locator('#food-results [data-act="food-open"][data-src="mine"]').first().click();
+  await page.locator('[data-act="myfood-delete"]').click();
+  await page.locator('[data-act="sheet-close"]').first().click();
+  await page.locator('#view-log [data-act="meal-edit"]').click();
+  await page.waitForSelector("#mealsheet[open]");
+  assert.equal(await trayKcal(page), 200);
+  await page.locator('#meal-tray [data-act="tray-step"][data-d="1"]').first().click();
+  assert.equal(await trayKcal(page), 300, "scaled from the saved snapshot (1.5 servings)");
+  await ctx.close();
+});
