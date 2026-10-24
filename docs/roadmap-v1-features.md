@@ -12,7 +12,7 @@ The owner answered the design questions for every feature below in one session. 
 - **Progression advice:** raise reps first (aim for the top of the target range), then suggest adding 2.5 kg extra once the top is reached.
 - Open for the spec: how reps-only PRs/volume/e1RM/strength-ratio badges are counted (a 0 kg set has no e1RM and no kg volume; likely "best reps" for PRs). Must work with set types (warm-up / drop) and `progression.js`.
 
-## 2. Injuries / exercises to avoid
+## 2. Injuries / exercises to avoid (BUILT: sub-project 23, sw v46)
 - **Marking:** body areas (shoulder, elbow, wrist, lower back, hip, knee, ankle) plus hiding single exercises. Every library exercise (183) is tagged with the joints it loads (Claude tags, the owner reviews the table).
 - **Effect:** avoided exercises disappear from suggestions, the Add exercise list, type-ahead and the generated training week (journey). Exercises already in days or history stay with a clear warning mark; nothing is ever deleted; a "show anyway" switch exists. No automatic swap.
 
