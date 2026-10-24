@@ -13,7 +13,16 @@ export const CARDIO_TYPES = Object.keys(MET);
 export const INTENSITIES = ["easy", "moderate", "hard"];
 export const GOAL_ADJ = { "fat-loss": -450, "muscle": 250, "recomp": -150, "strength": 150, "maintain": 0 };
 
-const BASELINE_FACTOR = 1.2;   // everyday life without workouts
+// Everyday life without workouts, as a multiple of the resting rate. Kept low on purpose: lifting and cardio are added
+// separately, so the usual "exercise included" factors would count them twice.
+export const ACTIVITY = { sitting: 1.2, light: 1.3, active: 1.4, very: 1.5 };
+export const ACTIVITY_IDS = Object.keys(ACTIVITY);
+export const ADJUST_MIN = -1000, ADJUST_MAX = 1000;   // a person's own daily kcal adjustment
+export const activityFactor = a => (Object.hasOwn(ACTIVITY, a) ? ACTIVITY[a] : ACTIVITY.sitting);
+// The person's own adjustment when it is a whole number in range (0 is a real choice), otherwise the goal's.
+export function goalAdjustment(goal, adjust) {
+  return Number.isInteger(adjust) && adjust >= ADJUST_MIN && adjust <= ADJUST_MAX ? adjust : (GOAL_ADJ[goal] || 0);
+}
 const LIFT_MET = 3.5;          // moderate weight training, rests included
 const LIFT_TAIL_MIN = 2;       // time for the last set
 const MIN_PER_SET = 2.5;       // when set times are missing
@@ -40,7 +49,7 @@ export function bmrFor(profile, body, date) {
   return { bmr: Math.round(10 * kg + 6.25 * p.height - 5 * age + (p.sex === "male" ? 5 : -161)), src: "formula" };
 }
 
-export function baselineBurn(bmr) { return bmr == null ? null : Math.round(bmr * BASELINE_FACTOR); }
+export function baselineBurn(bmr, activity) { return bmr == null ? null : Math.round(bmr * activityFactor(activity)); }
 
 // Workout length: first to last timed set + 2 min, else 2.5 min per set.
 export function liftMinutes(workout) {
@@ -76,8 +85,8 @@ export function exerciseKcal(workout, kg) {
   return { lift, cardio, total: lift == null || cardio == null ? null : lift + cardio };
 }
 
-export function dayEnergy({ bmr, kg, goal, workout, food }) {
-  const baseline = baselineBurn(bmr);
+export function dayEnergy({ bmr, kg, goal, activity, adjust, workout, food }) {
+  const baseline = baselineBurn(bmr, activity), adj = goalAdjustment(goal, adjust);
   const ex = exerciseKcal(workout, kg);
   const burned = baseline == null || ex.total == null ? null : baseline + ex.total;
   const meals = (food && food.meals) || [];
@@ -85,9 +94,26 @@ export function dayEnergy({ bmr, kg, goal, workout, food }) {
   const withP = meals.filter(m => typeof m.protein === "number");
   return {
     baseline, lift: ex.lift, cardio: ex.cardio, burned,
-    target: burned == null ? null : burned + (GOAL_ADJ[goal] || 0),
+    target: burned == null ? null : burned + adj,
     eaten,
     protein: withP.length ? withP.reduce((a, m) => a + m.protein, 0) : null,
     balance: burned == null ? null : eaten - burned,
+    factor: activityFactor(activity), adj,
+  };
+}
+
+// The parts of a day's target, in the order they add up: everyday burn (resting rate x factor) + lifting + cardio = burned,
+// burned + goal adjustment = target. `energy` is the dayEnergy result for the same inputs. null when the target is unknown.
+export function explainTarget({ bmr, src, activity, goal, adjust, energy }) {
+  if (!energy || energy.target == null) return null;
+  return {
+    rows: [
+      { id: "resting", kcal: bmr, src },
+      { id: "everyday", kcal: energy.baseline, factor: activityFactor(activity) },
+      { id: "lifting", kcal: energy.lift },
+      { id: "cardio", kcal: energy.cardio },
+      { id: "goal", kcal: energy.adj, custom: goalAdjustment(goal, adjust) === adjust },
+    ],
+    burned: energy.burned, target: energy.target,
   };
 }
