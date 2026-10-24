@@ -165,7 +165,7 @@ export const AR = {
 
     /* ---- Messages ---- */
     "Enter 1–5000 kcal (protein 0–500 g)": "أدخل من 1 إلى 5000 kcal (البروتين من 0 إلى 500 g)",
-    "Scan": "مسح", "Scan a barcode": "مسح الباركود", "Type the number": "اكتب الرقم", "Start camera": "تشغيل الكاميرا", "Camera stopped.": "توقفت الكاميرا.",
+    "Scan": "مسح ضوئي", "Scan a barcode": "مسح الباركود", "Type the number": "اكتب الرقم", "Start camera": "تشغيل الكاميرا", "Camera stopped.": "توقفت الكاميرا.",
     "Camera not available. Type the number instead.": "الكاميرا غير متاحة. اكتب الرقم بدلاً من ذلك.", "Starting the camera…": "جارٍ تشغيل الكاميرا…",
     "Point the camera at the barcode.": "وجّه الكاميرا نحو الباركود.", "Scanner not available. Type the number instead.": "الماسح غير متاح. اكتب الرقم بدلاً من ذلك.",
     "That number isn't a valid barcode": "هذا الرقم ليس باركود صحيحاً", "Looking it up…": "جارٍ البحث…",

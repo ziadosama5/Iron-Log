@@ -34,8 +34,9 @@ export class GoogleAuthProvider { setCustomParameters() {} }
 export const signInWithPopup = () => Promise.resolve();
 export const signInWithRedirect = () => Promise.resolve();
 export const getRedirectResult = () => Promise.resolve(null);
-export const onAuthStateChanged = (a, cb) => { setTimeout(() => cb({ uid: "u1", displayName: "Ziad", email: "ziad@example.com", emailVerified: true }), 0); return () => {}; };
-export const signOut = () => Promise.resolve();
+let authCb = null;
+export const onAuthStateChanged = (a, cb) => { authCb = cb; window.__fakeAuth = u => cb(u); setTimeout(() => cb({ uid: "u1", displayName: "Ziad", email: "ziad@example.com", emailVerified: true }), 0); return () => {}; };
+export const signOut = () => { if (authCb) authCb(null); return Promise.resolve(); };
 export const initializeFirestore = () => ({});
 export const persistentLocalCache = () => ({});
 export const persistentMultipleTabManager = () => ({});

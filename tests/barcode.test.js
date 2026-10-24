@@ -59,3 +59,14 @@ test("normalizeProduct cuts long names and ignores silly serving sizes", () => {
   assert.ok(f.name.length <= 60);
   assert.deepEqual(f.servings, [{ id: "g100", name: "100 g", grams: 100 }]);
 });
+
+test("normalizeProduct accepts numbers sent as numeric strings, but not words", () => {
+  const p = { status: 1, product: { product_name: "Cola", serving_size: "330 ml", serving_quantity: "330", nutriments: { "energy-kcal_100g": "42", proteins_100g: "1.5" } } };
+  const f = normalizeProduct(p, "5449000000996");
+  assert.deepEqual(f.per100, { kcal: 42, protein: 1.5 });
+  assert.deepEqual(f.servings[0], { id: "pkg", name: "330 ml", grams: 330 });
+  const words = { status: 1, product: { product_name: "Cola", nutriments: { "energy-kcal_100g": "lots" } } };
+  assert.equal(normalizeProduct(words, "5449000000996"), null);
+  assert.equal(normalizeProduct({ status: 1, product: { product_name: "Cola", nutriments: { "energy-kcal_100g": "" } } }, "5449000000996"), null, "empty string is no data");
+  assert.equal(normalizeProduct({ status: 1, product: { product_name: "Cola", nutriments: { "energy-kcal_100g": 40, proteins_100g: "x" } } }, "5449000000996"), null, "protein that is not a number");
+});

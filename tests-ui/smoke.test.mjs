@@ -819,3 +819,62 @@ test("barcode: the camera stops on Back and on closing the sheet, with no stale 
   assert.equal(await page.evaluate(() => !!(history.state && history.state.sheet)), false, "no leftover sheet step in history");
   await ctx.close();
 });
+
+// ---- final review fixes ----
+test("review: a data refresh while scanning keeps the camera picture", async () => {
+  const { page, ctx } = await open("", undefined, WATCH_STREAMS);
+  await openMealSheet(page);
+  await openScan(page);
+  await page.waitForFunction(() => window.__streams.length === 1 && document.querySelector("#scan-video")?.srcObject);
+  await page.evaluate(() => { window.__v = document.getElementById("scan-video"); document.querySelector('[data-act="lang-set"][data-v="ar"]').click(); });
+  await page.waitForTimeout(400);
+  assert.equal(await page.evaluate(() => document.getElementById("scan-video") === window.__v), true, "the same video element is still on screen");
+  assert.equal(await page.evaluate(() => !!window.__v.srcObject && window.__streams[0].getTracks().every(t => t.readyState === "live")), true, "the camera is still running");
+  await ctx.close();
+});
+
+// The app's service worker fetches the library itself, which Playwright routes cannot see: make the load fail inside the page.
+const SCANNER_LIB_FAILS = () => {
+  const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices); window.__streams = [];
+  navigator.mediaDevices.getUserMedia = async c => { const s = await orig(c); window.__streams.push(s); return s; };
+  const add = Node.prototype.appendChild;
+  Node.prototype.appendChild = function (n) { if (n.tagName === "SCRIPT" && /zxing/.test(n.src)) { setTimeout(() => n.onerror && n.onerror(new Event("error")), 0); return n; } return add.call(this, n); };
+};
+test("review: if the scanner library cannot load, the camera is switched off", async () => {
+  const { page, ctx } = await open("", undefined, SCANNER_LIB_FAILS);
+  await openMealSheet(page);
+  await openScan(page);
+  await page.waitForFunction(() => /Scanner not available/.test(document.querySelector("#scan-msg")?.textContent || ""));
+  assert.equal(await page.evaluate(() => window.__streams.every(s => s.getTracks().every(t => t.readyState === "ended"))), true, "no camera left running");
+  assert.equal(await page.locator("#scan-digits").count(), 1, "typing still works");
+  await ctx.close();
+});
+
+test("review: signing out clears the meal draft for the next person", async () => {
+  const { page, ctx } = await open();
+  await openMealSheet(page);
+  await addFood(page, "ful", "ful-medames");
+  await page.locator("#food-q").fill("rice");
+  await page.locator('[data-act="sheet-close"]').first().click();
+  await page.waitForTimeout(200);
+  await page.evaluate(() => document.querySelector("#signout").click());
+  await page.waitForTimeout(300);
+  await page.evaluate(() => window.__fakeAuth({ uid: "u2", displayName: "Next", email: "next@example.com", emailVerified: true }));
+  await page.waitForSelector(".tabbar:not([hidden])");
+  await openMealSheet(page);
+  assert.equal(await page.locator("#meal-tray .trayrow").count(), 0, "the tray is empty");
+  assert.equal(await page.locator("#food-q").inputValue(), "", "the search box is empty");
+  await ctx.close();
+});
+
+test("review: in Arabic the − and + steppers keep their order (left to right)", async () => {
+  const { page, ctx } = await open("lang=ar");
+  await openMealSheet(page);
+  await page.locator("#food-q").fill("rice");
+  await page.locator('#food-results [data-act="food-open"][data-ref="rice-white"]').click();
+  const xs = async sel => page.evaluate(s => document.querySelector(s).getBoundingClientRect().x, sel);
+  assert.ok(await xs('.foodamt [data-d="-0.5"]') < await xs('.foodamt [data-d="0.5"]'), "amount stepper: minus is left of plus");
+  await page.locator("#food-add").click();
+  assert.ok(await xs('#meal-tray [data-act="tray-step"][data-d="-1"]') < await xs('#meal-tray [data-act="tray-step"][data-d="1"]'), "tray stepper: minus is left of plus");
+  await ctx.close();
+});

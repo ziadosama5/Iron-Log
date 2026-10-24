@@ -3,6 +3,8 @@
 
 const isObj = v => v !== null && typeof v === "object" && !Array.isArray(v);
 const isNum = (v, lo, hi) => typeof v === "number" && Number.isFinite(v) && v >= lo && v <= hi;
+// Open Food Facts sometimes sends numbers as strings ("42"); words and empty strings stay as they are and fail isNum.
+const toNum = v => (typeof v === "string" && v.trim() !== "" && Number.isFinite(Number(v)) ? Number(v) : v);
 const text = (v, max) => (typeof v === "string" && v.trim() ? v.trim().slice(0, max) : null);
 
 // "5 449000 000996" -> "5449000000996"; anything with other characters (letters, other digit scripts) -> "".
@@ -30,14 +32,15 @@ export function normalizeProduct(json, digits) {
   const p = json.product, n = isObj(p.nutriments) ? p.nutriments : {};
   const base = text(p.product_name_ar, 60) || text(p.product_name, 60);
   if (!base) return null;
-  const kcal = n["energy-kcal_100g"];
+  const kcal = toNum(n["energy-kcal_100g"]);
   if (!isNum(kcal, 0, 900)) return null;
-  const protein = n.proteins_100g;
+  const protein = toNum(n.proteins_100g);
   if (protein !== undefined && protein !== null && !isNum(protein, 0, 100)) return null;
   const brand = typeof p.brands === "string" ? text(p.brands.split(",")[0], 30) : null;
   const name = (brand && !base.includes(brand) ? base + " (" + brand + ")" : base).slice(0, 60);
   const servings = [];
-  if (isNum(p.serving_quantity, 1, 5000)) servings.push({ id: "pkg", name: text(p.serving_size, 60) || p.serving_quantity + " g", grams: p.serving_quantity });
+  const pack = toNum(p.serving_quantity);
+  if (isNum(pack, 1, 5000)) servings.push({ id: "pkg", name: text(p.serving_size, 60) || pack + " g", grams: pack });
   servings.push({ id: "g100", name: "100 g", grams: 100 });
   return { id: "scan-" + digits, name, per100: { kcal, protein: protein ?? null }, servings, barcode: digits };
 }

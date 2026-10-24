@@ -411,7 +411,8 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .foodcard{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--accent);border-radius:12px;background:var(--surface)}
 .foodcard .foodrow{border:0;padding:0}
 .minetag{font-size:12px;font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:0 6px;margin-inline-start:6px}
-.foodamt{gap:8px;align-items:flex-end}
+.foodamt{gap:8px;align-items:flex-end;direction:ltr}
+.steps{display:flex;gap:6px;direction:ltr}
 .foodamt .amt{min-width:36px;text-align:center}
 .gbar{display:flex;flex-direction:column;gap:4px}
 .dots{letter-spacing:2px;color:var(--accent)}
@@ -605,7 +606,7 @@ const store = {
       this.stopFriends(); state.showMore={}; state.friends=freshFriends(); this.stopChallenges(); state.challenges=freshChallenges(); renderFriendsBadge();
       this.user=user; state.authed=!!user; authKnown=true;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.myFoods=[]; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; stopScan(); setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.myFoods=[]; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; stopScan(); state.mealDraft=freshMealDraft(); setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
       this.loadShare().then(()=>{ maybePublish(); refreshFriendNames(); if(state.view==="profile") renderProfile(); });
       this.watchFriends(); this.watchChallenges();
@@ -1350,7 +1351,7 @@ function closeSheet(id){ const d=$(id); if(d&&d.open) d.close(); }
 function refreshSheets(){
   if($("#exsheet").open) $("#exsheet").innerHTML=exSheetHtml();
   if($("#cardiosheet").open) $("#cardiosheet").innerHTML=cardioSheetHtml();
-  if($("#mealsheet").open&&!$("#mealsheet").contains(document.activeElement)) $("#mealsheet").innerHTML=mealSheetHtml();
+  if($("#mealsheet").open&&!state.mealDraft.scan&&!$("#mealsheet").contains(document.activeElement)) $("#mealsheet").innerHTML=mealSheetHtml();
 }
 ["#exsheet","#cardiosheet","#mealsheet","#plansheet"].forEach(id=>{
   const d=$(id);
@@ -2001,8 +2002,8 @@ function totalsText(tot){ return tot.protein!=null?t("{kcal} kcal · {p} g prote
 function trayRowHtml(it,i){
   const name=itemLabel(it);
   return `<div class="trayrow"><div class="grow"><b>${esc(name)}</b><span class="prev" style="display:block">${esc(itemAmountText(it))} · ${kcalNum(it.kcal)} kcal</span></div>
-    <button type="button" class="btn small" data-act="tray-step" data-i="${i}" data-d="-1" aria-label="${esc(t("Less of {name}",{name}))}">−</button>
-    <button type="button" class="btn small" data-act="tray-step" data-i="${i}" data-d="1" aria-label="${esc(t("More of {name}",{name}))}">+</button>
+    <span class="steps"><button type="button" class="btn small" data-act="tray-step" data-i="${i}" data-d="-1" aria-label="${esc(t("Less of {name}",{name}))}">−</button>
+    <button type="button" class="btn small" data-act="tray-step" data-i="${i}" data-d="1" aria-label="${esc(t("More of {name}",{name}))}">+</button></span>
     <button type="button" class="btn ghost small danger" data-act="tray-remove" data-i="${i}" aria-label="${esc(t("Remove {name}",{name}))}">✕</button></div>`;
 }
 function trayHtml(){
@@ -2137,7 +2138,7 @@ async function startScan(){
   try{
     if("BarcodeDetector" in window){ const det=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]}); detect=async()=>{ const r=await det.detect(v); return r[0]?r[0].rawValue:null; }; }
     else { const Z=await loadScanner(), rd=new Z.BrowserMultiFormatReader(new Map([[Z.DecodeHintType.POSSIBLE_FORMATS,[Z.BarcodeFormat.EAN_13,Z.BarcodeFormat.EAN_8,Z.BarcodeFormat.UPC_A,Z.BarcodeFormat.UPC_E]]])); detect=async()=>{ try{ return rd.decode(v).getText(); }catch(e){ return null; } }; }
-  }catch(e){ if(scanner.stream===stream) setScanMsg(t("Scanner not available. Type the number instead.")); return; }
+  }catch(e){ if(scanner.stream===stream){ stopScan(); setScanCamera("off"); setScanMsg(t("Scanner not available. Type the number instead.")); } return; }
   if(scanner.stream!==stream) return;
   scanner.timer=setInterval(async()=>{
     if(v.readyState<2||scanner.busy) return;
