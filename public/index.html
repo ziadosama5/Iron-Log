@@ -2311,7 +2311,7 @@ function todayCard(){
       ${e.burned!=null?`<span class="prev">${t("Burned {a} · Balance {b} kcal",{a:kcalTxt(e.burned),b:bal})}</span>`:""}
       ${over?`<span class="prev">${t("Over by {n} kcal",{n:over.toLocaleString("en-US")})}</span>`:""}
     </button>
-    ${e.target!=null?`<button type="button" class="btn ghost small" data-act="target-open">${t("How is this built?")}</button>`:""}
+    ${e.target!=null&&!missing?`<button type="button" class="btn ghost small" data-act="target-open">${t("How is this built?")}</button>`:""}
     ${missing?`<p class="prev" style="margin:0">${missing}</p>`:""}
     ${meals.length?`<ul class="cardio-list">${meals.map((m,i)=>{ const label=m.name?nameOf("meal",m.name):t("Meal {n}",{n:mealNumbers(meals)[i]}); return `<li><span class="grow">${esc(label)} · ${m.kcal.toLocaleString("en-US")} kcal${m.protein!=null?` · ${m.protein} g`:""}</span>${m.items&&m.items.length?`<button class="btn ghost small" data-act="meal-edit" data-id="${esc(m.id)}" aria-label="${esc(t("Edit {name}",{name:label}))}">✎</button>`:""}<button class="btn ghost small danger" data-act="rm-meal" data-id="${esc(m.id)}" aria-label="${esc(t("Delete {name}",{name:label}))}">✕</button></li>`; }).join("")}</ul>`:""}
   </div>`;
@@ -2875,7 +2875,7 @@ document.addEventListener("submit",e=>{
     const yr=new Date().getFullYear();
     if(!p.sex||!p.goal||!p.height||p.height<100||p.height>250||!p.birthYear||p.birthYear<yr-100||p.birthYear>yr-10){ toast(t("Fill in all four fields: height in cm (100–250) and a 4-digit birth year")); return; }
     if(state.profile.activity!==undefined) p.activity=state.profile.activity;   // calorie-target choices are not on this form: carry them over
-    if(state.profile.adjust!==undefined) p.adjust=state.profile.adjust;
+    if(state.profile.adjust!==undefined&&state.profile.goal===p.goal) p.adjust=state.profile.adjust;   // an own adjustment belongs to the goal it was set for
     store.saveProfile(p); state.editProfile=false; renderBody(); toast(t("Saved"));
   }
   if(f.id==="body-form"){

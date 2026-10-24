@@ -1028,3 +1028,26 @@ test("target sheet: in Arabic it opens and the adjustment buttons keep their ord
   assert.ok(await xs('#targetsheet [data-act="target-adjust"][data-d="-50"]') < await xs('#targetsheet [data-act="target-adjust"][data-d="50"]'), "minus is left of plus");
   await ctx.close();
 });
+
+test("target sheet: changing the goal in About you resets the person's own adjustment, keeping it keeps it", async () => {
+  const { page, ctx } = await open();
+  await openTarget(page);
+  await page.locator('#targetsheet [data-act="target-adjust"][data-d="50"]').click();
+  await page.waitForTimeout(150);
+  const own = await sheetNum(page, "goal");
+  await page.locator('#targetsheet [data-act="sheet-close"]').click();
+  const saveForm = async goal => {
+    await tab(page, "progress"); await page.locator('#pills [data-view="body"]').click();
+    await page.locator('[data-act="edit-profile"]').click();
+    if (goal) await page.locator('#profile-form [name="goal"]').selectOption(goal);
+    await page.locator('#profile-form button[type=submit]').click(); await page.waitForTimeout(300);
+    await tab(page, "today"); await openTarget(page);
+  };
+  await saveForm(null);
+  assert.equal(await sheetNum(page, "goal"), own, "same goal: the own number stays");
+  await page.locator('#targetsheet [data-act="sheet-close"]').click();
+  await saveForm("muscle");
+  assert.equal(await page.locator('#targetsheet [data-act="target-adjust-reset"]').count(), 0, "a new goal starts from its default");
+  assert.equal(await sheetNum(page, "goal"), 250, "the muscle default");
+  await ctx.close();
+});

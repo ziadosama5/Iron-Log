@@ -189,6 +189,7 @@ export function checkProfile({ sex, height, birthYear, goal }, year) {
 // included) is kept as it was.
 export function mergeProfile(existing, answers) {
   const out = { ...(existing || {}), goal: answers.goal };
+  if (existing && existing.goal !== answers.goal) delete out.adjust;   // an own daily adjustment belongs to the goal it was set for
   const year = new Date().getFullYear();
   if (validSex(answers.sex)) out.sex = answers.sex;
   const h = toNum(answers.height);

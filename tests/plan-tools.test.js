@@ -276,6 +276,14 @@ test("assignWeekday moves a weekday to one day, clears it for Rest, and keeps ev
 
 test("mergeProfile keeps the calorie-target choices", async () => {
   const { mergeProfile } = await import("../public/plan-tools.js");
-  const r = mergeProfile({ sex: "male", height: 180, birthYear: 1998, goal: "muscle", activity: "light", adjust: 100 }, { goal: "fat-loss" });
-  assert.equal(r.activity, "light"); assert.equal(r.adjust, 100); assert.equal(r.goal, "fat-loss");
+  const r = mergeProfile({ sex: "male", height: 180, birthYear: 1998, goal: "muscle", activity: "light", adjust: 100 }, { goal: "muscle" });
+  assert.equal(r.activity, "light"); assert.equal(r.adjust, 100); assert.equal(r.goal, "muscle");
+});
+
+test("mergeProfile: changing the goal drops the person's own daily adjustment, keeping the goal keeps it", async () => {
+  const { mergeProfile } = await import("../public/plan-tools.js");
+  const old = { sex: "male", height: 180, birthYear: 1998, goal: "muscle", activity: "light", adjust: 300 };
+  const changed = mergeProfile(old, { goal: "fat-loss" });
+  assert.equal("adjust" in changed, false); assert.equal(changed.activity, "light", "activity is not tied to the goal");
+  assert.equal(mergeProfile(old, { goal: "muscle" }).adjust, 300);
 });
