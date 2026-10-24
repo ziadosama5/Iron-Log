@@ -12,6 +12,8 @@ for (let i = 0; i < 10; i++) { const date = day(i * 2 + 1); add("w-" + date, { d
 // ?bw=1: a bodyweight session two days ago (Push-up and Pull-up at the top of their ranges, Plank at 60 s)
 if (new URLSearchParams(location.search).get("bw")) add("w-" + day(2), { date: day(2), dayId: "d2", dayName: "Pull", updated: T, entries: [
   { ex: "Push-up", bw: true, sets: [S(0, 12, 40), S(0, 12, 35), S(0, 12, 30)] }, { ex: "Pull-up", bw: true, sets: [S(0, 6, 25), S(0, 6, 20), S(0, 6, 15)] }, { ex: "Plank", bw: true, sets: [S(0, 60, 10), S(0, 60, 8), S(0, 60, 6)] }] });
+// ?bw=2 also: an older session from before the feature (no bw flag) of the same pull-up
+if (new URLSearchParams(location.search).get("bw") === "2") add("w-" + day(4), { date: day(4), dayId: "d2", dayName: "Pull", updated: T, entries: [{ ex: "Pull-up", sets: [S(0, 5, 30), S(0, 5, 25), S(0, 5, 20)] }] });
 for (let i = 0; i < 6; i++) { const date = day(i * 5); add("b-" + date, { date, weight: 86 - i * 0.6, waist: 92 - i * 0.4, updated: T }); }
 for (let i = 1; i < 6; i++) add("f-" + day(i), { date: day(i), meals: [{ id: "x" + i, name: "Lunch", kcal: 2100, protein: 150 }] });
 

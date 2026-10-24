@@ -1220,11 +1220,13 @@ function maybePublish(){
 const sorted = () => [...state.workouts].sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
 function exerciseNames(){ const s=new Set(); sorted().forEach(w=>w.entries.forEach(e=>{ if(e.sets.length) s.add(e.ex); })); return [...s]; }
 function sessionsFor(ex){ return exerciseSessions(sorted(),ex,same); }   // working sets only: warm-ups and drop sets are not "last time"
-function lastBefore(ex,date){ const s=sessionsFor(ex).filter(x=>x.date<date); return s[s.length-1]||null; }
-function bestBefore(ex,date){ let b=0; sessionsFor(ex).filter(x=>x.date<date).forEach(x=>x.sets.forEach(s=>b=Math.max(b,e1rm(s.w,s.r)))); return b; }
+// The kind of a past session: `bw` is true/false for entries logged since bodyweight mode; older ones count as bodyweight only for library bodyweight exercises.
+const sessionBw = (s,ex) => s.bw===true || (s.bw===undefined && bwDefault(ex));
+const sessionsOfKind = (ex,bw) => sessionsFor(ex).filter(x=>sessionBw(x,ex)===bw);
+function lastBefore(ex,date,bw=false){ const s=sessionsOfKind(ex,bw).filter(x=>x.date<date); return s[s.length-1]||null; }
+function bestBefore(ex,date,bw=false){ let b=0; sessionsOfKind(ex,bw).filter(x=>x.date<date).forEach(x=>x.sets.forEach(s=>b=Math.max(b,bw?bwScore(s):e1rm(s.w,s.r)))); return b; }
 // Bodyweight exercises (extra kg, see bodyweight.js): an entry that has sets keeps the kind it was logged as; before the first set the library or the switch decides.
 const isBw = e => e.sets.length ? !!e.bw : bwFor(state.settings, e.ex);
-function bestBwBefore(ex,date){ let b=0; sorted().filter(w=>w.date<date).forEach(w=>w.entries.filter(e=>e.bw&&same(e.ex,ex)).forEach(e=>workingSets(e.sets).forEach(s=>b=Math.max(b,bwScore(s))))); return b; }
 // Flips an exercise between weighted and bodyweight; only a difference from the library default is stored.
 function setBodyweight(ex,on){
   const all={...(state.settings.bodyweight||{})}; if(on===bwDefault(ex)) delete all[ex]; else all[ex]=on;
@@ -1317,16 +1319,16 @@ function adviceText(sug){
   if(!sug) return "";
   if(sug.bw){
     if(sug.unit==="s") return t("Aim for {r} seconds on every set",{r:sug.r});
-    if(sug.kind==="increase") return sug.w<0?t("Less assistance: {w} kg, start at {r} reps",{w:formatLoad(sug.w),r:sug.r}):t("Add {w} kg extra, start at {r} reps",{w:kg(sug.w),r:sug.r});
+    if(sug.kind==="increase") return sug.w<0?t("Less assistance: {w} kg, start at {r} reps",{w:formatLoad(sug.w),r:sug.r}):sug.w===0?t("No assistance, start at {r} reps",{r:sug.r}):t("Try +{w} kg extra, start at {r} reps",{w:kg(sug.w),r:sug.r});
     return sug.low?t("Build up to {r} reps",{r:sug.r}):t("Aim for {r} reps on every set",{r:sug.r});
   }
   return sug.kind==="increase"?t("Try {w} kg × {r}",{w:kg(sug.w),r:sug.r}):sug.low?t("Same weight: build up to {r} reps",{r:sug.r}):t("Same weight: aim for {r} on every set",{r:sug.r});
 }
-function targetBlock(ex,tg,sug,ei){
+function targetBlock(ex,tg,sug,ei,hold){
   const adv=adviceText(sug), advHtml=adv?`<div class="advice"><b>${esc(adv)}</b></div>`:"";
-  if(state.targetEdit!==ex) return `<div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="chip" data-act="target-edit" data-ei="${ei}" aria-label="${esc(t("Change target"))}">${t("Target {sets} × {min}–{max}",{sets:tg.sets,min:tg.min,max:tg.max})}</button></div>${advHtml}`;
+  if(state.targetEdit!==ex) return `<div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="chip" data-act="target-edit" data-ei="${ei}" aria-label="${esc(t("Change target"))}">${t(hold?"Target {sets} × {min}–{max} s":"Target {sets} × {min}–{max}",{sets:tg.sets,min:tg.min,max:tg.max})}</button></div>${advHtml}`;
   const row=(f,label)=>`<div class="row" data-row="${f}" style="gap:10px"><span class="label grow">${esc(t(label))}</span><span dir="ltr" class="row" style="gap:10px;flex-wrap:nowrap"><button type="button" class="btn small" data-act="tgt-step" data-f="${f}" data-d="-1" aria-label="${esc(t("Less"))}">−</button><b class="num" style="min-width:32px;text-align:center">${tg[f]}</b><button type="button" class="btn small" data-act="tgt-step" data-f="${f}" data-d="1" aria-label="${esc(t("More"))}">+</button></span></div>`;
-  return `<div class="stack" style="gap:6px">${row("sets","Sets")}${row("min","Min reps")}${row("max","Max reps")}<div class="row"><button type="button" class="btn small" data-act="tgt-reset">${t("Reset to default")}</button><button type="button" class="btn primary small" data-act="tgt-done">${t("Done")}</button></div></div>${advHtml}`;
+  return `<div class="stack" style="gap:6px">${row("sets","Sets")}${row("min",hold?"Min seconds":"Min reps")}${row("max",hold?"Max seconds":"Max reps")}<div class="row"><button type="button" class="btn small" data-act="tgt-reset">${t("Reset to default")}</button><button type="button" class="btn primary small" data-act="tgt-done">${t("Done")}</button></div></div>${advHtml}`;
 }
 let tgtTimer=null;
 const pendingTargets={};   // edits not saved yet: {exercise: target | null}; also laid over every incoming snapshot
@@ -1346,7 +1348,7 @@ function setTarget(ex,next){
 function focusCard(w, ei){
   const entries=w.entries, e=entries[ei];
   const bw=isBw(e), hold=bw&&isHold(e.ex);
-  const last=lastBefore(e.ex,state.date), best=bw?bestBwBefore(e.ex,state.date):bestBefore(e.ex,state.date);
+  const last=lastBefore(e.ex,state.date,bw), best=bestBefore(e.ex,state.date,bw);
   const target=targetFor(state.settings,e.ex), sug=suggestNext({last:last&&last.sets,target,step:bw?2.5:stepFor(e.ex),bw,hold});
   const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last,sug,{bw,hold}));
   const editSi = editIndexFor(state.editSet, state.date, e.ex, e.sets), kind=state.setKind||"normal";
@@ -1356,7 +1358,7 @@ function focusCard(w, ei){
       <div class="row"><span class="label grow">${t("Exercise {n} of {m}",{n:ei+1,m:entries.length})}</span>${infoBtn(e.ex)}</div>
       <div class="ex-name">${esc(nameOf("ex",e.ex))}</div>
       ${last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>(bw?formatLoad(s.w,t("BW")):kg(s.w))+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
-      ${targetBlock(e.ex,target,sug,ei)}
+      ${targetBlock(e.ex,target,sug,ei,hold)}
       <div class="row" style="gap:8px"><button type="button" class="chip" data-act="bw-toggle" data-ei="${ei}" aria-pressed="${bw}"${e.sets.length?" disabled":""}>${t("Bodyweight")}</button>${e.sets.length?`<span class="prev">${t("Switch before your first set")}</span>`:""}</div>
       <div class="stack" style="gap:4px"><span class="label">${t(bw?"Extra weight · kg":"Weight · kg")}</span>${bw?`<span class="prev">${t("0 = your body. Negative = assisted.")}</span>`:""}
         <div class="bigstep"><button data-act="step" data-f="w" data-d="-2.5" data-ei="${ei}" aria-label="Minus 2.5 kg">−</button><input id="w-${ei}" inputmode="${bw?"text":"decimal"}" value="${d.w}" data-f="w" data-ex="${esc(e.ex)}" aria-label="${esc(t(bw?"Extra weight in kg":"Weight in kg"))}"><button data-act="step" data-f="w" data-d="2.5" data-ei="${ei}" aria-label="Plus 2.5 kg">+</button></div></div>
@@ -1730,7 +1732,8 @@ function renderProgress(){
   const names=liftNames(sorted());   // only lifts with a working set: the charts have nothing to draw for warm-ups alone
   if(!names.length){ $("#view-progress").innerHTML=`<h2>Progress</h2><div class="empty"><strong>Nothing to chart yet</strong>Log a few sessions of any lift and its estimated 1-rep max and top weight will be charted here.</div>`; return; }
   if(!state.progressEx||!names.includes(state.progressEx)){ state.progressEx=names.map(n=>[n,sessionsFor(n).length]).sort((a,b)=>b[1]-a[1])[0][0]; }
-  const ex=state.progressEx, all=sessionsFor(ex), bwView=!!(all.length&&all[all.length-1].bw), sess=all.filter(s=>!!s.bw===bwView);
+  const ex=state.progressEx; let bwView=bwFor(state.settings,ex), sess=sessionsOfKind(ex,bwView);
+  if(!sess.length){ bwView=!bwView; sess=sessionsOfKind(ex,bwView); }   // nothing logged in the current kind: show the other one
   if(bwView){ renderBwProgress(names,ex,sess); return; }
   const pts=sess.map(s=>{ let best=0,top=0; s.sets.forEach(x=>{best=Math.max(best,e1rm(x.w,x.r)); top=Math.max(top,x.w);}); return {date:s.date,e1:best,top,sets:s.sets}; });
   const allBest=Math.max(...pts.map(p=>p.e1)), allTop=Math.max(...pts.map(p=>p.top));
@@ -2023,8 +2026,8 @@ function insights(){
   // Lift progress
   const stalls=[], wins=[];
   exerciseNames().forEach(ex=>{
-    if(sessionsFor(ex).some(x=>x.bw)) return;   // bodyweight lifts have no one-rep max to stall on
-    const s=sessionsFor(ex).map(x=>({date:x.date,b:Math.max(...x.sets.map(z=>e1rm(z.w,z.r)))}));
+    if(bwFor(state.settings,ex)) return;   // bodyweight lifts have no one-rep max to stall on
+    const s=sessionsOfKind(ex,false).map(x=>({date:x.date,b:Math.max(...x.sets.map(z=>e1rm(z.w,z.r)))}));
     if(s.length<4) return;
     const before=Math.max(...s.slice(0,-3).map(x=>x.b)), recent=Math.max(...s.slice(-3).map(x=>x.b));
     if(recent<=before*1.005) stalls.push(ex); else if(s[s.length-1].b>=recent) wins.push(ex);
@@ -2420,7 +2423,7 @@ function reviewPrompt(){
   const summary={
     profile:{sex:p.sex||null, age:p.birthYear?new Date().getFullYear()-p.birthYear:null, heightCm:p.height||null, goal:GOALS[p.goal]||null},
     trainingDays:state.days.map(d=>({name:d.name,exercises:d.exercises})),
-    workoutsLast28Days:state.workouts.filter(w=>daysAgo(w.date)<28).sort((a,b)=>a.date<b.date?-1:1).map(w=>({date:w.date,day:w.dayName,exercises:w.entries.filter(e=>countedSets(e.sets).length).map(e=>({name:e.ex,sets:countedSets(e.sets).map(s=>`${s.w}kg x ${s.r}${s.k==="d"?" (drop set)":""}`)})),cardio:(w.cardio||[]).map(c=>({type:c.type,min:c.min,kcal:cardioKcal(c,weightOn(state.body,w.date))}))})),
+    workoutsLast28Days:state.workouts.filter(w=>daysAgo(w.date)<28).sort((a,b)=>a.date<b.date?-1:1).map(w=>({date:w.date,day:w.dayName,exercises:w.entries.filter(e=>countedSets(e.sets).length).map(e=>({name:e.ex,...(e.bw?{bodyweight:true}:{}),sets:countedSets(e.sets).map(s=>`${e.bw?(s.w===0?"BW":s.w>0?"BW+"+s.w+"kg":"BW"+s.w+"kg (assisted)"):s.w+"kg"} x ${s.r}${isHold(e.ex)&&e.bw?"s":""}${s.k==="d"?" (drop set)":""}`)})),cardio:(w.cardio||[]).map(c=>({type:c.type,min:c.min,kcal:cardioKcal(c,weightOn(state.body,w.date))}))})),
     foodLast28Days:Object.values(state.food).filter(fd=>daysAgo(fd.date)<28).sort((a,b)=>a.date<b.date?-1:1).map(fd=>{ const ps=fd.meals.filter(m=>typeof m.protein==="number"); return {date:fd.date, kcal:fd.meals.reduce((a,m)=>a+m.kcal,0), protein:ps.length?ps.reduce((a,m)=>a+m.protein,0):null}; }),
     setsPerMuscleLast7Days:weeklySets(),
     bodyEntries:bodySorted().slice(-10),
@@ -2976,8 +2979,8 @@ document.addEventListener("click",e=>{
     case "target-edit": stopEditing(); state.targetEdit=ensureWorkout().entries[ei].ex; renderLog(); break;
     case "tgt-step":{ const ex=state.targetEdit; if(!ex) break; const cur={...targetFor(state.settings,ex)}, f=b.dataset.f, dd=+b.dataset.d;
       if(f==="sets") cur.sets=Math.min(10,Math.max(1,cur.sets+dd));
-      else if(f==="min") cur.min=Math.min(cur.max,Math.max(1,cur.min+dd*(isHold(ex)?5:1)));   // holds count seconds: steps of 5, up to 600
-      else if(f==="max") cur.max=Math.min(isHold(ex)?600:50,Math.max(cur.min,cur.max+dd*(isHold(ex)?5:1)));
+      else if(f==="min") cur.min=Math.min(cur.max,Math.max(1,cur.min+dd*(isHold(ex)&&bwFor(state.settings,ex)?5:1)));   // holds count seconds: steps of 5, up to 600
+      else if(f==="max") cur.max=Math.min(isHold(ex)&&bwFor(state.settings,ex)?600:50,Math.max(cur.min,cur.max+dd*(isHold(ex)&&bwFor(state.settings,ex)?5:1)));
       setTarget(ex,cur); renderLog(); break; }
     case "tgt-reset":{ const ex=state.targetEdit; if(!ex) break; setTarget(ex,defaultTarget(ex)); renderLog(); break; }
     case "tgt-done": state.targetEdit=null; flushTargets(); renderLog(); break;
@@ -2993,9 +2996,9 @@ document.addEventListener("click",e=>{
       if(!v) return;
       const wt=v.w, r=v.r;
       const k=kOf(state.setKind||"normal");
-      if(!en.sets.length&&bwFor(state.settings,en.ex)) en.bw=true;   // the entry remembers it was logged as bodyweight
+      if(!en.sets.length) en.bw=bwFor(state.settings,en.ex);   // the entry remembers what its sets mean (true = extra kg, false = weighted)
       en.sets.push({w:wt,r,t:Date.now(),...(k?{k}:{})}); state.setKind="normal"; delete ui[en.ex]; store.save(w); renderLog(); startRestFor(en.ex);
-      const scoreOf=s=>en.bw?bwScore(s):e1rm(s.w,s.r), best=en.bw?bestBwBefore(en.ex,state.date):bestBefore(en.ex,state.date);
+      const scoreOf=s=>en.bw?bwScore(s):e1rm(s.w,s.r), best=bestBefore(en.ex,state.date,!!en.bw);
       if(!k&&best>0&&scoreOf({w:wt,r})>best&&en.sets.filter(s=>isWorking(s)&&scoreOf(s)>best).length===1) toast(t("New PR on {name}!",{name:nameOf("ex",en.ex)}));
       break; }
     case "rest-adj": adjustRestBy(+b.dataset.d); break;

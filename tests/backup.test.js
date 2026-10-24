@@ -217,7 +217,8 @@ test("bodyweight entries: bw is kept, a negative extra load only on them, old ba
   const plain = cleanBackupItems([{ id: W.id, data: { ...W.data, entries: [{ ex: "Bench Press", sets }] } }], OPTS).items[0].data;
   assert.equal("bw" in plain.entries[0], false, "no flag on a weighted entry");
   assert.deepEqual(plain.entries[0].sets, [{ w: 0, r: 12 }, { w: 10, r: 6 }], "a negative load is not allowed on a weighted entry");
-  for (const junk of [false, "yes", 1, null]) {
+  assert.equal(cleanBackupItems([{ id: W.id, data: { ...W.data, entries: [{ ex: "Bench Press", bw: false, sets: [{ w: 60, r: 5 }, { w: -5, r: 5 }] }] } }], OPTS).items[0].data.entries[0].bw, false, "an explicit weighted entry keeps its false (it says what the sets mean)");
+  for (const junk of ["yes", 1, null]) {
     const x = cleanBackupItems([{ id: W.id, data: { ...W.data, entries: [{ ex: "Pull-up", bw: junk, sets: [{ w: 0, r: 5 }] }] } }], OPTS).items[0].data;
     assert.equal("bw" in x.entries[0], false, String(junk));
   }

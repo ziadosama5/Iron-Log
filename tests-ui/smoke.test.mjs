@@ -1272,7 +1272,7 @@ test("bodyweight: at the top of the range the advice adds a little weight, and s
   const { page, ctx } = await open("bw=1");
   await startPush(page);
   await addEx(page, "Push-up");
-  assert.equal(await bwText(advice(page)), "Add 2.5 kg extra, start at 8 reps");
+  assert.equal(await bwText(advice(page)), "Try +2.5 kg extra, start at 8 reps");
   assert.equal(await page.locator('#open-card input[data-f="w"]').inputValue(), "2.5");
   assert.equal(await page.locator('#open-card input[data-f="r"]').inputValue(), "8");
   await ctx.close();
@@ -1285,7 +1285,7 @@ test("bodyweight: a plank counts seconds and never suggests weight", async () =>
   assert.ok((await page.locator("#open-card .label", { hasText: /Seconds/ }).count()) >= 1, "reps are called Seconds");
   assert.equal(await bwText(advice(page)), "Aim for 60 seconds on every set");
   assert.equal(await page.locator('#open-card input[data-f="r"]').inputValue(), "60");
-  assert.equal((await bwText(targetChip(page))), "Target 3 × 30–60");
+  assert.equal((await bwText(targetChip(page))), "Target 3 × 30–60 s");
   await ctx.close();
 });
 
@@ -1312,5 +1312,49 @@ test("bodyweight: Lifts shows Best set and Sessions for a bodyweight lift, never
   await page.locator("#prog-ex").selectOption("Bench Press");
   assert.ok(/Best e1RM/i.test(await page.locator("#view-progress").innerText()), "weighted lifts are unchanged");
   assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+// ---- review fixes: the two kinds of one exercise stay apart ----
+test("bodyweight: deleting the only set and switching the exercise to weighted logs a weighted set", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  await addEx(page, "Push-up");
+  await page.locator('#open-card input[data-f="r"]').fill("12");
+  await page.locator('#open-card [data-act="add-set"]').click(); await page.waitForTimeout(250);
+  await page.locator('#open-card [data-act="rm-set"]').first().click(); await page.waitForTimeout(250);
+  assert.equal(await bwChip(page).isDisabled(), false, "no sets left, so it can be switched");
+  await bwChip(page).click();
+  assert.equal(await wLabel(page), "Weight · kg");
+  await page.locator('#open-card input[data-f="w"]').fill("60"); await page.locator('#open-card input[data-f="r"]').fill("8");
+  await page.locator('#open-card [data-act="add-set"]').click(); await page.waitForTimeout(250);
+  const row = await rowsOf(page).first().innerText();
+  assert.ok(!row.includes("+60") && row.includes("60"), row);
+  assert.equal(await wLabel(page), "Weight · kg", "the card stays weighted");
+  await ctx.close();
+});
+
+test("bodyweight: history from before the feature stays visible in Lifts next to new bodyweight sessions", async () => {
+  const { page, ctx } = await open("bw=2");
+  await tab(page, "progress");
+  await page.locator('#pills [data-view="progress"]').click();
+  await page.waitForSelector("#prog-ex");
+  await page.locator("#prog-ex").selectOption("Pull-up");
+  assert.ok(/SESSIONS\s*2/i.test(await page.locator("#view-progress").innerText()), "the old session and the new one");
+  await ctx.close();
+});
+
+test("bodyweight: switching an exercise between kinds does not borrow the other kind's last session", async () => {
+  const { page, ctx } = await open("bw=1");
+  await startPush(page);
+  assert.ok((await page.locator("#open-card .prev").first().innerText()).includes("Last time"), "Bench Press has weighted history");
+  await bwChip(page).click();
+  assert.ok((await page.locator("#open-card").innerText()).includes("First time logging this one"), "no bodyweight history for Bench Press");
+  assert.equal(await page.locator('#open-card input[data-f="w"]').inputValue(), "0");
+  await addEx(page, "Pull-up");
+  assert.ok((await page.locator("#open-card").innerText()).includes("Last time"), "the bodyweight session counts for a bodyweight pull-up");
+  await bwChip(page).click();
+  assert.ok((await page.locator("#open-card").innerText()).includes("First time logging this one"), "a weighted pull-up has no history yet");
+  assert.equal(await page.locator('#open-card input[data-f="w"]').inputValue(), "20");
   await ctx.close();
 });

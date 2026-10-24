@@ -19,7 +19,7 @@ function cleanWorkout(date, d) {
       .filter(s => isObj(s) && num(s.w, bw ? -500 : 0, 2000) && Number.isInteger(s.r) && s.r >= 1 && s.r <= 1000)
       .map(s => ({ w: s.w, r: s.r, ...(num(s.t, 1, Number.MAX_SAFE_INTEGER) ? { t: s.t } : {}), ...(s.k === "w" || s.k === "d" ? { k: s.k } : {}) }));
     const out = { ex, sets };
-    if (bw) out.bw = true;
+    if (typeof e.bw === "boolean") out.bw = e.bw;   // true = bodyweight, false = weighted on purpose
     if (typeof e.done === "boolean") out.done = e.done;
     return out;
   }).filter(Boolean);
