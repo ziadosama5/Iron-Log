@@ -90,3 +90,10 @@ test("settingsDoc carries the bodyweight overrides when there are any", () => {
   assert.equal("bodyweight" in settingsDoc({ rest: {} }, 1), false);
   assert.equal("bodyweight" in settingsDoc({ rest: {}, bodyweight: {} }, 1), false);
 });
+
+test("settingsDoc carries the avoid choice only when it has something in it", () => {
+  const avoid = { areas: ["knee"], exercises: ["Squat"] };
+  assert.deepEqual(settingsDoc({ rest: {}, avoid }, 1).avoid, avoid);
+  assert.deepEqual(settingsDoc({ rest: {}, avoid: { areas: ["hip"] } }, 1).avoid, { areas: ["hip"] });
+  for (const none of [undefined, {}, { areas: [], exercises: [] }, null]) assert.equal("avoid" in settingsDoc({ rest: {}, avoid: none }, 1), false, JSON.stringify(none));
+});

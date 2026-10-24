@@ -230,3 +230,11 @@ test("settings bodyweight overrides: booleans kept, junk dropped, absent stays a
   assert.equal("bodyweight" in cleanBackupItems([{ id: "settings", data: { rest: {} } }], OPTS).items[0].data, false);
   assert.equal("bodyweight" in cleanBackupItems([{ id: "settings", data: { rest: {}, bodyweight: { A: "yes" } } }], OPTS).items[0].data, false, "nothing valid left");
 });
+
+test("settings avoid: known areas and tidy names are kept, junk is dropped, absent stays absent", () => {
+  const r = cleanBackupItems([{ id: "settings", data: { rest: {}, avoid: { areas: ["knee", "moon", "knee"], exercises: ["Squat", 5, " squat ", ""] } } }], OPTS).items[0].data;
+  assert.deepEqual(r.avoid, { areas: ["knee"], exercises: ["Squat"] });
+  assert.equal("avoid" in cleanBackupItems([{ id: "settings", data: { rest: {} } }], OPTS).items[0].data, false);
+  assert.equal("avoid" in cleanBackupItems([{ id: "settings", data: { rest: {}, avoid: { areas: ["moon"], exercises: [5] } } }], OPTS).items[0].data, false, "nothing valid left");
+  assert.equal("avoid" in cleanBackupItems([{ id: "settings", data: { rest: {}, avoid: "knee" } }], OPTS).items[0].data, false);
+});

@@ -3,6 +3,7 @@
 import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX } from "./energy.js";
 import { cleanTargets } from "./progression.js";
 import { cleanBodyweight } from "./bodyweight.js";
+import { cleanAvoid } from "./injuries.js";
 
 const DATE_ID = /^(w|b|f)-(\d{4}-\d{2}-\d{2})$/;
 const isObj = v => v !== null && typeof v === "object" && !Array.isArray(v);
@@ -139,6 +140,8 @@ function cleanSettings(d, equipment) {
   if (Object.keys(targets).length) out.targets = targets;
   const bodyweight = cleanBodyweight(d.bodyweight);
   if (Object.keys(bodyweight).length) out.bodyweight = bodyweight;
+  const avoid = cleanAvoid(d.avoid);
+  if (Object.keys(avoid).length) out.avoid = avoid;
   return withUpdated(out, d);
 }
 

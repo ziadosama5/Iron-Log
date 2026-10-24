@@ -543,6 +543,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
+import { cleanAvoid } from "./injuries.js";
 import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore, bestBwSet, legacyBodyweight } from "./bodyweight.js";
 import { workingSets, liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
@@ -613,7 +614,7 @@ const store = {
       this.unsub = onSnapshot(this.col, { includeMetadataChanges:true }, snap=>{
         const ws=[], bs=[], food={}; let prog={}, prof={}, myFoods=[], settings={rest:{}};
         snap.docs.forEach(d=>{ const v=d.data();
-          if(d.id==="foods") myFoods=Array.isArray(v.list)?v.list:[]; else if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}, ...(Array.isArray(v.seenBadges)?{seenBadges:v.seenBadges}:{}), ...(Array.isArray(v.gym)?{gym:v.gym}:{}), ...(v.targets&&typeof v.targets==="object"?{targets:cleanTargets(v.targets)}:{}), ...(v.bodyweight&&typeof v.bodyweight==="object"?{bodyweight:cleanBodyweight(v.bodyweight)}:{})}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("f-")) food[d.id.slice(2)]={date:d.id.slice(2),meals:v.meals||[]}; else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
+          if(d.id==="foods") myFoods=Array.isArray(v.list)?v.list:[]; else if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}, ...(Array.isArray(v.seenBadges)?{seenBadges:v.seenBadges}:{}), ...(Array.isArray(v.gym)?{gym:v.gym}:{}), ...(v.targets&&typeof v.targets==="object"?{targets:cleanTargets(v.targets)}:{}), ...(v.bodyweight&&typeof v.bodyweight==="object"?{bodyweight:cleanBodyweight(v.bodyweight)}:{}), ...(v.avoid&&typeof v.avoid==="object"?{avoid:cleanAvoid(v.avoid)}:{})}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("f-")) food[d.id.slice(2)]={date:d.id.slice(2),meals:v.meals||[]}; else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
         // One-time fix for days missing muscle tags. Only on server data, so a stale offline copy never overwrites newer edits.
         const mp=migrateProgram(prog), days=mp.days;
         if(state.gymEdit){ if(state.gymEdit.gym===undefined) delete settings.gym; else settings.gym=state.gymEdit.gym; }
