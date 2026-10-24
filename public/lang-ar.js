@@ -491,6 +491,7 @@ export const AR = {
     meal: { "Breakfast": "فطور", "Lunch": "غداء", "Dinner": "عشاء", "Snack": "وجبة خفيفة" },
     level: { "Rookie": "مبتدئ", "Regular": "منتظم", "Committed": "ملتزم", "Iron": "حديدي" },
     family: { "Workouts": "التمارين", "Calories burned": "السعرات المحروقة", "Cardio minutes": "دقائق الكارديو", "Goal weight": "الوزن المستهدف", "Training streak": "سلسلة التدريب", "Food streak": "سلسلة الطعام", "Personal records": "الأرقام القياسية", "Strength club": "نادي القوة", "Volume lifted": "الحجم المرفوع" },
+    area: { shoulder: "الكتف", elbow: "المرفق", wrist: "الرسغ", "lower-back": "أسفل الظهر", hip: "الورك", knee: "الركبة", ankle: "الكاحل" },
     equipment: {
       "barbell": "البار", "dumbbell": "دمبل", "ez-bar": "بار EZ", "trap-bar": "بار سداسي (Trap Bar)", "kettlebell": "كيتل بيل",
       "bench": "بنش (مسطح / مائل)", "decline-bench": "بنش منحدر", "rack": "حامل السكوات", "smith": "جهاز سميث", "cable": "جهاز الكابل",

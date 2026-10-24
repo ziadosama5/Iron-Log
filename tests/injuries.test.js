@@ -49,3 +49,42 @@ test("hiddenAvoidCount adds up what the filter removes", () => {
   assert.equal(hiddenAvoidCount([["Squat"]], {}, J), 0);
   assert.equal(hiddenAvoidCount([], { areas: ["knee"] }, J), 0);
 });
+
+// ---- the joint table of the whole library ----
+import { ALL_EX } from "../public/exercise-library.js";
+import { AREA_EN } from "../public/injuries.js";
+import { AR } from "../public/lang-ar.js";
+
+test("the joint table has exactly one entry per library exercise, with valid areas in order", () => {
+  const missing = ALL_EX.filter(n => !Object.hasOwn(JOINTS, n));
+  assert.deepEqual(missing, [], "library exercises with no joint entry: " + missing.join(", "));
+  const extra = Object.keys(JOINTS).filter(n => !ALL_EX.includes(n));
+  assert.deepEqual(extra, [], "entries that are not library exercises: " + extra.join(", "));
+  for (const [name, areas] of Object.entries(JOINTS)) {
+    assert.ok(Array.isArray(areas), name);
+    assert.deepEqual(areas, AREAS.filter(a => areas.includes(a)), name + ": areas must be known, unique and in order");
+    assert.ok(areas.length <= 5, name + ": more than 5 areas");
+  }
+});
+
+test("sanity examples the owner agreed with", () => {
+  const has = (n, ...a) => a.forEach(x => assert.ok(jointsOf(n).includes(x), n + " should load " + x));
+  has("Squat", "knee", "hip", "lower-back", "ankle"); has("Bench Press", "shoulder", "elbow", "wrist"); has("Pull-up", "shoulder", "elbow", "wrist");
+  has("Romanian Deadlift", "lower-back", "hip"); has("Lateral Raise", "shoulder"); has("Barbell Curl", "elbow", "wrist"); has("Standing Calf Raise", "ankle");
+  has("Hip Thrust", "hip", "lower-back"); has("Plank", "shoulder", "lower-back", "wrist"); has("Leg Extension", "knee"); has("Tricep Pushdown", "elbow");
+  assert.deepEqual(jointsOf("Crunch"), []);
+});
+
+test("every area is used by a sensible number of exercises (a typo guard)", () => {
+  for (const a of AREAS) {
+    const n = Object.values(JOINTS).filter(list => list.includes(a)).length;
+    assert.ok(n >= 5 && n <= 120, `${a} is used by ${n} exercises`);
+  }
+});
+
+test("every area has a unique English and Arabic name", () => {
+  for (const names of [AREAS.map(a => AREA_EN[a]), AREAS.map(a => (AR.names.area || {})[a])]) {
+    assert.deepEqual(AREAS.filter((a, i) => !names[i] || !String(names[i]).trim()), []);
+    assert.equal(new Set(names).size, names.length);
+  }
+});
