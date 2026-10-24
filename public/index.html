@@ -545,7 +545,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { cleanDeload, deloadDate, stalledLifts } from "./deload.js";
+import { cleanDeload, deloadDate, stalledLifts, activeDeload, suggestDeload, DISMISS_DAYS, DELOAD_DAYS } from "./deload.js";
 import { AREAS, AREA_EN, cleanAvoid, avoidFilter, avoidedBecause, hiddenAvoidCount, hasAvoid } from "./injuries.js";
 import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore, bestBwSet, legacyBodyweight } from "./bodyweight.js";
 import { workingSets, liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
@@ -1291,7 +1291,7 @@ function gymNote(focus, exclude){
 function renderLog(){
   const w = workoutFor(state.date);
   const dateLabel = state.date===today()?t("Today"):fmtDate(state.date);
-  let h = levelHero() + (state.days.length||state.serverSynced!==true?"":journeyCard()) + `<div class="row">
+  let h = levelHero() + deloadBannerHtml() + (state.days.length||state.serverSynced!==true?"":journeyCard()) + `<div class="row">
     <div class="grow"><div class="label">Workout date</div><h2>${dateLabel}</h2></div>
     <input type="date" id="log-date" value="${state.date}" max="${today()}" style="width:auto">
   </div>`;
@@ -2099,6 +2099,16 @@ function balanceGood(goal,bal){
 }
 const kcalTxt=v=>v==null?"–":Math.round(v).toLocaleString("en-US");
 const signedTxt=v=>v==null?"–":(v>0?"+":v<0?"−":"")+Math.abs(Math.round(v)).toLocaleString("en-US");
+// ---- deload week (settings.deload, see deload.js): a suggestion after a long streak or several stalled lifts, then a 7-day easy week ----
+function deloadBannerHtml(){
+  const td=today(), dl=state.settings.deload, act=activeDeload(dl,td);
+  if(act) return `<div class="card"><b>${t("Deload week · day {d} of {n}",{d:act.day,n:DELOAD_DAYS})}</b><p class="prev" style="margin:0">${t("Use about 90% of your usual weight for about 60% of your sets.")}</p><div class="row"><button type="button" class="btn small" data-act="deload-end">${t("End deload")}</button></div></div>`;
+  if(!state.authed||state.serverSynced!==true) return "";
+  const stalled=stalledLifts(state.workouts), s=suggestDeload({deload:dl,today:td,streakWeeks:trainingStreak(state.workouts,state.days,td).weeks,stalled});
+  if(!s) return "";
+  const why=s.reason==="streak"?t("You have trained {n} weeks in a row.",{n:s.weeks}):t("Several lifts have stalled ({names}).",{names:stalled.slice(0,3).map(n=>nameOf("ex",n)).join(isRtl()?"، ":", ")});
+  return `<div class="card"><b>${t("Time for an easy week?")}</b><p class="prev" style="margin:0">${why} ${t("A lighter week helps your body recover. Nothing is blocked: it only changes the advice.")}</p><div class="row"><button type="button" class="btn small primary" data-act="deload-start">${t("Start a deload week")}</button><button type="button" class="btn small" data-act="deload-later">${t("Not now")}</button></div></div>`;
+}
 function levelHero(){
   const input=goalsInput(), list=badges(input), xp=xpSummary(input,list), ts=trainingStreak(state.workouts,state.days,today());
   const C=2*Math.PI*25, off=C*(1-Math.min(1,Math.max(0,xp.into/xp.needed)));
@@ -3038,6 +3048,9 @@ document.addEventListener("click",e=>{
     case "edit-set":{ const en=ensureWorkout().entries[ei], si=+b.dataset.si, s=en.sets[si];
       state.targetEdit=null; state.editSet={date:state.date,ex:en.ex,si}; state.setKind=setType(s); ui[en.ex]={w:kg(s.w),r:String(s.r)}; renderLog(); break; }
     case "bw-toggle":{ const enB=ensureWorkout().entries[ei]; if(!enB||enB.sets.length) break; setBodyweight(enB.ex,!bwFor(state.settings,enB.ex)); renderLog(); break; }
+    case "deload-start": store.saveSettings({deload:{start:today()}}); render(); break;
+    case "deload-later": store.saveSettings({deload:{...cleanDeload(state.settings.deload),dismissedUntil:addDaysISO(today(),DISMISS_DAYS)}}); render(); break;
+    case "deload-end":{ const d=cleanDeload(state.settings.deload), y=addDaysISO(today(),-1); if(!d.start) break; store.saveSettings({deload:{...d,end:y>=d.start?y:addDaysISO(d.start,-1)}}); render(); break; }
     case "target-edit": stopEditing(); state.targetEdit=ensureWorkout().entries[ei].ex; renderLog(); break;
     case "tgt-step":{ const ex=state.targetEdit; if(!ex) break; const cur={...targetFor(state.settings,ex)}, f=b.dataset.f, dd=+b.dataset.d;
       if(f==="sets") cur.sets=Math.min(10,Math.max(1,cur.sets+dd));

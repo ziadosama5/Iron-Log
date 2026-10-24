@@ -1637,3 +1637,49 @@ test("deload: Last time skips a deload-week session, Lifts still lists it", asyn
   assert.ok((await b.page.locator("#view-progress").innerText()).includes("30×8"), "the light session is still training history");
   await b.ctx.close();
 });
+
+const bannerText = async page => (await page.locator("#view-log").innerText());
+const DELOAD_START_TODAY = "deload=" + encodeURIComponent(JSON.stringify({ start: new Date().toLocaleDateString("en-CA") }));
+const daysAgoISO = n => new Date(Date.now() - n * 864e5).toLocaleDateString("en-CA");
+
+test("deload: a long streak or several stalled lifts shows the suggestion; a short streak shows nothing", async () => {
+  const a = await open("streak=8");
+  let txt = await bannerText(a.page);
+  assert.ok(txt.includes("Time for an easy week?") && /trained \d+ weeks in a row/.test(txt), txt.slice(0, 400));
+  await a.ctx.close();
+  const b = await open("stalled=1");
+  txt = await bannerText(b.page);
+  assert.ok(txt.includes("Time for an easy week?") && txt.includes("stalled"), txt.slice(0, 400));
+  await b.ctx.close();
+  const c = await open("streak=3");
+  assert.ok(!(await bannerText(c.page)).includes("Time for an easy week?"));
+  await c.ctx.close();
+});
+
+test("deload: Not now hides the suggestion, Start shows the week, End deload closes it and the suggestion stays away", async () => {
+  const { page, ctx } = await open("streak=8");
+  await page.locator('#view-log [data-act="deload-later"]').click();
+  assert.ok(!(await bannerText(page)).includes("Time for an easy week?"), "dismissed");
+  await ctx.close();
+  const b = await open("streak=8");
+  await b.page.locator('#view-log [data-act="deload-start"]').click();
+  let txt = await bannerText(b.page);
+  assert.ok(txt.includes("Deload week · day 1 of 7") && txt.includes("90%"), txt.slice(0, 400));
+  await b.page.locator('#view-log [data-act="deload-end"]').click();
+  txt = await bannerText(b.page);
+  assert.ok(!txt.includes("Deload week") && !txt.includes("Time for an easy week?"), "ended, and the cooldown keeps the suggestion away");
+  await b.ctx.close();
+});
+
+test("deload: a stored deload opens active; one that is over shows nothing; Arabic renders", async () => {
+  const a = await open(DELOAD_START_TODAY);
+  assert.ok((await bannerText(a.page)).includes("Deload week · day 1 of 7"));
+  await a.ctx.close();
+  const old = "deload=" + encodeURIComponent(JSON.stringify({ start: daysAgoISO(8) }));
+  const b = await open(old);
+  assert.ok(!(await bannerText(b.page)).includes("Deload week"));
+  await b.ctx.close();
+  const c = await open("lang=ar&streak=8");
+  assert.ok(/[؀-ۿ]/.test(await c.page.locator('#view-log [data-act="deload-start"]').innerText()));
+  await c.ctx.close();
+});

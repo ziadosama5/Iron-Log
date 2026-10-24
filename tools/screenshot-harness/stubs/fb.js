@@ -8,9 +8,21 @@ add("program", { v: 2, days: [{ id: "d1", name: "Push", focus: ["Chest", "Should
 // ?plan=<json>: answers remembered from an earlier Plan my training
 const planQ = new URLSearchParams(location.search).get("plan");
 add("profile", { sex: "male", height: 178, birthYear: 1996, goal: "fat-loss", goalWeight: 78, goalStart: day(30), ...(planQ ? { plan: JSON.parse(planQ) } : {}) });
-const gymQ = new URLSearchParams(location.search).get("gym"), avoidQ = new URLSearchParams(location.search).get("avoid");
-add("settings", { rest: {}, seenBadges: new URLSearchParams(location.search).get("cele") ? ["workouts-1"] : ["workouts-1","workouts-10","workouts-50","workouts-100","workouts-250","kcal-10k","kcal-50k","kcal-100k","cardio-1000","cardio-5000","goal-first-kg","goal-reached","streak-4","streak-12","streak-26","food-7","food-30","pr-1","pr-10","bench-bw","squat-1.5","deadlift-2","volume-100t","volume-1000t"], ...(gymQ ? { gym: JSON.parse(gymQ) } : {}), ...(avoidQ ? { avoid: JSON.parse(avoidQ) } : {}) });
+const gymQ = new URLSearchParams(location.search).get("gym"), avoidQ = new URLSearchParams(location.search).get("avoid"), deloadQ = new URLSearchParams(location.search).get("deload");
+add("settings", { rest: {}, seenBadges: new URLSearchParams(location.search).get("cele") ? ["workouts-1"] : ["workouts-1","workouts-10","workouts-50","workouts-100","workouts-250","kcal-10k","kcal-50k","kcal-100k","cardio-1000","cardio-5000","goal-first-kg","goal-reached","streak-4","streak-12","streak-26","food-7","food-30","pr-1","pr-10","bench-bw","squat-1.5","deadlift-2","volume-100t","volume-1000t"], ...(gymQ ? { gym: JSON.parse(gymQ) } : {}), ...(avoidQ ? { avoid: JSON.parse(avoidQ) } : {}), ...(deloadQ ? { deload: JSON.parse(deloadQ) } : {}) });
 for (let i = 0; i < 10; i++) { const date = day(i * 2 + 1); add("w-" + date, { date, dayId: "d" + (1 + (i % 2)), dayName: ["Push", "Pull"][i % 2], updated: T, entries: [{ ex: "Bench Press", sets: [S(60 + i, 8, 50), S(62.5 + i, 6, 45)], done: true }, { ex: "Overhead Press", sets: [S(40, 8, 35)], done: true }] }); }
+// ?streak=N: N finished weeks before this one that each met the weekly target (Barbell Row, getting heavier);
+// ?stalled=1: five flat sessions of Squat, so with the two lifts that already stall there are three
+{ const q = new URLSearchParams(location.search), n = Number(q.get("streak")) || 0;
+  if (n) {
+    const prog = items.find(x => x.id === "program").data(), sched = prog.days.filter(d => (d.weekdays || []).length).length, target = Math.min(6, Math.max(2, sched || prog.days.length));
+    const sinceSat = (new Date().getDay() + 1) % 7;   // the week runs Saturday to Friday
+    for (let k = 1; k <= n; k++) for (let j = 0; j < target; j++) {
+      const ago = sinceSat + 7 * k - j, date = day(ago);
+      if (!items.some(x => x.id === "w-" + date)) add("w-" + date, { date, dayId: "d2", dayName: "Pull", updated: T, entries: [{ ex: "Barbell Row", sets: [S(40 + (400 - ago) * 0.1, 8, 20)], done: true }] });
+    }
+  }
+  if (q.get("stalled")) for (let i = 0; i < 5; i++) { const date = day(60 + i * 3); if (!items.some(x => x.id === "w-" + date)) add("w-" + date, { date, dayId: "d1", dayName: "Push", updated: T, entries: [{ ex: "Squat", sets: [S(100, 5, 20)], done: true }] }); } }
 // ?bw=1: a bodyweight session two days ago (Push-up and Pull-up at the top of their ranges, Plank at 60 s)
 if (["1", "2"].includes(new URLSearchParams(location.search).get("bw"))) add("w-" + day(2), { date: day(2), dayId: "d2", dayName: "Pull", updated: T, entries: [
   { ex: "Push-up", bw: true, sets: [S(0, 12, 40), S(0, 12, 35), S(0, 12, 30)] }, { ex: "Pull-up", bw: true, sets: [S(0, 6, 25), S(0, 6, 20), S(0, 6, 15)] }, { ex: "Plank", bw: true, sets: [S(0, 60, 10), S(0, 60, 8), S(0, 60, 6)] }] });
