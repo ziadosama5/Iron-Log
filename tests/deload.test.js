@@ -96,3 +96,10 @@ test("Coach uses the shared stall rule and Last time skips deload sessions (sour
   assert.ok(src.includes("stalledLifts(state.workouts)"), "Coach calls stalledLifts");
   assert.ok(/function lastBefore\([^)]*\)\{[^}]*!x\.deload/.test(src), "lastBefore skips deload sessions");
 });
+
+test("a workout saved inside a deload week is flagged by store.save (source guard)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const src = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
+  assert.ok(src.includes("if(deloadDate(w.date,state.settings.deload)) w.deload=true; else delete w.deload;"));
+  assert.ok(src.includes("if(w.deload) body.deload=true;"));
+});

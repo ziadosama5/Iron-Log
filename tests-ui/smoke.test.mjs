@@ -1683,3 +1683,35 @@ test("deload: a stored deload opens active; one that is over shows nothing; Arab
   assert.ok(/[؀-ۿ]/.test(await c.page.locator('#view-log [data-act="deload-start"]').innerText()));
   await c.ctx.close();
 });
+
+test("deload: during a deload week the card shows the lighter plan and pre-fills it", async () => {
+  const { page, ctx } = await open(DELOAD_START_TODAY);
+  await startPush(page);
+  assert.equal((await bwText(advice(page))), "Deload: 55 kg for about 2 sets", "90% of the last normal 62.5 kg, to 2.5 kg");
+  assert.equal(await page.locator('#open-card input[data-f="w"]').inputValue(), "55");
+  assert.equal(await page.locator('#open-card input[data-f="r"]').inputValue(), "6", "the reps done at the top weight last time");
+  await ctx.close();
+});
+
+test("deload: bodyweight exercises get a set count only, a new exercise gets no line, and the normal advice returns when the week is over", async () => {
+  const a = await open(DELOAD_START_TODAY + "&bw=1");
+  await startPush(a.page);
+  await addEx(a.page, "Push-up");
+  assert.equal(await bwText(advice(a.page)), "Deload: about 2 sets, stay well short of your best");
+  assert.equal(await a.page.locator('#open-card input[data-f="w"]').inputValue(), "0");
+  await addEx(a.page, "Zottman Move");
+  assert.equal(await advice(a.page).count(), 0, "no history, no line");
+  await a.ctx.close();
+  const over = "deload=" + encodeURIComponent(JSON.stringify({ start: daysAgoISO(8) }));
+  const b = await open(over);
+  await startPush(b.page);
+  assert.ok(!(await bwText(advice(b.page))).includes("Deload"), "the week is over");
+  await b.ctx.close();
+});
+
+test("deload: in Arabic the deload line is translated", async () => {
+  const { page, ctx } = await open("lang=ar&" + DELOAD_START_TODAY);
+  await startPush(page);
+  assert.ok(/[؀-ۿ]/.test(await advice(page).innerText()));
+  await ctx.close();
+});

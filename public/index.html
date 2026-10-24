@@ -545,7 +545,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { cleanDeload, deloadDate, stalledLifts, activeDeload, suggestDeload, DISMISS_DAYS, DELOAD_DAYS } from "./deload.js";
+import { cleanDeload, deloadDate, stalledLifts, activeDeload, suggestDeload, deloadAdvice, DISMISS_DAYS, DELOAD_DAYS } from "./deload.js";
 import { AREAS, AREA_EN, cleanAvoid, avoidFilter, avoidedBecause, hiddenAvoidCount, hasAvoid } from "./injuries.js";
 import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore, bestBwSet, legacyBodyweight } from "./bodyweight.js";
 import { workingSets, liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
@@ -1331,6 +1331,7 @@ function renderLog(){
 // Target chip (or its editor) and the "what to try today" line under the Last time line.
 function adviceText(sug){
   if(!sug) return "";
+  if(sug.kind==="deload") return sug.w!==undefined?t("Deload: {w} kg for about {n} sets",{w:kg(sug.w),n:sug.sets}):t("Deload: about {n} sets, stay well short of your best",{n:sug.sets});
   if(sug.bw){
     if(sug.unit==="s") return t("Aim for {r} seconds on every set",{r:sug.r});
     if(sug.kind==="increase") return sug.w<0?t("Less assistance: {w} kg, start at {r} reps",{w:formatLoad(sug.w),r:sug.r}):sug.w===0?t("No assistance, start at {r} reps",{r:sug.r}):t("Try +{w} kg extra, start at {r} reps",{w:kg(sug.w),r:sug.r});
@@ -1363,8 +1364,9 @@ function focusCard(w, ei){
   const entries=w.entries, e=entries[ei];
   const bw=isBw(e), hold=bw&&isHold(e.ex);
   const last=lastBefore(e.ex,state.date,bw), best=bestBefore(e.ex,state.date,bw);
-  const target=targetFor(state.settings,e.ex), sug=suggestNext({last:last&&last.sets,target,step:bw?2.5:stepFor(e.ex),bw,hold});
-  const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last,sug,{bw,hold}));
+  const target=targetFor(state.settings,e.ex), dlOn=deloadDate(state.date,state.settings.deload), dAdv=dlOn?deloadAdvice({last:last&&last.sets,target,bw,hold}):null;
+  const sug=dlOn?(dAdv?{kind:"deload",...dAdv}:null):suggestNext({last:last&&last.sets,target,step:bw?2.5:stepFor(e.ex),bw,hold});   // in a deload week the lighter plan replaces the usual advice
+  const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last,sug&&sug.w!==undefined?sug:undefined,{bw,hold}));
   const editSi = editIndexFor(state.editSet, state.date, e.ex, e.sets), kind=state.setKind||"normal";
   let runBest=best;
   const nx = nextUnfinished(entries, ei);
