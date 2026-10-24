@@ -548,6 +548,7 @@ import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtCl
 import { cleanBackupItems } from "./backup.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
+import { cleanDigits, validBarcode, productUrl, normalizeProduct } from "./barcode.js";
 import { FOODS, searchFoods, portionTotals, mealTotals, defaultMealName, asEntry, makeMyFood, recentFoods } from "./food-table.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth, cacheKey } from "./overview.js";
@@ -604,7 +605,7 @@ const store = {
       this.stopFriends(); state.showMore={}; state.friends=freshFriends(); this.stopChallenges(); state.challenges=freshChallenges(); renderFriendsBadge();
       this.user=user; state.authed=!!user; authKnown=true;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.myFoods=[]; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.myFoods=[]; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; stopScan(); setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
       this.loadShare().then(()=>{ maybePublish(); refreshFriendNames(); if(state.view==="profile") renderProfile(); });
       this.watchFriends(); this.watchChallenges();
@@ -1353,16 +1354,16 @@ function refreshSheets(){
 }
 ["#exsheet","#cardiosheet","#mealsheet","#plansheet"].forEach(id=>{
   const d=$(id);
-  d.addEventListener("close",()=>{ d.innerHTML=""; if(history.state&&history.state.sheet===id) history.back(); });
+  d.addEventListener("close",()=>{ d.innerHTML=""; if(history.state&&history.state.sheet===id) history.go(history.state.scan?-2:-1); });
   d.addEventListener("click",e=>{
     if(e.target!==e.currentTarget) return;
     const r=e.currentTarget.getBoundingClientRect();
     if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeSheet(id);
   });
 });
-$("#mealsheet").addEventListener("close",()=>{ if(state.mealDraft.editId) state.mealDraft=freshMealDraft(); });
+$("#mealsheet").addEventListener("close",()=>{ if(state.mealDraft.scan){ stopScan(); state.mealDraft.scan=null; } if(state.mealDraft.editId) state.mealDraft=freshMealDraft(); });
 // Back gesture: close only the sheet whose history step was just left (the info panel can sit on top of a sheet).
-window.addEventListener("popstate",()=>{ ["#exsheet","#cardiosheet","#mealsheet","#plansheet"].forEach(id=>{ if(!(history.state&&history.state.sheet===id)) closeSheet(id); }); });
+window.addEventListener("popstate",()=>{ if(state.mealDraft.scan&&!(history.state&&history.state.scan)){ stopScan(); state.mealDraft.scan=null; redrawMealSheet(); } ["#exsheet","#cardiosheet","#mealsheet","#plansheet"].forEach(id=>{ if(!(history.state&&history.state.sheet===id)) closeSheet(id); }); });
 function dayPicker(w){
   if (!state.days.length) return `<div class="empty"><strong>Set up your training days</strong>Split your week into days like Push, Pull and Legs. Each day keeps its own exercise list, so starting a workout is one tap.
       <div class="row" style="justify-content:center"><button class="btn primary" data-act="goto-days">Set up days</button><button class="btn" data-act="start-free">Log a free workout</button></div></div>`;
@@ -1979,11 +1980,12 @@ function energyView(){
 // Foods come from food-table.js (bundled) and My foods (state.myFoods). A meal is built in state.mealDraft.items (the tray)
 // and saved with its totals; every item is a snapshot, so later edits to the table never change old days.
 const TRAY_MAX=20, FOOD_SHOWN=6;
-function freshMealDraft(){ return {kcal:"",protein:"",name:"",items:[],query:"",open:null,serving:"",amount:1,grams:"",showAll:false,manual:false,myForm:null,editId:null,editDate:null}; }
+function freshMealDraft(){ return {kcal:"",protein:"",name:"",items:[],query:"",open:null,serving:"",amount:1,grams:"",showAll:false,manual:false,myForm:null,editId:null,editDate:null,scan:null,scanFood:null}; }
 const myEntries=()=>state.myFoods.map(asEntry);
-const foodEntry=(src,ref)=>src==="table"?FOODS.find(f=>f.id===ref):myEntries().find(e=>e.id===ref);
-const srcOf=e=>e.group==="mine"?"mine":"table";
-const mineTag=e=>e.group==="mine"?` <span class="minetag">${t("Mine")}</span>`:"";
+const scanEntry=()=>{ const sf=state.mealDraft.scanFood; return sf?{...asEntry(sf.food),scan:true}:null; };
+const foodEntry=(src,ref)=>src==="table"?FOODS.find(f=>f.id===ref):src==="scan"?(()=>{ const se=scanEntry(); return se&&se.barcode===ref?se:myEntries().find(e=>e.barcode===ref); })():myEntries().find(e=>e.id===ref);
+const srcOf=e=>e.scan?"scan":e.group==="mine"?"mine":"table";
+const mineTag=e=>e.group==="mine"&&!e.scan?` <span class="minetag">${t("Mine")}</span>`:"";
 const foodLabel=e=>e.group==="mine"||!isRtl()?e.en:e.ar;
 const servingLabel=(e,s)=>e.group==="mine"||!isRtl()?s.en:s.ar;
 function itemLabel(it){ const e=it.src==="table"?FOODS.find(f=>f.id===it.ref):null; return e?foodLabel(e):it.name; }
@@ -2021,10 +2023,11 @@ function foodCardHtml(e){
       <label class="grow"><span class="label">Grams</span><input id="food-grams" inputmode="decimal" value="${esc(dr.grams)}"></label>
     </div>
     <p class="prev" id="food-preview" style="margin:0">${foodPreviewText(tot)}</p>
-    <button type="button" class="btn primary" id="food-add" data-act="food-add"${tot?"":" disabled"}>Add</button>${e.group==="mine"?`<div class="row"><button type="button" class="btn small" data-act="myfood-edit" data-ref="${esc(e.id)}">Edit</button><button type="button" class="btn small danger" data-act="myfood-delete" data-ref="${esc(e.id)}">Delete</button></div>`:""}</div>`;
+    <button type="button" class="btn primary" id="food-add" data-act="food-add"${tot?"":" disabled"}>Add</button>${e.group==="mine"&&!e.scan?`<div class="row"><button type="button" class="btn small" data-act="myfood-edit" data-ref="${esc(e.id)}">Edit</button><button type="button" class="btn small danger" data-act="myfood-delete" data-ref="${esc(e.id)}">Delete</button></div>`:""}</div>`;
 }
 function foodResultsHtml(){
   const dr=state.mealDraft;
+  if(dr.scanFood) return scanResultHtml();
   if(!dr.query.trim()){
     const rec=recentFoods(Object.values(state.food),today(),8); if(!rec.length) return "";
     return `<h3 style="margin:0">${t("Recent")}</h3><div class="chips">${rec.map(it=>`<button type="button" class="chip" data-act="recent-add" data-key="${esc(it.src+":"+it.ref)}">${esc(itemLabel(it))}</button>`).join("")}</div>`;
@@ -2057,11 +2060,11 @@ function mealSheetHtml(){
   return `<div class="sheet-head"><h2>${t(dr.editId?"Edit meal":"Add a meal")}</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div>
     ${e.burned!=null?`<p class="prev" style="margin:0">${t("Everyday {a} · Lifting {b} · Cardio {c}",{a:kcalTxt(e.baseline),b:kcalTxt(e.lift),c:kcalTxt(e.cardio)})}</p>`:""}
     ${e.protein!=null?`<p style="margin:0">${kg?t("Protein <b>{a} g</b> of {b}–{c} g",{a:Math.round(e.protein),b:Math.round(kg*1.6),c:Math.round(kg*2.2)}):t("Protein <b>{a} g</b>",{a:Math.round(e.protein)})}</p>`:""}
-    ${dr.myForm?myFormHtml():""}
-    <div class="stack" style="gap:8px${dr.myForm?";display:none":""}">
+    ${dr.myForm?myFormHtml():dr.scan?scanViewHtml():""}
+    <div class="stack" style="gap:8px${dr.myForm||dr.scan?";display:none":""}">
       <div class="chips">${["Breakfast","Lunch","Dinner","Snack"].map(n=>`<button type="button" class="chip" data-act="meal-name" data-name="${esc(n)}">${esc(nameOf("meal",n))}</button>`).join("")}</div>
       ${trayHtml()}
-      <input id="food-q" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="${esc(t("Search foods"))}" placeholder="${esc(t("Search foods"))}" value="${esc(dr.query)}">
+      <div class="row" style="gap:8px"><input id="food-q" style="flex:1 1 160px" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="${esc(t("Search foods"))}" placeholder="${esc(t("Search foods"))}" value="${esc(dr.query)}"><button type="button" class="btn" data-act="scan-open">Scan</button></div>
       <div id="food-results" class="stack" style="gap:6px">${foodResultsHtml()}</div>
       <div class="row">${!dr.items.length&&!manualOpen?`<button type="button" class="btn small" data-act="manual-toggle">Type kcal yourself</button>`:""}<button type="button" class="btn small" data-act="myfood-new">+ My food</button></div>
       <form id="meal-form" class="stack" autocomplete="off" style="gap:8px">
@@ -2086,7 +2089,11 @@ function addDraftFood(){
   const dr=state.mealDraft, e=dr.open&&foodEntry(dr.open.src,dr.open.ref); if(!e) return;
   if(dr.items.length>=TRAY_MAX){ toast(t("A meal can have up to {n} foods.",{n:TRAY_MAX})); return; }
   const sel=draftSel(dr), tot=portionTotals(e,sel); if(!tot) return;
-  dr.items.push({src:dr.open.src,ref:e.id,name:e.en,serving:sel.serving,amount:sel.serving==="g"?sel.grams:sel.amount,grams:tot.grams,kcal:tot.kcal,protein:tot.protein});
+  dr.items.push({src:dr.open.src,ref:dr.open.src==="scan"?e.barcode:e.id,name:e.en,serving:sel.serving,amount:sel.serving==="g"?sel.grams:sel.amount,grams:tot.grams,kcal:tot.kcal,protein:tot.protein});
+  if(dr.open.src==="scan"&&dr.scanFood){
+    if(dr.scanFood.save&&!state.myFoods.some(f=>f.barcode===e.barcode)){ if(state.myFoods.length<200) store.saveFoods([...state.myFoods,dr.scanFood.food]); else toast(t("You can save up to {n} foods.",{n:200})); }
+    dr.scanFood=null;
+  }
   dr.open=null; dr.query=""; dr.grams=""; dr.showAll=false; redrawMealSheet();
 }
 // One step on a tray row: 0.5 of a serving, or 10 g. Uses the food when it still exists, otherwise scales the snapshot.
@@ -2096,6 +2103,101 @@ function trayStep(i,dir){
   const tot=e?portionTotals(e,isG?{serving:"g",grams:amt}:{serving:it.serving,amount:amt}):null;
   if(tot){ state.mealDraft.items[i]={...it,amount:amt,grams:tot.grams,kcal:tot.kcal,protein:tot.protein}; return; }
   if(amt>0&&amt<=(isG?5000:100)){ const f=amt/it.amount; state.mealDraft.items[i]={...it,amount:amt,grams:it.grams==null?null:Math.round(it.grams*f*10)/10,kcal:Math.round(it.kcal*f),protein:it.protein==null?null:Math.round(it.protein*f*10)/10}; }
+}
+/* ---------- barcode scan (inside the meal sheet) ---------- */
+// The camera picture is read on the phone and never stored or sent; only the barcode digits go to Open Food Facts.
+// BarcodeDetector is used where the browser has it (Chrome on Android); otherwise the vendored ZXing library is loaded on first use.
+const scanner={stream:null,timer:null,busy:false,last:"",lastAt:0};
+function stopScan(){
+  clearInterval(scanner.timer); scanner.timer=null; scanner.busy=false;
+  if(scanner.stream){ scanner.stream.getTracks().forEach(tr=>tr.stop()); scanner.stream=null; }
+  const v=document.getElementById("scan-video"); if(v) v.srcObject=null;
+}
+function loadScanner(){
+  if(window.ZXing) return Promise.resolve(window.ZXing);
+  return new Promise((resolve,reject)=>{ const s=document.createElement("script"); s.src="/vendor/zxing-library.min.js"; s.onload=()=>resolve(window.ZXing); s.onerror=()=>reject(new Error("scanner")); document.head.appendChild(s); });
+}
+function setScanMsg(msg){ const sc=state.mealDraft.scan; if(sc) sc.msg=msg; const el=document.getElementById("scan-msg"); if(el) el.textContent=msg; }
+function setScanCamera(mode){ const sc=state.mealDraft.scan; if(sc) sc.camera=mode; const v=document.getElementById("scan-video"); if(v) v.hidden=mode==="off"; const b=document.querySelector("[data-act=scan-start]"); if(b) b.hidden=mode!=="off"; }
+function setScanBusy(on){ const b=document.querySelector("#scan-form button"); if(b) b.disabled=on; }
+function scanUnavailable(){ setScanCamera("off"); setScanMsg(t("Camera not available. Type the number instead.")); }
+async function startScan(){
+  const sc=state.mealDraft.scan; if(!sc) return;
+  stopScan();
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ scanUnavailable(); return; }
+  setScanCamera("starting"); setScanMsg(t("Starting the camera…"));
+  let stream;
+  try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false}); }
+  catch(e){ if(state.mealDraft.scan===sc) scanUnavailable(); return; }
+  if(state.mealDraft.scan!==sc){ stream.getTracks().forEach(tr=>tr.stop()); return; }  // closed while the permission question was open
+  scanner.stream=stream;
+  const v=document.getElementById("scan-video"); v.srcObject=stream; v.play().catch(()=>{});
+  setScanCamera("on"); setScanMsg(t("Point the camera at the barcode."));
+  let detect;
+  try{
+    if("BarcodeDetector" in window){ const det=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]}); detect=async()=>{ const r=await det.detect(v); return r[0]?r[0].rawValue:null; }; }
+    else { const Z=await loadScanner(), rd=new Z.BrowserMultiFormatReader(new Map([[Z.DecodeHintType.POSSIBLE_FORMATS,[Z.BarcodeFormat.EAN_13,Z.BarcodeFormat.EAN_8,Z.BarcodeFormat.UPC_A,Z.BarcodeFormat.UPC_E]]])); detect=async()=>{ try{ return rd.decode(v).getText(); }catch(e){ return null; } }; }
+  }catch(e){ if(scanner.stream===stream) setScanMsg(t("Scanner not available. Type the number instead.")); return; }
+  if(scanner.stream!==stream) return;
+  scanner.timer=setInterval(async()=>{
+    if(v.readyState<2||scanner.busy) return;
+    scanner.busy=true;
+    try{ const raw=await detect(); if(raw) onScanned(raw); }catch(e){}
+    scanner.busy=false;
+  },300);
+}
+// The same code seen again within 3 seconds is ignored (the camera keeps reading it while the lookup runs).
+function onScanned(raw){
+  const d=cleanDigits(raw), now=Date.now();
+  if(!validBarcode(d)||(d===scanner.last&&now-scanner.lastAt<3000)) return;
+  scanner.last=d; scanner.lastAt=now; lookupBarcode(d);
+}
+function openScan(){
+  state.mealDraft.scan={digits:"",msg:"",busy:false,camera:"starting"};
+  history.pushState({sheet:"#mealsheet",scan:true},"");
+  redrawMealSheet(); startScan();
+}
+function closeScan(){ stopScan(); state.mealDraft.scan=null; if(history.state&&history.state.scan) history.back(); }
+function finishScan(sf,digits){
+  const dr=state.mealDraft, e={...asEntry(sf.food),scan:true};
+  dr.scanFood=sf; dr.open={src:"scan",ref:digits}; dr.serving=e.def; dr.amount=1; dr.grams=""; dr.query=""; dr.showAll=false;
+  closeScan(); redrawMealSheet();
+}
+async function lookupBarcode(raw){
+  const sc=state.mealDraft.scan; if(!sc||sc.busy) return;
+  const d=cleanDigits(raw);
+  if(!validBarcode(d)){ setScanMsg(t("That number isn't a valid barcode")); return; }
+  const saved=state.myFoods.find(f=>f.barcode===d);
+  if(saved){ finishScan({food:saved,save:false},d); return; }
+  if(navigator.onLine===false){ toast(t("You're offline. Try again when you're back online.")); return; }
+  sc.busy=true; setScanBusy(true); setScanMsg(t("Looking it up…"));
+  let json=null, failed=false;
+  try{ const r=await withTimeout(fetch(productUrl(d)),20000); failed=r.status>=500; try{ json=await r.json(); }catch(e){ json=null; } }
+  catch(e){ failed=true; }
+  if(state.mealDraft.scan!==sc) return;  // closed meanwhile
+  sc.busy=false; setScanBusy(false); setScanMsg("");
+  if(failed){ toast(t("Couldn't look that up. Check your connection.")); return; }
+  const food=normalizeProduct(json,d);
+  if(food){ finishScan({food,save:true},d); return; }
+  // unknown product, or no calories on record: type them once and they are kept
+  const name=json&&json.product&&typeof json.product.product_name==="string"?json.product.product_name.trim().slice(0,60):"";
+  closeScan(); state.mealDraft.myForm={id:null,name,kcal:"",protein:"",serving:"",grams:"",barcode:d}; redrawMealSheet();
+  toast(t("No calories on record. Type them once and it is saved."));
+}
+function scanViewHtml(){
+  const sc=state.mealDraft.scan;
+  return `<div class="stack" style="gap:8px"><h3 style="margin:0">${t("Scan a barcode")}</h3>
+    <video id="scan-video" playsinline muted autoplay${sc.camera==="off"?" hidden":""} style="width:100%;border-radius:12px;background:#000;aspect-ratio:4/3;object-fit:cover"></video>
+    <p class="prev" id="scan-msg" role="status" style="margin:0">${esc(sc.msg)}</p>
+    <form id="scan-form" class="row" style="gap:8px" autocomplete="off"><input id="scan-digits" inputmode="numeric" aria-label="${esc(t("Type the number"))}" placeholder="${esc(t("Type the number"))}" value="${esc(sc.digits)}" style="flex:1 1 160px"><button class="btn" type="submit">Find</button></form>
+    <button type="button" class="btn small" data-act="scan-start"${sc.camera==="off"?"":" hidden"}>Start camera</button>
+    <button type="button" class="btn" data-act="scan-close">Close</button></div>`;
+}
+function scanResultHtml(){
+  const sf=state.mealDraft.scanFood, e={...asEntry(sf.food),scan:true};
+  return `<p class="prev" style="margin:0">${t("Package data from Open Food Facts. Estimates only.")}</p>${foodCardHtml(e)}
+    <label class="row" style="gap:8px;min-height:44px"><input type="checkbox" id="scan-save"${sf.save?" checked":""} style="width:24px;height:24px;flex:none"><span>${t("Save to my foods")}</span></label>
+    <button type="button" class="btn small" data-act="scan-dismiss">Cancel</button>`;
 }
 function foodClick(act,d){
   const dr=state.mealDraft;
@@ -2114,6 +2216,10 @@ function foodClick(act,d){
       const day=state.date, m=((state.food[day]&&state.food[day].meals)||[]).find(x=>x.id===d.id); if(!m||!m.items||!m.items.length) return;
       state.mealDraft={...freshMealDraft(),items:m.items.map(i=>({...i})),name:m.name||"",editId:m.id,editDate:day};
       openSheet("#mealsheet"); return; }
+    case "scan-open": openScan(); return;
+    case "scan-close": closeScan(); redrawMealSheet(); return;
+    case "scan-start": startScan(); return;
+    case "scan-dismiss": dr.scanFood=null; dr.open=null; redrawMealSheet(); return;
     case "recent-add":{
       const it=recentFoods(Object.values(state.food),today(),8).find(x=>x.src+":"+x.ref===d.key); if(!it) return;
       if(dr.items.length>=TRAY_MAX){ toast(t("A meal can have up to {n} foods.",{n:TRAY_MAX})); return; }
@@ -2143,6 +2249,8 @@ document.addEventListener("input",e=>{
   const el=e.target, dr=state.mealDraft;
   if(el.id==="food-q"){ dr.query=el.value; dr.open=null; dr.showAll=false; redrawFoodResults(); }
   else if(el.id==="food-grams"){ dr.grams=el.value; updateFoodPreview(); }
+  else if(el.id==="scan-digits"&&dr.scan) dr.scan.digits=el.value;
+  else if(el.id==="scan-save"&&dr.scanFood) dr.scanFood.save=el.checked;
   else if(el.id&&el.id.startsWith("mf-")&&dr.myForm){ dr.myForm[el.id.slice(3)]=el.value; }
 });
 function todayCard(){
@@ -2677,6 +2785,7 @@ document.addEventListener("submit",e=>{
     if(r.kind==="empty"||r.kind==="invalid"){ state.friends.found={q,outcome:null}; renderFriends(); return; }
     store.lookup(q).then(o=>{ state.friends.found={q,outcome:o}; if(inFriends()) renderFriends(); }); return;
   }
+  if(f.id==="scan-form"){ const sc=state.mealDraft.scan; if(sc){ sc.digits=$("#scan-digits").value; lookupBarcode(sc.digits); } return; }
   if(f.id==="meal-form"){
     const dr=state.mealDraft, name=reverseName("meal",$("#meal-name").value.trim()), bad=()=>toast(t("Enter 1–5000 kcal (protein 0–500 g)"));
     let meal;
@@ -2773,7 +2882,7 @@ document.addEventListener("click",e=>{
     case "lang-set": applyLang(b.dataset.v); syncMe(); drawSwatches(); break;
     case "accent-set": applyAccent(b.dataset.v); drawSwatches(); break;
     case "set-goal": state.editProfile=true; go("body"); setTimeout(()=>document.getElementById("pf-goalw")?.focus(),0); break;
-    case "food-open": case "food-serving": case "food-amount": case "food-add": case "food-more": case "tray-step": case "tray-remove": case "manual-toggle": case "recent-add": case "myfood-new": case "myfood-cancel": case "myfood-edit": case "myfood-save": case "myfood-delete": case "meal-edit": foodClick(b.dataset.act,b.dataset); break;
+    case "food-open": case "food-serving": case "food-amount": case "food-add": case "food-more": case "tray-step": case "tray-remove": case "manual-toggle": case "recent-add": case "myfood-new": case "myfood-cancel": case "myfood-edit": case "myfood-save": case "myfood-delete": case "meal-edit": case "scan-open": case "scan-close": case "scan-start": case "scan-dismiss": foodClick(b.dataset.act,b.dataset); break;
     case "meal-name": $("#meal-name").value=state.mealDraft.name=nameOf("meal",b.dataset.name); break;
     case "rm-meal":{ const d=state.date; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderLog(); break; }
     case "hero-go":{ const cl=closestFamily(allFamilies(badges(goalsInput()))); if(cl) openFamily(cl.id); else go("goals"); break; }
@@ -2948,7 +3057,7 @@ function checkNewDay(){
   state.date=rolloverDate(state.date,lastToday,t); state.bdate=rolloverDate(state.bdate,lastToday,t); state.cdate=rolloverDate(state.cdate,lastToday,t);
   lastToday=t; stopEditing(); renderSoon(); publishProgress(false); maybePublish();
 }
-document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkNewDay(); });
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkNewDay(); else if(scanner.stream){ stopScan(); setScanCamera("off"); setScanMsg(t("Camera stopped.")); } });
 setInterval(checkNewDay,60000);
 try{ state.deletedNote=sessionStorage.getItem("ironlog.deleted")==="1"; sessionStorage.removeItem("ironlog.deleted"); if(state.deletedNote) sessionStorage.removeItem("ironlog.wiping"); }catch(e){}
 store.init(()=>{ renderSoon(); checkBadges(); maybePublish(); refreshFriendNames(); maybeStartJourney(); publishProgress(false); });

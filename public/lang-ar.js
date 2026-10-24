@@ -165,7 +165,14 @@ export const AR = {
 
     /* ---- Messages ---- */
     "Enter 1–5000 kcal (protein 0–500 g)": "أدخل من 1 إلى 5000 kcal (البروتين من 0 إلى 500 g)",
-    "Edit meal": "تعديل الوجبة", "Save meal": "حفظ الوجبة", "Meal updated": "تم تحديث الوجبة", "Edit {name}": "تعديل {name}",
+    "Scan": "مسح", "Scan a barcode": "مسح الباركود", "Type the number": "اكتب الرقم", "Start camera": "تشغيل الكاميرا", "Camera stopped.": "توقفت الكاميرا.",
+    "Camera not available. Type the number instead.": "الكاميرا غير متاحة. اكتب الرقم بدلاً من ذلك.", "Starting the camera…": "جارٍ تشغيل الكاميرا…",
+    "Point the camera at the barcode.": "وجّه الكاميرا نحو الباركود.", "Scanner not available. Type the number instead.": "الماسح غير متاح. اكتب الرقم بدلاً من ذلك.",
+    "That number isn't a valid barcode": "هذا الرقم ليس باركود صحيحاً", "Looking it up…": "جارٍ البحث…",
+    "Couldn't look that up. Check your connection.": "تعذّر البحث. تحقق من الاتصال.",
+    "No calories on record. Type them once and it is saved.": "لا توجد سعرات مسجلة. اكتبها مرة واحدة وسيتم حفظها.",
+    "Package data from Open Food Facts. Estimates only.": "بيانات العبوة من Open Food Facts. تقديرات فقط.", "Save to my foods": "حفظ في أطعمتي",
+    "Edit meal": "تعديل الوجبة","Save meal": "حفظ الوجبة", "Meal updated": "تم تحديث الوجبة", "Edit {name}": "تعديل {name}",
     "Mine": "طعامي","Recent": "الأخيرة", "+ My food": "+ طعامي", "Serving": "الحصة", "1 serving": "حصة واحدة",
     "kcal and protein are for one serving. Add grams to log by weight too.": "السعرات والبروتين لحصة واحدة. أضف الجرامات لتسجيل الوزن أيضاً.",
     "Save food": "حفظ الطعام", "Edit my food": "تعديل طعامي", "New food": "طعام جديد", "Check the numbers and try again": "تحقق من الأرقام وحاول مرة أخرى",

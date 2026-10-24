@@ -14,6 +14,7 @@ const APP_SHELL = [
   "/exercise-info.js",
   "/backup.js",
   "/food-table.js",
+  "/barcode.js",
   "/energy.js",
   "/achievements.js",
   "/nav.js",

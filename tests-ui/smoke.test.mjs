@@ -15,12 +15,13 @@ before(async () => {
   server = spawn(process.execPath, [path.join(root, "tools/screenshot-harness/run.cjs"), path.join(root, "public"), path.join(root, "tools/screenshot-harness"), String(PORT)], { stdio: "ignore" });
   await new Promise(r => setTimeout(r, 1500));
   const channel = process.env.UI_BROWSER || "msedge";
-  browser = await chromium.launch({ channel, headless: true });
+  browser = await chromium.launch({ channel, headless: true, args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"] });
 });
 after(async () => { await browser?.close(); server?.kill(); });
 
-async function open(query = "", viewport = { width: 420, height: 860 }) {
+async function open(query = "", viewport = { width: 420, height: 860 }, initScript) {
   const ctx = await browser.newContext({ viewport, hasTouch: true, isMobile: true });
+  if (initScript) await ctx.addInitScript(initScript);
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(String(e)));
@@ -695,5 +696,126 @@ test("edit a saved meal: a food that was deleted from My foods still opens and c
   assert.equal(await trayKcal(page), 200);
   await page.locator('#meal-tray [data-act="tray-step"][data-d="1"]').first().click();
   assert.equal(await trayKcal(page), 300, "scaled from the saved snapshot (1.5 servings)");
+  await ctx.close();
+});
+
+// ---- barcode scan ----
+const COLA = { status: 1, product: { product_name: "Cola", brands: "Fizz", serving_size: "330 ml", serving_quantity: 330, nutriments: { "energy-kcal_100g": 42, proteins_100g: 0 } } };
+const NO_CAMERA = () => { navigator.mediaDevices.getUserMedia = () => Promise.reject(new DOMException("no camera", "NotFoundError")); };
+const WATCH_STREAMS = () => { const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices); window.__streams = [];
+  navigator.mediaDevices.getUserMedia = async c => { const s = await orig(c); window.__streams.push(s); return s; }; };
+async function offRoute(ctx, body, counter) {
+  await ctx.route("https://world.openfoodfacts.org/**", route => { counter.n++; return body === "fail" ? route.abort() : route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify(body) }); });
+}
+const openScan = async page => { await page.locator('#mealsheet [data-act="scan-open"]').click(); await page.waitForSelector("#scan-digits"); };
+const findCode = async (page, code) => { await page.locator("#scan-digits").fill(code); await page.locator('#scan-form button[type=submit]').click(); };
+
+test("barcode: the vendored scanner library decodes an EAN-13 picture", async () => {
+  const { page, ctx } = await open();
+  await page.addScriptTag({ url: BASE + "vendor/zxing-library.min.js" });
+  const text = await page.evaluate(async () => {
+    const L = ["0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011"];
+    const R = L.map(c => c.split("").map(b => (b === "0" ? "1" : "0")).join("")), G = R.map(c => c.split("").reverse().join(""));
+    const PAR = ["LLLLLL", "LLGLGG", "LLGGLG", "LLGGGL", "LGLLGG", "LGGLLG", "LGGGLL", "LGLGLG", "LGLGGL", "LGGLGL"];
+    const digits = "5449000000996".split("").map(Number);
+    let bits = "101";
+    for (let i = 0; i < 6; i++) bits += (PAR[digits[0]][i] === "L" ? L : G)[digits[i + 1]];
+    bits += "01010";
+    for (let i = 7; i < 13; i++) bits += R[digits[i]];
+    bits += "101";
+    const m = 4, quiet = 12, c = document.createElement("canvas");
+    c.width = (bits.length + quiet * 2) * m; c.height = 140;
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.fillStyle = "#000";
+    bits.split("").forEach((b, i) => { if (b === "1") g.fillRect((quiet + i) * m, 10, m, 120); });
+    const Z = window.ZXing, hints = new Map([[Z.DecodeHintType.POSSIBLE_FORMATS, [Z.BarcodeFormat.EAN_13, Z.BarcodeFormat.EAN_8, Z.BarcodeFormat.UPC_A, Z.BarcodeFormat.UPC_E]]]);
+    const reader = new Z.BrowserMultiFormatReader(hints);
+    const img = new Image(); img.src = c.toDataURL(); await img.decode();
+    return reader.decode(img).getText();
+  });
+  assert.equal(text, "5449000000996");
+  await ctx.close();
+});
+
+test("barcode: typing a number finds a product, adds it, and a second lookup needs no network", async () => {
+  const { page, ctx } = await open("", undefined, NO_CAMERA);
+  const net = { n: 0 }; await offRoute(ctx, COLA, net);
+  await openMealSheet(page);
+  await openScan(page);
+  assert.ok((await page.locator("#scan-msg").innerText()).includes("Camera not available"));
+  await findCode(page, "5 449000 000996");
+  await page.waitForSelector("#food-add");
+  assert.equal(await page.locator("#scan-digits").count(), 0, "scan view closed");
+  assert.ok((await page.locator("#food-results").innerText()).includes("Cola (Fizz)"));
+  assert.ok((await page.locator("#food-results").innerText()).includes("Open Food Facts"));
+  await page.locator("#food-add").click();
+  assert.equal(await page.locator("#meal-tray .trayrow").count(), 1);
+  assert.equal(await trayKcal(page), 139, "330 ml at 42 kcal per 100 g");
+  assert.equal(net.n, 1);
+  // saved to My foods: found again without the network
+  await openScan(page);
+  await findCode(page, "5449000000996");
+  await page.waitForSelector("#food-add");
+  assert.equal(net.n, 1, "no second request");
+  await ctx.close();
+});
+
+test("barcode: a wrong check digit is refused before any request", async () => {
+  const { page, ctx } = await open("", undefined, NO_CAMERA);
+  const net = { n: 0 }; await offRoute(ctx, COLA, net);
+  await openMealSheet(page);
+  await openScan(page);
+  await findCode(page, "5449000000995");
+  assert.ok((await page.locator("#scan-msg").innerText()).includes("isn't a valid barcode"));
+  await findCode(page, "12ab");
+  assert.ok((await page.locator("#scan-msg").innerText()).includes("isn't a valid barcode"));
+  assert.equal(net.n, 0);
+  await ctx.close();
+});
+
+test("barcode: an unknown product opens the My food form with the barcode, and saving makes it findable offline", async () => {
+  const { page, ctx } = await open("", undefined, NO_CAMERA);
+  const net = { n: 0 }; await offRoute(ctx, { status: 0 }, net);
+  await openMealSheet(page);
+  await openScan(page);
+  await findCode(page, "96385074");
+  await page.waitForSelector("#mf-name");
+  await page.locator("#mf-name").fill("Local biscuits");
+  await page.locator("#mf-kcal").fill("120");
+  await page.locator('[data-act="myfood-save"]').click();
+  await page.locator("#food-q").fill("local biscuits");
+  assert.equal(await page.locator('#food-results [data-src="mine"]').count(), 1);
+  await openScan(page);
+  await findCode(page, "96385074");
+  await page.waitForSelector("#food-add");
+  assert.equal(net.n, 1, "the second lookup came from My foods");
+  await ctx.close();
+});
+
+test("barcode: offline or failing lookups say so and keep typing possible", async () => {
+  const { page, ctx } = await open("", undefined, NO_CAMERA);
+  const net = { n: 0 }; await offRoute(ctx, "fail", net);
+  await openMealSheet(page);
+  await openScan(page);
+  await findCode(page, "5449000000996");
+  await page.waitForFunction(() => /look that up/.test(document.querySelector("#toast")?.textContent || ""));
+  assert.equal(await page.locator("#scan-digits").count(), 1, "still on the scan view");
+  await ctx.close();
+});
+
+test("barcode: the camera stops on Back and on closing the sheet, with no stale history entry", async () => {
+  const { page, ctx } = await open("", undefined, WATCH_STREAMS);
+  await openMealSheet(page);
+  await openScan(page);
+  await page.waitForFunction(() => window.__streams.length === 1 && document.querySelector("#scan-video")?.srcObject);
+  await page.goBack();
+  await page.waitForSelector("#scan-digits", { state: "detached" });
+  assert.equal(await page.evaluate(() => window.__streams.every(s => s.getTracks().every(t => t.readyState === "ended"))), true, "Back stopped the camera");
+  assert.equal(await page.locator("#mealsheet[open]").count(), 1, "the sheet itself is still open");
+  await openScan(page);
+  await page.waitForFunction(() => window.__streams.length === 2);
+  await page.locator('#mealsheet [data-act="sheet-close"]').first().click();
+  await page.waitForTimeout(400);
+  assert.equal(await page.evaluate(() => window.__streams.every(s => s.getTracks().every(t => t.readyState === "ended"))), true, "closing the sheet stopped the camera");
+  assert.equal(await page.evaluate(() => !!(history.state && history.state.sheet)), false, "no leftover sheet step in history");
   await ctx.close();
 });
