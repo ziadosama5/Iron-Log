@@ -550,7 +550,7 @@ import { cleanBackupItems } from "./backup.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { cleanDigits, validBarcode, productUrl, normalizeProduct } from "./barcode.js";
-import { FOODS, searchFoods, portionTotals, mealTotals, defaultMealName, asEntry, makeMyFood, recentFoods } from "./food-table.js";
+import { FOODS, searchFoods, portionTotals, mealTotals, mealNumbers, asEntry, makeMyFood, recentFoods } from "./food-table.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth, cacheKey } from "./overview.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
@@ -2057,8 +2057,7 @@ function myFormHtml(){
 }
 function mealSheetHtml(){
   const {kg,e}=energyView(), dr=state.mealDraft, manualOpen=!dr.items.length&&(dr.manual||dr.kcal!==""||dr.protein!=="");
-  const ph=dr.items.length?defaultMealName(dr.items.map(i=>({name:itemLabel(i)}))):t("optional");
-  return `<div class="sheet-head"><h2>${t(dr.editId?"Edit meal":"Add a meal")}</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div>
+    return `<div class="sheet-head"><h2>${t(dr.editId?"Edit meal":"Add a meal")}</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div>
     ${e.burned!=null?`<p class="prev" style="margin:0">${t("Everyday {a} · Lifting {b} · Cardio {c}",{a:kcalTxt(e.baseline),b:kcalTxt(e.lift),c:kcalTxt(e.cardio)})}</p>`:""}
     ${e.protein!=null?`<p style="margin:0">${kg?t("Protein <b>{a} g</b> of {b}–{c} g",{a:Math.round(e.protein),b:Math.round(kg*1.6),c:Math.round(kg*2.2)}):t("Protein <b>{a} g</b>",{a:Math.round(e.protein)})}</p>`:""}
     ${dr.myForm?myFormHtml():dr.scan?scanViewHtml():""}
@@ -2072,7 +2071,7 @@ function mealSheetHtml(){
         ${manualOpen?`<div class="meal-fields">
           <label><span class="label">kcal</span><input id="meal-kcal" inputmode="numeric" value="${esc(dr.kcal)}"></label>
           <label><span class="label">Protein g</span><input id="meal-protein" inputmode="numeric" placeholder="optional" value="${esc(dr.protein)}"></label></div>`:""}
-        <label><span class="label">Name</span><input id="meal-name" maxlength="40" placeholder="${esc(ph)}" value="${esc(dr.name)}"></label>
+        <label><span class="label">Name</span><input id="meal-name" maxlength="40" placeholder="${esc(t("optional"))}" value="${esc(dr.name)}"></label>
         <button class="btn primary" type="submit">${t(dr.editId?"Save meal":"Add meal")}</button>
       </form>
     </div>`;
@@ -2267,7 +2266,7 @@ function todayCard(){
       ${over?`<span class="prev">${t("Over by {n} kcal",{n:over.toLocaleString("en-US")})}</span>`:""}
     </button>
     ${missing?`<p class="prev" style="margin:0">${missing}</p>`:""}
-    ${meals.length?`<ul class="cardio-list">${meals.map(m=>`<li><span class="grow">${esc(m.name?nameOf("meal",m.name):t("Meal"))} · ${m.kcal.toLocaleString("en-US")} kcal${m.protein!=null?` · ${m.protein} g`:""}${m.items&&m.items.length?`<span class="prev" style="display:block">${esc(m.items.map(itemLabel).join(" · "))}</span>`:""}</span>${m.items&&m.items.length?`<button class="btn ghost small" data-act="meal-edit" data-id="${esc(m.id)}" aria-label="${esc(t("Edit {name}",{name:m.name?nameOf("meal",m.name):t("meal")}))}">✎</button>`:""}<button class="btn ghost small danger" data-act="rm-meal" data-id="${esc(m.id)}" aria-label="${esc(t("Delete {name}",{name:m.name?nameOf("meal",m.name):t("meal")}))}">✕</button></li>`).join("")}</ul>`:""}
+    ${meals.length?`<ul class="cardio-list">${meals.map((m,i)=>{ const label=m.name?nameOf("meal",m.name):t("Meal {n}",{n:mealNumbers(meals)[i]}); return `<li><span class="grow">${esc(label)} · ${m.kcal.toLocaleString("en-US")} kcal${m.protein!=null?` · ${m.protein} g`:""}</span>${m.items&&m.items.length?`<button class="btn ghost small" data-act="meal-edit" data-id="${esc(m.id)}" aria-label="${esc(t("Edit {name}",{name:label}))}">✎</button>`:""}<button class="btn ghost small danger" data-act="rm-meal" data-id="${esc(m.id)}" aria-label="${esc(t("Delete {name}",{name:label}))}">✕</button></li>`; }).join("")}</ul>`:""}
   </div>`;
 }
 function renderCoach(){
@@ -2793,7 +2792,7 @@ document.addEventListener("submit",e=>{
     if(dr.items.length){
       const tot=mealTotals(dr.items);
       if(!(tot.kcal>=1&&tot.kcal<=5000)||name.length>40){ bad(); return; }
-      meal={id:uid(), name:name||defaultMealName(dr.items.map(i=>({name:itemLabel(i)})))||null, kcal:tot.kcal, protein:tot.protein, items:dr.items.map(i=>({...i}))};
+      meal={id:uid(), name:name||null, kcal:tot.kcal, protein:tot.protein, items:dr.items.map(i=>({...i}))};
     } else {
       const kEl=$("#meal-kcal"), pEl=$("#meal-protein"), k=Number(kEl?kEl.value.trim():""), pRaw=pEl?pEl.value.trim().replace(",","."):"", p=pRaw===""?null:Number(pRaw);
       if(!(Number.isInteger(k)&&k>=1&&k<=5000) || (p!==null&&!(Number.isFinite(p)&&p>=0&&p<=500)) || name.length>40){ bad(); return; }

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { FOODS, normalizeText, makeMyFood, searchFoods, portionTotals, mealTotals, defaultMealName, recentFoods, asEntry } from "../public/food-table.js";
+import { FOODS, normalizeText, makeMyFood, searchFoods, portionTotals, mealTotals, mealNumbers, recentFoods, asEntry } from "../public/food-table.js";
 
 // kcal100 250, protein100 8: a 40 g piece = 100 kcal / 3.2 g
 const bread = { id: "bread", en: "Baladi bread", ar: "عيش بلدي", alt: [], group: "bread", kcal100: 250, protein100: 8,
@@ -56,14 +56,10 @@ test("portionTotals rejects bad amounts", () => {
   assert.equal(portionTotals(bread, { serving: "nope", amount: 1 }), null);
 });
 
-test("mealTotals and defaultMealName", () => {
+test("mealTotals sums kcal and only the protein that is known", () => {
   assert.deepEqual(mealTotals([]), { kcal: 0, protein: null });
   assert.deepEqual(mealTotals([{ kcal: 100.4, protein: 3.25 }, { kcal: 50.4, protein: null }]), { kcal: 151, protein: 3.3 });
   assert.deepEqual(mealTotals([{ kcal: 10, protein: null }]), { kcal: 10, protein: null });
-  assert.equal(defaultMealName([{ name: "Ful" }, { name: "Bread" }, { name: "Taameya" }, { name: "Salad" }]), "Ful + Bread + Taameya");
-  assert.equal(defaultMealName([{ name: "x".repeat(30) }, { name: "y".repeat(30) }]).length, 40);
-  assert.equal(defaultMealName([]), "");
-  assert.equal(defaultMealName([{ name: "Ful medames (fava beans with oil)" }, { name: "Baladi bread" }]), "Ful medames + Baladi bread", "parentheses are dropped");
 });
 
 test("recentFoods: newest first, last 14 days, one per src+ref, ignores meals without items", () => {
@@ -108,4 +104,28 @@ test("makeMyFood rejects bad input", () => {
     { grams: 10, kcal: 500 }, { barcode: "12ab" }]) assert.equal(makeMyFood({ ...ok, ...bad }), null, JSON.stringify(bad));
   assert.equal(makeMyFood({ ...ok, name: "x".repeat(70) }).name.length, 60);
   assert.match(makeMyFood({ name: "x", kcal: 1, protein: null, servingName: "s" }).id, /^[a-z0-9]{1,40}$/, "generated id");
+});
+
+test("searchFoods: every typed word must match, in any order and across names", () => {
+  const brown = { id: "rice-brown", en: "Brown rice, cooked", ar: "أرز بني", alt: ["roz asmar"], group: "rice", kcal100: 110, protein100: 2.6,
+    servings: [{ id: "cup", en: "1 cup", ar: "كوب", grams: 160 }], def: "cup" };
+  const white = { ...brown, id: "rice-white", en: "White rice, cooked", ar: "أرز أبيض", alt: [] };
+  const ids = (q, list = [brown, white]) => searchFoods(q, { foods: list }).map(f => f.id);
+  assert.deepEqual(ids("brown rice"), ["rice-brown"]);
+  assert.deepEqual(ids("rice brown"), ["rice-brown"], "word order does not matter");
+  assert.deepEqual(ids("cooked brown"), ["rice-brown"]);
+  assert.deepEqual(ids("rice").sort(), ["rice-brown", "rice-white"], "one word still matches both");
+  assert.deepEqual(ids("brown pasta"), [], "a word that matches nothing rules the food out");
+  assert.deepEqual(ids("أرز بني"), ["rice-brown"]);
+  assert.deepEqual(ids("rice  brown "), ["rice-brown"], "extra spaces are ignored");
+  assert.equal(ids("brown rice")[0], "rice-brown");
+  // an exact phrase still ranks above a words-in-any-order match
+  const phrase = { ...white, id: "phrase", en: "Rice with brown sugar" }, exact = { ...white, id: "exact", en: "Brown rice pudding" };
+  assert.deepEqual(ids("brown rice", [phrase, exact]), ["exact", "phrase"]);
+});
+
+test("mealNumbers numbers only the meals without a name", () => {
+  assert.deepEqual(mealNumbers([]), []);
+  assert.deepEqual(mealNumbers(undefined), []);
+  assert.deepEqual(mealNumbers([{ name: null }, { name: "Breakfast" }, { name: "" }, {}, { name: "Dinner" }]), [1, null, 2, 3, null]);
 });

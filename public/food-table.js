@@ -327,14 +327,25 @@ export function normalizeText(s) {
 }
 
 // 0 = a name starts with the query, 1 = a word does, 2 = it appears inside; -1 = no match.
+// When the whole phrase is nowhere, every typed word must be found somewhere in the food's names (any order): 3 or 4.
 function matchRank(entry, q) {
+  const fields = [entry.en, entry.ar, ...(entry.alt || [])].map(normalizeText).filter(Boolean);
   let best = -1;
-  for (const raw of [entry.en, entry.ar, ...(entry.alt || [])]) {
-    const f = normalizeText(raw); if (!f) continue;
+  for (const f of fields) {
     const r = f.startsWith(q) ? 0 : f.split(" ").some(w => w.startsWith(q)) ? 1 : f.includes(q) ? 2 : -1;
     if (r >= 0 && (best < 0 || r < best)) best = r;
   }
-  return best;
+  if (best >= 0) return best;
+  const words = q.split(" ");
+  if (words.length < 2) return -1;
+  const all = fields.join(" "), allWords = all.split(" ");
+  let worst = 0;
+  for (const w of words) {
+    const r = allWords.some(x => x.startsWith(w)) ? 0 : all.includes(w) ? 1 : -1;
+    if (r < 0) return -1;
+    if (r > worst) worst = r;
+  }
+  return 3 + worst;
 }
 
 export function searchFoods(query, { foods = FOODS, extra = [], limit = 50 } = {}) {
@@ -372,8 +383,10 @@ export function mealTotals(items) {
   return { kcal: Math.round(kcal), protein: anyProtein ? round1(protein) : null };
 }
 
-export function defaultMealName(items) {
-  return (items || []).slice(0, 3).map(i => String(i.name).replace(/\s*\([^)]*\)/g, "").trim()).join(" + ").slice(0, 40);
+// Meals without a name are shown as "Meal 1", "Meal 2"...: this gives each meal its number (null for a named meal).
+export function mealNumbers(meals) {
+  let n = 0;
+  return (meals || []).map(m => (m && m.name ? null : ++n));
 }
 
 const dayShift = (iso, days) => { const d = new Date(iso + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10); };

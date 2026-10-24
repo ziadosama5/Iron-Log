@@ -500,7 +500,8 @@ test("food picker: a meal built from two foods is saved with the tray total", as
   const items = page.locator("#view-log .cardio-list li");
   assert.equal(await items.count(), before + 1);
   const text = await items.last().innerText();
-  assert.ok(text.includes(" + "), text);
+  assert.match(text, /Meal \d+/);
+  assert.ok(!text.includes("Ful") && !text.includes("bread"), "the foods are not repeated on the list: " + text);
   assert.ok(text.includes(total.toLocaleString("en-US") + " kcal"), text + " vs " + total);
   await ctx.close();
 });
@@ -623,7 +624,9 @@ test("My foods: create, find with a Mine tag, add, edit, delete (saved meals kee
   await page.locator('[data-act="myfood-delete"]').click();
   assert.equal(await page.locator('#food-results [data-src="mine"]').count(), 0);
   await page.locator('[data-act="sheet-close"]').first().click();
-  assert.ok((await page.locator("#view-log .cardio-list").innerText()).includes("Protein bar"));
+  await page.locator('#view-log [data-act="meal-edit"]').first().click();
+  await page.waitForSelector("#mealsheet[open]");
+  assert.ok((await page.locator("#meal-tray").innerText()).includes("Protein bar"), "the saved meal still lists its food");
   await ctx.close();
 });
 
@@ -876,5 +879,26 @@ test("review: in Arabic the − and + steppers keep their order (left to right)"
   assert.ok(await xs('.foodamt [data-d="-0.5"]') < await xs('.foodamt [data-d="0.5"]'), "amount stepper: minus is left of plus");
   await page.locator("#food-add").click();
   assert.ok(await xs('#meal-tray [data-act="tray-step"][data-d="-1"]') < await xs('#meal-tray [data-act="tray-step"][data-d="1"]'), "tray stepper: minus is left of plus");
+  await ctx.close();
+});
+
+test("meal names: unnamed meals are 'Meal 1', 'Meal 2'..., a named meal keeps its name and takes no number", async () => {
+  const { page, ctx } = await open();
+  const labels = async () => (await page.locator("#view-log .cardio-list li").allInnerTexts()).map(x => x.split("·")[0].trim());
+  const nums = list => list.map(x => (x.match(/^Meal (\d+)$/) || [])[1]).filter(Boolean).map(Number);
+  await openMealSheet(page); await addFood(page, "ful", "ful-medames"); await saveBuiltMeal(page);
+  await openMealSheet(page); await addFood(page, "rice", "rice-white"); await saveBuiltMeal(page);
+  let list = await labels(), n = nums(list);
+  assert.equal(n.length, 2 + nums(list).length - 2, "two unnamed meals were added");
+  assert.deepEqual(n.slice(-2), [n.at(-2), n.at(-2) + 1], "numbers are consecutive");
+  assert.ok(!list.some(x => x.includes("Ful") || x.includes("Rice")), "the foods are not used as the name: " + list.join(" | "));
+  const before = n.at(-1);
+  await openMealSheet(page);
+  await page.locator('#mealsheet [data-act="meal-name"][data-name="Breakfast"]').click();
+  await addFood(page, "toast", "toast"); await saveBuiltMeal(page);
+  await openMealSheet(page); await addFood(page, "taameya", "taameya"); await saveBuiltMeal(page);
+  list = await labels();
+  assert.ok(list.includes("Breakfast"), "the named meal keeps its name: " + list.join(" | "));
+  assert.equal(nums(list).at(-1), before + 1, "the next unnamed meal skips the named one");
   await ctx.close();
 });

@@ -229,7 +229,7 @@ export const AR = {
     "Everyday {a} · Lifting {b} · Cardio {c}": "اليومي {a} · الحديد {b} · الكارديو {c}", "Eaten vs target": "المتناول مقابل الهدف",
     "Over by {n} kcal": "زيادة بمقدار {n} kcal",
     "Protein <b>{a} g</b> of {b}–{c} g": "البروتين <b>{a} g</b> من {b}–{c} g", "Protein <b>{a} g</b>": "البروتين <b>{a} g</b>",
-    "Meal": "وجبة", "meal": "الوجبة", "Delete {name}": "حذف {name}",
+    "Meal": "وجبة", "Meal {n}": "وجبة {n}","meal": "الوجبة", "Delete {name}": "حذف {name}",
 
     /* ---- Coach ---- */
     "Training": "التدريب",
