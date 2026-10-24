@@ -248,6 +248,7 @@ tr:last-child td{border-bottom:0}
 td.r,th.r{text-align:end}
 tr.setrow{cursor:pointer}
 tr.setrow.editing td{background:var(--accent-soft)}
+.advice{color:var(--accent);font-size:14px}
 .settag{display:inline-block;font:600 12px/1 var(--f-body);background:var(--sunk);color:var(--muted);padding:3px 6px;border-radius:4px;margin-inline-start:6px;vertical-align:middle}
 .pr{display:inline-block;font:600 12px/1 var(--f-body);letter-spacing:.05em;background:var(--accent-soft);color:var(--accent);padding:3px 6px;border-radius:4px;margin-inline-start:6px;vertical-align:2px}
 .adder{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
@@ -542,7 +543,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
+import { targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX, goalAdjustment, explainTarget, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { cleanDigits, canonicalBarcode, productUrl, normalizeProduct } from "./barcode.js";
@@ -1301,10 +1302,31 @@ function renderLog(){
   const c=$("#exchips"), on=c&&c.querySelector('[aria-current="true"]');
   if(on){ const a=on.getBoundingClientRect(), b=c.getBoundingClientRect(); c.scrollLeft+=(a.left+a.width/2)-(b.left+b.width/2); }
 }
+// Target chip (or its editor) and the "what to try today" line under the Last time line.
+function adviceText(sug){
+  if(!sug) return "";
+  return sug.kind==="increase"?t("Try {w} kg × {r}",{w:kg(sug.w),r:sug.r}):sug.low?t("Same weight: build up to {r} reps",{r:sug.r}):t("Same weight: aim for {r} on every set",{r:sug.r});
+}
+function targetBlock(ex,tg,sug,ei){
+  const adv=adviceText(sug), advHtml=adv?`<div class="advice"><b>${esc(adv)}</b></div>`:"";
+  if(state.targetEdit!==ex) return `<div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="chip" data-act="target-edit" data-ei="${ei}" aria-label="${esc(t("Change target"))}">${t("Target {sets} × {min}–{max}",{sets:tg.sets,min:tg.min,max:tg.max})}</button></div>${advHtml}`;
+  const row=(f,label)=>`<div class="row" dir="ltr" data-row="${f}" style="gap:10px"><span class="label grow">${esc(t(label))}</span><button type="button" class="btn small" data-act="tgt-step" data-f="${f}" data-d="-1" aria-label="${esc(t("Less"))}">−</button><b class="num" style="min-width:32px;text-align:center">${tg[f]}</b><button type="button" class="btn small" data-act="tgt-step" data-f="${f}" data-d="1" aria-label="${esc(t("More"))}">+</button></div>`;
+  return `<div class="stack" style="gap:6px">${row("sets","Sets")}${row("min","Min reps")}${row("max","Max reps")}<div class="row"><button type="button" class="btn small" data-act="tgt-reset">${t("Reset to default")}</button><button type="button" class="btn primary small" data-act="tgt-done">${t("Done")}</button></div></div>${advHtml}`;
+}
+let tgtTimer=null;
+function flushTargets(){ clearTimeout(tgtTimer); tgtTimer=null; store.saveSettings({targets:state.settings.targets||{}}); }
+// Keeps the target in memory at once and saves it a moment later (like the rest time); a target equal to the default is not stored.
+function setTarget(ex,next){
+  const all={...(state.settings.targets||{})}, dft=defaultTarget(ex);
+  if(next.sets===dft.sets&&next.min===dft.min&&next.max===dft.max) delete all[ex]; else all[ex]=next;
+  state.settings={...state.settings,targets:all}; delete ui[ex];
+  clearTimeout(tgtTimer); tgtTimer=setTimeout(flushTargets,1500);
+}
 function focusCard(w, ei){
   const entries=w.entries, e=entries[ei];
   const last=lastBefore(e.ex,state.date), best=bestBefore(e.ex,state.date);
-  const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last));
+  const target=targetFor(state.settings,e.ex), sug=suggestNext({last:last&&last.sets,target,step:stepFor(e.ex)});
+  const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last,sug));
   const editSi = editIndexFor(state.editSet, state.date, e.ex, e.sets), kind=state.setKind||"normal";
   let runBest=best;
   const nx = nextUnfinished(entries, ei);
@@ -1312,6 +1334,7 @@ function focusCard(w, ei){
       <div class="row"><span class="label grow">${t("Exercise {n} of {m}",{n:ei+1,m:entries.length})}</span>${infoBtn(e.ex)}</div>
       <div class="ex-name">${esc(nameOf("ex",e.ex))}</div>
       ${last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>kg(s.w)+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
+      ${targetBlock(e.ex,target,sug,ei)}
       <div class="stack" style="gap:4px"><span class="label">Weight · kg</span>
         <div class="bigstep"><button data-act="step" data-f="w" data-d="-2.5" data-ei="${ei}" aria-label="Minus 2.5 kg">−</button><input id="w-${ei}" inputmode="decimal" value="${d.w}" data-f="w" data-ex="${esc(e.ex)}" aria-label="Weight in kg"><button data-act="step" data-f="w" data-d="2.5" data-ei="${ei}" aria-label="Plus 2.5 kg">+</button></div></div>
       <div class="stack" style="gap:4px"><span class="label">Reps</span>
@@ -2906,6 +2929,14 @@ document.addEventListener("click",e=>{
     case "step":{ const inp=document.getElementById(b.dataset.f+"-"+ei); let v=Math.max(0,(parseFloat(inp.value)||0)+parseFloat(b.dataset.d)); inp.value=b.dataset.f==="r"?Math.round(v):kg(v); inp.dispatchEvent(new Event("input",{bubbles:true})); break; }
     case "edit-set":{ const en=ensureWorkout().entries[ei], si=+b.dataset.si, s=en.sets[si];
       state.editSet={date:state.date,ex:en.ex,si}; state.setKind=setType(s); ui[en.ex]={w:kg(s.w),r:String(s.r)}; renderLog(); break; }
+    case "target-edit": state.targetEdit=ensureWorkout().entries[ei].ex; renderLog(); break;
+    case "tgt-step":{ const ex=state.targetEdit; if(!ex) break; const cur={...targetFor(state.settings,ex)}, f=b.dataset.f, dd=+b.dataset.d;
+      if(f==="sets") cur.sets=Math.min(10,Math.max(1,cur.sets+dd));
+      else if(f==="min") cur.min=Math.min(cur.max,Math.max(1,cur.min+dd));
+      else if(f==="max") cur.max=Math.min(50,Math.max(cur.min,cur.max+dd));
+      setTarget(ex,cur); renderLog(); break; }
+    case "tgt-reset":{ const ex=state.targetEdit; if(!ex) break; setTarget(ex,defaultTarget(ex)); renderLog(); break; }
+    case "tgt-done": state.targetEdit=null; flushTargets(); renderLog(); break;
     case "set-kind": if(SET_TYPES.includes(b.dataset.k)){ state.setKind=b.dataset.k; renderLog(); } break;
     case "cancel-edit": stopEditing(); renderLog(); break;
     case "save-set":{

@@ -1116,3 +1116,71 @@ test("set types: in Arabic the chips are translated", async () => {
   assert.ok(chips.every(c => /[؀-ۿ]/.test(c)), chips.join("|"));
   await ctx.close();
 });
+
+// ---- targets and progression advice ----
+const targetChip = page => page.locator('#open-card [data-act="target-edit"]');
+const tgt = (page, f, d) => page.locator(`#open-card [data-act="tgt-step"][data-f="${f}"][data-d="${d}"]`);
+const advice = page => page.locator("#open-card .advice");
+
+test("targets: every exercise shows its default target as a tappable chip", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  assert.equal((await targetChip(page).innerText()).replace(/\s+/g, " ").trim(), "Target 3 × 5–8", "Bench Press is a heavy compound");
+  await ctx.close();
+});
+
+test("targets: the editor changes sets and reps with limits, Done shows the new target, Reset brings the default back", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  await targetChip(page).click();
+  await tgt(page, "max", 1).click(); await tgt(page, "sets", 1).click();
+  await tgt(page, "min", 1).click(); await tgt(page, "min", 1).click(); await tgt(page, "min", 1).click(); await tgt(page, "min", 1).click();
+  assert.equal(await page.locator('#open-card [data-row="min"] .num').innerText(), "9", "min stops at max (9)");
+  await page.locator('#open-card [data-act="tgt-done"]').click();
+  assert.equal((await targetChip(page).innerText()).replace(/\s+/g, " ").trim(), "Target 4 × 9–9");
+  await targetChip(page).click();
+  await page.locator('#open-card [data-act="tgt-reset"]').click();
+  assert.equal(await page.locator('#open-card [data-row="max"] .num').innerText(), "8", "the editor shows the default again");
+  await page.locator('#open-card [data-act="tgt-done"]').click();
+  assert.equal((await targetChip(page).innerText()).replace(/\s+/g, " ").trim(), "Target 3 × 5–8");
+  await ctx.close();
+});
+
+test("targets: not reaching the top of the range says to keep the weight and pre-fills set 1", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  assert.equal((await advice(page).innerText()).replace(/\s+/g, " ").trim(), "Same weight: aim for 7 on every set");
+  assert.equal(await page.locator("#w-0").inputValue(), "62.5");
+  assert.equal(await page.locator("#r-0").inputValue(), "7");
+  await ctx.close();
+});
+
+test("targets: reaching the top of the range suggests more weight and pre-fills it", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  await targetChip(page).click();
+  await tgt(page, "sets", -1).click(); await tgt(page, "sets", -1).click(); await tgt(page, "max", -1).click(); await tgt(page, "max", -1).click();
+  await page.locator('#open-card [data-act="tgt-done"]').click();
+  assert.equal((await advice(page).innerText()).replace(/\s+/g, " ").trim(), "Try 65 kg × 5");
+  assert.equal(await page.locator("#w-0").inputValue(), "65");
+  assert.equal(await page.locator("#r-0").inputValue(), "5");
+  await ctx.close();
+});
+
+test("targets: a warm-up logged first does not take the suggestion away from the first working set", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  await addSetWith(page, 40, 10, "warmup");
+  assert.equal(await page.locator("#w-0").inputValue(), "62.5");
+  assert.equal(await page.locator("#r-0").inputValue(), "7");
+  await ctx.close();
+});
+
+test("targets: in Arabic the editor steppers keep minus left of plus", async () => {
+  const { page, ctx } = await open("lang=ar");
+  await startPush(page);
+  await targetChip(page).click();
+  const xs = async sel => page.evaluate(s => document.querySelector(s).getBoundingClientRect().x, sel);
+  assert.ok(await xs('#open-card [data-act="tgt-step"][data-f="max"][data-d="-1"]') < await xs('#open-card [data-act="tgt-step"][data-f="max"][data-d="1"]'));
+  await ctx.close();
+});
