@@ -6,7 +6,7 @@ The owner answered the design questions for every feature below in one session. 
 
 **Left out on purpose:** several gyms (Home + Gym), per-day targets, automatic planned deloads, allergens, chat, notifications, food CSV.
 
-## 1. Bodyweight mode
+## 1. Bodyweight mode (BUILT: sub-project 22, sw v45)
 - **Detection:** automatic from the library (exercises that need no weights, e.g. push-up, pull-up, dip, plank, bodyweight lunges, start as bodyweight) plus a per-exercise switch on the exercise card that flips any exercise, including custom typed ones, either way.
 - **Weight box = extra kg**, 0 by default, negative for assisted machines (assisted pull-up). Reps are the main number.
 - **Progression advice:** raise reps first (aim for the top of the target range), then suggest adding 2.5 kg extra once the top is reached.
