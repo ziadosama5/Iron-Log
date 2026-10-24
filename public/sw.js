@@ -18,6 +18,7 @@ const APP_SHELL = [
   "/progression.js",
   "/bodyweight.js",
   "/injuries.js",
+  "/deload.js",
   "/energy.js",
   "/achievements.js",
   "/nav.js",
