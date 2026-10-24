@@ -582,6 +582,7 @@ if (configured) {
   auth = getAuth(app);
   fs = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
 }
+let authKnown=false;  // true once Firebase has reported the signed-in person (or nobody)
 const store = {
   col:null, unsub:null, user:null, wiping:false,
   init(onData){
@@ -590,7 +591,7 @@ const store = {
     onAuthStateChanged(auth, user=>{
       if (this.unsub){ this.unsub(); this.unsub=null; }
       this.stopFriends(); state.showMore={}; state.friends=freshFriends(); this.stopChallenges(); state.challenges=freshChallenges(); renderFriendsBadge();
-      this.user=user; state.authed=!!user;
+      this.user=user; state.authed=!!user; authKnown=true;
       showAccount(user);
       if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
@@ -2456,6 +2457,8 @@ function renderSignin(){
 }
 function render(){
   const authed=state.authed;
+  // Until Firebase says who is signed in, show nothing (otherwise the sign-in card flashes for a second on every open).
+  if(!authed&&!state.setup&&!authKnown){ $("#nav").hidden=true; VIEWS.forEach(v=>$("#view-"+v).hidden=true); $("#view-signin").hidden=true; return; }
   $("#nav").hidden=!authed||state.view==="journey"||state.view==="delete"; $("#view-signin").hidden=authed;
   if(!authed){ VIEWS.forEach(v=>$("#view-"+v).hidden=true); renderSignin(); syncWake(); return; }
   const curTab=tabOf(state.view);
