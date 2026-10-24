@@ -1259,7 +1259,7 @@ function moreList(items,key,limit=5){
 }
 function chipRow(items,key,act,extra=""){
   const open=!!(state.showAllEx||{})[key], v=visibleItems(items,open);
-  return `<div class="chips">${v.shown.map(n=>`${chipInfo(`<button class="chip add" data-act="${act}"${extra} data-name="${esc(n)}">${esc(nameOf("ex",n))}</button>`,n)}`).join("")}</div>`+
+  return `<div class="chips">${v.shown.map(n=>`${chipInfo(`<button class="chip add" data-act="${act}"${extra} data-name="${esc(n)}">${esc(nameOf("ex",n))}${warnMark(n)}</button>`,n)}`).join("")}</div>`+
     (items.length>6?`<button class="btn ghost small" data-act="more-ex" data-k="${esc(key)}" aria-expanded="${open}">${open?t("Show fewer"):t("Show more ({n})",{n:items.length-6})}</button>`:"");
 }
 // My Gym: the equipment filter in use (null = show everything). The "Show all" switch lasts for the session.
@@ -1655,15 +1655,16 @@ const warnText = w => w.areas.length?t("You chose to avoid this: it loads your {
 const warnMark = name => { const w=avoidWarn(name); return w?`<span class="avoidtag" role="img" aria-label="${esc(warnShort(w))}" title="${esc(warnShort(w))}">⚠</span>`:""; };
 const avoidsName = name => ((state.settings.avoid && state.settings.avoid.exercises) || []).some(x => x.toLowerCase() === String(name).toLowerCase());
 // Saves at once: the choice is changed in memory and written; the filters read state.settings on every render.
-function setAvoid(next){
-  const clean = cleanAvoid(next);
+function setAvoid(next, clearField){
+  const clean = cleanAvoid(next), typed = clearField ? "" : ($("#avoid-ex") || {}).value;   // what was typed in the field is kept unless it was just added
   state.settings = { ...state.settings, avoid: clean };
   store.saveSettings({ avoid: clean });
   render(); refreshSheets();
+  const f = $("#avoid-ex"); if (f) { f.value = typed || ""; if (clearField) f.focus(); }
 }
 function injuriesCardHtml(){
   const avoid = state.settings.avoid || {}, chosen = new Set(avoid.areas || []), names = avoid.exercises || [];
-  const hidden = hiddenAvoidCount([ALL_EX], avoid);
+  const hidden = state.showAllGym ? 0 : hiddenAvoidCount([ALL_EX], avoid);   // "Show all" lifts the filter, so nothing is hidden right now
   return `<div class="card"><h3>${t("Injuries")}</h3>
     <p class="prev" style="margin:0">${t("Pick the areas that hurt. Exercises that load them are left out of suggestions. This is a filter, not medical advice.")}</p>
     <div class="chips">${AREAS.map(a => `<button type="button" class="chip" data-act="avoid-area" data-id="${a}" aria-pressed="${chosen.has(a)}">${esc(areaLabel(a))}</button>`).join("")}</div>
@@ -2983,7 +2984,8 @@ document.addEventListener("submit",e=>{
   if(f.id==="avoid-form"){
     const raw=$("#avoid-ex").value.trim(); if(!raw){ toast(t("Type an exercise")); return; }
     const name=canonical(raw), a=state.settings.avoid||{};
-    if(!avoidsName(name)) setAvoid({ ...a, exercises: [...(a.exercises||[]), name] });
+    if(avoidsName(name)){ toast(t("Already in your list.")); return; }
+    setAvoid({ ...a, exercises: [...(a.exercises||[]), name] }, true);
     return;
   }
   if(f.id==="add-ex-form"){ addExerciseToWorkout($("#new-ex").value); }

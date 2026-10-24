@@ -76,3 +76,9 @@ test("the privacy policy explains food saving, barcode scanning and the camera, 
   assert.ok(/باركود/.test(ar) && /الكاميرا/.test(ar) && ar.includes("Open Food Facts"), "Arabic covers the barcode, the camera and Open Food Facts");
   assert.equal(h2s(block(html, "en")), h2s(block(html, "ar")), "same sections in both languages");
 });
+
+test("the privacy policy says injury choices are stored, in English and Arabic", () => {
+  const en = block(read("privacy.html"), "en").toLowerCase(), ar = block(read("privacy.html"), "ar");
+  for (const phrase of ["injur", "body areas", "exercises you avoid"]) assert.ok(en.includes(phrase), "privacy (en) mentions: " + phrase);
+  assert.ok(ar.includes("الإصابات"), "privacy (ar) mentions injuries");
+});

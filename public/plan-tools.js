@@ -133,12 +133,12 @@ export function buildPlan({ goal, daysPerWeek, experience, gym, splitId, avoid }
   const { name: split, days: shape } = SPLITS[daysPerWeek].find(x => x.id === chosen.id);
   const notes = [], usedInPlan = new Set(), days = [];
   const cap = goal === "strength" ? 5 : 7;
-  const pool = names => avoidFilter(gymFilter(names, gym), avoid), why = hasAvoid(avoid) ? " and injuries" : "";
+  const pool = names => avoidFilter(gymFilter(names, gym), avoid), inj = hasAvoid(avoid);
 
   // A muscle the split trains but that nothing in the gym can work.
   const trained = new Set(shape.flatMap(([, kind]) => KIND_MUSCLES[kind].filter(m => countFor(goal, experience, kind, m) > 0)));
   for (const m of MUSCLES) {
-    if (trained.has(m) && pool(LIB[m]).length === 0) notes.push({ text: "No {muscle} exercise fits your gym" + why + ".", params: { muscle: m } });
+    if (trained.has(m) && pool(LIB[m]).length === 0) notes.push({ text: inj ? "No {muscle} exercise fits your gym and injuries." : "No {muscle} exercise fits your gym.", params: { muscle: m } });
   }
 
   shape.forEach(([name, kind], i) => {
@@ -155,7 +155,7 @@ export function buildPlan({ goal, daysPerWeek, experience, gym, splitId, avoid }
     // Strength repeats its main lifts on every day that trains them; the other goals prefer variety.
     const used = goal === "strength" ? new Set() : usedInPlan;
     const exercises = slots.flatMap(x => pick(x.pool, x.n, day, used));
-    if (!exercises.length) { notes.push({ text: "{day} was left out: nothing in it fits your gym" + why + ".", params: { day: name } }); return; }
+    if (!exercises.length) { notes.push({ text: inj ? "{day} was left out: nothing in it fits your gym and injuries." : "{day} was left out: nothing in it fits your gym.", params: { day: name } }); return; }
     exercises.forEach(x => usedInPlan.add(x));
     days.push({ name, focus: MUSCLES.filter(m => exercises.some(x => muscleOf(x) === m)), exercises, weekdays: [WEEKDAYS[daysPerWeek][i]] });
   });

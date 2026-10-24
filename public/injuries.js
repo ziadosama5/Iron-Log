@@ -24,11 +24,11 @@ export const JOINTS = {
   "Pull-up": [S, E, W], "Lat Pulldown": [S, E], "Barbell Row": [S, E, B], "One-arm Dumbbell Row": [S, E], "Seated Cable Row": [S, E],
   "T-bar Row": [S, E, B], "Chin-up": [S, E, W], "Deadlift": [W, B, H, K], "Barbell Shrug": [S, W], "Dumbbell Shrug": [S], "Straight-arm Pulldown": [S],
   "Back Extension": [B, H], "Close-grip Pulldown": [S, E], "Wide-grip Pull-up": [S, E, W], "Assisted Pull-up": [S, E, W], "Reverse-grip Pulldown": [S, E],
-  "Underhand Barbell Row": [E, W, B], "Smith Machine Row": [S, E, B], "Chest-supported Dumbbell Row": [S, E], "Bent-over Dumbbell Row": [S, E, B],
+  "Underhand Barbell Row": [S, E, W, B], "Smith Machine Row": [S, E, B], "Chest-supported Dumbbell Row": [S, E], "Bent-over Dumbbell Row": [S, E, B],
   "Wide-grip Cable Row": [S, E], "One-arm Cable Row": [S, E], "Machine Row": [S, E], "Trap Bar Deadlift": [B, H, K], "Rack Pull": [W, B, H],
   "Cable Shrug": [S], "Smith Machine Shrug": [S], "Inverted Row": [S, E, W],
   // Shoulders
-  "Overhead Press": [S, E, W, B], "Arnold Press": [S, E, W], "Lateral Raise": [S], "Rear Delt Fly": [S], "Face Pull": [S, E], "Upright Row": [S, W],
+  "Overhead Press": [S, E, W, B], "Arnold Press": [S, E, W], "Lateral Raise": [S], "Rear Delt Fly": [S, B], "Face Pull": [S, E], "Upright Row": [S, W],
   "Machine Shoulder Press": [S, E], "Reverse Pec Deck": [S], "Dumbbell Shoulder Press": [S, E, W], "Seated Barbell Press": [S, E, W],
   "Seated Dumbbell Press": [S, E, W], "Smith Machine Shoulder Press": [S, E, W], "Push Press": [S, E, W, B], "Cable Lateral Raise": [S],
   "Machine Lateral Raise": [S], "Front Raise": [S], "Cable Front Raise": [S], "Cable Rear Delt Fly": [S], "Cable Upright Row": [S, W],
@@ -59,7 +59,7 @@ export const JOINTS = {
   "Dumbbell Calf Raise": [A], "Barbell Calf Raise": [A], "Single-leg Calf Raise": [A],
   // Core
   "Plank": [S, W, B], "Hanging Leg Raise": [S, W, B, H], "Cable Crunch": [B], "Ab Wheel Rollout": [S, W, B], "Russian Twist": [B], "Crunch": [],
-  "Side Plank": [S, W], "Lying Leg Raise": [B, H], "Hanging Knee Raise": [S, W, H], "Captain's Chair Leg Raise": [E, H], "Machine Crunch": [],
+  "Side Plank": [S, W], "Lying Leg Raise": [B, H], "Hanging Knee Raise": [S, W, H], "Captain's Chair Leg Raise": [S, E, H], "Machine Crunch": [],
   "Decline Sit-up": [B, H], "Sit-up": [B, H], "Reverse Crunch": [B], "Bicycle Crunch": [], "V-up": [B, H], "Flutter Kick": [B, H],
   "Mountain Climber": [S, W, H], "Dead Bug": [], "Cable Woodchop": [S, B], "Pallof Press": [B], "Dumbbell Side Bend": [B],
 };

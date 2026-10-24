@@ -94,3 +94,17 @@ test("hasAvoid says whether anything is avoided", async () => {
   assert.equal(hasAvoid({ areas: ["knee"] }), true); assert.equal(hasAvoid({ exercises: ["Squat"] }), true);
   for (const none of [undefined, null, {}, { areas: [], exercises: [] }, { areas: "knee" }]) assert.equal(hasAvoid(none), false, JSON.stringify(none));
 });
+
+test("table corrections from the final review", () => {
+  assert.ok(jointsOf("Rear Delt Fly").includes("lower-back"), "hinged forward, back flat");
+  assert.ok(jointsOf("Underhand Barbell Row").includes("shoulder"), "like Barbell Row");
+  assert.ok(jointsOf("Captain's Chair Leg Raise").includes("shoulder"), "held up on the forearms");
+});
+
+test("both places that build a plan in the app hand over the person's avoid choice", async () => {
+  const { readFileSync } = await import("node:fs");
+  const src = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
+  const calls = src.match(/buildPlan\(\{[^}]*\}\)/g) || [];
+  assert.equal(calls.length, 2);
+  for (const c of calls) assert.ok(c.includes("avoid:state.settings.avoid"), c);
+});

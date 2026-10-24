@@ -53,7 +53,7 @@ Areas: Shoulder (الكتف), Elbow (المرفق), Wrist (الرسغ), Lower ba
 | Wide-grip Pull-up | Shoulder, Elbow, Wrist |
 | Assisted Pull-up | Shoulder, Elbow, Wrist |
 | Reverse-grip Pulldown | Shoulder, Elbow |
-| Underhand Barbell Row | Elbow, Wrist, Lower back |
+| Underhand Barbell Row | Shoulder, Elbow, Wrist, Lower back |
 | Smith Machine Row | Shoulder, Elbow, Lower back |
 | Chest-supported Dumbbell Row | Shoulder, Elbow |
 | Bent-over Dumbbell Row | Shoulder, Elbow, Lower back |
@@ -73,7 +73,7 @@ Areas: Shoulder (الكتف), Elbow (المرفق), Wrist (الرسغ), Lower ba
 | Overhead Press | Shoulder, Elbow, Wrist, Lower back |
 | Arnold Press | Shoulder, Elbow, Wrist |
 | Lateral Raise | Shoulder |
-| Rear Delt Fly | Shoulder |
+| Rear Delt Fly | Shoulder, Lower back |
 | Face Pull | Shoulder, Elbow |
 | Upright Row | Shoulder, Wrist |
 | Machine Shoulder Press | Shoulder, Elbow |
@@ -220,7 +220,7 @@ Areas: Shoulder (الكتف), Elbow (المرفق), Wrist (الرسغ), Lower ba
 | Side Plank | Shoulder, Wrist |
 | Lying Leg Raise | Lower back, Hip |
 | Hanging Knee Raise | Shoulder, Wrist, Hip |
-| Captain's Chair Leg Raise | Elbow, Hip |
+| Captain's Chair Leg Raise | Shoulder, Elbow, Hip |
 | Machine Crunch | none |
 | Decline Sit-up | Lower back, Hip |
 | Sit-up | Lower back, Hip |
@@ -238,10 +238,10 @@ Areas: Shoulder (الكتف), Elbow (المرفق), Wrist (الرسغ), Lower ba
 
 | Area | Exercises |
 |---|---|
-| Shoulder | 84 |
+| Shoulder | 86 |
 | Elbow | 84 |
 | Wrist | 57 |
-| Lower back | 48 |
+| Lower back | 49 |
 | Hip | 56 |
 | Knee | 31 |
 | Ankle | 25 |

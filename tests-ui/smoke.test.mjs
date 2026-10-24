@@ -1537,3 +1537,40 @@ test("injuries: nothing is marked when nothing is avoided, and the warning text 
   assert.ok(/[؀-ۿ]/.test(await b.page.locator("#open-card .avoidnote").innerText()));
   await b.ctx.close();
 });
+
+// ---- injuries: review fixes ----
+test("injuries: Show all keeps the warning on the exercises it brings back", async () => {
+  const { page, ctx } = await open(AVOID_WRIST);
+  await startPush(page);
+  await openExSheet(page);
+  await page.locator('#exsheet [data-act="gym-showall"]').click();
+  assert.equal(await page.locator('#exsheet [data-name="Incline Barbell Press"] .avoidtag').count(), 1);
+  assert.equal(await page.locator('#exsheet [data-name="Machine Chest Press"] .avoidtag').count(), 0);
+  await ctx.close();
+});
+
+test("injuries: text typed in the avoid field survives tapping an area, and a duplicate says so", async () => {
+  const { page, ctx } = await open();
+  await openGym(page);
+  await page.locator("#avoid-ex").fill("bar");
+  await areaChip(page, "knee").click();
+  assert.equal(await page.locator("#avoid-ex").inputValue(), "bar");
+  await page.locator("#avoid-ex").fill("Barbell Row");
+  await page.locator('#avoid-form button[type="submit"]').click();
+  assert.equal(await page.locator("#avoid-ex").inputValue(), "", "cleared after adding");
+  await page.locator("#avoid-ex").fill("barbell row");
+  await page.locator('#avoid-form button[type="submit"]').click();
+  assert.ok(/already/i.test(await page.locator("#toast").innerText()));
+  await ctx.close();
+});
+
+test("injuries: while Show all is on the card says nothing is hidden", async () => {
+  const { page, ctx } = await open(AVOID_WRIST);
+  await startPush(page);
+  await openExSheet(page);
+  await page.locator('#exsheet [data-act="gym-showall"]').click();
+  await page.locator('#exsheet [data-act="sheet-close"]').first().click();
+  await openGym(page);
+  assert.ok((await page.locator("#view-gym").innerText()).includes("Nothing hidden."));
+  await ctx.close();
+});
