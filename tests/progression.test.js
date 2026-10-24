@@ -87,3 +87,19 @@ test("suggestNext: nothing to say without working sets or without a weight", () 
   const target = { sets: 3, min: 5, max: 8 };
   for (const last of [null, undefined, [], [S(40, 10, "w")], [S(0, 15), S(0, 15), S(0, 15)]]) assert.equal(suggestNext({ last, target, step: 2.5 }), null, JSON.stringify(last));
 });
+
+test("exerciseSessions: one session per workout that has working sets of the exercise, oldest first", async () => {
+  const { exerciseSessions } = await import("../public/progression.js");
+  const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
+  const wk = (date, ex, sets) => ({ date, entries: [{ ex, sets }] });
+  const ws = [
+    wk("2026-10-01", "Bench Press", [S(40, 10, "w"), S(60, 8)]),
+    wk("2026-10-03", "bench press", [S(40, 10, "w")]),           // only a warm-up: no session
+    wk("2026-10-05", "Squat", [S(100, 5)]),
+    wk("2026-10-07", "Bench Press", [S(62.5, 8), S(50, 12, "d")]),
+    { date: "2026-10-09", entries: [{ ex: "Bench Press", sets: [] }] },
+  ];
+  assert.deepEqual(exerciseSessions(ws, "Bench Press", same), [{ date: "2026-10-01", sets: [S(60, 8)] }, { date: "2026-10-07", sets: [S(62.5, 8)] }]);
+  assert.deepEqual(exerciseSessions(ws, "Deadlift", same), []);
+  assert.deepEqual(exerciseSessions([], "Bench Press", same), []);
+});

@@ -248,6 +248,7 @@ tr:last-child td{border-bottom:0}
 td.r,th.r{text-align:end}
 tr.setrow{cursor:pointer}
 tr.setrow.editing td{background:var(--accent-soft)}
+.settag{display:inline-block;font:600 12px/1 var(--f-body);background:var(--sunk);color:var(--muted);padding:3px 6px;border-radius:4px;margin-inline-start:6px;vertical-align:middle}
 .pr{display:inline-block;font:600 12px/1 var(--f-body);letter-spacing:.05em;background:var(--accent-soft);color:var(--accent);padding:3px 6px;border-radius:4px;margin-inline-start:6px;vertical-align:2px}
 .adder{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
 @media (max-width:420px){.adder{grid-template-columns:1fr 1fr}.adder .btn{grid-column:1/-1}}
@@ -541,7 +542,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { cleanTargets } from "./progression.js";
+import { cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX, goalAdjustment, explainTarget, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { cleanDigits, canonicalBarcode, productUrl, normalizeProduct } from "./barcode.js";
@@ -581,6 +582,7 @@ const freshChallenges=()=>({loaded:false,docs:[],progress:{},open:null,last:{},l
 const freshFriends=()=>({report:null,loaded:false,docs:[],blocks:[],data:{},open:null,confirm:null,renamed:false,q:"",found:null});
 let state = { challenges:freshChallenges(), del:null, deletedNote:false, journey:null, journeyShown:false, gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, showMore:{}, myFoods:[], workouts:[], days:[], body:[], profile:{}, view:"log", tabView:{}, date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:freshMealDraft(), rest:null, editSet:null };
 const ui = {};
+const KIND_LABEL={normal:"Normal",warmup:"Warm-up",drop:"Drop set"};   // set types: see progression.js
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
 const configured = firebaseConfig && firebaseConfig.apiKey && !String(firebaseConfig.apiKey).startsWith("PASTE");
@@ -1214,7 +1216,7 @@ function maybePublish(){
 /* ---------- derived ---------- */
 const sorted = () => [...state.workouts].sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
 function exerciseNames(){ const s=new Set(); sorted().forEach(w=>w.entries.forEach(e=>{ if(e.sets.length) s.add(e.ex); })); return [...s]; }
-function sessionsFor(ex){ return sorted().map(w=>{ const e=w.entries.find(e=>same(e.ex,ex)); return e&&e.sets.length?{date:w.date,sets:e.sets}:null; }).filter(Boolean); }
+function sessionsFor(ex){ return exerciseSessions(sorted(),ex,same); }   // working sets only: warm-ups and drop sets are not "last time"
 function lastBefore(ex,date){ const s=sessionsFor(ex).filter(x=>x.date<date); return s[s.length-1]||null; }
 function bestBefore(ex,date){ let b=0; sessionsFor(ex).filter(x=>x.date<date).forEach(x=>x.sets.forEach(s=>b=Math.max(b,e1rm(s.w,s.r)))); return b; }
 const workoutFor = date => state.workouts.find(w=>w.date===date);
@@ -1303,7 +1305,7 @@ function focusCard(w, ei){
   const entries=w.entries, e=entries[ei];
   const last=lastBefore(e.ex,state.date), best=bestBefore(e.ex,state.date);
   const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last));
-  const editSi = editIndexFor(state.editSet, state.date, e.ex, e.sets);
+  const editSi = editIndexFor(state.editSet, state.date, e.ex, e.sets), kind=state.setKind||"normal";
   let runBest=best;
   const nx = nextUnfinished(entries, ei);
   return `<div class="card focus" id="open-card">
@@ -1314,12 +1316,13 @@ function focusCard(w, ei){
         <div class="bigstep"><button data-act="step" data-f="w" data-d="-2.5" data-ei="${ei}" aria-label="Minus 2.5 kg">−</button><input id="w-${ei}" inputmode="decimal" value="${d.w}" data-f="w" data-ex="${esc(e.ex)}" aria-label="Weight in kg"><button data-act="step" data-f="w" data-d="2.5" data-ei="${ei}" aria-label="Plus 2.5 kg">+</button></div></div>
       <div class="stack" style="gap:4px"><span class="label">Reps</span>
         <div class="bigstep"><button data-act="step" data-f="r" data-d="-1" data-ei="${ei}" aria-label="Minus 1 rep">−</button><input id="r-${ei}" inputmode="numeric" value="${d.r}" data-f="r" data-ex="${esc(e.ex)}" aria-label="Reps"><button data-act="step" data-f="r" data-d="1" data-ei="${ei}" aria-label="Plus 1 rep">+</button></div></div>
+      <div class="chips" role="group" aria-label="${esc(t("Set type"))}">${SET_TYPES.map(ty=>`<button type="button" class="chip" data-act="set-kind" data-k="${ty}" aria-pressed="${kind===ty}">${esc(t(KIND_LABEL[ty]))}</button>`).join("")}</div>
       ${editSi>=0
         ? `<button class="btn primary" data-act="save-set" data-ei="${ei}">${t("Save set {n}",{n:editSi+1})}</button><div class="row"><span class="prev grow">${t("Editing set {n}",{n:editSi+1})}</span><button class="btn ghost small" data-act="cancel-edit">Cancel</button></div>`
         : `<button class="btn primary" data-act="add-set" data-ei="${ei}">${t("Add set {n}",{n:e.sets.length+1})}</button>`}
       ${e.sets.length?`<table><thead><tr><th>Set</th><th class="r">kg</th><th class="r">Reps</th><th class="r">e1RM</th><th></th></tr></thead><tbody>${
-        e.sets.map((s,si)=>{ const est=e1rm(s.w,s.r); const isPr=est>0&&est>runBest&&best>0; if(est>runBest) runBest=est;
-          return `<tr class="setrow${si===editSi?" editing":""}" data-act="edit-set" data-ei="${ei}" data-si="${si}" tabindex="0" aria-label="${esc(t("Edit set {n}",{n:si+1}))}"><td class="num">${si+1}</td><td class="r num">${kg(s.w)}</td><td class="r num">${s.r}</td><td class="r num">${est?kg(Math.round(est*10)/10):"–"}${isPr?'<span class="pr">PR</span>':""}</td><td class="r"><button class="btn ghost small" data-act="rm-set" data-ei="${ei}" data-si="${si}" aria-label="${esc(t("Delete set {n}",{n:si+1}))}">✕</button></td></tr>`;}).join("")
+        e.sets.map((s,si)=>{ const wk=isWorking(s), est=wk?e1rm(s.w,s.r):0, ty=setType(s); const isPr=est>0&&est>runBest&&best>0; if(est>runBest) runBest=est;   // only normal sets can be a PR
+          return `<tr class="setrow${si===editSi?" editing":""}" data-act="edit-set" data-ei="${ei}" data-si="${si}" tabindex="0" aria-label="${esc(t("Edit set {n}",{n:si+1}))}"><td class="num">${si+1}${ty==="normal"?"":`<span class="settag">${esc(t(KIND_LABEL[ty]))}</span>`}</td><td class="r num">${kg(s.w)}</td><td class="r num">${s.r}</td><td class="r num">${est?kg(Math.round(est*10)/10):"–"}${isPr?'<span class="pr">PR</span>':""}</td><td class="r"><button class="btn ghost small" data-act="rm-set" data-ei="${ei}" data-si="${si}" aria-label="${esc(t("Delete set {n}",{n:si+1}))}">✕</button></td></tr>`;}).join("")
       }</tbody></table>`:""}
       <div class="row"><button class="btn ghost small danger" data-act="rm-ex" data-ei="${ei}">Remove exercise</button></div>
     </div>
@@ -1329,7 +1332,7 @@ function focusCard(w, ei){
       nx>=0?`<button class="btn secondary grow nextbtn" data-act="next-ex" data-ei="${ei}">${esc(t("Next: {name}",{name:nameOf("ex",entries[nx].ex)}))}</button>`:""}</div>`;
 }
 function completeCard(w){
-  const sets=w.entries.reduce((a,e)=>a+e.sets.length,0), volume=w.entries.reduce((a,e)=>a+vol(e.sets),0);
+  const sets=w.entries.reduce((a,e)=>a+countedSets(e.sets).length,0), volume=w.entries.reduce((a,e)=>a+vol(volumeSets(e.sets)),0);
   const ek=exerciseKcal(w, weightOn(state.body,w.date)).total;
   return `<div class="card complete-card"><div class="row"><span class="tick" aria-hidden="true">✓</span><b class="grow">Workout complete</b></div>
     <span class="prev">${tn("{n} set","{n} sets",sets)} · ${t("{n} kg moved",{n:kg(volume)})}${ek?` · ${t("{n} kcal exercise",{n:ek.toLocaleString("en-US")})}`:""}</span>
@@ -1427,7 +1430,7 @@ function readSet(ei){
   if(!(w>=0)||!(r>0)){ toast(t("Enter a weight (0 for bodyweight) and at least 1 rep")); return null; }
   return {w,r};
 }
-function stopEditing(){ if(state.editSet){ delete ui[state.editSet.ex]; state.editSet=null; } }
+function stopEditing(){ state.setKind="normal"; if(state.editSet){ delete ui[state.editSet.ex]; state.editSet=null; } }
 function ensureWorkout(){ const w=workoutFor(state.date); return w?clone(w):{id:"w-"+state.date,date:state.date,dayId:null,dayName:null,entries:[]}; }
 function canonical(name){ name=resolveAlias(reverseName("ex",name)); return [...exerciseNames(),...ALL_EX].find(n=>same(n,name)) || name; }
 function startDay(day){
@@ -1877,7 +1880,7 @@ const r1 = n => Math.round(n*10)/10;
 
 function weeklySets(){
   const counts={}; MUSCLES.forEach(m=>counts[m]=0);
-  state.workouts.filter(w=>daysAgo(w.date)<7).forEach(w=>w.entries.forEach(e=>{ const m=muscleOf(e.ex); if(m) counts[m]+=e.sets.length; }));
+  state.workouts.filter(w=>daysAgo(w.date)<7).forEach(w=>w.entries.forEach(e=>{ const m=muscleOf(e.ex); if(m) counts[m]+=countedSets(e.sets).length; }));
   return counts;
 }
 function weightTrend(){
@@ -2351,7 +2354,7 @@ function reviewPrompt(){
   const summary={
     profile:{sex:p.sex||null, age:p.birthYear?new Date().getFullYear()-p.birthYear:null, heightCm:p.height||null, goal:GOALS[p.goal]||null},
     trainingDays:state.days.map(d=>({name:d.name,exercises:d.exercises})),
-    workoutsLast28Days:state.workouts.filter(w=>daysAgo(w.date)<28).sort((a,b)=>a.date<b.date?-1:1).map(w=>({date:w.date,day:w.dayName,exercises:w.entries.filter(e=>e.sets.length).map(e=>({name:e.ex,sets:e.sets.map(s=>`${s.w}kg x ${s.r}`)})),cardio:(w.cardio||[]).map(c=>({type:c.type,min:c.min,kcal:cardioKcal(c,weightOn(state.body,w.date))}))})),
+    workoutsLast28Days:state.workouts.filter(w=>daysAgo(w.date)<28).sort((a,b)=>a.date<b.date?-1:1).map(w=>({date:w.date,day:w.dayName,exercises:w.entries.filter(e=>countedSets(e.sets).length).map(e=>({name:e.ex,sets:countedSets(e.sets).map(s=>`${s.w}kg x ${s.r}${s.k==="d"?" (drop set)":""}`)})),cardio:(w.cardio||[]).map(c=>({type:c.type,min:c.min,kcal:cardioKcal(c,weightOn(state.body,w.date))}))})),
     foodLast28Days:Object.values(state.food).filter(fd=>daysAgo(fd.date)<28).sort((a,b)=>a.date<b.date?-1:1).map(fd=>{ const ps=fd.meals.filter(m=>typeof m.protein==="number"); return {date:fd.date, kcal:fd.meals.reduce((a,m)=>a+m.kcal,0), protein:ps.length?ps.reduce((a,m)=>a+m.protein,0):null}; }),
     setsPerMuscleLast7Days:weeklySets(),
     bodyEntries:bodySorted().slice(-10),
@@ -2515,11 +2518,11 @@ function renderHistory(){
   const hist=moreList(ws,"history");
   hist.shown.forEach(w=>{
     const done=w.entries.filter(e=>e.sets.length);
-    const v=done.reduce((a,e)=>a+vol(e.sets),0), sets=done.reduce((a,e)=>a+e.sets.length,0);
+    const v=done.reduce((a,e)=>a+vol(volumeSets(e.sets)),0), sets=done.reduce((a,e)=>a+countedSets(e.sets).length,0);
     const day=dayById(w.dayId), dname=day?day.name:(w.dayName||"Free workout");
     h+=`<div class="card" data-open="${esc(w.date)}" tabindex="0" style="cursor:pointer">
       <div class="ex-head"><div class="stack" style="gap:6px;min-width:0"><span class="prev">${fmtDateY(w.date)}</span><span class="daytag" style="align-self:flex-start">${esc(nameOf("day",dname))}</span></div><span class="num prev" style="white-space:nowrap">${historySummary(w,sets,v)}</span></div>
-      <div class="chips">${done.map(e=>`<span class="chip">${esc(nameOf("ex",e.ex))} · ${e.sets.length}</span>`).join("")}${(w.cardio||[]).map(c=>`<span class="chip">${cardioLabel(c.type)} ${c.min} min</span>`).join("")}</div>
+      <div class="chips">${done.map(e=>`<span class="chip">${esc(nameOf("ex",e.ex))} · ${countedSets(e.sets).length}</span>`).join("")}${(w.cardio||[]).map(c=>`<span class="chip">${cardioLabel(c.type)} ${c.min} min</span>`).join("")}</div>
       <div class="row" style="justify-content:flex-end">${state.confirmDel===w.id
         ?`<span class="prev">Delete this workout?</span><button class="btn small" data-act="cancel-del">Keep</button><button class="btn small danger" data-act="del-w" data-id="${w.id}">Delete</button>`
         :`<button class="btn ghost small danger" data-act="ask-del" data-id="${w.id}">Delete</button>`}</div></div>`;
@@ -2902,19 +2905,22 @@ document.addEventListener("click",e=>{
   switch(a){
     case "step":{ const inp=document.getElementById(b.dataset.f+"-"+ei); let v=Math.max(0,(parseFloat(inp.value)||0)+parseFloat(b.dataset.d)); inp.value=b.dataset.f==="r"?Math.round(v):kg(v); inp.dispatchEvent(new Event("input",{bubbles:true})); break; }
     case "edit-set":{ const en=ensureWorkout().entries[ei], si=+b.dataset.si, s=en.sets[si];
-      state.editSet={date:state.date,ex:en.ex,si}; ui[en.ex]={w:kg(s.w),r:String(s.r)}; renderLog(); break; }
+      state.editSet={date:state.date,ex:en.ex,si}; state.setKind=setType(s); ui[en.ex]={w:kg(s.w),r:String(s.r)}; renderLog(); break; }
+    case "set-kind": if(SET_TYPES.includes(b.dataset.k)){ state.setKind=b.dataset.k; renderLog(); } break;
     case "cancel-edit": stopEditing(); renderLog(); break;
     case "save-set":{
       const w=ensureWorkout(), en=w.entries[ei], v=readSet(ei), si=editIndexFor(state.editSet, state.date, en.ex, en.sets);
       if(!v||si<0) return;
-      en.sets[si]=en.sets[si].t?{w:v.w,r:v.r,t:en.sets[si].t}:{w:v.w,r:v.r}; stopEditing(); store.save(w); renderLog(); break; }
+      { const old=en.sets[si], k=kOf(state.setKind||"normal"); en.sets[si]={w:v.w,r:v.r,...(old.t?{t:old.t}:{}),...(k?{k}:{})}; }
+      stopEditing(); store.save(w); renderLog(); break; }
     case "add-set":{
       const w=ensureWorkout(), en=w.entries[ei], v=readSet(ei);
       if(!v) return;
       const wt=v.w, r=v.r;
-      en.sets.push({w:wt,r,t:Date.now()}); delete ui[en.ex]; store.save(w); renderLog(); startRestFor(en.ex);
+      const k=kOf(state.setKind||"normal");
+      en.sets.push({w:wt,r,t:Date.now(),...(k?{k}:{})}); state.setKind="normal"; delete ui[en.ex]; store.save(w); renderLog(); startRestFor(en.ex);
       const best=bestBefore(en.ex,state.date);
-      if(best>0&&e1rm(wt,r)>best&&en.sets.filter(s=>e1rm(s.w,s.r)>best).length===1) toast(t("New PR on {name}!",{name:nameOf("ex",en.ex)}));
+      if(!k&&best>0&&e1rm(wt,r)>best&&en.sets.filter(s=>isWorking(s)&&e1rm(s.w,s.r)>best).length===1) toast(t("New PR on {name}!",{name:nameOf("ex",en.ex)}));
       break; }
     case "rest-adj": adjustRestBy(+b.dataset.d); break;
     case "rest-skip": clearRest(); break;

@@ -1051,3 +1051,68 @@ test("target sheet: changing the goal in About you resets the person's own adjus
   assert.equal(await sheetNum(page, "goal"), 250, "the muscle default");
   await ctx.close();
 });
+
+// ---- set types ----
+const startPush = async page => { await page.locator('#view-log [data-act="start-day"]').first().click(); await page.waitForSelector("#open-card"); };
+const kindChip = (page, k) => page.locator(`#open-card [data-act="set-kind"][data-k="${k}"]`);
+const addSetWith = async (page, w, r, kind) => {
+  await page.locator("#w-0").fill(String(w)); await page.locator("#r-0").fill(String(r));
+  if (kind) await kindChip(page, kind).click();
+  await page.locator('#open-card [data-act="add-set"]').click(); await page.waitForTimeout(250);
+};
+const rowsOf = page => page.locator("#open-card tr.setrow");
+
+test("set types: three chips above Add set, Normal pressed by default", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  assert.deepEqual(await page.locator('#open-card [data-act="set-kind"]').allInnerTexts(), ["Normal", "Warm-up", "Drop set"]);
+  assert.equal(await kindChip(page, "normal").getAttribute("aria-pressed"), "true");
+  await ctx.close();
+});
+
+test("set types: a warm-up gets a tag and no PR badge, and the chip returns to Normal", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  await addSetWith(page, 300, 5, "warmup");
+  assert.equal(await rowsOf(page).count(), 1);
+  assert.ok((await rowsOf(page).first().innerText()).includes("Warm-up"));
+  assert.equal(await rowsOf(page).first().locator(".pr").count(), 0, "no PR on a warm-up");
+  assert.equal(await kindChip(page, "normal").getAttribute("aria-pressed"), "true");
+  await ctx.close();
+});
+
+test("set types: a drop set has a tag and no PR; a normal heavy set still gets the PR", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  await addSetWith(page, 300, 5, "drop");
+  assert.ok((await rowsOf(page).first().innerText()).includes("Drop"));
+  assert.equal(await rowsOf(page).first().locator(".pr").count(), 0);
+  await addSetWith(page, 300, 5);
+  assert.equal(await rowsOf(page).nth(1).locator(".pr").count(), 1, "the normal set is the PR");
+  assert.equal(await rowsOf(page).nth(1).locator(".settag").count(), 0);
+  await ctx.close();
+});
+
+test("set types: editing a set shows its type, saving keeps it, and it can be changed", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  await addSetWith(page, 40, 10, "warmup");
+  await rowsOf(page).first().click();
+  assert.equal(await kindChip(page, "warmup").getAttribute("aria-pressed"), "true");
+  await page.locator('#open-card [data-act="save-set"]').click(); await page.waitForTimeout(250);
+  assert.ok((await rowsOf(page).first().innerText()).includes("Warm-up"), "type kept by a plain save");
+  await rowsOf(page).first().click();
+  await kindChip(page, "normal").click();
+  await page.locator('#open-card [data-act="save-set"]').click(); await page.waitForTimeout(250);
+  assert.equal(await rowsOf(page).first().locator(".settag").count(), 0, "now a normal set");
+  await ctx.close();
+});
+
+test("set types: in Arabic the chips are translated", async () => {
+  const { page, ctx } = await open("lang=ar");
+  await startPush(page);
+  const chips = await page.locator('#open-card [data-act="set-kind"]').allInnerTexts();
+  assert.equal(chips.length, 3);
+  assert.ok(chips.every(c => /[؀-ۿ]/.test(c)), chips.join("|"));
+  await ctx.close();
+});

@@ -74,3 +74,13 @@ export function suggestNext({ last, target, step }) {
   if (Math.max(...atTop.map(s => s.r)) < target.min) return { kind: "hold", w: top, r: target.min, low: true };
   return { kind: "hold", w: top, r: Math.min(target.max, Math.min(...atTop.map(s => s.r)) + 1) };
 }
+
+// An exercise's past sessions as {date, sets} with working sets only (warm-ups and drop sets are not "last time"),
+// oldest first; workouts must already be sorted by date. `same(a, b)` says whether two exercise names are the same one.
+export function exerciseSessions(workouts, exName, same) {
+  return (workouts || []).map(w => {
+    const e = (w.entries || []).find(x => same(x.ex, exName));
+    const sets = e ? workingSets(e.sets) : [];
+    return sets.length ? { date: w.date, sets } : null;
+  }).filter(Boolean);
+}
