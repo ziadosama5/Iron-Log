@@ -1369,3 +1369,41 @@ test("bodyweight: an old pull-up session that has the body weight typed in does 
   assert.ok(!card.includes("80"), "no 80 anywhere on the card");
   await ctx.close();
 });
+
+// ---- injuries ----
+const AVOID_WRIST = "avoid=" + encodeURIComponent(JSON.stringify({ areas: ["wrist"] }));
+const openExSheet = async page => { await page.locator('#view-log [data-act="open-exsheet"]').first().click(); await page.waitForSelector("#exsheet[open]"); };
+
+test("injuries: suggestions leave out what loads an avoided area and say so; Show all brings them back", async () => {
+  const { page, ctx } = await open(AVOID_WRIST);
+  await startPush(page);
+  await openExSheet(page);
+  let sheet = await page.locator("#exsheet").innerText();
+  assert.ok(!sheet.includes("Incline Barbell Press"), "it loads the wrist");
+  assert.ok(sheet.includes("Machine Chest Press"), "it does not");
+  assert.ok(/injur/i.test(sheet), sheet.slice(0, 600));
+  await page.locator('#exsheet [data-act="gym-showall"]').click();
+  sheet = await page.locator("#exsheet").innerText();
+  assert.ok(sheet.includes("Incline Barbell Press"), "Show all shows everything");
+  await ctx.close();
+});
+
+test("injuries: the type-ahead list drops avoided library names but keeps what is already on the day", async () => {
+  const { page, ctx } = await open(AVOID_WRIST);
+  await startPush(page);
+  await openExSheet(page);
+  const opts = await page.locator("#exl-sheet option").evaluateAll(os => os.map(o => o.value));
+  assert.ok(!opts.includes("Incline Barbell Press"), opts.join(","));
+  assert.ok(opts.includes("Bench Press"), "Bench Press is on the day, so it stays");
+  await ctx.close();
+});
+
+test("injuries: with nothing avoided suggestions are exactly as before", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  await openExSheet(page);
+  const sheet = await page.locator("#exsheet").innerText();
+  assert.ok(sheet.includes("Incline Barbell Press"));
+  assert.ok(!/injur/i.test(sheet));
+  await ctx.close();
+});

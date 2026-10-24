@@ -543,7 +543,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { cleanAvoid } from "./injuries.js";
+import { cleanAvoid, avoidFilter, hiddenAvoidCount, hasAvoid } from "./injuries.js";
 import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore, bestBwSet, legacyBodyweight } from "./bodyweight.js";
 import { workingSets, liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
@@ -1262,17 +1262,24 @@ function chipRow(items,key,act,extra=""){
 }
 // My Gym: the equipment filter in use (null = show everything). The "Show all" switch lasts for the session.
 const activeGym=()=>state.showAllGym?null:state.settings.gym;
+const activeAvoid=()=>state.showAllGym?null:state.settings.avoid;   // "Show all" lifts the gym filter and the injuries filter together
 function suggestionsFor(focus, exclude){
   const ex = exclude.map(x=>x.toLowerCase());
-  return (focus||[]).map(m=>({muscle:m, items:gymFilter(LIB[m].filter(n=>!ex.includes(n.toLowerCase())),activeGym())})).filter(g=>g.items.length);
+  return (focus||[]).map(m=>({muscle:m, items:avoidFilter(gymFilter(LIB[m].filter(n=>!ex.includes(n.toLowerCase())),activeGym()),activeAvoid())})).filter(g=>g.items.length);
 }
 // The "Hiding N exercises" line under suggestion chips, with its switch. "" when the gym is unset or nothing is hidden.
 function gymNote(focus, exclude){
-  const gym=state.settings.gym; if(!Array.isArray(gym)) return "";
-  const ex=exclude.map(x=>x.toLowerCase());
-  const n=hiddenCount((focus||[]).map(m=>LIB[m].filter(x=>!ex.includes(x.toLowerCase()))),gym);
-  if(!n) return "";
-  return `<div class="row"><span class="prev grow">${esc(state.showAllGym?t("Showing exercises that need other equipment too."):tn("Hiding {n} exercise that needs other equipment.","Hiding {n} exercises that need other equipment.",n))}</span><button class="btn ghost small" data-act="gym-showall">${state.showAllGym?"Hide them again":"Show all"}</button></div>`;
+  const gym=state.settings.gym, avoid=state.settings.avoid, ex=exclude.map(x=>x.toLowerCase());
+  const lists=(focus||[]).map(m=>LIB[m].filter(x=>!ex.includes(x.toLowerCase())));
+  const nGym=Array.isArray(gym)?hiddenCount(lists,gym):0;
+  const nAvoid=hasAvoid(avoid)?hiddenAvoidCount(lists.map(l=>Array.isArray(gym)?gymFilter(l,gym):l),avoid):0;   // only what the gym would have shown
+  const n=nGym+nAvoid; if(!n) return "";
+  const text=state.showAllGym
+    ?(nGym&&nAvoid?t("Showing the hidden exercises too."):nAvoid?t("Showing exercises you avoid too."):t("Showing exercises that need other equipment too."))
+    :(nGym&&nAvoid?tn("Hiding {n} exercise (gym and injuries).","Hiding {n} exercises (gym and injuries).",n)
+      :nAvoid?tn("Hiding {n} exercise because of your injuries.","Hiding {n} exercises because of your injuries.",n)
+      :tn("Hiding {n} exercise that needs other equipment.","Hiding {n} exercises that need other equipment.",n));
+  return `<div class="row"><span class="prev grow">${esc(text)}</span><button class="btn ghost small" data-act="gym-showall">${state.showAllGym?"Hide them again":"Show all"}</button></div>`;
 }
 
 /* ---------- WORKOUT ---------- */
@@ -1449,7 +1456,7 @@ function dayPicker(w){
   </div>`;
 }
 // Suggestions while typing an exercise: limited to the muscles of the day (or the picked free-workout muscles); no focus = all.
-function exDatalist(id,focus){ return `<datalist id="${id}">${typeaheadNames({history:exerciseNames(),dayNames:state.days.flatMap(d=>d.exercises||[]),all:ALL_EX,gym:activeGym(),focus}).map(n=>`<option value="${esc(nameOf("ex",n))}">`).join("")}</datalist>`; }
+function exDatalist(id,focus){ return `<datalist id="${id}">${typeaheadNames({history:exerciseNames(),dayNames:state.days.flatMap(d=>d.exercises||[]),all:avoidFilter(ALL_EX,activeAvoid()),gym:activeGym(),focus}).map(n=>`<option value="${esc(nameOf("ex",n))}">`).join("")}</datalist>`; }
 /* cardio card (Today tab) */
 const CARDIO_LABEL={treadmill:"Treadmill",elliptical:"Elliptical",bike:"Bike",other:"Other"};
 const INT_LABEL={easy:"Easy",moderate:"Moderate",hard:"Hard"};
@@ -2022,7 +2029,7 @@ function insights(){
     if(wk.length<2) add("Training","warn",tn("{n} workout in the last 7 days","{n} workouts in the last 7 days",wk.length),t("Training each muscle about twice a week gives the best results for most people. Aim for 3–4 sessions a week."));
     else add("Training","good",tn("{n} workout in the last 7 days","{n} workouts in the last 7 days",wk.length),t("Good consistency."));
     if(lows.length) add("Training","warn",t("Under-trained muscle groups"),t("These got fewer than 6 hard sets this week: <b>{list}</b>. About 10–20 sets per muscle per week works best for growth.",{list:names(lows,"muscle")}),
-      lows.flatMap(m=>gymFilter(LIB[m],state.settings.gym).slice(0,2)).filter((n,i,a)=>a.indexOf(n)===i));
+      lows.flatMap(m=>avoidFilter(gymFilter(LIB[m],state.settings.gym),state.settings.avoid).slice(0,2)).filter((n,i,a)=>a.indexOf(n)===i));
   }
 
   // Lift progress
