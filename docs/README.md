@@ -27,6 +27,7 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 
 | 19 | Food table, meal builder and barcode scan (297 foods, My foods, recent foods, edit a saved meal, Open Food Facts lookup) | [spec](superpowers/specs/2026-10-24-food-table-design.md) | [plan](superpowers/plans/2026-10-24-food-table.md) | live, sw v41 |
 | 20 | Calorie target explainer (breakdown sheet, everyday activity level, own daily adjustment) | [spec](superpowers/specs/2026-10-24-calorie-target-explainer-design.md) | [plan](superpowers/plans/2026-10-24-calorie-target-explainer.md) | sw v43 |
+| 21 | Set types, targets and progression (warm-up / drop set, per-exercise targets, "what to try today") | [spec](superpowers/specs/2026-10-24-set-types-and-progression-design.md) | [plan](superpowers/plans/2026-10-24-set-types-and-progression.md) | sw v44 |
 
 Open points (everything still to do or decide): [open-points.md](open-points.md).
 
