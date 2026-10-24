@@ -16,7 +16,7 @@ export function cleanDeload(obj) {
   const o = obj && typeof obj === "object" && !Array.isArray(obj) ? obj : {}, out = {};
   if (isDate(o.start)) {
     out.start = o.start;
-    if (isDate(o.end) && o.end >= addDays(o.start, -1)) out.end = o.end;
+    if (isDate(o.end) && o.end >= addDays(o.start, -1) && o.end <= addDays(o.start, DELOAD_DAYS - 1)) out.end = o.end;   // at most a week long
   }
   if (isDate(o.dismissedUntil)) out.dismissedUntil = o.dismissedUntil;
   return out;
@@ -39,7 +39,9 @@ export function deloadDate(date, deload) {
 
 // Weighted exercises whose last 3 sessions did not beat what came before (needs 4 sessions). Warm-ups, drop sets, bodyweight
 // entries and deload workouts are ignored; names are merged ignoring case. The same rule Coach uses.
-export function stalledLifts(workouts) {
+// opts.isBw(name): also skip names that are bodyweight today (old sessions of them carry no bw flag);
+// opts.since (YYYY-MM-DD): only lifts done on or after that day, so lifts the person dropped long ago do not count.
+export function stalledLifts(workouts, opts = {}) {
   const by = new Map();
   [...(workouts || [])].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)).forEach(w => {
     if (w.deload === true) return;
@@ -48,24 +50,38 @@ export function stalledLifts(workouts) {
       const best = Math.max(0, ...workingSets(e.sets).map(s => e1rm(s.w, s.r)));
       if (!best) return;
       const key = String(e.ex).toLowerCase();
-      if (!by.has(key)) by.set(key, { name: e.ex, bests: [] });
-      by.get(key).bests.push(best);
+      if (!by.has(key)) by.set(key, { name: e.ex, bests: [], last: w.date });
+      by.get(key).bests.push(best); by.get(key).last = w.date;
     });
   });
   const out = [];
-  by.forEach(({ name, bests }) => {
+  by.forEach(({ name, bests, last }) => {
     if (bests.length < 4) return;
+    if (opts.isBw && opts.isBw(name)) return;
+    if (opts.since && last < opts.since) return;
     if (Math.max(...bests.slice(-3)) <= Math.max(...bests.slice(0, -3)) * 1.005) out.push(name);
   });
   return out;
 }
 
+// The cheap gate before anything is worked out: no deload running, not dismissed, not inside the cooldown after the last one.
+export function canSuggest(deload, today) {
+  const d = cleanDeload(deload);
+  if (activeDeload(d, today)) return false;
+  if (d.dismissedUntil && today <= d.dismissedUntil) return false;
+  if (d.start && today < addDays(d.start, COOLDOWN_DAYS)) return false;
+  return true;
+}
+
+// Whether a workout saved on `date` carries the deload flag: yes inside the current window, and an existing flag is never
+// taken away (an old deload week stays flagged after a later one started, and ending the week early keeps today's session).
+export function deloadFlag(date, deload, current) {
+  return current === true || deloadDate(date, deload);
+}
+
 // null, or why an easy week is worth suggesting: a long streak of finished weeks wins over stalled lifts.
 export function suggestDeload({ deload, today, streakWeeks, stalled }) {
-  const d = cleanDeload(deload);
-  if (activeDeload(d, today)) return null;
-  if (d.dismissedUntil && today <= d.dismissedUntil) return null;
-  if (d.start && today < addDays(d.start, COOLDOWN_DAYS)) return null;
+  if (!canSuggest(deload, today)) return null;
   if (streakWeeks >= STREAK_WEEKS) return { reason: "streak", weeks: streakWeeks };
   if (Array.isArray(stalled) && stalled.length >= STALLED_LIFTS) return { reason: "stalled", lifts: stalled.length };
   return null;

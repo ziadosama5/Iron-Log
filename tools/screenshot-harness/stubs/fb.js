@@ -22,7 +22,7 @@ for (let i = 0; i < 10; i++) { const date = day(i * 2 + 1); add("w-" + date, { d
       if (!items.some(x => x.id === "w-" + date)) add("w-" + date, { date, dayId: "d2", dayName: "Pull", updated: T, entries: [{ ex: "Barbell Row", sets: [S(40 + (400 - ago) * 0.1, 8, 20)], done: true }] });
     }
   }
-  if (q.get("stalled")) for (let i = 0; i < 5; i++) { const date = day(60 + i * 3); if (!items.some(x => x.id === "w-" + date)) add("w-" + date, { date, dayId: "d1", dayName: "Push", updated: T, entries: [{ ex: "Squat", sets: [S(100, 5, 20)], done: true }] }); } }
+  if (q.get("stalled")) for (let i = 0; i < 5; i++) { const date = day(2 + i * 2); if (!items.some(x => x.id === "w-" + date)) add("w-" + date, { date, dayId: "d1", dayName: "Push", updated: T, entries: [{ ex: "Squat", sets: [S(100, 5, 20)], done: true }] }); } }
 // ?bw=1: a bodyweight session two days ago (Push-up and Pull-up at the top of their ranges, Plank at 60 s)
 if (["1", "2"].includes(new URLSearchParams(location.search).get("bw"))) add("w-" + day(2), { date: day(2), dayId: "d2", dayName: "Pull", updated: T, entries: [
   { ex: "Push-up", bw: true, sets: [S(0, 12, 40), S(0, 12, 35), S(0, 12, 30)] }, { ex: "Pull-up", bw: true, sets: [S(0, 6, 25), S(0, 6, 20), S(0, 6, 15)] }, { ex: "Plank", bw: true, sets: [S(0, 60, 10), S(0, 60, 8), S(0, 60, 6)] }] });

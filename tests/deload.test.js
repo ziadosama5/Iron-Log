@@ -93,13 +93,49 @@ test("deloadAdvice: lighter weight for weighted lifts, sets only for bodyweight 
 test("Coach uses the shared stall rule and Last time skips deload sessions (source guards)", async () => {
   const { readFileSync } = await import("node:fs");
   const src = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
-  assert.ok(src.includes("stalledLifts(state.workouts)"), "Coach calls stalledLifts");
+  assert.ok(src.includes("stalledLifts(state.workouts,"), "Coach calls stalledLifts");
   assert.ok(/function lastBefore\([^)]*\)\{[^}]*!x\.deload/.test(src), "lastBefore skips deload sessions");
 });
 
 test("a workout saved inside a deload week is flagged by store.save (source guard)", async () => {
   const { readFileSync } = await import("node:fs");
   const src = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
-  assert.ok(src.includes("if(deloadDate(w.date,state.settings.deload)) w.deload=true; else delete w.deload;"));
+  assert.ok(src.includes("if(deloadFlag(w.date,state.settings.deload,w.deload)) w.deload=true; else delete w.deload;"));
   assert.ok(src.includes("if(w.deload) body.deload=true;"));
+});
+
+// ---- review fixes ----
+import { deloadFlag, canSuggest } from "../public/deload.js";
+
+test("deloadFlag adds the flag inside the window and never removes one that exists", () => {
+  const d = { start: "2026-10-20" };
+  assert.equal(deloadFlag("2026-10-22", d, undefined), true, "saved inside the window");
+  assert.equal(deloadFlag("2026-12-05", d, undefined), false, "outside, never flagged: no change");
+  assert.equal(deloadFlag("2026-10-23", { start: "2026-12-01" }, true), true, "an old deload session keeps its flag after a later deload started");
+  assert.equal(deloadFlag("2026-10-22", { start: "2026-10-20", end: "2026-10-21" }, true), true, "ending the week early keeps today's flagged session");
+  assert.equal(deloadFlag("2026-10-22", undefined, undefined), false);
+  assert.equal(deloadFlag("2026-10-22", d, false), true, "a stored false is not a flag");
+});
+
+test("stalledLifts can skip bodyweight names and lifts not done recently", () => {
+  const ws = ["2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04"].map(date => ({ date, entries: [{ ex: "Pull-up", sets: [S(80, 8)] }, { ex: "Squat", sets: [S(100, 5)] }] }));
+  assert.deepEqual(stalledLifts(ws), ["Pull-up", "Squat"]);
+  assert.deepEqual(stalledLifts(ws, { isBw: n => n === "Pull-up" }), ["Squat"], "old unflagged bodyweight history is not a weighted stall");
+  assert.deepEqual(stalledLifts(ws, { since: "2026-09-04" }), ["Pull-up", "Squat"], "done on/after since");
+  assert.deepEqual(stalledLifts(ws, { since: "2026-09-05" }), [], "abandoned lifts do not count");
+});
+
+test("cleanDeload drops an end that is more than a week after the start", () => {
+  assert.deepEqual(cleanDeload({ start: "2026-10-20", end: "2026-10-26" }), { start: "2026-10-20", end: "2026-10-26" });
+  assert.deepEqual(cleanDeload({ start: "2026-10-20", end: "2026-10-27" }), { start: "2026-10-20" });
+  assert.deepEqual(cleanDeload({ start: "2026-10-20", end: "2027-01-01" }), { start: "2026-10-20" });
+});
+
+test("canSuggest is the cheap gate: not active, not dismissed, not in the cooldown", () => {
+  assert.equal(canSuggest(undefined, "2026-10-25"), true);
+  assert.equal(canSuggest({ start: "2026-10-22" }, "2026-10-25"), false);
+  assert.equal(canSuggest({ dismissedUntil: "2026-10-25" }, "2026-10-25"), false);
+  assert.equal(canSuggest({ dismissedUntil: "2026-10-24" }, "2026-10-25"), true);
+  assert.equal(canSuggest({ start: "2026-09-14" }, "2026-10-25"), false);
+  assert.equal(canSuggest({ start: "2026-09-13" }, "2026-10-25"), true);
 });

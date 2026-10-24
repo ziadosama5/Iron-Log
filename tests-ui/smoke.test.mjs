@@ -1715,3 +1715,15 @@ test("deload: in Arabic the deload line is translated", async () => {
   assert.ok(/[؀-ۿ]/.test(await advice(page).innerText()));
   await ctx.close();
 });
+
+test("deload: starting or ending a deload refreshes the pre-fill of an exercise that is already open", async () => {
+  const { page, ctx } = await open("streak=8");
+  await startPush(page);
+  const w = page.locator('#open-card input[data-f="w"]');
+  assert.equal(await w.inputValue(), "62.5", "normal pre-fill");
+  await page.locator('#view-log [data-act="deload-start"]').click();
+  assert.equal(await w.inputValue(), "55", "the lighter plan, without reopening the exercise");
+  await page.locator('#view-log [data-act="deload-end"]').click();
+  assert.equal(await w.inputValue(), "62.5", "back to normal");
+  await ctx.close();
+});
