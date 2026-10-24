@@ -549,3 +549,79 @@ test("food picker: touch targets are at least 44px and text at least 12px", asyn
   assert.deepEqual(tiny, []);
   await ctx.close();
 });
+
+test("food picker: a food you logged lately shows as a Recent chip and adds in one tap", async () => {
+  const { page, ctx } = await open();
+  await openMealSheet(page);
+  assert.equal(await page.locator('#food-results [data-act="recent-add"]').count(), 0, "nothing logged with foods yet");
+  await addFood(page, "taameya", "taameya");
+  await page.locator("#meal-form button[type=submit]").click();
+  await page.waitForTimeout(300);
+  await openMealSheet(page);
+  const chip = page.locator('#food-results [data-act="recent-add"]');
+  assert.equal(await chip.count(), 1);
+  assert.ok((await chip.first().innerText()).includes("Taameya"));
+  await chip.first().click();
+  assert.equal(await page.locator("#meal-tray .trayrow").count(), 1);
+  await ctx.close();
+});
+
+test("food picker: typing grams replaces the serving and shows in the tray", async () => {
+  const { page, ctx } = await open();
+  await openMealSheet(page);
+  await page.locator("#food-q").fill("rice");
+  await page.locator('#food-results [data-act="food-open"][data-ref="rice-white"]').click();
+  const before = await page.locator("#food-preview").innerText();
+  await page.locator("#food-grams").fill("150");
+  const after = await page.locator("#food-preview").innerText();
+  assert.notEqual(before, after);
+  assert.equal(await page.locator('#food-results [data-act="food-serving"][aria-pressed="true"]').count(), 0, "no serving is selected while grams are typed");
+  await page.locator("#food-add").click();
+  assert.ok((await page.locator("#meal-tray .trayrow").innerText()).includes("150 g"));
+  await ctx.close();
+});
+
+const myFoodForm = async (page, v) => {
+  await page.locator('[data-act="myfood-new"]').first().click();
+  for (const [id, val] of Object.entries(v)) await page.locator("#mf-" + id).fill(val);
+  await page.locator('[data-act="myfood-save"]').click();
+};
+
+test("My foods: create, find with a Mine tag, add, edit, delete (saved meals keep their foods)", async () => {
+  const { page, ctx } = await open();
+  await openMealSheet(page);
+  await myFoodForm(page, { name: "Protein bar", kcal: "abc", protein: "20", serving: "1 bar" });
+  assert.ok((await page.locator("#toast").innerText()).includes("Check the numbers"), "bad kcal is refused");
+  await page.locator("#mf-kcal").fill("210");
+  await page.locator('[data-act="myfood-save"]').click();
+  await page.locator("#food-q").fill("protein bar");
+  const row = page.locator('#food-results [data-act="food-open"][data-src="mine"]');
+  assert.equal(await row.count(), 1);
+  assert.ok((await row.first().innerText()).includes("Mine"));
+  await row.first().click();
+  await page.locator("#food-add").click();
+  assert.equal(await trayKcal(page), 210);
+  await page.locator("#meal-form button[type=submit]").click();
+  await page.waitForTimeout(300);
+  // edit: the number changes
+  await openMealSheet(page);
+  await page.locator("#food-q").fill("protein bar");
+  await page.locator('#food-results [data-act="food-open"][data-src="mine"]').first().click();
+  await page.locator('[data-act="myfood-edit"]').click();
+  assert.equal(await page.locator("#mf-name").inputValue(), "Protein bar");
+  assert.equal(await page.locator("#mf-kcal").inputValue(), "210");
+  await page.locator("#mf-kcal").fill("230");
+  await page.locator('[data-act="myfood-save"]').click();
+  await page.locator('#food-results [data-act="food-open"][data-src="mine"]').first().click();
+  await page.locator("#food-add").click();
+  assert.equal(await trayKcal(page), 230);
+  // delete: gone from search, the meal already saved still lists it
+  await page.locator('[data-act="tray-remove"]').first().click();
+  await page.locator("#food-q").fill("protein bar");
+  await page.locator('#food-results [data-act="food-open"][data-src="mine"]').first().click();
+  await page.locator('[data-act="myfood-delete"]').click();
+  assert.equal(await page.locator('#food-results [data-src="mine"]').count(), 0);
+  await page.locator('[data-act="sheet-close"]').first().click();
+  assert.ok((await page.locator("#view-log .cardio-list").innerText()).includes("Protein bar"));
+  await ctx.close();
+});

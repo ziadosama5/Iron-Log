@@ -410,6 +410,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .foodrow{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;text-align:start;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:inherit;font:inherit;cursor:pointer}
 .foodcard{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border:1px solid var(--accent);border-radius:12px;background:var(--surface)}
 .foodcard .foodrow{border:0;padding:0}
+.minetag{font-size:12px;font-weight:600;color:var(--accent);border:1px solid var(--accent);border-radius:8px;padding:0 6px;margin-inline-start:6px}
 .foodamt{gap:8px;align-items:flex-end}
 .foodamt .amt{min-width:36px;text-align:center}
 .gbar{display:flex;flex-direction:column;gap:4px}
@@ -547,7 +548,7 @@ import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtCl
 import { cleanBackupItems } from "./backup.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
-import { FOODS, searchFoods, portionTotals, mealTotals, defaultMealName, asEntry } from "./food-table.js";
+import { FOODS, searchFoods, portionTotals, mealTotals, defaultMealName, asEntry, makeMyFood, recentFoods } from "./food-table.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth, cacheKey } from "./overview.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
@@ -1977,10 +1978,11 @@ function energyView(){
 // Foods come from food-table.js (bundled) and My foods (state.myFoods). A meal is built in state.mealDraft.items (the tray)
 // and saved with its totals; every item is a snapshot, so later edits to the table never change old days.
 const TRAY_MAX=20, FOOD_SHOWN=6;
-function freshMealDraft(){ return {kcal:"",protein:"",name:"",items:[],query:"",open:null,serving:"",amount:1,grams:"",showAll:false,manual:false}; }
+function freshMealDraft(){ return {kcal:"",protein:"",name:"",items:[],query:"",open:null,serving:"",amount:1,grams:"",showAll:false,manual:false,myForm:null}; }
 const myEntries=()=>state.myFoods.map(asEntry);
 const foodEntry=(src,ref)=>src==="table"?FOODS.find(f=>f.id===ref):myEntries().find(e=>e.id===ref);
 const srcOf=e=>e.group==="mine"?"mine":"table";
+const mineTag=e=>e.group==="mine"?` <span class="minetag">${t("Mine")}</span>`:"";
 const foodLabel=e=>e.group==="mine"||!isRtl()?e.en:e.ar;
 const servingLabel=(e,s)=>e.group==="mine"||!isRtl()?s.en:s.ar;
 function itemLabel(it){ const e=it.src==="table"?FOODS.find(f=>f.id===it.ref):null; return e?foodLabel(e):it.name; }
@@ -2009,7 +2011,7 @@ function foodPreviewText(tot){ return tot?totalsText(tot):t("Check the amount");
 function foodCardHtml(e){
   const dr=state.mealDraft, tot=portionTotals(e,draftSel(dr)), usingGrams=dr.grams.trim()!=="";
   return `<div class="foodcard">
-    <button type="button" class="foodrow" data-act="food-open" data-src="${srcOf(e)}" data-ref="${esc(e.id)}" aria-expanded="true"><b class="grow">${esc(foodLabel(e))}</b></button>
+    <button type="button" class="foodrow" data-act="food-open" data-src="${srcOf(e)}" data-ref="${esc(e.id)}" aria-expanded="true"><b class="grow">${esc(foodLabel(e))}</b>${mineTag(e)}</button>
     <div class="chips">${e.servings.map(s=>`<button type="button" class="chip" data-act="food-serving" data-id="${esc(s.id)}" aria-pressed="${!usingGrams&&dr.serving===s.id}">${esc(servingLabel(e,s))}</button>`).join("")}</div>
     <div class="row foodamt">
       <button type="button" class="btn small" data-act="food-amount" data-d="-0.5" aria-label="${esc(t("Less"))}">−</button>
@@ -2018,19 +2020,35 @@ function foodCardHtml(e){
       <label class="grow"><span class="label">Grams</span><input id="food-grams" inputmode="decimal" value="${esc(dr.grams)}"></label>
     </div>
     <p class="prev" id="food-preview" style="margin:0">${foodPreviewText(tot)}</p>
-    <button type="button" class="btn primary" id="food-add" data-act="food-add"${tot?"":" disabled"}>Add</button></div>`;
+    <button type="button" class="btn primary" id="food-add" data-act="food-add"${tot?"":" disabled"}>Add</button>${e.group==="mine"?`<div class="row"><button type="button" class="btn small" data-act="myfood-edit" data-ref="${esc(e.id)}">Edit</button><button type="button" class="btn small danger" data-act="myfood-delete" data-ref="${esc(e.id)}">Delete</button></div>`:""}</div>`;
 }
 function foodResultsHtml(){
-  const dr=state.mealDraft; if(!dr.query.trim()) return "";
+  const dr=state.mealDraft;
+  if(!dr.query.trim()){
+    const rec=recentFoods(Object.values(state.food),today(),8); if(!rec.length) return "";
+    return `<h3 style="margin:0">${t("Recent")}</h3><div class="chips">${rec.map(it=>`<button type="button" class="chip" data-act="recent-add" data-key="${esc(it.src+":"+it.ref)}">${esc(itemLabel(it))}</button>`).join("")}</div>`;
+  }
   const all=searchFoods(dr.query,{extra:myEntries()});
-  if(!all.length) return `<p class="prev" style="margin:0">${t("No foods found. Try another spelling, or type kcal yourself.")}</p>`;
+  if(!all.length) return `<p class="prev" style="margin:0">${t("No foods found. Try another spelling, or type kcal yourself.")}</p><button type="button" class="btn small" data-act="myfood-new">+ My food</button>`;
   const shown=dr.showAll?all:all.slice(0,FOOD_SHOWN), hidden=all.length-shown.length;
   return shown.map(e=>{
     const src=srcOf(e);
     if(dr.open&&dr.open.src===src&&dr.open.ref===e.id) return foodCardHtml(e);
     const s=e.servings.find(x=>x.id===e.def)||e.servings[0], tot=portionTotals(e,{serving:s.id,amount:1});
-    return `<button type="button" class="foodrow" data-act="food-open" data-src="${src}" data-ref="${esc(e.id)}" aria-expanded="false"><span class="grow"><b>${esc(foodLabel(e))}</b><span class="prev" style="display:block">${esc(servingLabel(e,s))}${tot?` · ${kcalNum(tot.kcal)} kcal`:""}</span></span></button>`;
+    return `<button type="button" class="foodrow" data-act="food-open" data-src="${src}" data-ref="${esc(e.id)}" aria-expanded="false"><span class="grow"><b>${esc(foodLabel(e))}</b>${mineTag(e)}<span class="prev" style="display:block">${esc(servingLabel(e,s))}${tot?` · ${kcalNum(tot.kcal)} kcal`:""}</span></span></button>`;
   }).join("")+(hidden>0?`<button type="button" class="btn small" data-act="food-more">${t("Show more ({n})",{n:hidden})}</button>`:"");
+}
+function myFormHtml(){
+  const f=state.mealDraft.myForm, v=k=>esc(f[k]);
+  return `<div class="stack" style="gap:8px"><h3 style="margin:0">${f.id?t("Edit my food"):t("New food")}</h3>
+    <label><span class="label">Name</span><input id="mf-name" maxlength="60" value="${v("name")}"></label>
+    <div class="meal-fields">
+      <label><span class="label">kcal</span><input id="mf-kcal" inputmode="decimal" value="${v("kcal")}"></label>
+      <label><span class="label">Protein g</span><input id="mf-protein" inputmode="decimal" placeholder="optional" value="${v("protein")}"></label>
+      <label><span class="label">Serving</span><input id="mf-serving" maxlength="60" placeholder="1 serving" value="${v("serving")}"></label>
+      <label><span class="label">Grams</span><input id="mf-grams" inputmode="decimal" placeholder="optional" value="${v("grams")}"></label></div>
+    <p class="prev" style="margin:0">kcal and protein are for one serving. Add grams to log by weight too.</p>
+    <div class="row"><button type="button" class="btn primary grow" data-act="myfood-save">Save food</button><button type="button" class="btn" data-act="myfood-cancel">Cancel</button></div></div>`;
 }
 function mealSheetHtml(){
   const {kg,e}=energyView(), dr=state.mealDraft, manualOpen=!dr.items.length&&(dr.manual||dr.kcal!==""||dr.protein!=="");
@@ -2038,12 +2056,13 @@ function mealSheetHtml(){
   return `<div class="sheet-head"><h2>Add a meal</h2><button class="btn ghost small" data-act="sheet-close" aria-label="Close">✕</button></div>
     ${e.burned!=null?`<p class="prev" style="margin:0">${t("Everyday {a} · Lifting {b} · Cardio {c}",{a:kcalTxt(e.baseline),b:kcalTxt(e.lift),c:kcalTxt(e.cardio)})}</p>`:""}
     ${e.protein!=null?`<p style="margin:0">${kg?t("Protein <b>{a} g</b> of {b}–{c} g",{a:Math.round(e.protein),b:Math.round(kg*1.6),c:Math.round(kg*2.2)}):t("Protein <b>{a} g</b>",{a:Math.round(e.protein)})}</p>`:""}
-    <div class="stack" style="gap:8px">
+    ${dr.myForm?myFormHtml():""}
+    <div class="stack" style="gap:8px${dr.myForm?";display:none":""}">
       <div class="chips">${["Breakfast","Lunch","Dinner","Snack"].map(n=>`<button type="button" class="chip" data-act="meal-name" data-name="${esc(n)}">${esc(nameOf("meal",n))}</button>`).join("")}</div>
       ${trayHtml()}
       <input id="food-q" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="${esc(t("Search foods"))}" placeholder="${esc(t("Search foods"))}" value="${esc(dr.query)}">
       <div id="food-results" class="stack" style="gap:6px">${foodResultsHtml()}</div>
-      ${!dr.items.length&&!manualOpen?`<button type="button" class="btn small" data-act="manual-toggle">Type kcal yourself</button>`:""}
+      <div class="row">${!dr.items.length&&!manualOpen?`<button type="button" class="btn small" data-act="manual-toggle">Type kcal yourself</button>`:""}<button type="button" class="btn small" data-act="myfood-new">+ My food</button></div>
       <form id="meal-form" class="stack" autocomplete="off" style="gap:8px">
         ${manualOpen?`<div class="meal-fields">
           <label><span class="label">kcal</span><input id="meal-kcal" inputmode="numeric" value="${esc(dr.kcal)}"></label>
@@ -2090,6 +2109,28 @@ function foodClick(act,d){
     case "food-more": dr.showAll=true; redrawFoodResults(); return;
     case "tray-step": trayStep(Number(d.i),Number(d.d)); redrawMealSheet(); return;
     case "tray-remove": dr.items.splice(Number(d.i),1); redrawMealSheet(); return;
+    case "recent-add":{
+      const it=recentFoods(Object.values(state.food),today(),8).find(x=>x.src+":"+x.ref===d.key); if(!it) return;
+      if(dr.items.length>=TRAY_MAX){ toast(t("A meal can have up to {n} foods.",{n:TRAY_MAX})); return; }
+      dr.items.push({...it}); redrawMealSheet(); return; }
+    case "myfood-new": dr.myForm={id:null,name:dr.query.trim().slice(0,60),kcal:"",protein:"",serving:"",grams:"",barcode:null}; redrawMealSheet(); { const n=$("#mf-name"); if(n) n.focus(); } return;
+    case "myfood-cancel": dr.myForm=null; redrawMealSheet(); return;
+    case "myfood-edit":{
+      const f=state.myFoods.find(x=>x.id===d.ref); if(!f) return;
+      const s=f.servings[0], r1=n=>String(Math.round(n*10)/10);
+      dr.myForm={id:f.id,name:f.name,serving:s.name,grams:s.grams?String(s.grams):"",barcode:f.barcode||null,
+        kcal:s.grams&&f.per100?r1(f.per100.kcal*s.grams/100):r1(s.kcal),
+        protein:s.grams&&f.per100?(f.per100.protein==null?"":r1(f.per100.protein*s.grams/100)):(s.protein==null?"":r1(s.protein))};
+      redrawMealSheet(); return; }
+    case "myfood-save":{
+      const f=dr.myForm; if(!f) return;
+      const num=x=>{ const v=String(x).trim().replace(",","."); return v===""?NaN:Number(v); }, opt=x=>String(x).trim()===""?null:num(x);
+      const food=makeMyFood({id:f.id||undefined,name:f.name,kcal:num(f.kcal),protein:opt(f.protein),servingName:f.serving,grams:opt(f.grams),barcode:f.barcode});
+      if(!food){ toast(t("Check the numbers and try again")); return; }
+      if(!f.id&&state.myFoods.length>=200){ toast(t("You can save up to {n} foods.",{n:200})); return; }
+      store.saveFoods(f.id?state.myFoods.map(x=>x.id===f.id?food:x):[...state.myFoods,food]);
+      dr.myForm=null; dr.query=food.name; dr.open=null; redrawMealSheet(); return; }
+    case "myfood-delete": store.saveFoods(state.myFoods.filter(x=>x.id!==d.ref)); dr.open=null; toast(t("Food deleted")); redrawFoodResults(); return;
     case "manual-toggle": dr.manual=true; redrawMealSheet(); { const k=$("#meal-kcal"); if(k) k.focus(); } return;
   }
 }
@@ -2097,6 +2138,7 @@ document.addEventListener("input",e=>{
   const el=e.target, dr=state.mealDraft;
   if(el.id==="food-q"){ dr.query=el.value; dr.open=null; dr.showAll=false; redrawFoodResults(); }
   else if(el.id==="food-grams"){ dr.grams=el.value; updateFoodPreview(); }
+  else if(el.id&&el.id.startsWith("mf-")&&dr.myForm){ dr.myForm[el.id.slice(3)]=el.value; }
 });
 function todayCard(){
   const {p,e,missing,meals}=energyView();
@@ -2724,7 +2766,7 @@ document.addEventListener("click",e=>{
     case "lang-set": applyLang(b.dataset.v); syncMe(); drawSwatches(); break;
     case "accent-set": applyAccent(b.dataset.v); drawSwatches(); break;
     case "set-goal": state.editProfile=true; go("body"); setTimeout(()=>document.getElementById("pf-goalw")?.focus(),0); break;
-    case "food-open": case "food-serving": case "food-amount": case "food-add": case "food-more": case "tray-step": case "tray-remove": case "manual-toggle": foodClick(b.dataset.act,b.dataset); break;
+    case "food-open": case "food-serving": case "food-amount": case "food-add": case "food-more": case "tray-step": case "tray-remove": case "manual-toggle": case "recent-add": case "myfood-new": case "myfood-cancel": case "myfood-edit": case "myfood-save": case "myfood-delete": foodClick(b.dataset.act,b.dataset); break;
     case "meal-name": $("#meal-name").value=state.mealDraft.name=nameOf("meal",b.dataset.name); break;
     case "rm-meal":{ const d=state.date; store.saveFood({date:d, meals:((state.food[d]&&state.food[d].meals)||[]).filter(m=>m.id!==b.dataset.id)}); renderLog(); break; }
     case "hero-go":{ const cl=closestFamily(allFamilies(badges(goalsInput()))); if(cl) openFamily(cl.id); else go("goals"); break; }
