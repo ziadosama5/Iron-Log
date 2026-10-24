@@ -3,7 +3,7 @@
 import { test, before, after, beforeEach } from "node:test";
 import { readFileSync } from "node:fs";
 import { initializeTestEnvironment, assertSucceeds, assertFails } from "@firebase/rules-unit-testing";
-import { doc, getDoc, setDoc, updateDoc, deleteDoc, writeBatch, collection, getDocs, query, where } from "firebase/firestore";
+import { arrayUnion, doc, getDoc, setDoc, updateDoc, deleteDoc, writeBatch, collection, getDocs, query, where } from "firebase/firestore";
 
 let env;
 before(async () => {
@@ -475,6 +475,7 @@ test("challenges: an invited member can accept once, changing only the joined li
   await assertFails(updateDoc(chRef("u2"), { joined: ["u1", "u2"], members: ["u1", "u2"], updated: 2 }), "removing a member while accepting");
   await assertSucceeds(updateDoc(chRef("u2"), { joined: ["u1", "u2"], updated: 2 }));
   await assertFails(updateDoc(chRef("u2"), { joined: ["u1", "u2", "u2"], updated: 3 }), "accepting twice");
+  await assertSucceeds(updateDoc(chRef("u3"), { joined: arrayUnion("u3"), updated: 3 }), "arrayUnion accept (what the app sends)");
   await assertFails(updateDoc(chRef("u1"), { joined: ["u1", "u1"], updated: 3 }), "the owner accepting again");
 });
 

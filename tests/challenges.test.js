@@ -115,7 +115,8 @@ test("planAccept adds me to joined once; planLeave deletes my progress first and
   const cur = { owner: "u1", members: ["u1", "u2", "u3"], joined: ["u1"], names: { u1: "ziad", u2: "zed", u3: "omar" } };
   const a = planAccept({ cid: "c1", me: "u2", current: cur, now: 5 });
   assert.deepEqual(paths(a), ["update challenges/c1"]);
-  assert.deepEqual(a.ops[0].data, { joined: ["u1", "u2"], updated: 5 });
+  assert.deepEqual(a.ops[0].data, { updated: 5 });
+  assert.deepEqual(a.ops[0].union, { joined: ["u2"] }, "arrayUnion, so two people accepting at once both land");
   assert.throws(() => planAccept({ cid: "c1", me: "u2", current: { ...cur, joined: ["u1", "u2"] }, now: 5 }), "already joined");
   assert.throws(() => planAccept({ cid: "c1", me: "u9", current: cur, now: 5 }), "not invited");
   const l = planLeave({ cid: "c1", me: "u2", current: { ...cur, joined: ["u1", "u2"] }, now: 6 });

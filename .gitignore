@@ -12,3 +12,5 @@ android/local.properties
 android/.idea/
 android/*.idsig
 firebase-debug.log
+
+*-debug.log

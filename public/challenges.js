@@ -83,7 +83,7 @@ export function planCreate({ cid, owner, ownerName, invitees, weeks, startChoice
 
 export function planAccept({ cid, me, current, now }) {
   if (!current.members.includes(me) || current.joined.includes(me)) throw new Error("cannot accept");
-  return { ops: [{ op: "update", path: chPath(cid), data: { joined: [...current.joined, me], updated: now } }] };
+  return { ops: [{ op: "update", path: chPath(cid), data: { updated: now }, union: { joined: [me] } }] };
 }
 
 // Leaving or declining: my score goes first, then I come off both lists and my username comes off the names. The owner deletes the challenge instead.

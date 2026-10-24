@@ -80,3 +80,7 @@ Fixed: stale history entry after Plan my training from the Edit plan menu; chart
 - `public/index.html` is ~2,350 lines in one file; fine today, but splitting the screens into modules would make future work safer.
 - The rules emulator tests need Java 21 and are not run by `npm test` or `firebase deploy`: run them by hand before deploying rules.
 - Accessibility basics beyond the checks done so far (focus management between steps, screen-reader labels for charts and bars).
+
+
+# latest session resume 
+- 'claude --resume 8ef26a81-34e5-4f64-858f-e20768fc4575'

@@ -532,7 +532,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut, reauthenticateWithPopup, deleteUser } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, query, where, getDocs, terminate, clearIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, writeBatch, arrayUnion, query, where, getDocs, terminate, clearIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
@@ -649,8 +649,8 @@ const store = {
     if(navigator.onLine===false) return {ok:false,reason:"offline"};
     try{
       const b=writeBatch(fs);
-      for(const o of plan.ops){ const ref=doc(fs,...o.path); if(o.op==="set") b.set(ref,o.data); else if(o.op==="update") b.update(ref,o.data); else b.delete(ref); }
-      await b.commit(); return {ok:true};
+      for(const o of plan.ops){ const ref=doc(fs,...o.path); if(o.op==="set") b.set(ref,o.data); else if(o.op==="update"){ const d={...o.data}; for(const k in o.union||{}) d[k]=arrayUnion(...o.union[k]); b.update(ref,d); } else b.delete(ref); }
+      await withTimeout(b.commit(),20000); return {ok:true};
     }catch(e){ console.error(e); return {ok:false,reason:e&&e.code==="permission-denied"?"denied":"error"}; }
   },
   // A friend's shared profile (null when they are not sharing with me). Cached in state.friends.data.
@@ -2765,7 +2765,7 @@ let lastToday=today();
 function checkNewDay(){
   const t=today(); if(t===lastToday) return;
   state.date=rolloverDate(state.date,lastToday,t); state.bdate=rolloverDate(state.bdate,lastToday,t); state.cdate=rolloverDate(state.cdate,lastToday,t);
-  lastToday=t; stopEditing(); renderSoon(); publishProgress(false);
+  lastToday=t; stopEditing(); renderSoon(); publishProgress(false); maybePublish();
 }
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") checkNewDay(); });
 setInterval(checkNewDay,60000);
