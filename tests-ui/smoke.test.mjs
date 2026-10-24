@@ -1298,3 +1298,19 @@ test("bodyweight: in Arabic the chip and labels are translated and the steppers 
   assert.ok(await xs('#open-card [data-act="step"][data-f="w"][data-d="-2.5"]') < await xs('#open-card [data-act="step"][data-f="w"][data-d="2.5"]'));
   await ctx.close();
 });
+
+test("bodyweight: Lifts shows Best set and Sessions for a bodyweight lift, never an e1RM", async () => {
+  const { page, ctx, errors } = await open("bw=1");
+  await tab(page, "progress");
+  await page.locator('#pills [data-view="progress"]').click();
+  await page.waitForSelector("#prog-ex");
+  await page.locator("#prog-ex").selectOption("Push-up");
+  const txt = await page.locator("#view-progress").innerText();
+  assert.ok(/BEST SET/i.test(txt), txt.slice(0, 300));
+  assert.ok(txt.includes("BW × 12"), txt.slice(0, 400));
+  assert.ok(!/Best e1RM/i.test(txt), "no one-rep max for a bodyweight lift");
+  await page.locator("#prog-ex").selectOption("Bench Press");
+  assert.ok(/Best e1RM/i.test(await page.locator("#view-progress").innerText()), "weighted lifts are unchanged");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});

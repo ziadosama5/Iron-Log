@@ -171,3 +171,10 @@ test("suggestNext for holds (seconds): never weight, hold advice only", () => {
 test("suggestNext: a weighted lift at 0 kg still says nothing", () => {
   assert.equal(suggestNext({ last: [S(0, 15), S(0, 15), S(0, 15)], target: { sets: 3, min: 5, max: 8 }, step: 2.5 }), null);
 });
+
+test("exerciseSessions marks bodyweight sessions (bw) and leaves weighted ones as they were", async () => {
+  const { exerciseSessions } = await import("../public/progression.js");
+  const same = (a, b) => a === b;
+  const ws = [{ date: "2026-10-01", entries: [{ ex: "Pull-up", sets: [S(60, 5)] }] }, { date: "2026-10-03", entries: [{ ex: "Pull-up", bw: true, sets: [S(0, 8), S(0, 6, "w")] }] }];
+  assert.deepEqual(exerciseSessions(ws, "Pull-up", same), [{ date: "2026-10-01", sets: [S(60, 5)] }, { date: "2026-10-03", sets: [S(0, 8)], bw: true }]);
+});

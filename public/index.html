@@ -543,7 +543,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore } from "./bodyweight.js";
+import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore, bestBwSet } from "./bodyweight.js";
 import { workingSets, liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX, goalAdjustment, explainTarget, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
@@ -1730,7 +1730,8 @@ function renderProgress(){
   const names=liftNames(sorted());   // only lifts with a working set: the charts have nothing to draw for warm-ups alone
   if(!names.length){ $("#view-progress").innerHTML=`<h2>Progress</h2><div class="empty"><strong>Nothing to chart yet</strong>Log a few sessions of any lift and its estimated 1-rep max and top weight will be charted here.</div>`; return; }
   if(!state.progressEx||!names.includes(state.progressEx)){ state.progressEx=names.map(n=>[n,sessionsFor(n).length]).sort((a,b)=>b[1]-a[1])[0][0]; }
-  const ex=state.progressEx, sess=sessionsFor(ex);
+  const ex=state.progressEx, all=sessionsFor(ex), bwView=!!(all.length&&all[all.length-1].bw), sess=all.filter(s=>!!s.bw===bwView);
+  if(bwView){ renderBwProgress(names,ex,sess); return; }
   const pts=sess.map(s=>{ let best=0,top=0; s.sets.forEach(x=>{best=Math.max(best,e1rm(x.w,x.r)); top=Math.max(top,x.w);}); return {date:s.date,e1:best,top,sets:s.sets}; });
   const allBest=Math.max(...pts.map(p=>p.e1)), allTop=Math.max(...pts.map(p=>p.top));
   const first=pts[0], lastP=pts[pts.length-1];
@@ -1749,6 +1750,23 @@ function renderProgress(){
     lifts.shown.map(p=>`<tr><td style="white-space:nowrap">${fmtDate(p.date)}</td><td class="num" style="font-size:13px">${p.sets.map(s=>kg(s.w)+"×"+s.r).join(" · ")}</td><td class="r num">${kg(Math.round(p.e1*10)/10)}${p.e1===allBest?'<span class="pr">PR</span>':""}</td></tr>`).join("")
   }</tbody></table>${lifts.btn}</div>
   <p class="prev">e1RM uses the Epley formula: weight × (1 + reps ÷ 30). It lets sets of different rep counts be compared on one line.</p>`;
+}
+// Lifts for a bodyweight exercise: no one-rep max; the best set (extra kg x reps) of each session and its reps over time.
+function renderBwProgress(names,ex,sess){
+  const hold=isHold(ex), load=s=>formatLoad(s.w,t("BW"));
+  const pts=sess.map(s=>{ const top=bestBwSet(s.sets); return {date:s.date,r:top.r,w:top.w,sets:s.sets,score:bwScore(top)}; });
+  const bestP=pts.reduce((a,p)=>p.score>a.score?p:a), lastP=pts[pts.length-1], lifts=moreList([...pts].reverse(),"lifts");
+  $("#view-progress").innerHTML=`<div class="row"><h2 class="grow">Progress</h2>
+    <select id="prog-ex" style="width:auto;max-width:60%">${names.sort().map(n=>`<option value="${esc(n)}" ${n===ex?"selected":""}>${esc(nameOf("ex",n))}</option>`).join("")}</select></div>
+  <div class="stats">
+    <div class="stat"><div class="label">Best set</div><div class="v num">${load(bestP)} × ${bestP.r}</div></div>
+    <div class="stat"><div class="label">Latest set</div><div class="v num">${load(lastP)} × ${lastP.r}</div></div>
+    <div class="stat"><div class="label">Sessions</div><div class="v">${pts.length}</div></div>
+  </div>
+  <div class="card"><div class="legend"><span><i style="background:var(--accent)"></i>${t(hold?"Top set seconds over time":"Top set reps over time")}</span></div>${lineChart(pts,[{k:"r",c:"var(--accent)",main:true}],t(hold?"Top set seconds over time":"Top set reps over time"),t("One session logged. The chart appears after your second."))}</div>
+  <div class="card" style="overflow-x:auto"><table><thead><tr><th>Date</th><th>Sets (extra kg×reps)</th><th class="r">Top set</th></tr></thead><tbody>${
+    lifts.shown.map(p=>`<tr><td style="white-space:nowrap">${fmtDate(p.date)}</td><td class="num" style="font-size:13px">${p.sets.map(s=>load(s)+"×"+s.r).join(" · ")}</td><td class="r num">${load(p)}×${p.r}${p===bestP?'<span class="pr">PR</span>':""}</td></tr>`).join("")
+  }</tbody></table>${lifts.btn}</div>`;
 }
 function chart(pts){
   return lineChart(pts,[{k:"e1",c:"var(--accent)",main:true},{k:"top",c:"var(--muted)",dash:true}],t("Estimated 1RM and top set weight over time"),t("One session logged. The chart appears after your second."));
@@ -2005,6 +2023,7 @@ function insights(){
   // Lift progress
   const stalls=[], wins=[];
   exerciseNames().forEach(ex=>{
+    if(sessionsFor(ex).some(x=>x.bw)) return;   // bodyweight lifts have no one-rep max to stall on
     const s=sessionsFor(ex).map(x=>({date:x.date,b:Math.max(...x.sets.map(z=>e1rm(z.w,z.r)))}));
     if(s.length<4) return;
     const before=Math.max(...s.slice(0,-3).map(x=>x.b)), recent=Math.max(...s.slice(-3).map(x=>x.b));
