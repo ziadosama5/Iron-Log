@@ -25,6 +25,8 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 
 | 18 | Progress Overview, Friends leaderboard, calmer Plan page | [spec](superpowers/specs/2026-10-23-overview-leaderboard-plan-design.md) | [plan](superpowers/plans/2026-10-23-overview-leaderboard-plan.md) | sw v35 (not deployed until the owner approves) |
 
-Open points (everything still to do or decide): [open-points.md](open-points.md). The built-in Egyptian food table is parked as a big later project.
+| 19 | Food table, meal builder and barcode scan (135 foods, My foods, recent foods, edit a saved meal, Open Food Facts lookup) | [spec](superpowers/specs/2026-10-24-food-table-design.md) | [plan](superpowers/plans/2026-10-24-food-table.md) | sw v41 (not deployed yet; needs the phone check) |
+
+Open points (everything still to do or decide): [open-points.md](open-points.md).
 
 Plans describe the code at the time they were written. For how the app works today, read [CLAUDE.md](../CLAUDE.md).

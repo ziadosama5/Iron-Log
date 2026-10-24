@@ -69,3 +69,10 @@ test("the install page links the APK without a download attribute, explains a st
   assert.ok(/100%/.test(ar) && /[؀-ۿ]/.test(ar), "Arabic explains it too");
   assert.equal(h2s(en), h2s(ar), "same sections in both languages");
 });
+
+test("the privacy policy explains food saving, barcode scanning and the camera, in both languages", () => {
+  const html = read("privacy.html"), en = block(html, "en").toLowerCase(), ar = block(html, "ar");
+  for (const phrase of ["barcode", "camera", "open food facts", "never stored", "only the barcode number", "ip address", "deleted with your account"]) assert.ok(en.includes(phrase), "English says: " + phrase);
+  assert.ok(/باركود/.test(ar) && /الكاميرا/.test(ar) && ar.includes("Open Food Facts"), "Arabic covers the barcode, the camera and Open Food Facts");
+  assert.equal(h2s(block(html, "en")), h2s(block(html, "ar")), "same sections in both languages");
+});

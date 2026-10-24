@@ -541,3 +541,18 @@ test("challenges: the same friend cannot be invited twice", async () => {
   await assertFails(setDoc(chRef("u1"), chDoc({ members: ["u1", "u2", "u2"], names: { u1: "a", u2: "b" } })), "duplicate invitee");
   await assertFails(setDoc(chRef("u1"), chDoc({ members: ["u1", "u1"], names: { u1: "a" } })), "owner listed twice");
 });
+
+test("My foods: users/{uid}/items/foods is owner-only, and a full 200-food list and a 20-item meal fit the size limit", async () => {
+  const food = i => ({ id: "scan-" + String(i).padStart(13, "0"), name: "Product number " + i + " with a long descriptive name", per100: { kcal: 250, protein: 7.5 },
+    servings: [1, 2, 3, 4, 5].map(n => ({ id: "s" + n, name: "Serving " + n + " (package size)", grams: 30 * n })), barcode: String(i).padStart(13, "0") });
+  const list = Array.from({ length: 200 }, (_, i) => food(i));
+  await assertSucceeds(setDoc(doc(as("u1", U1), "users/u1/items/foods"), { list, updated: 1 }));
+  await assertSucceeds(getDoc(doc(as("u1", U1), "users/u1/items/foods")));
+  await assertFails(getDoc(doc(as("u2", U2), "users/u1/items/foods")));
+  await assertFails(setDoc(doc(as("u2", U2), "users/u1/items/foods"), { list: [], updated: 2 }));
+  await assertFails(getDoc(doc(anon(), "users/u1/items/foods")));
+  await assertFails(deleteDoc(doc(as("u2", U2), "users/u1/items/foods")));
+  const items = Array.from({ length: 20 }, (_, i) => ({ src: "scan", ref: String(i).padStart(13, "0"), name: "Product number " + i + " with a long descriptive name", serving: "pkg", amount: 1.5, grams: 45, kcal: 112, protein: 3.4 }));
+  await assertSucceeds(setDoc(doc(as("u1", U1), "users/u1/items/f-2026-10-24"), { date: "2026-10-24", meals: Array.from({ length: 20 }, (_, i) => ({ id: "m" + i, name: "Meal " + i, kcal: 2240, protein: 68, items })), updated: 1 }));
+  await assertSucceeds(deleteDoc(doc(as("u1", U1), "users/u1/items/foods")));
+});
