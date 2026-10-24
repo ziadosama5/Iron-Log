@@ -5,7 +5,7 @@ Everything planned in sub-projects 1-16 (the redesign, sw v26) is shipped. This 
 **Done 2026-10-23:** Android APK (TWA); less-crowded Today/Progress/Friends (v34); Progress Overview, Friends leaderboard, calmer Plan page and the Challenges look (v35). The owner tested v35 on a phone and approved. **Still open:** Google Play (optional), the deferred minors below, and the parked Egyptian food table.
 
 ## Unfinished projects (the big ones, none started)
-1. ~~**Built-in Egyptian + everyday food table**~~ **Built (sub-project 19, 2026-10-24):** 135 foods, meal builder, My foods, recents, edit a saved meal and barcode scan. Waiting for the owner's phone check (including a real camera scan) and the deploy.
+1. ~~**Built-in Egyptian + everyday food table**~~ **Built (sub-project 19, 2026-10-24):** 297 foods, meal builder, My foods, recents, edit a saved meal and barcode scan. Waiting for the owner's phone check (including a real camera scan) and the deploy.
 - *Small, optional (idea from a user case, no bug found):* make the calorie target self-explaining and adjustable: show the resting-rate source (InBody scan date or formula) and how the target is built (resting x activity + lifting + cardio + goal), an everyday activity level instead of the fixed x1.2, and a personal daily deficit/surplus. Today the app already uses a recent InBody BMR (120 days) and adds the exercise and cardio estimates, so numbers are correct; this would only remove surprise.
 2. **Training depth:** target sets/reps and progression (per day or exercise), warm-up/drop set types, a bodyweight-exercise mode, injuries / exercises to avoid, several gyms (Home + Gym), templates adapted to the gym.
 3. **Social growth:** more challenge types (volume, PRs, streaks), rematch, chat/activity feed, notifications (need the paid plan or an alternative).
@@ -66,7 +66,7 @@ In progress now: the owner is testing the later features on a real phone; expect
 - Not checked on a real phone: 320 px width in Arabic (five tab labels), tab bar + rest bar + toast over safe-area insets, confetti frame rate.
 
 **Food table and barcode (sub-project 19)**
-- The food figures are estimates written from recipes and USDA values; the owner reviews `public/food-table.js` (the 37 `varies:true` dishes first). Open Food Facts data is user-edited and patchy for Egyptian products; implausible values are treated as "no calories on record".
+- The food figures are estimates written from recipes and USDA values; the owner reviews `public/food-table.js` (the 74 `varies:true` dishes first). Open Food Facts data is user-edited and patchy for Egyptian products; implausible values are treated as "no calories on record".
 - My foods are one document (`foods`, max 200): two devices editing at once means the last write wins (same as `settings`).
 - Editing a scanned food rebuilds it from its first serving (the second serving is dropped; its grams box still covers 100 g).
 - The live camera path (BarcodeDetector on Android, the ZXing loop elsewhere) is only proven on a real phone; the tests use Chrome's fake camera and a generated EAN-13 picture.
@@ -79,7 +79,7 @@ Fixed: stale history entry after Plan my training from the Edit plan menu; chart
 
 ## C. Ideas not built
 - **Training:** bodyweight-exercise mode; set types (warm-up, drop set); target sets/reps per day or per exercise; progression and deloads; injuries / exercises to avoid; cardio scheduling; templates adapted to the gym; several gyms (Home + Gym).
-- **Food:** more foods (the table has 135; the owner can ask for more), meal templates ("my usual breakfast", easy now that saved meals keep their items), allergens / full nutrition from barcode data, macros beyond kcal and protein, shared foods.
+- **Food:** more foods (the table has 297; the owner can ask for more), meal templates ("my usual breakfast", easy now that saved meals keep their items), allergens / full nutrition from barcode data, macros beyond kcal and protein, shared foods.
 - **Social:** other challenge metrics (volume, PRs, streak weeks), rematch in one tap, owner removing a member, chat, an activity feed, server-side friend limits, cooldown after a decline, notifications (need the paid plan).
 - **Data and tooling:** CSV export; GitHub Actions auto-deploy (`firebase init hosting:github`); running the rules tests and screenshot checks in CI; an admin screen or e-mail for reports (needs the paid plan or manual work).
 

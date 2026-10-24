@@ -1,9 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { FOODS } from "../public/food-table.js";
+import { FOODS, searchFoods } from "../public/food-table.js";
 
-const MIN_FOODS = 110;
-const GROUPS = ["bread", "legumes", "mains", "rice", "eggs-dairy", "sides", "veg", "fruit", "meat", "sweets", "drinks", "snacks", "fastfood", "fats"];
+const MIN_FOODS = 280;
+const GROUPS = ["bread", "legumes", "mains", "rice", "eggs-dairy", "sides", "veg", "fruit", "meat", "sweets", "drinks", "snacks", "fastfood", "fats", "grains", "supplements"];
 
 test("the table has enough foods", () => assert.ok(FOODS.length >= MIN_FOODS, `${FOODS.length} foods`));
 
@@ -52,4 +52,28 @@ test("a few anchor foods exist with believable numbers", () => {
   assert.ok(by("sugar").kcal100 >= 380 && by("sugar").kcal100 <= 410, "sugar");
   assert.ok(by("banana").kcal100 >= 80 && by("banana").kcal100 <= 110, "banana");
   assert.ok(by("whey").protein100 >= 70, "whey protein");
+});
+
+// What the owner looked for and could not find, plus a spread of other everyday searches: each must put the right food in the first results.
+const MUST_FIND = {
+  "brown toast": "brown-toast", "brown rice": "rice-brown", "basmaty rice": "rice-basmati", "basmati": "rice-basmati", "rice basmati": "rice-basmati",
+  "egyptian salad": "tomato-salad", "egyptian rice": "rice-white", "boiled chicken": "chicken-breast", "whole wheat bread": "wheat-bread",
+  "shrimp": "shrimp", "salmon": "salmon", "quinoa": "quinoa", "broccoli": "broccoli", "tabbouleh": "tabbouleh", "mozzarella": "mozzarella",
+  "greek yoghurt": "greek-yoghurt", "zalabia": "zalabia", "kahk": "kahk", "protein shake": "protein-shake", "avocado": "avocado", "water": "water",
+  "skim milk": "milk-skim", "oats": "oats", "egg white": "egg-white", "wrap": "wrap", "shakshuka": "shakshuka", "sayadeya": "sayadeya", "creatine": "creatine",
+  "كينوا": "quinoa", "أرز بسمتي": "rice-basmati", "توست أسمر": "brown-toast", "جمبري": "shrimp", "سلطة مصرية": "tomato-salad", "بروكلي": "broccoli",
+  "ماء": "water", "كحك": "kahk", "زلابية": "zalabia", "اندومي": "noodles-instant",
+};
+test("the owner's searches and other everyday ones find the right food near the top", () => {
+  for (const [q, id] of Object.entries(MUST_FIND)) {
+    assert.ok(FOODS.some(f => f.id === id), id + " exists");
+    const top = searchFoods(q).slice(0, 5).map(f => f.id);
+    assert.ok(top.includes(id), `"${q}" should find ${id} in the first 5, got: ${top.join(", ")}`);
+  }
+});
+
+test("Arabic labels follow the project rule: digits 0-9 and Latin units", () => {
+  const bad = [];
+  for (const f of FOODS) for (const text of [f.ar, ...f.servings.map(s => s.ar)]) if (/[٠-٩]/.test(text) || /(^|[\s(])مل([\s)]|$)/.test(text)) bad.push(f.id + ": " + text);
+  assert.deepEqual(bad, []);
 });
