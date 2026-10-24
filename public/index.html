@@ -249,6 +249,8 @@ td.r,th.r{text-align:end}
 tr.setrow{cursor:pointer}
 tr.setrow.editing td{background:var(--accent-soft)}
 .advice{color:var(--accent);font-size:14px}
+.avoidtag{color:var(--danger);font-size:14px;margin-inline-start:4px}
+.avoidnote{display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--danger);font-size:14px;margin:0}
 .settag{display:inline-block;font:600 12px/1 var(--f-body);background:var(--sunk);color:var(--muted);padding:3px 6px;border-radius:4px;margin-inline-start:6px;vertical-align:middle}
 .pr{display:inline-block;font:600 12px/1 var(--f-body);letter-spacing:.05em;background:var(--accent-soft);color:var(--accent);padding:3px 6px;border-radius:4px;margin-inline-start:6px;vertical-align:2px}
 .adder{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
@@ -543,7 +545,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { AREAS, AREA_EN, cleanAvoid, avoidFilter, hiddenAvoidCount, hasAvoid } from "./injuries.js";
+import { AREAS, AREA_EN, cleanAvoid, avoidFilter, avoidedBecause, hiddenAvoidCount, hasAvoid } from "./injuries.js";
 import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore, bestBwSet, legacyBodyweight } from "./bodyweight.js";
 import { workingSets, liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
@@ -1308,7 +1310,7 @@ function renderLog(){
   const ei = picked>=0 ? picked : nextUnfinished(entries,-1);
   if (M) h += `<div class="exchips" id="exchips">${entries.map((e,i)=>{
       const cls = e.done?"done":(e.sets.length?"started":"");
-      return `<button class="exchip ${cls}" data-act="jump-ex" data-name="${esc(e.ex)}" aria-current="${i===ei}" aria-label="${esc(nameOf("ex",e.ex))}${e.done?", "+t("done"):""}"><span class="n" aria-hidden="true">${e.done?"✓":i+1}</span><span class="t">${esc(nameOf("ex",e.ex))}</span></button>`;
+      return `<button class="exchip ${cls}" data-act="jump-ex" data-name="${esc(e.ex)}" aria-current="${i===ei}" aria-label="${esc(nameOf("ex",e.ex))}${e.done?", "+t("done"):""}${avoidWarn(e.ex)?", "+esc(warnShort(avoidWarn(e.ex))):""}"><span class="n" aria-hidden="true">${e.done?"✓":i+1}</span><span class="t">${esc(nameOf("ex",e.ex))}</span>${warnMark(e.ex)}</button>`;
     }).join("")}</div>`;
 
   if (!M) h += `<div class="empty"><strong>No exercises yet</strong>Tap "+ Exercise" to add one.</div>`;
@@ -1366,6 +1368,7 @@ function focusCard(w, ei){
   return `<div class="card focus" id="open-card">
       <div class="row"><span class="label grow">${t("Exercise {n} of {m}",{n:ei+1,m:entries.length})}</span>${infoBtn(e.ex)}</div>
       <div class="ex-name">${esc(nameOf("ex",e.ex))}</div>
+      ${(()=>{ const w=avoidWarn(e.ex); return w?`<div class="avoidnote"><span aria-hidden="true">⚠</span><span class="grow">${esc(warnText(w))}</span>${e.sets.length?"":`<button type="button" class="btn small" data-act="skip-avoided" data-ei="${ei}">${t("Skip it")}</button>`}</div>`:""; })()}
       ${last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>(bw?formatLoad(s.w,t("BW")):kg(s.w))+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
       ${targetBlock(e.ex,target,sug,ei,hold)}
       <div class="row" style="gap:8px"><button type="button" class="chip" data-act="bw-toggle" data-ei="${ei}" aria-pressed="${bw}"${e.sets.length?" disabled":""}>${t("Bodyweight")}</button>${e.sets.length?`<span class="prev">${t("Switch before your first set")}</span>`:""}</div>
@@ -1644,6 +1647,12 @@ const GYM_GROUPS=[["weights","Weights"],["station","Stations"],["machine","Machi
 let gymSaveTimer=null;
 // ---- injuries and exercises to avoid (settings.avoid, see injuries.js) ----
 const areaLabel = id => isRtl() ? nameOf("area", id) : AREA_EN[id];
+// Warnings on what the person already has: null when the exercise is not avoided, otherwise why (see avoidedBecause).
+function avoidWarn(name){ const w=avoidedBecause(name,state.settings.avoid); return w.exercise||w.areas.length?w:null; }
+const areaList = w => w.areas.map(a=>isRtl()?areaLabel(a):areaLabel(a).toLowerCase()).join(isRtl()?"، ":", ");
+const warnShort = w => w.areas.length?t("Avoided: {areas}",{areas:areaList(w)}):t("Avoided by you");
+const warnText = w => w.areas.length?t("You chose to avoid this: it loads your {areas}.",{areas:areaList(w)}):t("You chose to avoid this exercise.");
+const warnMark = name => { const w=avoidWarn(name); return w?`<span class="avoidtag" role="img" aria-label="${esc(warnShort(w))}" title="${esc(warnShort(w))}">⚠</span>`:""; };
 const avoidsName = name => ((state.settings.avoid && state.settings.avoid.exercises) || []).some(x => x.toLowerCase() === String(name).toLowerCase());
 // Saves at once: the choice is changed in memory and written; the filters read state.settings on every render.
 function setAvoid(next){
@@ -1720,7 +1729,7 @@ function renderDays(){
     const dayInfo=`<span class="daynum">${t("DAY {n}",{n:i+1})}${wdText?" · "+wdText.toUpperCase():""}${nd&&nd.id===d.id?" · "+t("UP NEXT"):""}</span><span class="dayname">${esc(nameOf("day",d.name))}</span>`;
     h += `<div class="card ${editing?"open":""}">`;
     if (!editing){
-      h += `<button class="daysum" data-act="edit-day" data-id="${d.id}" aria-expanded="false">${dayInfo}${d.focus.length?`<span class="chips">${d.focus.map(m=>`<span class="chip">${esc(nameOf("muscle",m))}</span>`).join("")}</span>`:""}<span class="prev">${d.exercises.length?d.exercises.map(n=>esc(nameOf("ex",n))).join(" · "):t("No exercises yet. Tap the day to add some.")}</span></button>
+      h += `<button class="daysum" data-act="edit-day" data-id="${d.id}" aria-expanded="false">${dayInfo}${d.focus.length?`<span class="chips">${d.focus.map(m=>`<span class="chip">${esc(nameOf("muscle",m))}</span>`).join("")}</span>`:""}<span class="prev">${d.exercises.length?d.exercises.map(n=>esc(nameOf("ex",n))+warnMark(n)).join(" · "):t("No exercises yet. Tap the day to add some.")}</span></button>
         <div class="row"><button class="btn primary small" data-act="train-day" data-id="${d.id}">Train this day</button></div>`;
     } else {
       h += `<div class="ex-head"><button class="dayhead" data-act="edit-day" data-id="${d.id}" aria-expanded="true">${dayInfo}</button><button class="btn small primary" data-act="edit-day" data-id="${d.id}">${t("✓ Done")}</button></div>`;
@@ -1729,7 +1738,7 @@ function renderDays(){
           return `<button class="chip" data-act="toggle-wd" data-id="${d.id}" data-wd="${x}" aria-pressed="${wds.includes(x)}" title="${other?esc(t("Currently {name}",{name:nameOf("day",other.name)})):""}">${nameOf("weekday",WD[x])}${other&&!wds.includes(x)?` <span style="opacity:.6">· ${esc(nameOf("day",other.name))}</span>`:""}</button>`;}).join("")}</div></div>
         <div class="stack" style="gap:6px"><span class="label">Muscles trained</span><div class="chips">${MUSCLES.map(m=>`<button class="chip" data-act="toggle-m" data-id="${d.id}" data-m="${esc(m)}" aria-pressed="${d.focus.includes(m)}">${esc(nameOf("muscle",m))}</button>`).join("")}</div></div>
         <div class="stack" style="gap:6px"><span class="label">Exercises, in order</span>
-        ${d.exercises.length?`<ol class="exlist">${d.exercises.map((n,k)=>`<li><span class="n">${k+1}</span><span class="t">${esc(nameOf("ex",n))}</span>${infoBtn(n)}
+        ${d.exercises.length?`<ol class="exlist">${d.exercises.map((n,k)=>`<li><span class="n">${k+1}</span><span class="t">${esc(nameOf("ex",n))}</span>${warnMark(n)}${infoBtn(n)}
           <button class="btn ghost small" data-act="mv" data-id="${d.id}" data-k="${k}" data-d="-1" aria-label="${esc(t("Move {name} up",{name:nameOf("ex",n)}))}" ${k===0?"disabled":""}>↑</button>
           <button class="btn ghost small" data-act="mv" data-id="${d.id}" data-k="${k}" data-d="1" aria-label="${esc(t("Move {name} down",{name:nameOf("ex",n)}))}" ${k===d.exercises.length-1?"disabled":""}>↓</button>
           <button class="btn ghost small danger" data-act="rm-dex" data-id="${d.id}" data-k="${k}" aria-label="${esc(t("Remove {name}",{name:nameOf("ex",n)}))}">✕</button></li>`).join("")}</ol>`:`<span class="prev">Tap suggestions below or type an exercise.</span>`}</div>
@@ -2690,6 +2699,7 @@ function openExInfo(name){
     <p class="ex-works">Works: <b>${info.primary.map(m=>esc(nameOf("muscle",m))).join(", ")}</b>${info.secondary.length?` <span class="prev">· ${info.secondary.map(m=>esc(nameOf("muscle",m))).join(", ")}</span>`:""}</p>
     ${(()=>{ const eq=equipmentOf(info.name); return eq?`<p class="ex-works">${t("Equipment")}: <b>${eq.length?eq.map(eqLabel).join(isRtl()?"، ":" · "):t("No equipment")}</b></p>`:""; })()}
     <ul class="ex-tips">${(isRtl()&&info.ar&&info.ar.tips?info.ar.tips:info.tips).map(tip=>`<li>${esc(tip)}</li>`).join("")}</ul>
+    ${(()=>{ const w=avoidWarn(info.name); return w?`<p class="avoidnote"><span aria-hidden="true">⚠</span><span>${esc(warnText(w))}</span></p>`:""; })()}
     <div class="row"><button type="button" class="btn small" data-act="avoid-toggle" data-name="${esc(info.name)}">${t(avoidsName(info.name)?"Stop avoiding":"Avoid this exercise")}</button></div>
     ${info.img&&!info.own?`<p class="prev ex-credit">Illustrations: Everkinetic, CC BY-SA 4.0</p>`:""}`;
   if(!dlg.open){ dlg.showModal(); history.pushState({exinfo:1},""); }
@@ -3092,6 +3102,7 @@ document.addEventListener("click",e=>{
       // Deleting the edited set or one before it would shift indexes, so leave edit mode.
       if(state.editSet&&state.editSet.ex===en.ex&&si<=state.editSet.si) stopEditing();
       en.sets.splice(si,1); store.save(w); renderLog(); break; }
+    case "skip-avoided":{ const w=ensureWorkout(), en=w.entries[ei]; if(!en||en.sets.length) break; w.entries.splice(ei,1); state.openEx=undefined; stopEditing(); store.save(w); renderLog(); break; }   // only an exercise with no sets
     case "rm-ex":{ const w=ensureWorkout(); w.entries.splice(ei,1); state.openEx=undefined; stopEditing(); store.save(w); renderLog(); break; }
     case "open-ex": stopEditing(); state.openEx=b.dataset.name; renderLog(); scrollToOpen(); break;
     case "close-ex": stopEditing(); state.openEx=null; renderLog(); break;

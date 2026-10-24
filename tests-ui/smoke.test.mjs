@@ -1473,3 +1473,67 @@ test("injuries: in Arabic the area chips are translated", async () => {
   assert.ok(chips.every(c => /[؀-ۿ]/.test(c)), chips.join("|"));
   await ctx.close();
 });
+
+// ---- injuries: warnings on what is already there ----
+const AVOID_LATERAL = "avoid=" + encodeURIComponent(JSON.stringify({ exercises: ["Lateral Raise"] }));
+const chipOf = (page, name) => page.locator(`#exchips [data-name="${name}"]`);
+
+test("injuries: an avoided exercise on today's workout is marked on its chip and explained on its card", async () => {
+  const { page, ctx } = await open(AVOID_WRIST);
+  await startPush(page);
+  assert.equal(await chipOf(page, "Bench Press").locator(".avoidtag").count(), 1);
+  assert.equal(await chipOf(page, "Lateral Raise").locator(".avoidtag").count(), 0, "it loads only the shoulder");
+  assert.ok((await page.locator("#open-card .avoidnote").innerText()).includes("You chose to avoid this: it loads your wrist."));
+  await ctx.close();
+});
+
+test("injuries: Skip it removes an avoided exercise with no sets, and is gone once a set is logged", async () => {
+  const { page, ctx } = await open(AVOID_WRIST);
+  await startPush(page);
+  await page.locator('#open-card [data-act="skip-avoided"]').click();
+  assert.equal(await chipOf(page, "Bench Press").count(), 0, "skipped for today");
+  await chipOf(page, "Overhead Press").click();
+  assert.equal(await page.locator('#open-card [data-act="skip-avoided"]').count(), 1);
+  await addSetWith(page, 40, 8);
+  assert.equal(await page.locator('#open-card [data-act="skip-avoided"]').count(), 0, "a logged exercise is never removed");
+  assert.equal(await chipOf(page, "Overhead Press").count(), 1);
+  await ctx.close();
+});
+
+test("injuries: the Days editor and the day card mark avoided exercises, and nothing is removed", async () => {
+  const { page, ctx } = await open(AVOID_WRIST);
+  await tab(page, "plan");
+  await page.waitForSelector('#view-days [data-act="edit-day"]');
+  assert.ok(await page.locator("#view-days .daysum .avoidtag").count() >= 1, "the collapsed card shows the mark");
+  await page.locator('#view-days [data-act="edit-day"][data-id="d1"]').first().click();
+  const rows = page.locator("#view-days .exlist li");
+  assert.ok((await rows.count()) >= 3, "all three exercises stay");
+  assert.equal(await rows.filter({ hasText: "Bench Press" }).locator(".avoidtag").count(), 1);
+  assert.equal(await rows.filter({ hasText: "Lateral Raise" }).locator(".avoidtag").count(), 0);
+  await ctx.close();
+});
+
+test("injuries: the exercise info sheet explains why, and an exercise avoided by name says so", async () => {
+  const { page, ctx } = await open(AVOID_WRIST);
+  await startPush(page);
+  await page.locator('#open-card [data-act="ex-info"]').first().click();
+  await page.waitForSelector("#exinfo[open]");
+  assert.ok((await page.locator("#exinfo .avoidnote").innerText()).includes("wrist"));
+  await ctx.close();
+  const b = await open(AVOID_LATERAL);
+  await startPush(b.page);
+  await chipOf(b.page, "Lateral Raise").click();
+  assert.ok((await b.page.locator("#open-card .avoidnote").innerText()).includes("You chose to avoid this exercise."));
+  await b.ctx.close();
+});
+
+test("injuries: nothing is marked when nothing is avoided, and the warning text is Arabic in Arabic", async () => {
+  const a = await open();
+  await startPush(a.page);
+  assert.equal(await a.page.locator(".avoidtag, .avoidnote").count(), 0);
+  await a.ctx.close();
+  const b = await open("lang=ar&" + AVOID_WRIST);
+  await startPush(b.page);
+  assert.ok(/[؀-ۿ]/.test(await b.page.locator("#open-card .avoidnote").innerText()));
+  await b.ctx.close();
+});
