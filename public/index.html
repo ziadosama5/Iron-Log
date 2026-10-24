@@ -2142,7 +2142,7 @@ async function startScan(){
   try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:false}); }
   catch(e){ scanner.starting=false; if(state.mealDraft.scan===sc) scanUnavailable(); else if(state.mealDraft.scan) startScan(); return; }
   scanner.starting=false;
-  if(state.mealDraft.scan!==sc){ stream.getTracks().forEach(tr=>tr.stop()); if(state.mealDraft.scan) startScan(); return; }  // closed while the permission question was open (a newer scan view waits for its own camera)  // closed while the permission question was open
+  if(state.mealDraft.scan!==sc){ stream.getTracks().forEach(tr=>tr.stop()); if(state.mealDraft.scan) startScan(); return; }  // closed while the permission question was open (a newer scan view waits for its own camera)
   scanner.stream=stream;
   const v=document.getElementById("scan-video"); v.srcObject=stream; v.play().catch(()=>{});
   setScanCamera("on"); setScanMsg(t("Point the camera at the barcode."));
