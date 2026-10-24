@@ -26,11 +26,59 @@ function cleanWorkout(date, d) {
   return withUpdated(out, d);
 }
 
+const MEAL_SRC = ["table", "mine", "scan"];
+
+// One food of a meal (a snapshot), or null.
+function cleanMealItem(i) {
+  if (!isObj(i) || !MEAL_SRC.includes(i.src)) return null;
+  const ref = text(i.ref, 40), name = text(i.name, 60), serving = text(i.serving, 40);
+  if (!ref || !name || !serving || !num(i.amount, 0, 5000) || i.amount <= 0) return null;
+  if (!(i.grams === null || (num(i.grams, 0, 5000) && i.grams > 0)) || !Number.isInteger(i.kcal) || !num(i.kcal, 0, 5000)) return null;
+  return { src: i.src, ref, name, serving, amount: i.amount, grams: i.grams, kcal: i.kcal, protein: num(i.protein, 0, 500) ? i.protein : null };
+}
+
 function cleanFood(date, d) {
   if (d.date !== date || !Array.isArray(d.meals)) return null;
   const meals = d.meals.filter(m => isObj(m) && text(m.id, 40) && num(m.kcal, 1, 5000))
-    .map(m => ({ id: m.id.slice(0, 40), name: text(m.name, 40), kcal: m.kcal, protein: num(m.protein, 0, 500) ? m.protein : null }));
+    .map(m => {
+      const out = { id: m.id.slice(0, 40), name: text(m.name, 40), kcal: m.kcal, protein: num(m.protein, 0, 500) ? m.protein : null };
+      const items = (Array.isArray(m.items) ? m.items : []).map(cleanMealItem).filter(Boolean).slice(0, 20);
+      if (items.length) out.items = items;
+      return out;
+    });
   return meals.length ? withUpdated({ date, meals }, d) : null;
+}
+
+// My own foods: {list:[{id, name, per100:{kcal,protein}|null, servings:[{id, name, grams?|kcal?, protein?}], barcode?}]}.
+function cleanMyFood(f) {
+  if (!isObj(f)) return null;
+  const id = text(f.id, 40), name = text(f.name, 60); if (!id || !name) return null;
+  let per100 = null;
+  if (f.per100 != null) {
+    if (!isObj(f.per100) || !num(f.per100.kcal, 0, 900) || !num(f.per100.protein, 0, 100)) return null;
+    per100 = { kcal: f.per100.kcal, protein: f.per100.protein };
+  }
+  const servings = (Array.isArray(f.servings) ? f.servings : []).map(s => {
+    if (!isObj(s)) return null;
+    const sid = text(s.id, 40), sname = text(s.name, 60); if (!sid || !sname) return null;
+    const out = { id: sid, name: sname };
+    if (per100 && num(s.grams, 1, 5000)) out.grams = s.grams;
+    if (num(s.kcal, 0, 5000)) out.kcal = s.kcal;
+    if (out.grams === undefined && out.kcal === undefined) return null;
+    if (num(s.protein, 0, 500)) out.protein = s.protein;
+    return out;
+  }).filter(Boolean).slice(0, 5);
+  if (!servings.length) return null;
+  const out = { id, name, per100, servings };
+  if (typeof f.barcode === "string" && /^\d{8,14}$/.test(f.barcode)) out.barcode = f.barcode;
+  return out;
+}
+
+function cleanMyFoods(d) {
+  if (!Array.isArray(d.list)) return null;
+  const seen = new Set();
+  const list = d.list.map(cleanMyFood).filter(f => f && !seen.has(f.id) && seen.add(f.id)).slice(0, 200);
+  return list.length ? withUpdated({ list }, d) : null;
 }
 
 function cleanBody(date, d, bodyKeys) {
@@ -94,6 +142,7 @@ export function cleanBackupItems(items, { bodyKeys, goals, muscles, equipment = 
       else if (it.id === "program") data = cleanProgram(it.data, muscles);
       else if (it.id === "profile") data = cleanProfile(it.data, goals);
       else if (it.id === "settings") data = cleanSettings(it.data, equipment);
+      else if (it.id === "foods") data = cleanMyFoods(it.data);
     }
     if (data) out.push({ id: it.id, data }); else skipped++;
   }
