@@ -103,3 +103,32 @@ test("exerciseSessions: one session per workout that has working sets of the exe
   assert.deepEqual(exerciseSessions(ws, "Deadlift", same), []);
   assert.deepEqual(exerciseSessions([], "Bench Press", same), []);
 });
+
+test("liftNames: only exercises with at least one working set (the Lifts picker)", async () => {
+  const { liftNames } = await import("../public/progression.js");
+  const ws = [
+    { date: "2026-10-01", entries: [{ ex: "Bench Press", sets: [S(40, 10, "w")] }, { ex: "Squat", sets: [S(100, 5)] }, { ex: "Row", sets: [S(40, 10, "d")] }, { ex: "Curl", sets: [] }] },
+    { date: "2026-10-02", entries: [{ ex: "Squat", sets: [S(100, 5)] }, { ex: "Bench Press", sets: [S(60, 8)] }] },
+  ];
+  assert.deepEqual(liftNames(ws), ["Squat", "Bench Press"]);
+  assert.deepEqual(liftNames([]), []);
+});
+
+test("applyPendingTargets lays unsaved edits over the stored targets (null removes one)", async () => {
+  const { applyPendingTargets } = await import("../public/progression.js");
+  const stored = { Squat: { sets: 3, min: 5, max: 8 }, Curl: { sets: 3, min: 10, max: 15 } };
+  const r = applyPendingTargets(stored, { Squat: { sets: 4, min: 5, max: 8 }, Curl: null, Row: { sets: 3, min: 6, max: 10 } });
+  assert.deepEqual(r, { Squat: { sets: 4, min: 5, max: 8 }, Row: { sets: 3, min: 6, max: 10 } });
+  assert.deepEqual(stored.Squat, { sets: 3, min: 5, max: 8 }, "the input is not changed");
+  assert.deepEqual(applyPendingTargets(undefined, {}), {});
+  assert.deepEqual(applyPendingTargets(stored, undefined), stored);
+});
+
+test("cleanTargets keeps at most 300 entries", () => {
+  const big = {}; for (let i = 0; i < 350; i++) big["Exercise " + i] = { sets: 3, min: 8, max: 12 };
+  assert.equal(Object.keys(cleanTargets(big)).length, 300);
+});
+
+test("defaultTarget: split squats and dips are in the 8-12 group like their 2:30 rest", () => {
+  for (const n of ["Bulgarian Split Squat", "Smith Machine Split Squat", "Dip", "Bench Dip", "Machine Dip", "Weighted Dip"]) assert.deepEqual(defaultTarget(n), { sets: 3, min: 8, max: 12 }, n);
+});

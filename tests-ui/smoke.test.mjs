@@ -1184,3 +1184,15 @@ test("targets: in Arabic the editor steppers keep minus left of plus", async () 
   assert.ok(await xs('#open-card [data-act="tgt-step"][data-f="max"][data-d="-1"]') < await xs('#open-card [data-act="tgt-step"][data-f="max"][data-d="1"]'));
   await ctx.close();
 });
+
+test("targets: opening the target editor while editing a logged set leaves set editing, so Save cannot write the wrong numbers", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  await addSetWith(page, 70, 6);
+  await rowsOf(page).first().click();
+  assert.equal(await page.locator('#open-card [data-act="save-set"]').count(), 1);
+  await targetChip(page).click();
+  assert.equal(await page.locator('#open-card [data-act="save-set"]').count(), 0, "no longer editing the set");
+  assert.equal(await page.locator('#open-card [data-act="add-set"]').count(), 1);
+  await ctx.close();
+});

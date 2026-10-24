@@ -30,16 +30,19 @@ export function cleanTargets(obj) {
   for (const [k, v] of Object.entries(obj)) {
     if (k === "__proto__" || !k || k.length > 80 || !validTarget(v)) continue;
     out[k] = { sets: v.sets, min: v.min, max: v.max };
+    if (Object.keys(out).length >= 300) break;   // a settings document must stay small
   }
   return out;
 }
 
 // Same groups the rest timer uses for its 3:00 default (workout-tools.js defaultRest); a test pins the agreement.
 const BIG = /squat|deadlift|\brdl\b|bench press|overhead press|military press|leg press/i;
+const SPLIT_OR_DIP = /split squat|\bdips?\b/i;
 const ISOLATION_NAME = /raise|fly|flye|curl|extension|pushdown|kickback|shrug|crunch/i;
 const ISOLATION_MUSCLE = ["Biceps", "Triceps", "Calves", "Core"];
 export function defaultTarget(exName) {
   const name = String(exName ?? "");
+  if (SPLIT_OR_DIP.test(name)) return { sets: 3, min: 8, max: 12 };   // in the rest timer's 2:30 group, not the heavy 3:00 one
   if (BIG.test(name) && !/calf/i.test(name)) return { sets: 3, min: 5, max: 8 };
   if (ISOLATION_MUSCLE.includes(muscleOf(name)) || ISOLATION_NAME.test(name)) return { sets: 3, min: 10, max: 15 };
   return { sets: 3, min: 8, max: 12 };
@@ -83,4 +86,19 @@ export function exerciseSessions(workouts, exName, same) {
     const sets = e ? workingSets(e.sets) : [];
     return sets.length ? { date: w.date, sets } : null;
   }).filter(Boolean);
+}
+
+// Exercises with at least one working set, in the order first logged (what the Lifts picker may offer).
+export function liftNames(workouts) {
+  const names = new Set();
+  (workouts || []).forEach(w => (w.entries || []).forEach(e => { if (workingSets(e.sets).length) names.add(e.ex); }));
+  return [...names];
+}
+
+// Target edits that are not saved yet ({exercise: target, or null = back to the default}) laid over the stored targets,
+// so a data refresh arriving before the delayed save cannot undo them. The input is not changed.
+export function applyPendingTargets(targets, pending) {
+  const out = { ...(targets || {}) };
+  for (const [ex, v] of Object.entries(pending || {})) { if (v === null) delete out[ex]; else out[ex] = v; }
+  return out;
 }

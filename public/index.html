@@ -543,7 +543,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
+import { liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX, goalAdjustment, explainTarget, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { cleanDigits, canonicalBarcode, productUrl, normalizeProduct } from "./barcode.js";
@@ -604,7 +604,7 @@ const store = {
       this.stopFriends(); state.showMore={}; state.friends=freshFriends(); this.stopChallenges(); state.challenges=freshChallenges(); renderFriendsBadge();
       this.user=user; state.authed=!!user; authKnown=true;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.myFoods=[]; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; stopScan(); state.mealDraft=freshMealDraft(); celeQueue.length=0; setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.myFoods=[]; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; stopScan(); state.mealDraft=freshMealDraft(); celeQueue.length=0; clearTimeout(tgtTimer); tgtTimer=null; for(const k of Object.keys(pendingTargets)) delete pendingTargets[k]; state.targetEdit=null; setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
       this.loadShare().then(()=>{ maybePublish(); refreshFriendNames(); if(state.view==="profile") renderProfile(); });
       this.watchFriends(); this.watchChallenges();
@@ -616,6 +616,7 @@ const store = {
         // One-time fix for days missing muscle tags. Only on server data, so a stale offline copy never overwrites newer edits.
         const mp=migrateProgram(prog), days=mp.days;
         if(state.gymEdit){ if(state.gymEdit.gym===undefined) delete settings.gym; else settings.gym=state.gymEdit.gym; }
+        if(Object.keys(pendingTargets).length) settings.targets=applyPendingTargets(settings.targets,pendingTargets);   // unsaved target edits survive a refresh
         state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings; state.food=food; state.myFoods=myFoods; state.serverSynced=!snap.metadata.fromCache;
         if(snap.docChanges().length) state.dataRev=(state.dataRev||0)+1;  // metadata-only snapshots ("saved") change nothing
         if(mp.needsSave && !snap.metadata.fromCache) this.saveDays(days);
@@ -1310,16 +1311,22 @@ function adviceText(sug){
 function targetBlock(ex,tg,sug,ei){
   const adv=adviceText(sug), advHtml=adv?`<div class="advice"><b>${esc(adv)}</b></div>`:"";
   if(state.targetEdit!==ex) return `<div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="chip" data-act="target-edit" data-ei="${ei}" aria-label="${esc(t("Change target"))}">${t("Target {sets} × {min}–{max}",{sets:tg.sets,min:tg.min,max:tg.max})}</button></div>${advHtml}`;
-  const row=(f,label)=>`<div class="row" dir="ltr" data-row="${f}" style="gap:10px"><span class="label grow">${esc(t(label))}</span><button type="button" class="btn small" data-act="tgt-step" data-f="${f}" data-d="-1" aria-label="${esc(t("Less"))}">−</button><b class="num" style="min-width:32px;text-align:center">${tg[f]}</b><button type="button" class="btn small" data-act="tgt-step" data-f="${f}" data-d="1" aria-label="${esc(t("More"))}">+</button></div>`;
+  const row=(f,label)=>`<div class="row" data-row="${f}" style="gap:10px"><span class="label grow">${esc(t(label))}</span><span dir="ltr" class="row" style="gap:10px;flex-wrap:nowrap"><button type="button" class="btn small" data-act="tgt-step" data-f="${f}" data-d="-1" aria-label="${esc(t("Less"))}">−</button><b class="num" style="min-width:32px;text-align:center">${tg[f]}</b><button type="button" class="btn small" data-act="tgt-step" data-f="${f}" data-d="1" aria-label="${esc(t("More"))}">+</button></span></div>`;
   return `<div class="stack" style="gap:6px">${row("sets","Sets")}${row("min","Min reps")}${row("max","Max reps")}<div class="row"><button type="button" class="btn small" data-act="tgt-reset">${t("Reset to default")}</button><button type="button" class="btn primary small" data-act="tgt-done">${t("Done")}</button></div></div>${advHtml}`;
 }
 let tgtTimer=null;
-function flushTargets(){ clearTimeout(tgtTimer); tgtTimer=null; store.saveSettings({targets:state.settings.targets||{}}); }
+const pendingTargets={};   // edits not saved yet: {exercise: target | null}; also laid over every incoming snapshot
+function flushTargets(){
+  clearTimeout(tgtTimer); tgtTimer=null;
+  const merged=applyPendingTargets(state.settings.targets,pendingTargets);
+  for(const k of Object.keys(pendingTargets)) delete pendingTargets[k];
+  store.saveSettings({targets:merged});
+}
 // Keeps the target in memory at once and saves it a moment later (like the rest time); a target equal to the default is not stored.
 function setTarget(ex,next){
-  const all={...(state.settings.targets||{})}, dft=defaultTarget(ex);
-  if(next.sets===dft.sets&&next.min===dft.min&&next.max===dft.max) delete all[ex]; else all[ex]=next;
-  state.settings={...state.settings,targets:all}; delete ui[ex];
+  const dft=defaultTarget(ex), isDefault=next.sets===dft.sets&&next.min===dft.min&&next.max===dft.max;
+  pendingTargets[ex]=isDefault?null:next;
+  state.settings={...state.settings,targets:applyPendingTargets(state.settings.targets,{[ex]:pendingTargets[ex]})}; delete ui[ex];
   clearTimeout(tgtTimer); tgtTimer=setTimeout(flushTargets,1500);
 }
 function focusCard(w, ei){
@@ -1703,7 +1710,7 @@ function editDays(fn, opts){ const days=clone(state.days); fn(days); store.saveD
 
 /* ---------- PROGRESS ---------- */
 function renderProgress(){
-  const names=exerciseNames();
+  const names=liftNames(sorted());   // only lifts with a working set: the charts have nothing to draw for warm-ups alone
   if(!names.length){ $("#view-progress").innerHTML=`<h2>Progress</h2><div class="empty"><strong>Nothing to chart yet</strong>Log a few sessions of any lift and its estimated 1-rep max and top weight will be charted here.</div>`; return; }
   if(!state.progressEx||!names.includes(state.progressEx)){ state.progressEx=names.map(n=>[n,sessionsFor(n).length]).sort((a,b)=>b[1]-a[1])[0][0]; }
   const ex=state.progressEx, sess=sessionsFor(ex);
@@ -2545,7 +2552,7 @@ function renderHistory(){
     const day=dayById(w.dayId), dname=day?day.name:(w.dayName||"Free workout");
     h+=`<div class="card" data-open="${esc(w.date)}" tabindex="0" style="cursor:pointer">
       <div class="ex-head"><div class="stack" style="gap:6px;min-width:0"><span class="prev">${fmtDateY(w.date)}</span><span class="daytag" style="align-self:flex-start">${esc(nameOf("day",dname))}</span></div><span class="num prev" style="white-space:nowrap">${historySummary(w,sets,v)}</span></div>
-      <div class="chips">${done.map(e=>`<span class="chip">${esc(nameOf("ex",e.ex))} · ${countedSets(e.sets).length}</span>`).join("")}${(w.cardio||[]).map(c=>`<span class="chip">${cardioLabel(c.type)} ${c.min} min</span>`).join("")}</div>
+      <div class="chips">${done.filter(e=>countedSets(e.sets).length).map(e=>`<span class="chip">${esc(nameOf("ex",e.ex))} · ${countedSets(e.sets).length}</span>`).join("")}${(w.cardio||[]).map(c=>`<span class="chip">${cardioLabel(c.type)} ${c.min} min</span>`).join("")}</div>
       <div class="row" style="justify-content:flex-end">${state.confirmDel===w.id
         ?`<span class="prev">Delete this workout?</span><button class="btn small" data-act="cancel-del">Keep</button><button class="btn small danger" data-act="del-w" data-id="${w.id}">Delete</button>`
         :`<button class="btn ghost small danger" data-act="ask-del" data-id="${w.id}">Delete</button>`}</div></div>`;
@@ -2928,8 +2935,8 @@ document.addEventListener("click",e=>{
   switch(a){
     case "step":{ const inp=document.getElementById(b.dataset.f+"-"+ei); let v=Math.max(0,(parseFloat(inp.value)||0)+parseFloat(b.dataset.d)); inp.value=b.dataset.f==="r"?Math.round(v):kg(v); inp.dispatchEvent(new Event("input",{bubbles:true})); break; }
     case "edit-set":{ const en=ensureWorkout().entries[ei], si=+b.dataset.si, s=en.sets[si];
-      state.editSet={date:state.date,ex:en.ex,si}; state.setKind=setType(s); ui[en.ex]={w:kg(s.w),r:String(s.r)}; renderLog(); break; }
-    case "target-edit": state.targetEdit=ensureWorkout().entries[ei].ex; renderLog(); break;
+      state.targetEdit=null; state.editSet={date:state.date,ex:en.ex,si}; state.setKind=setType(s); ui[en.ex]={w:kg(s.w),r:String(s.r)}; renderLog(); break; }
+    case "target-edit": stopEditing(); state.targetEdit=ensureWorkout().entries[ei].ex; renderLog(); break;
     case "tgt-step":{ const ex=state.targetEdit; if(!ex) break; const cur={...targetFor(state.settings,ex)}, f=b.dataset.f, dd=+b.dataset.d;
       if(f==="sets") cur.sets=Math.min(10,Math.max(1,cur.sets+dd));
       else if(f==="min") cur.min=Math.min(cur.max,Math.max(1,cur.min+dd));
