@@ -571,7 +571,7 @@ const same = (a,b) => a.toLowerCase()===b.toLowerCase();
 
 const freshChallenges=()=>({loaded:false,docs:[],progress:{},open:null,last:{},lastAt:{},form:null,confirm:null});
 const freshFriends=()=>({report:null,loaded:false,docs:[],blocks:[],data:{},open:null,confirm:null,renamed:false,q:"",found:null});
-let state = { challenges:freshChallenges(), del:null, deletedNote:false, journey:null, journeyShown:false, gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, showMore:{}, workouts:[], days:[], body:[], profile:{}, view:"log", tabView:{}, date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
+let state = { challenges:freshChallenges(), del:null, deletedNote:false, journey:null, journeyShown:false, gymStatus:null, gymConfirmClear:false, gymEdit:null, showAllGym:false, friends:freshFriends(), share:{loaded:false,profile:null,busy:false,last:null,lastAt:0}, showAllEx:{}, showMore:{}, myFoods:[], workouts:[], days:[], body:[], profile:{}, view:"log", tabView:{}, date:today(), bdate:today(), metric:"weight", progressEx:null, confirmDel:null, editDay:null, confirmReset:false, confirmDayDel:null, pickDay:false, editProfile:false, authed:false, setup:false, settings:{rest:{}}, food:{}, cardioDraft:{type:"treadmill",min:"20",intensity:"moderate",kcal:""}, cdate:today(), mealDraft:{kcal:"",protein:"",name:""}, rest:null, editSet:null };
 const ui = {};
 
 /* ---------- storage: Firebase Auth + Firestore (users/{uid}/items/{id}) ---------- */
@@ -593,19 +593,19 @@ const store = {
       this.stopFriends(); state.showMore={}; state.friends=freshFriends(); this.stopChallenges(); state.challenges=freshChallenges(); renderFriendsBadge();
       this.user=user; state.authed=!!user; authKnown=true;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.myFoods=[]; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
       this.loadShare().then(()=>{ maybePublish(); refreshFriendNames(); if(state.view==="profile") renderProfile(); });
       this.watchFriends(); this.watchChallenges();
       this.col = collection(fs, "users", user.uid, "items");
       this.unsub = onSnapshot(this.col, { includeMetadataChanges:true }, snap=>{
-        const ws=[], bs=[], food={}; let prog={}, prof={}, settings={rest:{}};
+        const ws=[], bs=[], food={}; let prog={}, prof={}, myFoods=[], settings={rest:{}};
         snap.docs.forEach(d=>{ const v=d.data();
-          if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}, ...(Array.isArray(v.seenBadges)?{seenBadges:v.seenBadges}:{}), ...(Array.isArray(v.gym)?{gym:v.gym}:{})}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("f-")) food[d.id.slice(2)]={date:d.id.slice(2),meals:v.meals||[]}; else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
+          if(d.id==="foods") myFoods=Array.isArray(v.list)?v.list:[]; else if(d.id==="program") prog=v; else if(d.id==="profile") prof=v; else if(d.id==="settings") settings={rest:v.rest||{}, ...(Array.isArray(v.seenBadges)?{seenBadges:v.seenBadges}:{}), ...(Array.isArray(v.gym)?{gym:v.gym}:{})}; else if(d.id.startsWith("b-")) bs.push(v); else if(d.id.startsWith("f-")) food[d.id.slice(2)]={date:d.id.slice(2),meals:v.meals||[]}; else if(d.id.startsWith("w-")) ws.push({id:d.id,...v}); });
         // One-time fix for days missing muscle tags. Only on server data, so a stale offline copy never overwrites newer edits.
         const mp=migrateProgram(prog), days=mp.days;
         if(state.gymEdit){ if(state.gymEdit.gym===undefined) delete settings.gym; else settings.gym=state.gymEdit.gym; }
-        state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings; state.food=food; state.serverSynced=!snap.metadata.fromCache;
+        state.workouts=ws; state.days=days; state.body=bs; state.profile=prof; state.settings=settings; state.food=food; state.myFoods=myFoods; state.serverSynced=!snap.metadata.fromCache;
         if(snap.docChanges().length) state.dataRev=(state.dataRev||0)+1;  // metadata-only snapshots ("saved") change nothing
         if(mp.needsSave && !snap.metadata.fromCache) this.saveDays(days);
         setSync(snap.metadata.hasPendingWrites ? (navigator.onLine===false?t("Offline · will sync"):t("Saving…")) : (snap.metadata.fromCache?t("Offline"):t("Synced")));
@@ -799,6 +799,8 @@ const store = {
   saveFood(doc){ const meals=doc.meals||[];
     if(meals.length){ state.food[doc.date]={date:doc.date,meals}; this.write("f-"+doc.date,{date:doc.date,meals,updated:Date.now()}); }
     else { delete state.food[doc.date]; this.write("f-"+doc.date,null); } },
+  // My own foods (the `foods` document, at most 200). An empty list deletes the document.
+  saveFoods(list){ const l=list.slice(0,200); state.myFoods=l; this.write("foods",l.length?{list:l,updated:Date.now()}:null); },
   // Merges a partial change (rest times or seen badges) so neither field drops the other.
   saveSettings(patch){ const s={...state.settings,...patch}; state.settings=s;
     this.write("settings",settingsDoc(s,Date.now())); },
@@ -2223,6 +2225,7 @@ function exportData(){
     {id:"program",data:{days:state.days,v:PROGRAM_VERSION,updated:Date.now()}},
     {id:"profile",data:state.profile},
     {id:"settings",data:settingsDoc(state.settings,Date.now())},
+    ...(state.myFoods.length?[{id:"foods",data:{list:state.myFoods,updated:Date.now()}}]:[]),
     ...Object.values(state.food).map(fd=>({id:"f-"+fd.date,data:{date:fd.date,meals:fd.meals,updated:Date.now()}}))
   ];
   const blob=new Blob([JSON.stringify({app:"iron-log",version:1,exported:new Date().toISOString(),items},null,1)],{type:"application/json"});

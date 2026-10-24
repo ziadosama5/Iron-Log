@@ -400,3 +400,25 @@ export function asEntry(mine) {
     protein100: mine.per100 ? mine.per100.protein : null, servings: mine.servings.map(s => ({ id: s.id, en: s.name, ar: s.name, ...(s.grams != null ? { grams: s.grams } : {}), ...(s.kcal != null ? { kcal: s.kcal } : {}), ...(s.protein != null ? { protein: s.protein } : {}) })),
     def: mine.servings[0].id, ...(mine.barcode ? { barcode: mine.barcode } : {}) };
 }
+
+// A food the person typed (or scanned): validated and shaped for storage in the `foods` document, or null.
+// With grams it keeps per-100 g values (so the grams box works); without, the numbers stay fixed on the serving.
+export function makeMyFood({ id, name, kcal, protein, servingName, grams, barcode }) {
+  const n = String(name ?? "").trim().slice(0, 60);
+  if (!n || !has(kcal) || kcal < 0 || kcal > 5000) return null;
+  if (protein != null && (!has(protein) || protein < 0 || protein > 500)) return null;
+  if (barcode != null && barcode !== "" && !/^\d{8,14}$/.test(barcode)) return null;
+  const sName = String(servingName ?? "").trim().slice(0, 60) || "1 serving";
+  const out = { id: id || "m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: n, per100: null, servings: [] };
+  if (grams != null) {
+    if (!has(grams) || grams < 1 || grams > MAX_GRAMS) return null;
+    const k = round1(kcal / grams * 100), p = protein == null ? null : round1(protein / grams * 100);
+    if (k > 900 || (p !== null && p > 100)) return null;
+    out.per100 = { kcal: k, protein: p };
+    out.servings.push({ id: "s1", name: sName, grams });
+  } else {
+    out.servings.push({ id: "s1", name: sName, kcal, ...(protein != null ? { protein } : {}) });
+  }
+  if (barcode) out.barcode = barcode;
+  return out;
+}

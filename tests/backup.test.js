@@ -175,3 +175,8 @@ test("foods document: bad foods are dropped, the list is capped, junk is skipped
   assert.equal(cleanBackupItems([foodsDoc([])], OPTS).skipped, 1);
   assert.equal(cleanBackupItems([{ id: "foods", data: { list: "nope" } }], OPTS).skipped, 1);
 });
+
+test("foods document: per-100 g protein may be unknown (null)", () => {
+  const f = { id: "m9", name: "Home ful", per100: { kcal: 120, protein: null }, servings: [{ id: "s1", name: "1 plate", grams: 250 }] };
+  assert.deepEqual(cleanBackupItems([{ id: "foods", data: { list: [f], updated: 1 } }], OPTS).items[0].data.list, [f]);
+});

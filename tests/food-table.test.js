@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { FOODS, normalizeText, searchFoods, portionTotals, mealTotals, defaultMealName, recentFoods, asEntry } from "../public/food-table.js";
+import { FOODS, normalizeText, makeMyFood, searchFoods, portionTotals, mealTotals, defaultMealName, recentFoods, asEntry } from "../public/food-table.js";
 
 // kcal100 250, protein100 8: a 40 g piece = 100 kcal / 3.2 g
 const bread = { id: "bread", en: "Baladi bread", ar: "عيش بلدي", alt: [], group: "bread", kcal100: 250, protein100: 8,
@@ -84,4 +84,27 @@ test("asEntry adapts a My food", () => {
   assert.equal(bar.ar, "Protein bar");
   assert.equal(bar.def, "s1");
   assert.deepEqual(bar.alt, []);
+});
+
+test("makeMyFood: a fixed-kcal serving keeps its numbers on the serving", () => {
+  const f = makeMyFood({ id: "m1", name: "  Protein bar ", kcal: 210, protein: 20, servingName: "1 bar", barcode: "5449000000996" });
+  assert.deepEqual(f, { id: "m1", name: "Protein bar", per100: null, servings: [{ id: "s1", name: "1 bar", kcal: 210, protein: 20 }], barcode: "5449000000996" });
+  assert.deepEqual(makeMyFood({ id: "m2", name: "Tea cake", kcal: 150, protein: null, servingName: "" }).servings, [{ id: "s1", name: "1 serving", kcal: 150 }]);
+});
+
+test("makeMyFood: with grams it stores per-100 g values and a grams serving", () => {
+  const f = makeMyFood({ id: "m3", name: "Home ful", kcal: 300, protein: 17.5, servingName: "1 plate", grams: 250 });
+  assert.deepEqual(f.per100, { kcal: 120, protein: 7 });
+  assert.deepEqual(f.servings, [{ id: "s1", name: "1 plate", grams: 250 }]);
+  assert.equal(makeMyFood({ id: "m4", name: "x", kcal: 300, protein: null, servingName: "p", grams: 250 }).per100.protein, null);
+  const e = asEntry(f);
+  assert.deepEqual(portionTotals(e, { serving: "s1", amount: 1 }), { grams: 250, kcal: 300, protein: 17.5 });
+});
+
+test("makeMyFood rejects bad input", () => {
+  const ok = { id: "m", name: "x", kcal: 100, protein: 5, servingName: "s" };
+  for (const bad of [{ name: "" }, { name: "   " }, { kcal: -1 }, { kcal: 5001 }, { kcal: NaN }, { kcal: "100" }, { protein: 501 }, { protein: -1 }, { grams: 0 }, { grams: 5001 },
+    { grams: 10, kcal: 500 }, { barcode: "12ab" }]) assert.equal(makeMyFood({ ...ok, ...bad }), null, JSON.stringify(bad));
+  assert.equal(makeMyFood({ ...ok, name: "x".repeat(70) }).name.length, 60);
+  assert.match(makeMyFood({ name: "x", kcal: 1, protein: null, servingName: "s" }).id, /^[a-z0-9]{1,40}$/, "generated id");
 });

@@ -55,7 +55,7 @@ function cleanMyFood(f) {
   const id = text(f.id, 40), name = text(f.name, 60); if (!id || !name) return null;
   let per100 = null;
   if (f.per100 != null) {
-    if (!isObj(f.per100) || !num(f.per100.kcal, 0, 900) || !num(f.per100.protein, 0, 100)) return null;
+    if (!isObj(f.per100) || !num(f.per100.kcal, 0, 900) || (f.per100.protein !== null && !num(f.per100.protein, 0, 100))) return null;
     per100 = { kcal: f.per100.kcal, protein: f.per100.protein };
   }
   const servings = (Array.isArray(f.servings) ? f.servings : []).map(s => {
