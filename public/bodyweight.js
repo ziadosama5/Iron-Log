@@ -54,3 +54,9 @@ export function formatLoad(w, bwLabel = "BW") {
   const n = Math.round((Number(w) || 0) * 100) / 100;
   return n === 0 ? bwLabel : n > 0 ? "+" + n : "−" + Math.abs(n);
 }
+
+// A session logged before bodyweight mode (no bw flag) of a bodyweight exercise: its reps are real, but what the weight meant is
+// unknown (people typed 0, their body weight or a real extra load), so it counts as plain bodyweight: weight 0. The input is not changed.
+export function legacyBodyweight(session) {
+  return { ...session, sets: (session.sets || []).map(s => ({ ...s, w: 0 })) };
+}

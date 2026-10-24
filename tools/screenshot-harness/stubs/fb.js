@@ -10,9 +10,11 @@ const gymQ = new URLSearchParams(location.search).get("gym");
 add("settings", { rest: {}, seenBadges: new URLSearchParams(location.search).get("cele") ? ["workouts-1"] : ["workouts-1","workouts-10","workouts-50","workouts-100","workouts-250","kcal-10k","kcal-50k","kcal-100k","cardio-1000","cardio-5000","goal-first-kg","goal-reached","streak-4","streak-12","streak-26","food-7","food-30","pr-1","pr-10","bench-bw","squat-1.5","deadlift-2","volume-100t","volume-1000t"], ...(gymQ ? { gym: JSON.parse(gymQ) } : {}) });
 for (let i = 0; i < 10; i++) { const date = day(i * 2 + 1); add("w-" + date, { date, dayId: "d" + (1 + (i % 2)), dayName: ["Push", "Pull"][i % 2], updated: T, entries: [{ ex: "Bench Press", sets: [S(60 + i, 8, 50), S(62.5 + i, 6, 45)], done: true }, { ex: "Overhead Press", sets: [S(40, 8, 35)], done: true }] }); }
 // ?bw=1: a bodyweight session two days ago (Push-up and Pull-up at the top of their ranges, Plank at 60 s)
-if (new URLSearchParams(location.search).get("bw")) add("w-" + day(2), { date: day(2), dayId: "d2", dayName: "Pull", updated: T, entries: [
+if (["1", "2"].includes(new URLSearchParams(location.search).get("bw"))) add("w-" + day(2), { date: day(2), dayId: "d2", dayName: "Pull", updated: T, entries: [
   { ex: "Push-up", bw: true, sets: [S(0, 12, 40), S(0, 12, 35), S(0, 12, 30)] }, { ex: "Pull-up", bw: true, sets: [S(0, 6, 25), S(0, 6, 20), S(0, 6, 15)] }, { ex: "Plank", bw: true, sets: [S(0, 60, 10), S(0, 60, 8), S(0, 60, 6)] }] });
 // ?bw=2 also: an older session from before the feature (no bw flag) of the same pull-up
+// ?bw=3: only an old pull-up session that was logged with the body weight typed in (80 kg), nothing flagged
+if (new URLSearchParams(location.search).get("bw") === "3") add("w-" + day(4), { date: day(4), dayId: "d2", dayName: "Pull", updated: T, entries: [{ ex: "Pull-up", sets: [S(80, 5, 30), S(80, 5, 25), S(80, 5, 20)] }] });
 if (new URLSearchParams(location.search).get("bw") === "2") add("w-" + day(4), { date: day(4), dayId: "d2", dayName: "Pull", updated: T, entries: [{ ex: "Pull-up", sets: [S(0, 5, 30), S(0, 5, 25), S(0, 5, 20)] }] });
 for (let i = 0; i < 6; i++) { const date = day(i * 5); add("b-" + date, { date, weight: 86 - i * 0.6, waist: 92 - i * 0.4, updated: T }); }
 for (let i = 1; i < 6; i++) add("f-" + day(i), { date: day(i), meals: [{ id: "x" + i, name: "Lunch", kcal: 2100, protein: 150 }] });

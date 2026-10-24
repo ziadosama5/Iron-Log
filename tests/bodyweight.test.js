@@ -71,3 +71,11 @@ test("formatLoad: BW, plus, minus with the real minus sign", () => {
   assert.equal(formatLoad(0, "وزن الجسم"), "وزن الجسم");
   assert.equal(formatLoad(12.50), "+12.5");
 });
+
+test("legacyBodyweight: a session from before bodyweight mode keeps its reps and counts its weight as 0 (BW)", async () => {
+  const { legacyBodyweight } = await import("../public/bodyweight.js");
+  const s = { date: "2026-10-01", sets: [{ w: 80, r: 5, t: 1 }, { w: 20, r: 6, k: "d" }] };
+  assert.deepEqual(legacyBodyweight(s), { date: "2026-10-01", sets: [{ w: 0, r: 5, t: 1 }, { w: 0, r: 6, k: "d" }] });
+  assert.equal(s.sets[0].w, 80, "the input is not changed");
+  assert.deepEqual(legacyBodyweight({ date: "d", sets: [], bw: undefined }).sets, []);
+});

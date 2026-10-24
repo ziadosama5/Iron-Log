@@ -1358,3 +1358,14 @@ test("bodyweight: switching an exercise between kinds does not borrow the other 
   assert.equal(await page.locator('#open-card input[data-f="w"]').inputValue(), "20");
   await ctx.close();
 });
+
+test("bodyweight: an old pull-up session that has the body weight typed in does not start the next one at 80 kg extra", async () => {
+  const { page, ctx } = await open("bw=3");
+  await startPush(page);
+  await addEx(page, "Pull-up");
+  assert.equal(await page.locator('#open-card input[data-f="w"]').inputValue(), "0", "reps carry over, the old weight does not");
+  const card = (await page.locator("#open-card").innerText());
+  assert.ok(card.includes("Last time") && card.includes("BW×5"), card.slice(0, 300));
+  assert.ok(!card.includes("80"), "no 80 anywhere on the card");
+  await ctx.close();
+});

@@ -543,7 +543,7 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore, bestBwSet } from "./bodyweight.js";
+import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore, bestBwSet, legacyBodyweight } from "./bodyweight.js";
 import { workingSets, liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX, goalAdjustment, explainTarget, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
@@ -1222,7 +1222,8 @@ function exerciseNames(){ const s=new Set(); sorted().forEach(w=>w.entries.forEa
 function sessionsFor(ex){ return exerciseSessions(sorted(),ex,same); }   // working sets only: warm-ups and drop sets are not "last time"
 // The kind of a past session: `bw` is true/false for entries logged since bodyweight mode; older ones count as bodyweight only for library bodyweight exercises.
 const sessionBw = (s,ex) => s.bw===true || (s.bw===undefined && bwDefault(ex));
-const sessionsOfKind = (ex,bw) => sessionsFor(ex).filter(x=>sessionBw(x,ex)===bw);
+// Sessions from before bodyweight mode count as bodyweight with weight 0 (what their weight meant is unknown), so an old "80 kg" never becomes 80 kg extra.
+const sessionsOfKind = (ex,bw) => sessionsFor(ex).filter(x=>sessionBw(x,ex)===bw).map(x=>bw&&x.bw===undefined?legacyBodyweight(x):x);
 function lastBefore(ex,date,bw=false){ const s=sessionsOfKind(ex,bw).filter(x=>x.date<date); return s[s.length-1]||null; }
 function bestBefore(ex,date,bw=false){ let b=0; sessionsOfKind(ex,bw).filter(x=>x.date<date).forEach(x=>x.sets.forEach(s=>b=Math.max(b,bw?bwScore(s):e1rm(s.w,s.r)))); return b; }
 // Bodyweight exercises (extra kg, see bodyweight.js): an entry that has sets keeps the kind it was logged as; before the first set the library or the switch decides.
