@@ -1,6 +1,6 @@
 // Checks and cleans items from a backup file before they are restored. A backup file can come
 // from anywhere, so nothing in it is trusted: bad items are skipped, bad fields dropped, text cut.
-import { CARDIO_TYPES, INTENSITIES } from "./energy.js";
+import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX } from "./energy.js";
 
 const DATE_ID = /^(w|b|f)-(\d{4}-\d{2}-\d{2})$/;
 const isObj = v => v !== null && typeof v === "object" && !Array.isArray(v);
@@ -111,6 +111,9 @@ function cleanProfile(d, goals) {
     birthYear: Number.isInteger(d.birthYear) && d.birthYear >= 1900 && d.birthYear <= 2100 ? d.birthYear : null,
     goal: goals.includes(d.goal) ? d.goal : null
   };
+  // Calorie-target choices: only when present and valid (anything else means "not chosen").
+  if (ACTIVITY_IDS.includes(d.activity)) out.activity = d.activity;
+  if (Number.isInteger(d.adjust) && d.adjust >= ADJUST_MIN && d.adjust <= ADJUST_MAX) out.adjust = d.adjust;
   // Target weight fields only when the backup has them, so older profiles come back unchanged.
   if ("goalWeight" in d) out.goalWeight = num(d.goalWeight, 30, 300) ? d.goalWeight : null;
   if ("goalStart" in d) out.goalStart = typeof d.goalStart === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d.goalStart) ? d.goalStart : null;

@@ -216,7 +216,7 @@ export function goalProgress({ workouts = [], body = [], food = {}, profile = {}
     totalDays++;
     if (!hasMeals(food, d)) continue;
     const b = bmrFor(p, body, d);
-    const e = dayEnergy({ bmr: b ? b.bmr : null, kg: weightOn(body, d), goal: p.goal, workout: workouts.find(w => w.date === d) || null, food: food[d] });
+    const e = dayEnergy({ bmr: b ? b.bmr : null, kg: weightOn(body, d), goal: p.goal, activity: p.activity, adjust: p.adjust, workout: workouts.find(w => w.date === d) || null, food: food[d] });
     if (e.balance != null) balances.push(e.balance);
   }
   const bank = balances.reduce((a, x) => a + x, 0);

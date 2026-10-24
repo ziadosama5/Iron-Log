@@ -1984,7 +1984,7 @@ function levelHero(){
 // The energy numbers for the date shown on Today; the card and the meal sheet both use them.
 function energyView(){
   const d=state.date, p=state.profile, kg=weightOn(state.body,d), b=bmrFor(p,state.body,d);
-  const e=dayEnergy({bmr:b?b.bmr:null, kg, goal:p.goal, workout:workoutFor(d)||null, food:state.food[d]||null});
+  const e=dayEnergy({bmr:b?b.bmr:null, kg, goal:p.goal, activity:p.activity, adjust:p.adjust, workout:workoutFor(d)||null, food:state.food[d]||null});
   const missing = kg==null ? t("Log your weight in Progress › Body to see calories burned and your target.")
     : !b ? t("Fill in About you in Progress › Body to see calories burned and your target.") : "";
   return {p, kg, e, missing, meals:(state.food[d]&&state.food[d].meals)||[]};
@@ -2840,6 +2840,8 @@ document.addEventListener("submit",e=>{
     p.goalWeight=gw; p.goalStart=gw==null?null:(gw===state.profile.goalWeight&&state.profile.goalStart?state.profile.goalStart:today());
     const yr=new Date().getFullYear();
     if(!p.sex||!p.goal||!p.height||p.height<100||p.height>250||!p.birthYear||p.birthYear<yr-100||p.birthYear>yr-10){ toast(t("Fill in all four fields: height in cm (100–250) and a 4-digit birth year")); return; }
+    if(state.profile.activity!==undefined) p.activity=state.profile.activity;   // calorie-target choices are not on this form: carry them over
+    if(state.profile.adjust!==undefined) p.adjust=state.profile.adjust;
     store.saveProfile(p); state.editProfile=false; renderBody(); toast(t("Saved"));
   }
   if(f.id==="body-form"){

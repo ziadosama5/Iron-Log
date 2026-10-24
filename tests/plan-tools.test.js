@@ -273,3 +273,9 @@ test("assignWeekday moves a weekday to one day, clears it for Rest, and keeps ev
   assert.equal(days[1].weekdays[0], 0);                                              // input is not changed
   assert.deepEqual(wd(assignWeekday(days, 3, "zzz")), { a: [2, 6], b: [0], c: [] }); // unknown id: weekday just cleared
 });
+
+test("mergeProfile keeps the calorie-target choices", async () => {
+  const { mergeProfile } = await import("../public/plan-tools.js");
+  const r = mergeProfile({ sex: "male", height: 180, birthYear: 1998, goal: "muscle", activity: "light", adjust: 100 }, { goal: "fat-loss" });
+  assert.equal(r.activity, "light"); assert.equal(r.adjust, 100); assert.equal(r.goal, "fat-loss");
+});

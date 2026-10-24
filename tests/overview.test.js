@@ -79,3 +79,11 @@ test("cacheKey differs per account, data revision and day", () => {
 test("weightChange is null when the latest weigh-in is itself older than the window", () => {
   assert.equal(weightChange(weightSeries([{ date: "2026-09-01", weight: 90 }, { date: "2026-09-10", weight: 89 }], TODAY), TODAY), null);
 });
+
+test("caloriesWeek: activity level and own adjustment reach the target", () => {
+  const profile = { sex: "male", height: 180, birthYear: 1995, goal: "maintain" }, body = [{ date: "2026-10-01", weight: 80 }];
+  const base = caloriesWeek({}, [], body, profile, TODAY)[6].target;
+  const active = caloriesWeek({}, [], body, { ...profile, activity: "active" }, TODAY)[6].target;
+  assert.ok(active > base);
+  assert.equal(caloriesWeek({}, [], body, { ...profile, adjust: -300 }, TODAY)[6].target, base - 300);
+});

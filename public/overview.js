@@ -40,7 +40,7 @@ export function caloriesWeek(food, workouts, body, profile, today) {
   const p = profile || {};
   return Array.from({ length: 7 }, (_, i) => {
     const date = addDays(today, -(6 - i)), f = (food && food[date]) || null, b = bmrFor(p, body, date);
-    const e = dayEnergy({ bmr: b ? b.bmr : null, kg: weightOn(body, date), goal: p.goal, workout: (workouts || []).find(w => w.date === date) || null, food: f });
+    const e = dayEnergy({ bmr: b ? b.bmr : null, kg: weightOn(body, date), goal: p.goal, activity: p.activity, adjust: p.adjust, workout: (workouts || []).find(w => w.date === date) || null, food: f });
     return { date, eaten: f && (f.meals || []).length ? e.eaten : null, target: e.target };
   });
 }

@@ -175,3 +175,9 @@ test("badges() stays fast with two years of daily data", () => {
   assert.equal(B(list, "food-30").earned, "2025-01-30");
   assert.ok(ms < 150, `took ${Math.round(ms)} ms`);
 });
+
+test("goalProgress: the person's activity level changes the burn, so the calorie bank", () => {
+  const food = { "2026-10-02": { date: "2026-10-02", meals: [{ id: "b", kcal: 2000 }] } };
+  const plain = goalProgress(goalInput({ food })), active = goalProgress(goalInput({ food, profile: { ...goalInput().profile, activity: "very" } }));
+  assert.ok(active.bank < plain.bank, `${active.bank} < ${plain.bank}`);
+});

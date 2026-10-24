@@ -182,3 +182,13 @@ test("foods document: per-100 g protein may be unknown (null)", () => {
   const f = { id: "m9", name: "Home ful", per100: { kcal: 120, protein: null }, servings: [{ id: "s1", name: "1 plate", grams: 250 }] };
   assert.deepEqual(cleanBackupItems([{ id: "foods", data: { list: [f], updated: 1 } }], OPTS).items[0].data.list, [f]);
 });
+
+test("profile: calorie-target choices are kept when valid and dropped when not", () => {
+  const prof = extra => cleanBackupItems([{ id: "profile", data: { sex: "male", height: 180, birthYear: 1998, goal: "muscle", ...extra } }], OPTS).items[0].data;
+  const ok = prof({ activity: "active", adjust: -300 });
+  assert.equal(ok.activity, "active"); assert.equal(ok.adjust, -300);
+  assert.equal(prof({ adjust: 0 }).adjust, 0, "0 is a choice");
+  for (const bad of [{ activity: "banana" }, { activity: 3 }, { adjust: 5000 }, { adjust: -1001 }, { adjust: 12.5 }, { adjust: "200" }]) {
+    const r = prof(bad); assert.equal("activity" in r, false, JSON.stringify(bad)); assert.equal("adjust" in r, false, JSON.stringify(bad));
+  }
+});
