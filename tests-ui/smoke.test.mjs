@@ -1196,3 +1196,105 @@ test("targets: opening the target editor while editing a logged set leaves set e
   assert.equal(await page.locator('#open-card [data-act="add-set"]').count(), 1);
   await ctx.close();
 });
+
+// ---- bodyweight ----
+const addEx = async (page, name) => {
+  await page.locator('#view-log [data-act="open-exsheet"]').first().click(); await page.waitForSelector("#exsheet[open]");
+  await page.locator("#new-ex").fill(name); await page.locator('#add-ex-form button[type="submit"]').click(); await page.waitForSelector("#open-card");
+  await page.waitForFunction(n => document.documentElement.lang === "ar" || document.querySelector("#open-card .ex-name")?.textContent.trim().toLowerCase() === n.toLowerCase(), name);
+};
+const bwChip = page => page.locator('#open-card [data-act="bw-toggle"]');
+const wLabel = async page => (await page.locator("#open-card .label", { hasText: /weight/i }).first().textContent()).trim();   // textContent: innerText is upper-cased by the CSS
+const bwText = async loc => (await loc.innerText()).replace(/\s+/g, " ").trim();
+
+test("bodyweight: Push-up logs extra kg from 0; a weighted lift keeps its label and starter", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  assert.equal(await wLabel(page), "Weight · kg", "Bench Press is weighted");
+  await addEx(page, "Push-up");
+  assert.ok((await wLabel(page)).startsWith("Extra weight"), await wLabel(page));
+  assert.equal(await page.locator('#open-card input[data-f="w"]').inputValue(), "0");
+  assert.equal(await page.locator('#open-card input[data-f="r"]').inputValue(), "8");
+  assert.equal(await bwChip(page).getAttribute("aria-pressed"), "true");
+  await ctx.close();
+});
+
+test("bodyweight: a typed exercise starts weighted and the Bodyweight chip flips it both ways", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  await addEx(page, "Zottman Move");
+  assert.equal(await wLabel(page), "Weight · kg");
+  assert.equal(await page.locator('#open-card input[data-f="w"]').inputValue(), "20");
+  await bwChip(page).click();
+  assert.ok((await wLabel(page)).startsWith("Extra weight"));
+  assert.equal(await page.locator('#open-card input[data-f="w"]').inputValue(), "0");
+  await bwChip(page).click();
+  assert.equal(await wLabel(page), "Weight · kg", "flipped back");
+  await ctx.close();
+});
+
+test("bodyweight: the weight steps below zero only for bodyweight; assisted sets show with a minus", async () => {
+  const { page, ctx } = await open();
+  await startPush(page);
+  await addEx(page, "Push-up");
+  const w = page.locator('#open-card input[data-f="w"]');
+  await page.locator('#open-card [data-act="step"][data-f="w"][data-d="-2.5"]').click();
+  assert.equal(await w.inputValue(), "-2.5");
+  await w.fill("-20"); await page.locator('#open-card input[data-f="r"]').fill("8");
+  await page.locator('#open-card [data-act="add-set"]').click(); await page.waitForTimeout(250);
+  assert.ok((await rowsOf(page).first().innerText()).includes("−20"), await rowsOf(page).first().innerText());
+  await page.locator('#view-log [data-act="jump-ex"]').first().click();   // Bench Press: weighted
+  const bw0 = page.locator('#open-card input[data-f="w"]');
+  await bw0.fill("0");
+  await page.locator('#open-card [data-act="step"][data-f="w"][data-d="-2.5"]').click();
+  assert.equal(await bw0.inputValue(), "0", "weighted weights stop at 0");
+  await ctx.close();
+});
+
+test("bodyweight: rows show BW or +kg with no e1RM, more reps than last time is a PR, and the chip locks after a set", async () => {
+  const { page, ctx } = await open("bw=1");
+  await startPush(page);
+  await addEx(page, "Push-up");
+  await page.locator('#open-card input[data-f="w"]').fill("0"); await page.locator('#open-card input[data-f="r"]').fill("13");
+  await page.locator('#open-card [data-act="add-set"]').click(); await page.waitForTimeout(250);
+  const row = await rowsOf(page).first().innerText();
+  assert.ok(row.includes("BW") && row.includes("13"), row);
+  assert.equal(await rowsOf(page).first().locator(".pr").count(), 1, "13 reps beats the best earlier session (12)");
+  assert.ok(!/\d\s*kg/.test(row));
+  await page.locator('#open-card input[data-f="w"]').fill("10"); await page.locator('#open-card input[data-f="r"]').fill("5");
+  await page.locator('#open-card [data-act="add-set"]').click(); await page.waitForTimeout(250);
+  assert.ok((await rowsOf(page).nth(1).innerText()).includes("+10"));
+  assert.equal(await bwChip(page).isDisabled(), true, "no switching once a set is logged");
+  await ctx.close();
+});
+
+test("bodyweight: at the top of the range the advice adds a little weight, and set 1 is pre-filled", async () => {
+  const { page, ctx } = await open("bw=1");
+  await startPush(page);
+  await addEx(page, "Push-up");
+  assert.equal(await bwText(advice(page)), "Add 2.5 kg extra, start at 8 reps");
+  assert.equal(await page.locator('#open-card input[data-f="w"]').inputValue(), "2.5");
+  assert.equal(await page.locator('#open-card input[data-f="r"]').inputValue(), "8");
+  await ctx.close();
+});
+
+test("bodyweight: a plank counts seconds and never suggests weight", async () => {
+  const { page, ctx } = await open("bw=1");
+  await startPush(page);
+  await addEx(page, "Plank");
+  assert.ok((await page.locator("#open-card .label", { hasText: /Seconds/ }).count()) >= 1, "reps are called Seconds");
+  assert.equal(await bwText(advice(page)), "Aim for 60 seconds on every set");
+  assert.equal(await page.locator('#open-card input[data-f="r"]').inputValue(), "60");
+  assert.equal((await bwText(targetChip(page))), "Target 3 × 30–60");
+  await ctx.close();
+});
+
+test("bodyweight: in Arabic the chip and labels are translated and the steppers keep their order", async () => {
+  const { page, ctx } = await open("lang=ar&bw=1");
+  await startPush(page);
+  await addEx(page, "Push-up");
+  assert.ok(/[؀-ۿ]/.test(await bwChip(page).innerText()));
+  const xs = async sel => page.evaluate(s => document.querySelector(s).getBoundingClientRect().x, sel);
+  assert.ok(await xs('#open-card [data-act="step"][data-f="w"][data-d="-2.5"]') < await xs('#open-card [data-act="step"][data-f="w"][data-d="2.5"]'));
+  await ctx.close();
+});

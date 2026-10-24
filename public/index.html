@@ -543,8 +543,8 @@ import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager
 import { firebaseConfig } from "./firebase-config.js";
 import { prefillFor, restFor, startRest, adjustRest, remaining, restPhase, fmtClock, shouldWake, createWakeLock, editIndexFor, rolloverDate, trainedOn, nextUnfinished, elapsedMin } from "./workout-tools.js";
 import { cleanBackupItems } from "./backup.js";
-import { cleanBodyweight } from "./bodyweight.js";
-import { liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
+import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore } from "./bodyweight.js";
+import { workingSets, liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX, goalAdjustment, explainTarget, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { cleanDigits, canonicalBarcode, productUrl, normalizeProduct } from "./barcode.js";
@@ -575,7 +575,7 @@ const fmtDate = d => new Date(d+"T12:00:00").toLocaleDateString(locale(),{weekda
 const fmtDateY = d => new Date(d+"T12:00:00").toLocaleDateString(locale(),{day:"numeric",month:"short",year:"numeric"});
 const kg = n => (Math.round(n*100)/100).toString();
 const e1rm = (w,r) => r<=0||w<=0 ? 0 : (r===1 ? w : w*(1+r/30));
-const vol = sets => sets.reduce((a,s)=>a+s.w*s.r,0);
+const vol = sets => sets.reduce((a,s)=>a+loadKg(s)*s.r,0);   // extra load only: plain bodyweight and assisted sets add nothing
 const uid = () => Math.random().toString(36).slice(2,9);
 const clone = o => JSON.parse(JSON.stringify(o));
 const same = (a,b) => a.toLowerCase()===b.toLowerCase();
@@ -1222,6 +1222,14 @@ function exerciseNames(){ const s=new Set(); sorted().forEach(w=>w.entries.forEa
 function sessionsFor(ex){ return exerciseSessions(sorted(),ex,same); }   // working sets only: warm-ups and drop sets are not "last time"
 function lastBefore(ex,date){ const s=sessionsFor(ex).filter(x=>x.date<date); return s[s.length-1]||null; }
 function bestBefore(ex,date){ let b=0; sessionsFor(ex).filter(x=>x.date<date).forEach(x=>x.sets.forEach(s=>b=Math.max(b,e1rm(s.w,s.r)))); return b; }
+// Bodyweight exercises (extra kg, see bodyweight.js): an entry that has sets keeps the kind it was logged as; before the first set the library or the switch decides.
+const isBw = e => e.sets.length ? !!e.bw : bwFor(state.settings, e.ex);
+function bestBwBefore(ex,date){ let b=0; sorted().filter(w=>w.date<date).forEach(w=>w.entries.filter(e=>e.bw&&same(e.ex,ex)).forEach(e=>workingSets(e.sets).forEach(s=>b=Math.max(b,bwScore(s))))); return b; }
+// Flips an exercise between weighted and bodyweight; only a difference from the library default is stored.
+function setBodyweight(ex,on){
+  const all={...(state.settings.bodyweight||{})}; if(on===bwDefault(ex)) delete all[ex]; else all[ex]=on;
+  state.settings={...state.settings,bodyweight:all}; delete ui[ex]; store.saveSettings({bodyweight:all});
+}
 const workoutFor = date => state.workouts.find(w=>w.date===date);
 const dayById = id => state.days.find(d=>d.id===id);
 const dayIndex = id => state.days.findIndex(d=>d.id===id);
@@ -1307,6 +1315,11 @@ function renderLog(){
 // Target chip (or its editor) and the "what to try today" line under the Last time line.
 function adviceText(sug){
   if(!sug) return "";
+  if(sug.bw){
+    if(sug.unit==="s") return t("Aim for {r} seconds on every set",{r:sug.r});
+    if(sug.kind==="increase") return sug.w<0?t("Less assistance: {w} kg, start at {r} reps",{w:formatLoad(sug.w),r:sug.r}):t("Add {w} kg extra, start at {r} reps",{w:kg(sug.w),r:sug.r});
+    return sug.low?t("Build up to {r} reps",{r:sug.r}):t("Aim for {r} reps on every set",{r:sug.r});
+  }
   return sug.kind==="increase"?t("Try {w} kg × {r}",{w:kg(sug.w),r:sug.r}):sug.low?t("Same weight: build up to {r} reps",{r:sug.r}):t("Same weight: aim for {r} on every set",{r:sug.r});
 }
 function targetBlock(ex,tg,sug,ei){
@@ -1332,28 +1345,30 @@ function setTarget(ex,next){
 }
 function focusCard(w, ei){
   const entries=w.entries, e=entries[ei];
-  const last=lastBefore(e.ex,state.date), best=bestBefore(e.ex,state.date);
-  const target=targetFor(state.settings,e.ex), sug=suggestNext({last:last&&last.sets,target,step:stepFor(e.ex)});
-  const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last,sug));
+  const bw=isBw(e), hold=bw&&isHold(e.ex);
+  const last=lastBefore(e.ex,state.date), best=bw?bestBwBefore(e.ex,state.date):bestBefore(e.ex,state.date);
+  const target=targetFor(state.settings,e.ex), sug=suggestNext({last:last&&last.sets,target,step:bw?2.5:stepFor(e.ex),bw,hold});
+  const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last,sug,{bw,hold}));
   const editSi = editIndexFor(state.editSet, state.date, e.ex, e.sets), kind=state.setKind||"normal";
   let runBest=best;
   const nx = nextUnfinished(entries, ei);
   return `<div class="card focus" id="open-card">
       <div class="row"><span class="label grow">${t("Exercise {n} of {m}",{n:ei+1,m:entries.length})}</span>${infoBtn(e.ex)}</div>
       <div class="ex-name">${esc(nameOf("ex",e.ex))}</div>
-      ${last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>kg(s.w)+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
+      ${last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>(bw?formatLoad(s.w,t("BW")):kg(s.w))+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
       ${targetBlock(e.ex,target,sug,ei)}
-      <div class="stack" style="gap:4px"><span class="label">Weight · kg</span>
-        <div class="bigstep"><button data-act="step" data-f="w" data-d="-2.5" data-ei="${ei}" aria-label="Minus 2.5 kg">−</button><input id="w-${ei}" inputmode="decimal" value="${d.w}" data-f="w" data-ex="${esc(e.ex)}" aria-label="Weight in kg"><button data-act="step" data-f="w" data-d="2.5" data-ei="${ei}" aria-label="Plus 2.5 kg">+</button></div></div>
-      <div class="stack" style="gap:4px"><span class="label">Reps</span>
-        <div class="bigstep"><button data-act="step" data-f="r" data-d="-1" data-ei="${ei}" aria-label="Minus 1 rep">−</button><input id="r-${ei}" inputmode="numeric" value="${d.r}" data-f="r" data-ex="${esc(e.ex)}" aria-label="Reps"><button data-act="step" data-f="r" data-d="1" data-ei="${ei}" aria-label="Plus 1 rep">+</button></div></div>
+      <div class="row" style="gap:8px"><button type="button" class="chip" data-act="bw-toggle" data-ei="${ei}" aria-pressed="${bw}"${e.sets.length?" disabled":""}>${t("Bodyweight")}</button>${e.sets.length?`<span class="prev">${t("Switch before your first set")}</span>`:""}</div>
+      <div class="stack" style="gap:4px"><span class="label">${t(bw?"Extra weight · kg":"Weight · kg")}</span>${bw?`<span class="prev">${t("0 = your body. Negative = assisted.")}</span>`:""}
+        <div class="bigstep"><button data-act="step" data-f="w" data-d="-2.5" data-ei="${ei}" aria-label="Minus 2.5 kg">−</button><input id="w-${ei}" inputmode="${bw?"text":"decimal"}" value="${d.w}" data-f="w" data-ex="${esc(e.ex)}" aria-label="${esc(t(bw?"Extra weight in kg":"Weight in kg"))}"><button data-act="step" data-f="w" data-d="2.5" data-ei="${ei}" aria-label="Plus 2.5 kg">+</button></div></div>
+      <div class="stack" style="gap:4px"><span class="label">${t(hold?"Seconds":"Reps")}</span>
+        <div class="bigstep"><button data-act="step" data-f="r" data-d="${hold?-5:-1}" data-ei="${ei}" aria-label="${esc(t(hold?"Minus 5 seconds":"Minus 1 rep"))}">−</button><input id="r-${ei}" inputmode="numeric" value="${d.r}" data-f="r" data-ex="${esc(e.ex)}" aria-label="${esc(t(hold?"Seconds":"Reps"))}"><button data-act="step" data-f="r" data-d="${hold?5:1}" data-ei="${ei}" aria-label="${esc(t(hold?"Plus 5 seconds":"Plus 1 rep"))}">+</button></div></div>
       <div class="chips" role="group" aria-label="${esc(t("Set type"))}">${SET_TYPES.map(ty=>`<button type="button" class="chip" data-act="set-kind" data-k="${ty}" aria-pressed="${kind===ty}">${esc(t(KIND_LABEL[ty]))}</button>`).join("")}</div>
       ${editSi>=0
         ? `<button class="btn primary" data-act="save-set" data-ei="${ei}">${t("Save set {n}",{n:editSi+1})}</button><div class="row"><span class="prev grow">${t("Editing set {n}",{n:editSi+1})}</span><button class="btn ghost small" data-act="cancel-edit">Cancel</button></div>`
         : `<button class="btn primary" data-act="add-set" data-ei="${ei}">${t("Add set {n}",{n:e.sets.length+1})}</button>`}
       ${e.sets.length?`<table><thead><tr><th>Set</th><th class="r">kg</th><th class="r">Reps</th><th class="r">e1RM</th><th></th></tr></thead><tbody>${
-        e.sets.map((s,si)=>{ const wk=isWorking(s), est=wk?e1rm(s.w,s.r):0, ty=setType(s); const isPr=est>0&&est>runBest&&best>0; if(est>runBest) runBest=est;   // only normal sets can be a PR
-          return `<tr class="setrow${si===editSi?" editing":""}" data-act="edit-set" data-ei="${ei}" data-si="${si}" tabindex="0" aria-label="${esc(t("Edit set {n}",{n:si+1}))}"><td class="num">${si+1}${ty==="normal"?"":`<span class="settag">${esc(t(KIND_LABEL[ty]))}</span>`}</td><td class="r num">${kg(s.w)}</td><td class="r num">${s.r}</td><td class="r num">${est?kg(Math.round(est*10)/10):"–"}${isPr?'<span class="pr">PR</span>':""}</td><td class="r"><button class="btn ghost small" data-act="rm-set" data-ei="${ei}" data-si="${si}" aria-label="${esc(t("Delete set {n}",{n:si+1}))}">✕</button></td></tr>`;}).join("")
+        e.sets.map((s,si)=>{ const wk=isWorking(s), est=wk&&!bw?e1rm(s.w,s.r):0, score=wk?(bw?bwScore(s):e1rm(s.w,s.r)):0, ty=setType(s); const isPr=score>0&&score>runBest&&best>0; if(score>runBest) runBest=score;   // only normal sets can be a PR
+          return `<tr class="setrow${si===editSi?" editing":""}" data-act="edit-set" data-ei="${ei}" data-si="${si}" tabindex="0" aria-label="${esc(t("Edit set {n}",{n:si+1}))}"><td class="num">${si+1}${ty==="normal"?"":`<span class="settag">${esc(t(KIND_LABEL[ty]))}</span>`}</td><td class="r num">${bw?formatLoad(s.w,t("BW")):kg(s.w)}</td><td class="r num">${s.r}</td><td class="r num">${est?kg(Math.round(est*10)/10):"–"}${isPr?'<span class="pr">PR</span>':""}</td><td class="r"><button class="btn ghost small" data-act="rm-set" data-ei="${ei}" data-si="${si}" aria-label="${esc(t("Delete set {n}",{n:si+1}))}">✕</button></td></tr>`;}).join("")
       }</tbody></table>`:""}
       <div class="row"><button class="btn ghost small danger" data-act="rm-ex" data-ei="${ei}">Remove exercise</button></div>
     </div>
@@ -1457,8 +1472,9 @@ function infoBtn(name){ return infoFor(name) ? `<button class="infobtn" data-act
 function chipInfo(chip,name){ const i=infoBtn(name); return i ? `<span class="chipgrp">${chip}${i}</span>` : chip; }
 // Reads the weight/reps inputs of exercise ei; shows a toast and returns null if invalid.
 function readSet(ei){
+  const en=ensureWorkout().entries[ei], lo=en&&isBw(en)?-500:0;   // an assisted bodyweight set has a negative extra load
   const w=parseFloat(String(document.getElementById("w-"+ei).value).replace(",",".")), r=parseInt(document.getElementById("r-"+ei).value,10);
-  if(!(w>=0)||!(r>0)){ toast(t("Enter a weight (0 for bodyweight) and at least 1 rep")); return null; }
+  if(!(w>=lo)||!(r>0)){ toast(t("Enter a weight (0 for bodyweight) and at least 1 rep")); return null; }
   return {w,r};
 }
 function stopEditing(){ state.setKind="normal"; if(state.editSet){ delete ui[state.editSet.ex]; state.editSet=null; } }
@@ -2934,14 +2950,15 @@ document.addEventListener("click",e=>{
   e.stopPropagation();
   const a=b.dataset.act, ei=+b.dataset.ei, id=b.dataset.id;
   switch(a){
-    case "step":{ const inp=document.getElementById(b.dataset.f+"-"+ei); let v=Math.max(0,(parseFloat(inp.value)||0)+parseFloat(b.dataset.d)); inp.value=b.dataset.f==="r"?Math.round(v):kg(v); inp.dispatchEvent(new Event("input",{bubbles:true})); break; }
+    case "step":{ const inp=document.getElementById(b.dataset.f+"-"+ei); const enS=ensureWorkout().entries[ei], lo=b.dataset.f==="w"&&enS&&isBw(enS)?-500:0; let v=Math.max(lo,(parseFloat(inp.value)||0)+parseFloat(b.dataset.d)); inp.value=b.dataset.f==="r"?Math.round(v):kg(v); inp.dispatchEvent(new Event("input",{bubbles:true})); break; }
     case "edit-set":{ const en=ensureWorkout().entries[ei], si=+b.dataset.si, s=en.sets[si];
       state.targetEdit=null; state.editSet={date:state.date,ex:en.ex,si}; state.setKind=setType(s); ui[en.ex]={w:kg(s.w),r:String(s.r)}; renderLog(); break; }
+    case "bw-toggle":{ const enB=ensureWorkout().entries[ei]; if(!enB||enB.sets.length) break; setBodyweight(enB.ex,!bwFor(state.settings,enB.ex)); renderLog(); break; }
     case "target-edit": stopEditing(); state.targetEdit=ensureWorkout().entries[ei].ex; renderLog(); break;
     case "tgt-step":{ const ex=state.targetEdit; if(!ex) break; const cur={...targetFor(state.settings,ex)}, f=b.dataset.f, dd=+b.dataset.d;
       if(f==="sets") cur.sets=Math.min(10,Math.max(1,cur.sets+dd));
-      else if(f==="min") cur.min=Math.min(cur.max,Math.max(1,cur.min+dd));
-      else if(f==="max") cur.max=Math.min(50,Math.max(cur.min,cur.max+dd));
+      else if(f==="min") cur.min=Math.min(cur.max,Math.max(1,cur.min+dd*(isHold(ex)?5:1)));   // holds count seconds: steps of 5, up to 600
+      else if(f==="max") cur.max=Math.min(isHold(ex)?600:50,Math.max(cur.min,cur.max+dd*(isHold(ex)?5:1)));
       setTarget(ex,cur); renderLog(); break; }
     case "tgt-reset":{ const ex=state.targetEdit; if(!ex) break; setTarget(ex,defaultTarget(ex)); renderLog(); break; }
     case "tgt-done": state.targetEdit=null; flushTargets(); renderLog(); break;
@@ -2957,9 +2974,10 @@ document.addEventListener("click",e=>{
       if(!v) return;
       const wt=v.w, r=v.r;
       const k=kOf(state.setKind||"normal");
+      if(!en.sets.length&&bwFor(state.settings,en.ex)) en.bw=true;   // the entry remembers it was logged as bodyweight
       en.sets.push({w:wt,r,t:Date.now(),...(k?{k}:{})}); state.setKind="normal"; delete ui[en.ex]; store.save(w); renderLog(); startRestFor(en.ex);
-      const best=bestBefore(en.ex,state.date);
-      if(!k&&best>0&&e1rm(wt,r)>best&&en.sets.filter(s=>isWorking(s)&&e1rm(s.w,s.r)>best).length===1) toast(t("New PR on {name}!",{name:nameOf("ex",en.ex)}));
+      const scoreOf=s=>en.bw?bwScore(s):e1rm(s.w,s.r), best=en.bw?bestBwBefore(en.ex,state.date):bestBefore(en.ex,state.date);
+      if(!k&&best>0&&scoreOf({w:wt,r})>best&&en.sets.filter(s=>isWorking(s)&&scoreOf(s)>best).length===1) toast(t("New PR on {name}!",{name:nameOf("ex",en.ex)}));
       break; }
     case "rest-adj": adjustRestBy(+b.dataset.d); break;
     case "rest-skip": clearRest(); break;
