@@ -42,7 +42,10 @@ export const persistentMultipleTabManager = () => ({});
 export const collection = (...segs) => ({ path: path(segs) });
 export const doc = (...segs) => ({ path: path(segs), id: segs[segs.length - 1] });
 export const setDoc = (ref, data) => { mem[ref.path] = data; return Promise.resolve(); };
-export const updateDoc = (ref, data) => { mem[ref.path] = Object.assign(mem[ref.path] || {}, data); return Promise.resolve(); };
+// arrayUnion(...values) is a marker that merge() resolves against the stored array, like Firestore does on the server.
+export const arrayUnion = (...vals) => ({ __union: vals });
+const merge = (target, d) => { for (const k of Object.keys(d)) target[k] = d[k] && d[k].__union ? [...new Set([...(target[k] || []), ...d[k].__union])] : d[k]; return target; };
+export const updateDoc = (ref, data) => { mem[ref.path] = merge(mem[ref.path] || {}, data); return Promise.resolve(); };
 export const deleteDoc = ref => { delete mem[ref.path]; return Promise.resolve(); };
 export const getDoc = ref => Promise.resolve(ref.path in mem ? { exists: () => true, data: () => mem[ref.path] } : { exists: () => false, data: () => undefined });
 const Q = new URLSearchParams(location.search);
@@ -60,7 +63,7 @@ export const getDocs = ref => {
   const list = p === "friendships" ? friendships.map((d, i) => ({ d, path: "friendships/" + d.users.join("_") })) : p === "blocks" ? blocksList.map(d => ({ d, path: "blocks/" + d.blocker + "_" + d.blocked })) : items.map(i => ({ d: i.data(), path: p + "/" + i.id }));
   return Promise.resolve({ docs: list.map(x => ({ ref: { path: x.path }, data: () => x.d })) });
 };
-export const writeBatch = () => { const ops = []; return { set: (r, d) => ops.push(() => { logc("set:" + r.path + ":" + JSON.stringify(d)); mem[r.path] = d; }), update: (r, d) => ops.push(() => { logc("update:" + r.path + ":" + JSON.stringify(d)); }, () => Object.assign(mem[r.path] || (mem[r.path] = {}), d)), delete: r => ops.push(() => { logc("delete:" + r.path); delete mem[r.path]; }), commit: () => { ops.forEach(f => f()); return Promise.resolve(); } }; };
+export const writeBatch = () => { const ops = []; return { set: (r, d) => ops.push(() => { logc("set:" + r.path + ":" + JSON.stringify(d)); mem[r.path] = d; }), update: (r, d) => ops.push(() => { logc("update:" + r.path + ":" + JSON.stringify(d)); }, () => merge(mem[r.path] || (mem[r.path] = {}), d)), delete: r => ops.push(() => { logc("delete:" + r.path); delete mem[r.path]; }), commit: () => { ops.forEach(f => f()); return Promise.resolve(); } }; };
 export const query = c => c;
 export const where = () => ({});
 const FR = new URLSearchParams(location.search).get("friends") === "1";
