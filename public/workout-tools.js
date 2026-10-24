@@ -48,11 +48,12 @@ export function fmtClock(sec) {
 // Values for the next set, from working sets only (warm-ups and drop sets are not "last time"): with a progression
 // suggestion, the first working set starts at it and later sets repeat today's last working set; otherwise last session's
 // set at the same position, else repeat today's last set, else last session's first set, else a starter value.
-export function prefillFor(entry, last, suggest) {
+export function prefillFor(entry, last, suggest, opts) {
   const mine = workingSets(entry.sets), prev = workingSets(last && last.sets), n = mine.length;
   if (!n && suggest) return { w: String(Math.round(suggest.w * 100) / 100), r: String(suggest.r) };
   const s = suggest && n ? mine[n - 1] : (prev[n] || mine[n - 1] || prev[0]);
-  return s ? { w: String(Math.round(s.w * 100) / 100), r: String(s.r) } : { w: "20", r: "8" };
+  if (s) return { w: String(Math.round(s.w * 100) / 100), r: String(s.r) };
+  return opts && opts.bw ? { w: "0", r: opts.hold ? "30" : "8" } : { w: "20", r: "8" };   // first time: bodyweight starts at 0 extra kg
 }
 
 // Keep the screen on only while logging today's workout.

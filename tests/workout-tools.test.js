@@ -173,3 +173,11 @@ test("prefill with a suggestion: it starts the first working set, later sets rep
   assert.deepEqual(prefillFor({ sets: [] }, null, sug), { w: "82.5", r: "5" });
   assert.deepEqual(prefillFor({ sets: [] }, last, undefined), { w: "80", r: "8" });
 });
+
+test("prefill starter for a first-time bodyweight exercise is 0 extra kg, holds start at 30 seconds", () => {
+  assert.deepEqual(prefillFor({ sets: [] }, null, undefined, { bw: true }), { w: "0", r: "8" });
+  assert.deepEqual(prefillFor({ sets: [] }, null, undefined, { bw: true, hold: true }), { w: "0", r: "30" });
+  assert.deepEqual(prefillFor({ sets: [] }, null), { w: "20", r: "8" }, "weighted starter unchanged");
+  assert.deepEqual(prefillFor({ sets: [] }, { sets: [{ w: -20, r: 9 }] }, undefined, { bw: true }), { w: "-20", r: "9" }, "history still wins, negative kept");
+  assert.deepEqual(prefillFor({ sets: [] }, null, { w: 2.5, r: 8 }, { bw: true }), { w: "2.5", r: "8" }, "a suggestion wins");
+});

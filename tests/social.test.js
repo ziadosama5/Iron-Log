@@ -191,3 +191,8 @@ test("buildSummary: volume counts normal and drop sets, not warm-ups", () => {
   const onlyWarm = { ...w, entries: [{ ex: "Bench Press", sets: [{ w: 100, r: 10, k: "w" }] }] };
   assert.equal(buildSummary({ ...base, workouts: [onlyWarm], today: "2026-10-17" }, 1).volumeWeekKg, 0, "only warm-ups: no volume, no crash");
 });
+
+test("buildSummary: bodyweight volume is the extra load only", () => {
+  const w = { id: "w-2026-10-17", date: "2026-10-17", dayId: "d1", dayName: "Push", entries: [{ ex: "Pull-up", bw: true, sets: [{ w: 0, r: 12 }, { w: 10, r: 10 }, { w: -20, r: 8 }] }] };
+  assert.equal(buildSummary({ ...base, workouts: [w], today: "2026-10-17" }, 1).volumeWeekKg, 100);
+});

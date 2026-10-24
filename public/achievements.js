@@ -3,6 +3,7 @@
 import { trainedOn } from "./workout-tools.js";
 import { exerciseKcal, weightOn, dayEnergy, bmrFor } from "./energy.js";
 import { workingSets, volumeSets, isWorking } from "./progression.js";
+import { loadKg, bwScore } from "./bodyweight.js";
 
 const pad = n => String(n).padStart(2, "0");
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -53,19 +54,20 @@ export function foodStreak(food, today) {
   return n;
 }
 
-// A session is a PR when its best e1RM beats every earlier session and there were at least 2 earlier.
+// A session is a PR when its best e1RM beats every earlier session and there were at least 2 earlier. Bodyweight entries (bw)
+// compare by extra kg then reps (bwScore) and have their own history, apart from a weighted exercise of the same name.
 export function prEvents(workouts) {
   const byEx = new Map();
   [...(workouts || [])].sort((a, b) => (a.date < b.date ? -1 : 1)).forEach(w => (w.entries || []).forEach(e => {
-    const best = Math.max(0, ...workingSets(e.sets).map(s => e1rm(s.w, s.r)));   // warm-ups and drop sets are never a lift's best
+    const best = Math.max(0, ...workingSets(e.sets).map(s => (e.bw ? bwScore(s) : e1rm(s.w, s.r))));   // warm-ups and drop sets are never a lift's best
     if (!best) return;
-    const ex = String(e.ex).toLowerCase();
+    const ex = String(e.ex).toLowerCase() + (e.bw ? "|bw" : "");
     if (!byEx.has(ex)) byEx.set(ex, []);
     byEx.get(ex).push({ date: w.date, best });
   }));
   const out = [];
   byEx.forEach((sessions, ex) => sessions.forEach((s, i) => {
-    if (i >= 2 && s.best > Math.max(...sessions.slice(0, i).map(x => x.best))) out.push({ date: s.date, ex });
+    if (i >= 2 && s.best > Math.max(...sessions.slice(0, i).map(x => x.best))) out.push({ date: s.date, ex: ex.endsWith("|bw") ? ex.slice(0, -3) : ex });
   }));
   return out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 }
@@ -153,8 +155,8 @@ export function badges({ workouts = [], body = [], food = {}, days = [], profile
       m.kcal += exerciseKcal(w, kg).total || 0;
       m.cardioMin += (w.cardio || []).reduce((a, c) => a + (c.min || 0), 0);
       (w.entries || []).forEach(e => volumeSets(e.sets).forEach(s => {   // volume: normal + drop sets; strength ratios: normal sets
-        m.volume += s.w * s.r;
-        if (kg && isWorking(s)) for (const [metric, name] of Object.entries(RATIO_LIFTS)) {
+        m.volume += loadKg(s) * s.r;
+        if (kg && isWorking(s) && !e.bw) for (const [metric, name] of Object.entries(RATIO_LIFTS)) {
           if (String(e.ex).toLowerCase() === name) m[metric] = Math.max(m[metric], s.w / kg);
         }
       }));

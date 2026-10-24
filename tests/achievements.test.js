@@ -196,3 +196,33 @@ test("volume badges count drop sets but not warm-ups", () => {
   assert.equal(B(big("d"), "volume-100t").earned, "2026-10-05", "a drop set does");
   assert.equal(B(big(undefined), "volume-100t").earned, "2026-10-05");
 });
+
+const bwo = (date, sets, ex = "Pull-up") => ({ id: "w-" + date, date, entries: [{ ex, bw: true, sets }] });
+
+test("bodyweight PRs: more reps, more extra kg or less assistance beats every earlier session", () => {
+  assert.deepEqual(prEvents([bwo("2026-10-01", [S(0, 10)]), bwo("2026-10-03", [S(0, 10)]), bwo("2026-10-05", [S(0, 10)]), bwo("2026-10-07", [S(0, 12)])]),
+    [{ date: "2026-10-07", ex: "pull-up" }], "an equal session is not a PR, more reps is");
+  assert.deepEqual(prEvents([bwo("2026-10-01", [S(0, 10)]), bwo("2026-10-03", [S(0, 10)]), bwo("2026-10-05", [S(5, 6)])]), [{ date: "2026-10-05", ex: "pull-up" }], "extra kg beats reps");
+  assert.deepEqual(prEvents([bwo("2026-10-01", [S(-20, 15)]), bwo("2026-10-03", [S(-20, 15)]), bwo("2026-10-05", [S(-10, 6)])]), [{ date: "2026-10-05", ex: "pull-up" }], "less assistance wins");
+  assert.deepEqual(prEvents([bwo("2026-10-01", [S(0, 10)]), bwo("2026-10-03", [S(0, 10)]), bwo("2026-10-05", [{ w: 0, r: 30, k: "d" }, { w: 0, r: 30, k: "w" }])]), [], "drop sets and warm-ups never count");
+});
+
+test("a weighted history and a bodyweight history of the same exercise never compare", () => {
+  const weighted = d => wo(d, [S(100, 5)], "Pull-up");
+  const ws = [weighted("2026-10-01"), weighted("2026-10-02"), weighted("2026-10-03"), bwo("2026-10-10", [S(0, 5)]), bwo("2026-10-12", [S(0, 5)]), bwo("2026-10-14", [S(0, 6)])];
+  assert.deepEqual(prEvents(ws), [{ date: "2026-10-14", ex: "pull-up" }]);
+});
+
+test("bodyweight volume: only extra load counts (plain and assisted add nothing)", () => {
+  const vol = sets => badges({ ...base, workouts: [bwo("2026-10-05", sets)] });
+  assert.equal(B(vol([S(0, 200000)]), "volume-100t").earned, null, "plain bodyweight");
+  assert.equal(B(vol([S(-20, 200000)]), "volume-100t").earned, null, "assisted");
+  assert.equal(B(vol([S(10, 10000)]), "volume-100t").earned, "2026-10-05", "extra load counts");
+});
+
+test("strength-ratio badges ignore bodyweight entries", () => {
+  const body = [{ date: "2026-10-05", weight: 80 }];
+  const lift = e => badges({ ...base, body, workouts: [{ id: "w-2026-10-05", date: "2026-10-05", entries: [e] }] });
+  assert.ok(B(lift({ ex: "Bench Press", sets: [S(100, 1)] }), "bench-bw").earned, "weighted bench counts");
+  assert.equal(B(lift({ ex: "Bench Press", bw: true, sets: [S(100, 1)] }), "bench-bw").earned, null);
+});

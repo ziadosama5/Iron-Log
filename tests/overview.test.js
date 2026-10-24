@@ -95,3 +95,8 @@ test("topLifts: warm-ups and drop sets are not a lift's best, a warm-up-only exe
   assert.deepEqual(r.map(x => x.ex), ["Bench Press"]);
   assert.equal(r[0].best, Math.round(60 * (1 + 8 / 30) * 10) / 10);
 });
+
+test("topLifts leaves bodyweight lifts out (they have no one-rep max)", () => {
+  const ws = [{ date: "2026-10-20", entries: [{ ex: "Pull-up", bw: true, sets: [{ w: 10, r: 8 }] }, { ex: "Bench Press", sets: [{ w: 60, r: 8 }] }] }];
+  assert.deepEqual(topLifts(ws, TODAY).map(x => x.ex), ["Bench Press"]);
+});

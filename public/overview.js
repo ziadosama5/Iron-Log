@@ -50,6 +50,7 @@ export function caloriesWeek(food, workouts, body, profile, today) {
 export function topLifts(workouts, today, n = 3) {
   const by = new Map(), cut = addDays(today, -30);
   (workouts || []).filter(w => w.date <= today).forEach(w => (w.entries || []).forEach(e => {
+    if (e.bw) return;   // bodyweight lifts have no one-rep max
     const best = Math.max(0, ...workingSets(e.sets).map(s => e1rm(s.w, s.r)));
     if (!best) return;
     const k = String(e.ex).toLowerCase();

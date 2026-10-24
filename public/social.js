@@ -4,6 +4,7 @@
 import { badges, xpSummary, trainingStreak, foodStreak, weekKey, prEvents, addDays } from "./achievements.js";
 import { trainedOn } from "./workout-tools.js";
 import { volumeSets } from "./progression.js";
+import { loadKg } from "./bodyweight.js";
 
 export const RESERVED_USERNAMES = ["admin", "administrator", "support", "ironlog", "iron-log", "moderator", "root", "system", "help", "staff", "official", "me", "null", "undefined"];
 
@@ -57,7 +58,7 @@ export function buildSummary({ workouts = [], body = [], food = {}, days = [], p
   const ws = workouts.filter(w => w.date <= today), trained = ws.filter(trainedOn);
   const wk = weekKey(today), since = addDays(today, -30);
   const week = trained.filter(w => weekKey(w.date) === wk);
-  const volume = week.reduce((a, w) => a + (w.entries || []).reduce((b, e) => b + volumeSets(e.sets).reduce((c, s) => c + (Number(s.w) || 0) * (Number(s.r) || 0), 0), 0), 0);
+  const volume = week.reduce((a, w) => a + (w.entries || []).reduce((b, e) => b + volumeSets(e.sets).reduce((c, s) => c + loadKg(s) * (Number(s.r) || 0), 0), 0), 0);
   const last = trained.reduce((m, w) => (w.date > m ? w.date : m), "");
   return clampSummary({
     level: xp.level, xp: xp.xp, title: xp.title, badges: list.filter(b => b.earned).length,
