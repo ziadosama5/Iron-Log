@@ -188,10 +188,28 @@ export function checkProfile({ sex, height, birthYear, goal }, year) {
   return { ok: true, profile: { sex, height: h, birthYear: y, goal } };
 }
 
-// The profile after the journey: the chosen goal plus any valid body basics; everything else (target weight
-// included) is kept as it was.
+// The answers of the last finished Plan my training, kept on the private profile so the next run can open at the preview:
+// days per week (2-6), experience, the split family ("auto" = "not sure, suggest one") and the split picked on the preview.
+export function cleanPlanMemory(obj) {
+  const o = obj && typeof obj === "object" && !Array.isArray(obj) ? obj : {}, out = {};
+  if (Number.isInteger(o.days) && o.days >= 2 && o.days <= 6) out.days = o.days;
+  if (EXPERIENCE.includes(o.experience)) out.experience = o.experience;
+  if (o.family === "auto" || SPLIT_FAMILIES.some(f => f.id === o.family)) out.family = o.family;
+  if (typeof o.split === "string" && o.split.length >= 1 && o.split.length <= 40) out.split = o.split;
+  return out;
+}
+// What a returning person already answered: {goal, days, experience, family?, split?}, or null when a step is still unknown.
+export function rememberedAnswers(profile) {
+  const p = profile || {}, m = cleanPlanMemory(p.plan);
+  if (!Object.hasOwn(GOAL_DEFAULT_DAYS, p.goal) || m.days === undefined || m.experience === undefined) return null;
+  return { goal: p.goal, ...m };
+}
+
+// The profile after the journey: the chosen goal plus any valid body basics and the plan answers; everything else
+// (target weight included) is kept as it was.
 export function mergeProfile(existing, answers) {
   const out = { ...(existing || {}), goal: answers.goal };
+  if (answers.plan !== undefined) { const m = cleanPlanMemory(answers.plan); if (m.days !== undefined && m.experience !== undefined) out.plan = m; }
   if (existing && existing.goal !== answers.goal) delete out.adjust;   // an own daily adjustment belongs to the goal it was set for
   const year = new Date().getFullYear();
   if (validSex(answers.sex)) out.sex = answers.sex;

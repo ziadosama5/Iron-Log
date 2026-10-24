@@ -5,7 +5,9 @@ const S = (w, r, m) => ({ w, r, t: T - m * 60000 });
 const items = [];
 const add = (id, data) => items.push({ id, data: () => data });
 add("program", { v: 2, days: [{ id: "d1", name: "Push", focus: ["Chest", "Shoulders", "Triceps"], exercises: ["Bench Press", "Overhead Press", "Lateral Raise"], weekdays: [6, 2] }, { id: "d2", name: "Pull", focus: ["Back", "Biceps"], exercises: ["Pull-up", "Barbell Row"], weekdays: [0, 3] }] });
-add("profile", { sex: "male", height: 178, birthYear: 1996, goal: "fat-loss", goalWeight: 78, goalStart: day(30) });
+// ?plan=<json>: answers remembered from an earlier Plan my training
+const planQ = new URLSearchParams(location.search).get("plan");
+add("profile", { sex: "male", height: 178, birthYear: 1996, goal: "fat-loss", goalWeight: 78, goalStart: day(30), ...(planQ ? { plan: JSON.parse(planQ) } : {}) });
 const gymQ = new URLSearchParams(location.search).get("gym"), avoidQ = new URLSearchParams(location.search).get("avoid");
 add("settings", { rest: {}, seenBadges: new URLSearchParams(location.search).get("cele") ? ["workouts-1"] : ["workouts-1","workouts-10","workouts-50","workouts-100","workouts-250","kcal-10k","kcal-50k","kcal-100k","cardio-1000","cardio-5000","goal-first-kg","goal-reached","streak-4","streak-12","streak-26","food-7","food-30","pr-1","pr-10","bench-bw","squat-1.5","deadlift-2","volume-100t","volume-1000t"], ...(gymQ ? { gym: JSON.parse(gymQ) } : {}), ...(avoidQ ? { avoid: JSON.parse(avoidQ) } : {}) });
 for (let i = 0; i < 10; i++) { const date = day(i * 2 + 1); add("w-" + date, { date, dayId: "d" + (1 + (i % 2)), dayName: ["Push", "Pull"][i % 2], updated: T, entries: [{ ex: "Bench Press", sets: [S(60 + i, 8, 50), S(62.5 + i, 6, 45)], done: true }, { ex: "Overhead Press", sets: [S(40, 8, 35)], done: true }] }); }

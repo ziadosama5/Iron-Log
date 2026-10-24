@@ -238,3 +238,11 @@ test("settings avoid: known areas and tidy names are kept, junk is dropped, abse
   assert.equal("avoid" in cleanBackupItems([{ id: "settings", data: { rest: {}, avoid: { areas: ["moon"], exercises: [5] } } }], OPTS).items[0].data, false, "nothing valid left");
   assert.equal("avoid" in cleanBackupItems([{ id: "settings", data: { rest: {}, avoid: "knee" } }], OPTS).items[0].data, false);
 });
+
+test("profile: the remembered plan answers are kept when valid and dropped when not", () => {
+  const prof = extra => cleanBackupItems([{ id: "profile", data: { sex: "male", height: 180, birthYear: 1998, goal: "muscle", ...extra } }], OPTS).items[0].data;
+  assert.deepEqual(prof({ plan: { days: 4, experience: "intermediate", family: "upper-lower", junk: 1 } }).plan, { days: 4, experience: "intermediate", family: "upper-lower" });
+  assert.equal("plan" in prof({ plan: { days: 9 } }), false, "nothing valid left");
+  assert.equal("plan" in prof({ plan: { days: 4 } }), false, "days without experience is not a plan");
+  assert.equal("plan" in prof({}), false);
+});

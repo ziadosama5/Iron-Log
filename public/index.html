@@ -562,7 +562,7 @@ import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
 import { countDays, statusOf, planProgress, addDaysISO, MAX_OPEN, WEEK_CHOICES, nextSaturday, challengeDates, dayNumber, rankMembers, winners, standing, timeLeft, myResult, planCreate, planAccept as planAcceptChallenge, planLeave, planDelete } from "./challenges.js";
 import { REPORT_REASONS, buildReport, chunk, wipePlan, withTimeout } from "./safety.js";
 import { pairId, planRequest, planAccept, planRemove, planBlock, planUnblock, planNameRefresh, groupFriendships, relationTo, compareSummaries, staleNameDocs, rankBoard, weekCount, boardReady } from "./friends.js";
-import { buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney, assignWeekday } from "./plan-tools.js";
+import { rememberedAnswers, buildPlan, splitOptions, SPLIT_FAMILIES, splitFor, GOAL_DEFAULT_DAYS, needsAbout, checkProfile, mergeProfile, shouldAutoJourney, assignWeekday } from "./plan-tools.js";
 import { FAMILIES, familyOf, allFamilies, closestFamily, tierFor } from "./badge-art.js";
 import { buildCards, newWins } from "./celebrate.js";
 import { TABS, PILL_LABEL, tabOf, pillsFor, migrateView, neighborTab, swipeDirection } from "./nav.js";
@@ -1563,6 +1563,12 @@ function jrGym(){ const j=state.journey; return j.gymNone?undefined:j.gym; }
 function openJourney(fromAuto){
   const g=GOAL_DEFAULT_DAYS[state.profile.goal]!==undefined?state.profile.goal:null;
   state.journey={step:0,goal:g,days:g?GOAL_DEFAULT_DAYS[g]:3,daysTouched:false,family:undefined,split:null,gym:Array.isArray(state.settings.gym)?[...state.settings.gym]:undefined,gymTouched:false,gymNone:false,experience:null,about:{sex:state.profile.sex||"",height:"",birthYear:""},busy:false,fromAuto:!!fromAuto};
+  const mem=rememberedAnswers(state.profile);
+  if(mem){   // a returning person: their answers are filled in and the journey opens at the preview (or at About you when that is still missing)
+    const j=state.journey;
+    Object.assign(j,{days:mem.days,daysTouched:true,experience:mem.experience,family:mem.family==="auto"?null:mem.family,split:mem.split||null,gymNone:!Array.isArray(state.settings.gym),remembered:true});
+    j.step=Math.max(0,jrSteps().indexOf(needsAbout(state.profile)?"about":"preview"));
+  }
   history.pushState({journey:1},"");
   go("journey");
 }
@@ -1618,6 +1624,7 @@ function renderJourney(){
       <label><span class="label">Birth year</span><input id="jr-year" inputmode="numeric" maxlength="4" value="${esc(String(j.about.birthYear))}"></label>`; }
   else { const p=jrPreview(j); body=p.h; canNext=!p.empty; }
   const last=key==="preview";
+  if(last&&j.remembered) body+=`<div class="row"><button type="button" class="btn ghost small" data-act="jr-edit">${t("Change my answers")}</button></div>`;
   el.innerHTML=`<div class="row"><div class="jr-dots grow" aria-hidden="true">${steps.map((s,i)=>`<span class="jr-dot ${i===j.step?"on":""}"></span>`).join("")}</div>${last?"":`<button class="btn ghost small" data-act="jr-skip">Skip</button>`}</div>
     ${body}
     <div class="row">${j.step>0?`<button class="btn" data-act="jr-back">Back</button>`:""}<span class="grow"></span>${last?`<button class="btn primary" data-act="jr-start" ${canNext&&!j.busy?"":"disabled"}>Start</button>`:`<button class="btn primary" data-act="jr-next" ${canNext?"":"disabled"}>Next</button>`}</div>`;
@@ -1637,7 +1644,7 @@ function journeyStart(){
   const plan=buildPlan({goal:j.goal,daysPerWeek:j.days,experience:j.experience,gym:jrGym(),avoid:state.settings.avoid,splitId:sid});
   if(!plan.days.length){ j.busy=false; toast(t("No plan fits this gym. Pick a bigger gym and try again.")); return; }
   store.saveDays(plan.days.map(d=>({id:uid(),...d})));
-  store.saveProfile(mergeProfile(state.profile,{goal:j.goal,...j.about}));
+  store.saveProfile(mergeProfile(state.profile,{goal:j.goal,...j.about,plan:{days:j.days,experience:j.experience,family:j.family===null?"auto":j.family,split:sid}}));
   if(j.gymTouched&&!j.gymNone&&Array.isArray(j.gym)) store.saveSettings({gym:[...j.gym]});
   state.openEx=undefined; state.pickSplit=false; state.editDay=null; endJourney(); go("log"); toast(t("Your plan is ready"));
 }
@@ -2998,6 +3005,7 @@ document.addEventListener("submit",e=>{
     p.goalWeight=gw; p.goalStart=gw==null?null:(gw===state.profile.goalWeight&&state.profile.goalStart?state.profile.goalStart:today());
     const yr=new Date().getFullYear();
     if(!p.sex||!p.goal||!p.height||p.height<100||p.height>250||!p.birthYear||p.birthYear<yr-100||p.birthYear>yr-10){ toast(t("Fill in all four fields: height in cm (100–250) and a 4-digit birth year")); return; }
+    if(state.profile.plan!==undefined) p.plan=state.profile.plan;   // the remembered Plan my training answers are not on this form
     if(state.profile.activity!==undefined) p.activity=state.profile.activity;   // calorie-target choices are not on this form: carry them over
     if(state.profile.adjust!==undefined&&state.profile.goal===p.goal) p.adjust=state.profile.adjust;   // an own adjustment belongs to the goal it was set for
     store.saveProfile(p); state.editProfile=false; renderBody(); toast(t("Saved"));
@@ -3136,6 +3144,7 @@ document.addEventListener("click",e=>{
     case "jr-family": { const j=state.journey; j.family=b.dataset.v==="auto"?null:b.dataset.v; j.split=null; jrFixDays(); renderJourney(); break; }
     case "jr-exp": state.journey.experience=b.dataset.v; state.journey.split=null; renderJourney(); break;
     case "jr-sex": state.journey.about.sex=b.dataset.v; renderJourney(); break;
+    case "jr-edit": state.journey.step=0; state.journey.remembered=false; renderJourney(); window.scrollTo(0,0); break;
     case "jr-next": journeyNext(); break;
     case "jr-back": if(state.journey.step>0){ state.journey.step--; renderJourney(); window.scrollTo(0,0); } break;
     case "jr-skip":

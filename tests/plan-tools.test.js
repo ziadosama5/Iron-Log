@@ -332,3 +332,32 @@ test("avoiding every area leaves notes that mention injuries, never a crash or a
 test("the new note wordings have Arabic", () => {
   for (const k of ["No {muscle} exercise fits your gym and injuries.", "{day} was left out: nothing in it fits your gym and injuries."]) assert.ok(AR.ui[k], k);
 });
+
+// ---- Plan my training remembers the answers ----
+import { cleanPlanMemory, rememberedAnswers } from "../public/plan-tools.js";
+
+test("cleanPlanMemory keeps valid answers and drops junk", () => {
+  assert.deepEqual(cleanPlanMemory({ days: 4, experience: "intermediate", family: "upper-lower", split: "ul-4" }), { days: 4, experience: "intermediate", family: "upper-lower", split: "ul-4" });
+  assert.deepEqual(cleanPlanMemory({ days: 3, experience: "beginner", family: "auto" }), { days: 3, experience: "beginner", family: "auto" });
+  for (const bad of [{ days: 7 }, { days: 1 }, { days: 3.5 }, { days: "4" }, { experience: "pro" }, { family: "xyz" }, { split: 5 }, { split: "" }, { split: "x".repeat(41) }]) assert.deepEqual(cleanPlanMemory(bad), {}, JSON.stringify(bad));
+  for (const none of [null, undefined, [], "x", 5]) assert.deepEqual(cleanPlanMemory(none), {}, String(none));
+});
+
+test("rememberedAnswers needs a goal, days and experience", () => {
+  const plan = { days: 4, experience: "intermediate", family: "upper-lower", split: "ul-4" };
+  assert.deepEqual(rememberedAnswers({ goal: "muscle", plan }), { goal: "muscle", ...plan });
+  assert.equal(rememberedAnswers({ goal: "muscle" }), null);
+  assert.equal(rememberedAnswers({ goal: "muscle", plan: { days: 4 } }), null);
+  assert.equal(rememberedAnswers({ goal: "muscle", plan: { experience: "beginner" } }), null);
+  assert.equal(rememberedAnswers({ plan }), null, "no goal");
+  assert.equal(rememberedAnswers({ goal: "constructor", plan }), null, "prototype-like goal");
+  assert.equal(rememberedAnswers(undefined), null);
+});
+
+test("mergeProfile stores the plan answers, keeps old ones when none are given, ignores incomplete ones", () => {
+  const plan = { days: 3, experience: "beginner", family: "auto" };
+  assert.deepEqual(mergeProfile({ goal: "muscle" }, { goal: "muscle", plan }).plan, plan);
+  assert.deepEqual(mergeProfile({ goal: "muscle", plan }, { goal: "muscle" }).plan, plan, "answers without a plan keep the old one");
+  assert.deepEqual(mergeProfile({ goal: "muscle", plan }, { goal: "muscle", plan: { days: 4 } }).plan, plan, "an incomplete plan changes nothing");
+  assert.deepEqual(mergeProfile({ goal: "muscle", plan }, { goal: "muscle", plan: { days: 5, experience: "advanced", family: "bro" } }).plan, { days: 5, experience: "advanced", family: "bro" });
+});

@@ -4,6 +4,7 @@ import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX } from 
 import { cleanTargets } from "./progression.js";
 import { cleanBodyweight } from "./bodyweight.js";
 import { cleanAvoid } from "./injuries.js";
+import { cleanPlanMemory } from "./plan-tools.js";
 
 const DATE_ID = /^(w|b|f)-(\d{4}-\d{2}-\d{2})$/;
 const isObj = v => v !== null && typeof v === "object" && !Array.isArray(v);
@@ -116,6 +117,8 @@ function cleanProfile(d, goals) {
     birthYear: Number.isInteger(d.birthYear) && d.birthYear >= 1900 && d.birthYear <= 2100 ? d.birthYear : null,
     goal: goals.includes(d.goal) ? d.goal : null
   };
+  const plan = cleanPlanMemory(d.plan);   // the remembered Plan my training answers: only a complete set
+  if (plan.days !== undefined && plan.experience !== undefined) out.plan = plan;
   // Calorie-target choices: only when present and valid (anything else means "not chosen").
   if (ACTIVITY_IDS.includes(d.activity)) out.activity = d.activity;
   if (Number.isInteger(d.adjust) && d.adjust >= ADJUST_MIN && d.adjust <= ADJUST_MAX) out.adjust = d.adjust;

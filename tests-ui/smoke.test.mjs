@@ -1574,3 +1574,50 @@ test("injuries: while Show all is on the card says nothing is hidden", async () 
   assert.ok((await page.locator("#view-gym").innerText()).includes("Nothing hidden."));
   await ctx.close();
 });
+
+// ---- Plan my training remembers its answers ----
+const PLAN_MEM = "plan=" + encodeURIComponent(JSON.stringify({ days: 4, experience: "intermediate", family: "upper-lower" }));
+const openJourneyFromPlan = async page => {
+  await tab(page, "plan");
+  await page.locator('#view-days [data-act="open-plansheet"]').click(); await page.waitForSelector("#plansheet[open]");
+  await page.locator('#plansheet [data-act="journey-open"]').click(); await page.waitForSelector("#view-journey:not([hidden])");
+  await page.waitForTimeout(300);
+};
+const jrTitle = async page => (await page.locator("#view-journey h2").first().textContent()).trim();
+
+test("plan my training: a first run asks the questions from the start", async () => {
+  const { page, ctx } = await open();
+  await openJourneyFromPlan(page);
+  assert.notEqual(await jrTitle(page), "Your week");
+  assert.equal(await page.locator('#view-journey [data-act="jr-edit"]').count(), 0);
+  await ctx.close();
+});
+
+test("plan my training: with remembered answers it opens at the preview, and Change my answers walks the steps with them filled in", async () => {
+  const { page, ctx } = await open(PLAN_MEM);
+  await openJourneyFromPlan(page);
+  assert.equal(await jrTitle(page), "Your week");
+  assert.equal(await page.locator("#view-journey .card").count(), 4, "four training days from the remembered answers");
+  assert.equal(await page.locator('#view-journey [data-act="jr-start"]').isDisabled(), false);
+  await page.locator('#view-journey [data-act="jr-edit"]').click();
+  assert.notEqual(await jrTitle(page), "Your week", "back at the first step");
+  assert.ok(await page.locator('#view-journey [aria-pressed="true"]').count() >= 1, "the goal is already picked");
+  await ctx.close();
+});
+
+test("plan my training: finishing a run saves the answers, so the next run opens at the preview", async () => {
+  const { page, ctx } = await open();
+  await openJourneyFromPlan(page);
+  const next = () => page.locator('#view-journey [data-act="jr-next"]').click();
+  await next();                                                                           // goal (already picked from the profile)
+  await page.locator('#view-journey [data-act="jr-family"][data-v="ppl"]').click(); await next();   // split
+  await page.locator('#view-journey [data-act="jr-days"][data-v="6"]').click(); await next();        // days
+  await page.locator('#view-journey [data-act="jr-gym"][data-v="none"]').click(); await next();      // gym
+  await page.locator('#view-journey [data-act="jr-exp"][data-v="beginner"]').click(); await next();  // experience
+  assert.equal(await jrTitle(page), "Your week");
+  await page.locator('#view-journey [data-act="jr-start"]').click(); await page.waitForTimeout(500);
+  await openJourneyFromPlan(page);
+  assert.equal(await jrTitle(page), "Your week", "remembered");
+  assert.equal(await page.locator("#view-journey .card").count(), 6, "six days, as chosen last time");
+  await ctx.close();
+});
