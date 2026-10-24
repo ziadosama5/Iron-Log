@@ -90,7 +90,7 @@ export function exerciseSessions(workouts, exName, same) {
   return (workouts || []).map(w => {
     const e = (w.entries || []).find(x => same(x.ex, exName));
     const sets = e ? workingSets(e.sets) : [];
-    return sets.length ? { date: w.date, sets, ...(typeof e.bw === "boolean" ? { bw: e.bw } : {}) } : null;
+    return sets.length ? { date: w.date, sets, ...(typeof e.bw === "boolean" ? { bw: e.bw } : {}), ...(w.deload === true ? { deload: true } : {}) } : null;
   }).filter(Boolean);
 }
 

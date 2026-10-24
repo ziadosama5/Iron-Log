@@ -5,6 +5,7 @@ import { cleanTargets } from "./progression.js";
 import { cleanBodyweight } from "./bodyweight.js";
 import { cleanAvoid } from "./injuries.js";
 import { cleanPlanMemory } from "./plan-tools.js";
+import { cleanDeload } from "./deload.js";
 
 const DATE_ID = /^(w|b|f)-(\d{4}-\d{2}-\d{2})$/;
 const isObj = v => v !== null && typeof v === "object" && !Array.isArray(v);
@@ -26,6 +27,7 @@ function cleanWorkout(date, d) {
     return out;
   }).filter(Boolean);
   const out = { date, dayId: text(d.dayId, 40), dayName: text(d.dayName, 60), entries };
+  if (d.deload === true) out.deload = true;   // logged inside a deload week
   if (Array.isArray(d.cardio)) out.cardio = d.cardio.filter(c => isObj(c) && text(c.id, 40) && CARDIO_TYPES.includes(c.type)
       && Number.isInteger(c.min) && c.min >= 1 && c.min <= 600 && INTENSITIES.includes(c.intensity) && (c.kcal === null || num(c.kcal, 1, 5000)))
     .map(c => ({ id: c.id.slice(0, 40), type: c.type, min: c.min, intensity: c.intensity, kcal: c.kcal }));
@@ -143,6 +145,8 @@ function cleanSettings(d, equipment) {
   if (Object.keys(targets).length) out.targets = targets;
   const bodyweight = cleanBodyweight(d.bodyweight);
   if (Object.keys(bodyweight).length) out.bodyweight = bodyweight;
+  const deload = cleanDeload(d.deload);
+  if (Object.keys(deload).length) out.deload = deload;
   const avoid = cleanAvoid(d.avoid);
   if (Object.keys(avoid).length) out.avoid = avoid;
   return withUpdated(out, d);

@@ -97,3 +97,8 @@ test("settingsDoc carries the avoid choice only when it has something in it", ()
   assert.deepEqual(settingsDoc({ rest: {}, avoid: { areas: ["hip"] } }, 1).avoid, { areas: ["hip"] });
   for (const none of [undefined, {}, { areas: [], exercises: [] }, null]) assert.equal("avoid" in settingsDoc({ rest: {}, avoid: none }, 1), false, JSON.stringify(none));
 });
+
+test("settingsDoc carries the deload state only when it has something in it", () => {
+  assert.deepEqual(settingsDoc({ rest: {}, deload: { start: "2026-10-20" } }, 1).deload, { start: "2026-10-20" });
+  for (const none of [undefined, {}, null]) assert.equal("deload" in settingsDoc({ rest: {}, deload: none }, 1), false, JSON.stringify(none));
+});

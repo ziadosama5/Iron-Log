@@ -185,3 +185,10 @@ test("exerciseSessions passes an explicit bw:false through (weighted on purpose)
   const ws = [{ date: "2026-10-01", entries: [{ ex: "Pull-up", sets: [S(60, 5)] }] }, { date: "2026-10-03", entries: [{ ex: "Pull-up", bw: false, sets: [S(60, 5)] }] }];
   assert.deepEqual(exerciseSessions(ws, "Pull-up", same), [{ date: "2026-10-01", sets: [S(60, 5)] }, { date: "2026-10-03", sets: [S(60, 5)], bw: false }]);
 });
+
+test("exerciseSessions marks the sessions of a deload workout", async () => {
+  const { exerciseSessions } = await import("../public/progression.js");
+  const same = (a, b) => a === b;
+  const ws = [{ date: "2026-10-01", entries: [{ ex: "Squat", sets: [S(100, 5)] }] }, { date: "2026-10-03", deload: true, entries: [{ ex: "Squat", sets: [S(70, 5)] }] }];
+  assert.deepEqual(exerciseSessions(ws, "Squat", same), [{ date: "2026-10-01", sets: [S(100, 5)] }, { date: "2026-10-03", sets: [S(70, 5)], deload: true }]);
+});

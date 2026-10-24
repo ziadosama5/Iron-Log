@@ -246,3 +246,17 @@ test("profile: the remembered plan answers are kept when valid and dropped when 
   assert.equal("plan" in prof({ plan: { days: 4 } }), false, "days without experience is not a plan");
   assert.equal("plan" in prof({}), false);
 });
+
+test("settings deload: valid dates kept, junk dropped, absent stays absent", () => {
+  const r = cleanBackupItems([{ id: "settings", data: { rest: {}, deload: { start: "2026-10-20", dismissedUntil: "2026-11-10", junk: 1 } } }], OPTS).items[0].data;
+  assert.deepEqual(r.deload, { start: "2026-10-20", dismissedUntil: "2026-11-10" });
+  assert.equal("deload" in cleanBackupItems([{ id: "settings", data: { rest: {} } }], OPTS).items[0].data, false);
+  assert.equal("deload" in cleanBackupItems([{ id: "settings", data: { rest: {}, deload: { start: "nope" } } }], OPTS).items[0].data, false);
+});
+
+test("a workout keeps deload only when it is true", () => {
+  const w = extra => cleanBackupItems([{ id: W.id, data: { ...W.data, ...extra } }], OPTS).items[0].data;
+  assert.equal(w({ deload: true }).deload, true);
+  for (const junk of [false, "yes", 1, null]) assert.equal("deload" in w({ deload: junk }), false, String(junk));
+  assert.equal("deload" in w({}), false, "an old workout is unchanged");
+});
