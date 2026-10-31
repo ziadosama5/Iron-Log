@@ -2,7 +2,7 @@
    <style>, so every selector carries :root[data-look="bloom"]. */
 
 /* tab bar: a floating pill, the current tab sits in a soft accent bubble */
-html:root[data-look="bloom"] .tabbar{inset-inline:16px;max-width:none;bottom:calc(14px + env(safe-area-inset-bottom,0px));height:64px;border-radius:32px;padding:0 6px}
+html:root[data-look="bloom"] .tabbar{inset-inline:16px;max-width:616px;bottom:calc(14px + env(safe-area-inset-bottom,0px));height:64px;border-radius:32px;padding:0 6px}
 html:root[data-look="bloom"] .tabbar button{border-radius:26px;margin-block:6px}
 html:root[data-look="bloom"] .tabbar button[aria-current="page"]{background:var(--accent-soft)}
 

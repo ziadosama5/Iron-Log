@@ -39,14 +39,15 @@ function friends(c) {
 
 // Body: the weight and the entry actions first, the trend after, your profile line last.
 function body(c) {
-  return `<h2>${c.esc(c.t("Body"))}</h2>${c.quickHtml}${c.entryHtml}${c.trendHtml}${c.recentHtml}${c.profileHtml}`;
+  const form = c.profileIsForm ? c.profileHtml : "", line = c.profileIsForm ? "" : c.profileHtml;   // the About-you form belongs under the weight; the finished profile line goes last
+  return `<h2>${c.esc(c.t("Body"))}</h2>${c.quickHtml}${form}${c.entryHtml}${c.trendHtml}${c.recentHtml}${line}`;
 }
 
 // My Gym: flat lists of switches under a quiet count line. Every equipment item stays a gym-toggle button (aria-pressed), drawn as a row with a switch.
 function gym(c) {
   const e = c.esc;
   const groups = c.groups.map(g => `<h3 class="lk-gh">${e(g.label)}</h3><div class="card lk-sw-card">${g.items.map(i => `<button type="button" class="lk-swrow" data-act="gym-toggle" data-id="${e(i.id)}" aria-pressed="${i.on}"><span class="lk-swl">${e(i.label)}</span><i class="lk-sw" aria-hidden="true"></i></button>`).join("")}</div>`).join("");
-  return `<h2>${e(c.t("My Gym"))}</h2>${c.introHtml}${c.count ? `<div class="lk-count">${e(c.count)}</div>` : ""}${groups}${c.injuriesHtml}${c.endHtml}`;
+  return `<h2>${e(c.t("My Gym"))}</h2>${c.introHtml}${groups}${c.injuriesHtml}${c.endHtml}`;
 }
 
 // The focus card: name, tags and target on the left, a 96 px demo on the right; advice, set type, the sets, two stacked steppers, one big Log button.

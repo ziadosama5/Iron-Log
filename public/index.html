@@ -415,6 +415,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .demo-full{position:absolute;inset-inline-end:0;bottom:0;width:44px;height:44px;appearance:none;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:end;color:#fff}
 .demo-toggle{position:absolute;inset-inline-start:0;top:0;width:44px;height:44px;appearance:none;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:start;color:#fff}
 .demo-toggle span{width:26px;height:26px;margin:3px 0 0 3px;border-radius:8px;background:rgba(15,17,21,.78);display:grid;place-items:center;font-size:12px;line-height:1}
+:root[dir="rtl"] .demo-toggle span{margin:3px 3px 0 0}
 .demo-full span{width:26px;height:26px;margin:0 3px 3px 0;border-radius:8px;background:rgba(15,17,21,.78);display:grid;place-items:center;font-size:14px;line-height:1}
 :root[dir="rtl"] .demo-full span{margin:0 0 3px 3px}
 .ex-works{margin:10px 0 4px}
@@ -1644,7 +1645,7 @@ function chipInfo(chip,name){ const i=infoBtn(name); return i ? `<span class="ch
 // Fetches the GIFs of the day's exercises once in the background (the service worker keeps them), so they are there at the gym.
 const warmedDemos=new Set();
 function warmDemos(names){
-  for(const n of names.slice(0,12)){ const u=gifUrl(n); if(!u||warmedDemos.has(u)) continue; warmedDemos.add(u); const im=new Image(); im.crossOrigin="anonymous"; im.onerror=()=>warmedDemos.delete(u); im.src=u; }
+  for(const n of names.slice(0,12)) for(const u of [gifUrl(n),stillUrl(n)]){ if(!u||warmedDemos.has(u)) continue; warmedDemos.add(u); const im=new Image(); im.crossOrigin="anonymous"; im.onerror=()=>warmedDemos.delete(u); im.src=u; }   // the still too, so stopping a demo works offline
 }
 /* "Download exercise pictures" (Me > Appearance): the service worker saves every GIF into a cache that is never trimmed. */
 const picsState={cached:null,seen:0,progress:null};
@@ -1907,18 +1908,17 @@ function injuriesCardHtml(){
 }
 function renderGym(){
   const gym=state.settings.gym, on=new Set(Array.isArray(gym)?gym:[]), c=gymCounts(gym);
-  const SEP="";   // splits the page into named parts for screenHtml "plan.gym"
   let h=`<div class="card"><p class="prev" style="margin:0">Tick the equipment your gym has. Exercise suggestions then only offer what you can do. To see every exercise anyway, use Show all under the suggestions: your gym stays saved.</p>
     <span class="label">Start from</span><div class="chips">${GYM_PRESETS.map(p=>`<button class="chip" data-act="gym-preset" data-p="${p.id}" aria-pressed="${sameGym(gym,p.equipment)}">${esc(t(p.name))}</button>`).join("")}</div></div>`;
-  h+=SEP+GYM_GROUPS.map(([g,label])=>`<div class="card"><h3>${label}</h3><div class="chips">${EQUIPMENT.filter(e=>e.group===g).map(e=>`<button class="chip" data-act="gym-toggle" data-id="${e.id}" aria-pressed="${on.has(e.id)}">${esc(eqLabel(e.id))}</button>`).join("")}</div></div>`).join("");
-  h+=SEP+injuriesCardHtml()+SEP;
+  const groupsHtml=GYM_GROUPS.map(([g,label])=>`<div class="card"><h3>${label}</h3><div class="chips">${EQUIPMENT.filter(e=>e.group===g).map(e=>`<button class="chip" data-act="gym-toggle" data-id="${e.id}" aria-pressed="${on.has(e.id)}">${esc(eqLabel(e.id))}</button>`).join("")}</div></div>`).join("");
+  const injuriesHtml=injuriesCardHtml(), introHtml=h; h="";   // the page is made of named parts for screenHtml "plan.gym"
   h+=`<div class="card"><span>${Array.isArray(gym)?esc(t("{a} of {b} items · {c} exercises available",{a:c.items,b:c.itemsTotal,c:c.exercises})):esc(t("Not set yet. Every exercise is suggested."))}</span>
     <span class="prev" role="status">${state.gymStatus==="saving"?esc(t("Saving…")):state.gymStatus==="saved"?esc(t("Saved ✓")):""}</span>
     <div class="row"><button class="btn primary" data-act="gym-done">Done</button></div></div>`;
   if(Array.isArray(gym)) h+=state.gymConfirmClear
     ?`<div class="card"><span>Clear your gym setup? Every exercise will be suggested again.</span><div class="row"><button class="btn small" data-act="gym-clear-no">Keep</button><button class="btn small danger" data-act="gym-clear-yes">Clear</button></div></div>`
     :`<div class="row" style="justify-content:flex-end"><button class="btn ghost small" data-act="gym-clear">Clear my gym</button></div>`;
-  const [introHtml,groupsHtml,injuriesHtml,endHtml]=h.split(SEP);
+  const endHtml=h;
   const groups=GYM_GROUPS.map(([g,label])=>({id:g,label,items:EQUIPMENT.filter(e=>e.group===g).map(e=>({id:e.id,label:eqLabel(e.id),on:on.has(e.id)}))}));
   $("#view-gym").innerHTML=screenHtml("plan.gym",{introHtml,groupsHtml,groups,injuriesHtml,endHtml,count:Array.isArray(gym)?t("{a} of {b} items · {c} exercises available",{a:c.items,b:c.itemsTotal,c:c.exercises}):""},classicGym);
 }
@@ -2173,8 +2173,8 @@ function quickWeightCard(entry){
 }
 function renderBody(){
   const p=state.profile, entry=state.body.find(e=>e.date===state.bdate)||{date:state.bdate};
-  const SEP="";   // splits the page into named parts for screenHtml "progress.body"
-  let h=quickWeightCard(entry)+SEP;
+  const parts=[]; let h=""; const cut=()=>{ parts.push(h); h=""; };   // the page is cut into named parts for screenHtml "progress.body"
+  h=quickWeightCard(entry); cut();
   if(!profileReady()||state.editProfile){
     h+=`<form class="card" id="profile-form" autocomplete="off"><h3>About you</h3>
       <p class="prev" style="margin:0">Used to estimate calories, protein and healthy ranges in Coach. Only you can see it.</p>
@@ -2191,7 +2191,7 @@ function renderBody(){
     h+=`<div class="row prev"><span class="grow">${t(p.sex==="male"?"Male":"Female")} · ${p.height} cm · ${t("{n} yrs",{n:new Date().getFullYear()-p.birthYear})} · ${t("Goal: {goal}",{goal:"<b>"+esc(nameOf("goal",GOALS[p.goal]))+"</b>"})}${p.goalWeight!=null?` · ${t("Target {n} kg",{n:kg(p.goalWeight)})}`:""}</span><button class="btn ghost small" data-act="edit-profile">Edit</button></div>`;
   }
 
-  h+=SEP;
+  cut();
   const hasM=["waist","chest","hips","neck","arm","thigh","calf"].some(k=>entry[k]!=null), hasI=["smm","bfm","pbf","vfl","bmr","tbw","score"].some(k=>entry[k]!=null);
   // Measurements and InBody open on request (or when the selected day already has them).
   if(!(state.bodyFull||hasM||hasI)) h+=`<button class="btn secondary" data-act="body-full">Add measurements / scan</button>`;
@@ -2205,7 +2205,7 @@ function renderBody(){
     <div class="row"><button class="btn primary" type="submit">Save entry</button>${state.body.some(e=>e.date===state.bdate)?`<button class="btn ghost danger" type="button" data-act="del-body">Delete</button>`:""}</div>
   </form>`;
 
-  h+=SEP;
+  cut();
   const metrics=Object.keys(BF).filter(k=>state.body.some(e=>typeof e[k]==="number"));
   if(metrics.length){
     if(!metrics.includes(state.metric)) state.metric=metrics[0];
@@ -2223,15 +2223,15 @@ function renderBody(){
       </div>
       ${lineChart(s,[{k,c:"var(--accent)",main:true}],t("{label} over time",{label:bfLabel(k)}),t("Add a second entry to see the trend."))}
     </div>`;
-    h+=SEP;
+    cut();
     const more=moreList(bodySorted().reverse(),"body"), rows=more.shown;
     h+=`<div class="card" style="overflow-x:auto"><h3>Recent entries</h3><table><thead><tr><th>Date</th><th class="r">Weight</th><th class="r">Waist</th><th class="r">Fat %</th><th class="r">Muscle</th></tr></thead><tbody>${
       rows.map(e=>`<tr data-bdate="${esc(e.date)}" style="cursor:pointer"><td style="white-space:nowrap">${fmtDate(e.date)}</td>${["weight","waist","pbf","smm"].map(k=>`<td class="r num">${e[k]!=null?kg(e[k]):"–"}</td>`).join("")}</tr>`).join("")}</tbody></table>${more.btn}</div>`;
   } else {
-    h+=SEP+`<div class="empty"><strong>No body data yet</strong>Log your weight above. Add measurements or an InBody scan whenever you have them, and Coach will start using them.</div>`;
+    cut(); h+=`<div class="empty"><strong>No body data yet</strong>Log your weight above. Add measurements or an InBody scan whenever you have them, and Coach will start using them.</div>`;
   }
-  const [qh,pf,en,tr,rc]=h.split(SEP);
-  $("#view-body").innerHTML=screenHtml("progress.body",{quickHtml:qh,profileHtml:pf,entryHtml:en,trendHtml:tr,recentHtml:rc||""},classicBody);
+  cut(); const [qh,pf,en,tr,rc]=parts;
+  $("#view-body").innerHTML=screenHtml("progress.body",{quickHtml:qh,profileHtml:pf,entryHtml:en,trendHtml:tr,recentHtml:rc||"",profileIsForm:!profileReady()||!!state.editProfile},classicBody);
 }
 function classicBody(P){ return `<h2>Body</h2>${P.quickHtml}${P.profileHtml}${P.entryHtml}${P.trendHtml}${P.recentHtml}`; }
 
@@ -2961,7 +2961,7 @@ let exInfoToken=0;
 function openExInfo(name){
   const info=infoOf(name); if(!info) return;
   const dlg=$("#exinfo"), token=++exInfoToken;
-  const gifSrc=gifUrl(info.name);
+  const gifSrc=demoStill()?(stillUrl(info.name)||gifUrl(info.name)):gifUrl(info.name);
   dlg.innerHTML = `<div class="sheet-head"><h2 id="exinfo-title">${esc(nameOf("ex",info.name))}</h2><button class="btn ghost small" data-act="exinfo-close" aria-label="Close">✕</button></div>
     ${gifSrc?`<div class="exinfo-gifbox"><img class="exinfo-gif" src="${esc(gifSrc)}" crossorigin="anonymous" decoding="async" alt="${esc(nameOf("ex",info.name))}"></div>`:""}
     <p class="ex-works">Works: <b>${info.primary.map(m=>esc(nameOf("muscle",m))).join(", ")}</b>${info.secondary.length?` <span class="prev">· ${info.secondary.map(m=>esc(nameOf("muscle",m))).join(", ")}</span>`:""}</p>
@@ -3137,7 +3137,7 @@ const LOOK_NAME={classic:"Classic",carbon:"Carbon",bloom:"Bloom"};
 /* ---------- per-look layouts (Looks 2.0) ---------- */
 // A look supplies pure HTML builders (public/looks/<look>.js, loaded only while that look is on). screenHtml asks for one by name and
 // falls back to the Classic builder, so a screen a look does not define (or a module that cannot load) still draws, in the look's colours.
-let LAYOUT={}, layoutFor="classic";
+let LAYOUT={}, layoutFor="classic", wantedLook="classic";   // wantedLook = the look asked for last (not read from storage, which may be blocked)
 function screenHtml(name,ctx,classic){
   const b=LAYOUT[name];
   if(b){ try{ return b(buildCtx({t,tn,nameOf,rtl:isRtl(),look:layoutFor,...ctx})); }catch(e){ console.warn("look builder failed, using Classic:",name,e&&e.message); } }
@@ -3150,11 +3150,11 @@ function setLookCss(look){
   const href="/looks-"+look+".css"; if(l.getAttribute("href")!==href) l.setAttribute("href",href);
 }
 async function activateLayout(look){
-  look=cleanLook(look); setLookCss(look);
+  look=cleanLook(look); wantedLook=look; setLookCss(look);
   const next=await loadLayout(look);
-  if(cleanLook(currentLook())!==look) return;   // the person switched again while this was loading
+  if(wantedLook!==look) return;   // the person switched again while this was loading
   LAYOUT=next; layoutFor=look;
-  if(state.authed) render();
+  if(state.authed) renderSoon();
 }
 // A tile is a tiny mock screen drawn with the look's own tokens (.look-scope), with that look's default accent.
 function lookPreviewHtml(look){

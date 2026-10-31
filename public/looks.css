@@ -65,10 +65,9 @@
 
 /* ================= Glass surfaces shared by both looks (the page already uses these classes in every screen) ================= */
 :root[data-look] body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
-:root[data-look] .card,:root[data-look] .pill,:root[data-look] .exchip,:root[data-look] .btn:not(.primary):not(.danger):not(.ghost){
-  background:var(--glass);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);
-  border-color:transparent;box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder),var(--soft)}
-:root[data-look] .btn:not(.primary):not(.danger):not(.ghost),:root[data-look] .pill{box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder)}
+:root[data-look] .card{background:var(--glass);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);border-color:transparent;box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder),var(--soft)}
+/* chips, pills and buttons are translucent but not blurred themselves (a blur inside a blurred card is costly on low-end phones) */
+:root[data-look] .pill,:root[data-look] .exchip,:root[data-look] .btn:not(.primary):not(.danger):not(.ghost){background:var(--glass2);border-color:transparent;box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder)}
 :root[data-look] .btn.primary{border-color:transparent;box-shadow:inset 0 1px 0 rgb(255 255 255 / .28)}
 :root[data-look] .btn.ghost{background:transparent;border-color:transparent}
 :root[data-look] .card.banner{background:var(--accent-soft);border:0;box-shadow:inset 0 0 0 1px var(--gborder)}
@@ -94,8 +93,7 @@
 :root[data-look] .hero{border-radius:var(--r-card)}
 :root[data-look] .demo{border-radius:var(--r-btn)}
 :root[data-look] .tag2{border-radius:999px}
-:root[data-look] .exchips,:root[data-look] .pills{-webkit-mask-image:linear-gradient(to right,#000 88%,transparent);mask-image:linear-gradient(to right,#000 88%,transparent);padding-block:4px;margin-block:-4px}
-:root[dir="rtl"][data-look] .exchips,:root[dir="rtl"][data-look] .pills{-webkit-mask-image:linear-gradient(to left,#000 88%,transparent);mask-image:linear-gradient(to left,#000 88%,transparent)}
+:root[data-look] .exchips,:root[data-look] .pills{padding-block:4px;margin-block:-4px}
 
 /* ================= Arabic keeps its own faces in every look ================= */
 :root[lang="ar"][data-look]{--f-body:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;--f-display:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
@@ -132,10 +130,10 @@
 :root[data-look] .dayname{font-size:19px;line-height:1.2;font-weight:700}
 
 /* ================= Looks 2.0 workout card parts (both looks) ================= */
-:root[data-look] .lk-focus .advice{display:block;color:var(--fg);font-size:15px;background:var(--accent-soft);padding:10px 12px 0;border-radius:var(--r-btn) var(--r-btn) 0 0}
+:root[data-look] .lk-focus .advice{display:block;color:var(--fg);font-size:15px;background:var(--accent-soft);padding:10px 12px;border-radius:var(--r-btn)}
+:root[data-look] .lk-focus .advice:has(+ .advice-why){padding-bottom:0;border-radius:var(--r-btn) var(--r-btn) 0 0}
 :root[data-look] .lk-focus .advice b{font-weight:600}
 :root[data-look] .lk-focus .advice-why{background:var(--accent-soft);padding:2px 12px 10px;border-radius:0 0 var(--r-btn) var(--r-btn);margin-top:-12px;font-size:13px}
-:root[data-look] .lk-focus .advice:only-child{border-radius:var(--r-btn);padding-bottom:10px}
 :root[data-look] .lk-focus .ex-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
 :root[data-look] .lk-focus .bigstep input{min-width:0}
 :root[data-look] .lk-focus .bigstep button{width:48px;height:48px}
