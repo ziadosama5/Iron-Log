@@ -2185,8 +2185,10 @@ function yearHtml(y){
     <div class="hm-legend">${esc(t("Less time"))} <div class="hm-c l0"></div><div class="hm-c l1"></div><div class="hm-c l2"></div><div class="hm-c l3"></div><div class="hm-c l4"></div> ${esc(t("More time"))}</div>
     <p class="prev hm-cap" id="hm-cap" aria-live="polite" style="margin:0">${esc(tn("{n} day trained in the last year","{n} days trained in the last year",y.trainedDays))}</p>`;
 }
+document.addEventListener("scroll",e=>{ if(e.target&&e.target.classList&&e.target.classList.contains("hm-wrap")) state.hmScroll=e.target.scrollLeft; },true);
 function showHmDay(c){
   const cap=$("#hm-cap"); if(!cap) return;
+  state.hmSel=c.dataset.date;
   const d=c.dataset.date, n=Number(c.dataset.n), min=Number(c.dataset.min), vol=Number(c.dataset.vol);
   cap.innerHTML=n?`${esc(fmtDate(d))} · ${esc(tn("{n} workout","{n} workouts",n))} · ${esc(t("{n} min",{n:min}))} · ${esc(t("{n} kg moved",{n:kg(vol)}))} <button type="button" class="btn ghost small" data-open="${esc(d)}">${esc(t("Open"))}</button>`:`${esc(fmtDate(d))} · ${esc(t("No workout"))}`;
 }
@@ -2210,7 +2212,9 @@ function renderOverview(){
   // The cards are named parts so a look can arrange them its own way (screenHtml "progress.overview").
   const P={yearHtml:YR,stats:{weight:wNow!=null?kg(wNow):"–",change:o.change==null?"–":sgn(o.change),thisWeek:o.streak.thisWeek,target:o.streak.target,streak:o.streak.weeks},statsHtml:STATS,weightHtml:W,trainingHtml:TR,caloriesHtml:CA,strengthHtml:ST};
   $("#view-overview").innerHTML=screenHtml("progress.overview",P,classicOverview);
-  const hm=document.querySelector("#view-overview .hm-wrap"); if(hm) hm.scrollLeft=hm.scrollWidth;   // start at today, the right edge
+  const hm=document.querySelector("#view-overview .hm-wrap");
+  if(hm){ hm.scrollLeft=state.hmScroll!=null?state.hmScroll:hm.scrollWidth;   // start at today, the right edge; a redraw keeps where the person scrolled to
+    if(state.hmSel){ const c=hm.querySelector(`.hm-c[data-date="${state.hmSel}"]`); if(c) showHmDay(c); } }
 }
 function classicOverview(P){ return `<h2>Overview</h2>${P.statsHtml}${P.yearHtml}${P.weightHtml}${P.trainingHtml}${P.caloriesHtml}${P.strengthHtml}`; }
 
@@ -2981,7 +2985,7 @@ function renderHistory(){
         :`<button class="btn ghost small danger" data-act="ask-del" data-id="${w.id}">Delete</button>`}</div>`};
   });
   // named parts so a look can arrange them its own way (screenHtml "progress.history")
-  $("#view-history").innerHTML=screenHtml("progress.history",{summaryHtml,items,moreHtml:hist.btn,backupHtml:backupCard()},classicHistory);
+  $("#view-history").innerHTML=screenHtml("progress.history",{summaryHtml,items,moreHtml:hist.btn,backupHtml:backupCard(),backupDue:backupDue()},classicHistory);
 }
 function classicHistItem(it){
   return `<div class="card" data-open="${esc(it.date)}" tabindex="0" style="cursor:pointer">
@@ -2994,6 +2998,11 @@ function historySummary(w,sets,v){
   const parts=[]; if(sets) parts.push(`${tn("{n} set","{n} sets",sets)} · ${kg(v)} kg`);
   const ek=exerciseKcal(w,weightOn(state.body,w.date)).total; if(ek) parts.push(t("{n} kcal exercise",{n:ek.toLocaleString("en-US")}));
   return parts.join(" · ");
+}
+// A backup is due when none was ever downloaded on this device or the last one is 30 days old or more.
+function backupDue(){
+  let last=null; try{ last=localStorage.getItem("ironlog.lastBackup"); }catch(e){}
+  return !last||daysSince(last,today())>=30;
 }
 function backupCard(){
   let last=null; try{ last=localStorage.getItem("ironlog.lastBackup"); }catch(e){}

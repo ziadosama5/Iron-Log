@@ -13,15 +13,17 @@ const screens = [
   ["today", []], ["workout", ['[data-act="start-day"]']], ["plan", ['[data-tab="plan"]']], ["gym", ['[data-tab="plan"]', '[data-view="gym"]']],
   ["overview", ['[data-tab="progress"]']], ["body", ['[data-tab="progress"]', '[data-view="body"]']], ["lifts", ['[data-tab="progress"]', '[data-view="progress"]']],
   ["goals", ['[data-tab="progress"]', '[data-view="goals"]']], ["coach", ['[data-tab="progress"]', '[data-view="coach"]']], ["history", ['[data-tab="progress"]', '[data-view="history"]']],
-  ["friends", ['[data-tab="friends"]']], ["challenges", ['[data-tab="friends"]', '[data-view="challenges"]']], ["me", ['[data-tab="me"]']]
+  ["friends", ['[data-tab="friends"]']], ["challenges", ['[data-tab="friends"]', '[data-view="challenges"]']], ["me", ['[data-tab="me"]']],
+  ["dayedit", [], "&go=days:edit"], ["friendpage", [], "&go=friend:u2"], ["find", ['[data-tab="friends"]', '[data-view="find"]']],
+  ["challengeopen", [], "&go=ch:open"], ["challengenew", [], "&go=ch:new"]
 ];
 const out = [];
 for (const look of ["carbon", "bloom"]) for (const theme of ["dark", "light"]) for (const lang of ["en", "ar"]) {
   const ctx = await b.newContext({ viewport: { width: 360, height: 780 }, serviceWorkers: "block" });
   await ctx.addInitScript('try{localStorage.setItem("ironlog.journey","skip")}catch(e){}');
-  for (const [name, clicks] of screens) {
+  for (const [name, clicks, extra = ""] of screens) {
     const p = await ctx.newPage();
-    await p.goto(`http://localhost:${PORT}/?friends=1&ch=1&mine=1&look=${look}&theme=${theme}&lang=${lang}`);
+    await p.goto(`http://localhost:${PORT}/?friends=1&ch=1&mine=1&look=${look}&theme=${theme}&lang=${lang}${extra}`);
     await p.waitForSelector(".tabbar:not([hidden])"); await p.waitForTimeout(700);
     for (const sel of clicks) { try { await p.click(sel, { timeout: 2000 }); } catch (e) { out.push(`${look}/${theme}/${lang}/${name}: click failed ${sel}`); break; } await p.waitForTimeout(350); }
     const r = await p.evaluate(() => {

@@ -59,12 +59,12 @@ function history(c) {
   const e = c.esc, rows = c.items.map(it => `<div class="card lk-hist" data-open="${e(it.date)}" tabindex="0">
     <div class="lk-hhead">${`<span class="lk-dtile" aria-hidden="true">${c.icon("bar", 22)}</span>`}<div class="lk-dtitle"><span class="dayname">${e(it.name)}</span><span class="lk-dmeta">${e(it.dateLabel)}</span></div><span class="num lk-hsum">${it.summaryHtml}</span></div>
     <div class="lk-hchips">${it.chipsHtml}</div>${it.deleteHtml}</div>`).join("");
-  return `<h2>${e(c.t("History"))}</h2>${c.summaryHtml}${c.backupHtml + `<div class="stack">${rows}</div>`}${c.moreHtml}${""}`;
+  return `<h2>${e(c.t("History"))}</h2>${c.summaryHtml}${c.backupDue ? c.backupHtml : ""}<div class="stack">${rows}</div>${c.moreHtml}${c.backupDue ? "" : c.backupHtml}`;
 }
 
 // Friend page: the two level cards sit in a tinted hero panel, then the comparison, then Remove / Block / Report.
 function friendPage(c) {
-  const duo = `<div class="lk-duo">${c.duoHtml}</div>`;
+  const duo = c.duoHtml ? `<div class="lk-duo">${c.duoHtml}</div>` : "";   // no empty box while the profile loads or the friend is not sharing
   return c.headHtml + c.bodyHtml + duo + c.tableHtml + c.actionsHtml + c.reportHtml;
 }
 
@@ -73,9 +73,9 @@ function challenges(c) {
   return c.headHtml + c.emptyHtml + c.actHtml + c.invHtml + c.finHtml + c.oldHtml;
 }
 
-// Day editor: the same nine parts in a soft card where the exercises come before the muscle chips.
+// Day editor: the same nine parts in a soft card where Train on moves down to the add field.
 function dayEdit(c) {
-  const order = ["headHtml", "nameHtml", "exercisesHtml", "suggestHtml", "addHtml", "trainHtml", "musclesHtml", "moveHtml", "doneHtml"];
+  const order = ["headHtml", "nameHtml", "musclesHtml", "exercisesHtml", "suggestHtml", "addHtml", "trainHtml", "moveHtml", "doneHtml"];
   return `<div class="card open lk-edit">${order.map(k => c[k]).join("")}</div>`;
 }
 

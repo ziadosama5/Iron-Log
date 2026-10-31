@@ -72,14 +72,16 @@ export function prsThisMonth(workouts, today) {
 // Year activity (a GitHub-style grid): `weeks` columns of 7 days, Saturday first, the last column is the week of `today`.
 // A day is shaded by the time trained that day (lifting by liftMinutes + cardio minutes): level 1-4 by quartiles of the days that have
 // time, 0 = nothing, days after today are `future`. Only days with sets or cardio count (trainedOn). Volume = extra load only.
+// A calendar date that exists (2026-02-30 does not).
+const realDate = d => /^\d{4}-\d{2}-\d{2}$/.test(d) && addDays(d, 0) === d;
 export function yearActivity(workouts, today, weeks = 53) {
   const last = weekKey(today), first = addDays(last, -(weeks - 1) * 7), agg = {};
   for (const w of Array.isArray(workouts) ? workouts : []) {
-    if (!w || typeof w.date !== "string" || !trainedOn(w) || w.date < first || w.date > today) continue;
+    if (!w || typeof w.date !== "string" || !realDate(w.date) || !trainedOn(w) || w.date < first || w.date > today) continue;
     const a = agg[w.date] || (agg[w.date] = { workouts: 0, minutes: 0, volume: 0 });
     a.workouts++;
     a.minutes += liftMinutes(w) + (w.cardio || []).reduce((n, c) => n + (Number(c && c.min) || 0), 0);
-    a.volume += (w.entries || []).reduce((n, e) => n + volumeSets(e.sets || []).reduce((m, s) => m + loadKg(s) * s.r, 0), 0);
+    a.volume += (w.entries || []).reduce((n, e) => n + volumeSets(e.sets || []).reduce((m, s) => m + loadKg(s) * (Number(s.r) || 0), 0), 0);
   }
   const mins = Object.values(agg).map(a => a.minutes).filter(v => v > 0).sort((a, b) => a - b);
   const q = p => (mins.length ? mins[Math.min(mins.length - 1, Math.floor(p * mins.length))] : 0), t1 = q(0.25), t2 = q(0.5), t3 = q(0.75);
@@ -97,5 +99,5 @@ export function yearActivity(workouts, today, weeks = 53) {
     if (month !== lastMonth && dom <= 7 && wk < weeks - 2) months.push({ col: wk, month });
     if (dom <= 7) lastMonth = month;
   }
-  return { weeks: cols, months, trainedDays: Object.keys(agg).length, thresholds: [t1, t2, t3] };
+  return { weeks: cols, months, trainedDays: Object.keys(agg).length };
 }

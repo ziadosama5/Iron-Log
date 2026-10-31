@@ -232,7 +232,7 @@
 :root[data-look] .lk-count{font-size:15px;font-weight:600;color:var(--muted);padding:0 2px}
 
 /* ================= Looks 2.0 History rows (both looks) ================= */
-:root[data-look] .lk-hist{gap:10px;padding:14px 16px}
+:root[data-look] .lk-hist{gap:10px;padding:14px 16px;cursor:pointer}
 :root[data-look] .lk-hhead{display:flex;align-items:center;gap:12px;min-width:0}
 :root[data-look] .lk-hsum{flex:none;font-size:13px;color:var(--muted);text-align:end}
 :root[data-look] .lk-hchips .chips{flex-wrap:nowrap;overflow:hidden}

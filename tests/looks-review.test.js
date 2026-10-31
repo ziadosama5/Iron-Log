@@ -84,3 +84,38 @@ test("the advice box rounds its bottom corners only when a why line follows", ()
 test("the demo stop button has an RTL corner gap", () => {
   assert.match(index, /\[dir="rtl"\] \.demo-toggle span|:root\[dir="rtl"\] \.demo-toggle span/);
 });
+
+// ---- second review fixes ----
+test("friend page: no empty level-card box while the profile loads or the friend is not sharing", async () => {
+  for (const look of ["carbon", "bloom"]) {
+    const L = await loadLayout(look), parts = BUILDERS["friends.page"].parts;
+    const none = L["friends.page"](buildCtx({ ...mk(parts), duoHtml: "", t, tn })), some = L["friends.page"](buildCtx({ ...mk(parts), t, tn }));
+    assert.ok(!none.includes("lk-duo"), look + ": nothing to wrap");
+    assert.ok(some.includes("lk-duo"), look + ": wrapped when there are cards");
+  }
+});
+test("bloom history: the backup card leads only when a backup is due, else it follows the workouts", async () => {
+  const L = await loadLayout("bloom"), base = { ...mk(["summaryHtml", "moreHtml", "backupHtml"]), items: [{ date: "2026-10-30", dateLabel: "x", name: "Push", summaryHtml: "", chipsHtml: "", deleteHtml: "" }], t, tn };
+  const due = L["progress.history"](buildCtx({ ...base, backupDue: true })), fine = L["progress.history"](buildCtx({ ...base, backupDue: false }));
+  assert.ok(due.indexOf("mark-backupHtml") < due.indexOf("lk-hist"));
+  assert.ok(fine.indexOf("mark-backupHtml") > fine.indexOf("lk-hist"));
+});
+test("bloom day editor keeps the documented order for the muscle chips: before the exercises and the suggestions", async () => {
+  const L = await loadLayout("bloom"), parts = BUILDERS["plan.dayEdit"].parts, html = L["plan.dayEdit"](buildCtx({ ...mk(parts), t, tn }));
+  const at = n => html.indexOf(`mark-${n}`);
+  assert.ok(at("musclesHtml") < at("exercisesHtml") && at("exercisesHtml") < at("suggestHtml") && at("suggestHtml") < at("addHtml"));
+  once(html, parts, "bloom dayEdit");
+});
+test("history cards in the looks look tappable and the builders have no leftover empty fragments", () => {
+  assert.match(css, /\.lk-hist\{[^}]*cursor:pointer/);
+  for (const f of ["looks/carbon.js", "looks/bloom.js"]) assert.ok(!read(f).includes('${""}'), f);
+});
+test("the year grid keeps its scroll position and the tapped day across a redraw", () => {
+  const ov = fn(index, "renderOverview");
+  assert.ok(ov.includes("hmScroll") && ov.includes("hmSel"), "renderOverview restores both");
+  assert.ok(fn(index, "showHmDay").includes("hmSel"), "showHmDay remembers the day");
+});
+test("the screen matrix opens the day editor, friend page, Find and both challenge screens", () => {
+  const m = readFileSync(new URL("../tools/looks-matrix.mjs", import.meta.url), "utf8");
+  for (const n of ["dayedit", "friendpage", "find", "challengeopen", "challengenew"]) assert.ok(m.includes('"' + n + '"'), n);
+});

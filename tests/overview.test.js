@@ -164,3 +164,13 @@ test("yearActivity: workouts older than the grid are ignored and bad rows never 
   const y = yearActivity([lift("2024-01-01", 3), null, { date: "bad" }, {}, lift("2026-10-30", 2)], YT);
   assert.equal(y.trainedDays, 1);
 });
+
+test("yearActivity: an impossible date is ignored, a set without a number of reps adds no volume (never NaN)", () => {
+  const bad = { date: "2026-02-30", entries: [{ ex: "Bench Press", sets: [{ w: 50, r: 10 }] }] };
+  const odd = { date: "2026-10-12", entries: [{ ex: "Bench Press", sets: [{ w: 50, r: "x" }, { w: 50, r: 10 }] }] };
+  const y = yearActivity([bad, odd], YT), d = y.weeks.flatMap(w => w.days).find(x => x.date === "2026-10-12");
+  assert.equal(y.trainedDays, 1, "only the real date counts");
+  assert.equal(d.volume, 500);
+  assert.ok(Number.isFinite(d.volume) && Number.isFinite(d.minutes));
+  assert.equal("thresholds" in y, false, "no unused fields");
+});

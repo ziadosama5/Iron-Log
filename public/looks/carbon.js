@@ -15,7 +15,7 @@ function dayCard(c) {
   const wds = c.wds.length ? `<span class="lk-wds">${c.wds.map(w => `<span class="lk-wtag">${e(w)}</span>`).join("")}</span>` : "";
   return `<div class="card lk-day${c.next ? " is-next" : ""}">
     <button class="daysum" data-act="edit-day" data-id="${e(c.id)}" aria-expanded="false">
-      <span class="lk-dhead">${""}<span class="lk-dtitle"><span class="dayname">${e(c.name)}</span><span class="lk-dmeta">${meta}</span></span>${c.next ? `<span class="lk-dnext">${e(t("Up next"))}</span>` : ""}</span>
+      <span class="lk-dhead"><span class="lk-dtitle"><span class="dayname">${e(c.name)}</span><span class="lk-dmeta">${meta}</span></span>${c.next ? `<span class="lk-dnext">${e(t("Up next"))}</span>` : ""}</span>
       ${wds}${c.listHtml}
     </button>
     <div class="row">${c.trainHtml}</div>
@@ -53,14 +53,14 @@ function gym(c) {
 // History: one dense row per workout (name, date, totals), the exercise chips on one line; the backup card stays last.
 function history(c) {
   const e = c.esc, rows = c.items.map(it => `<div class="card lk-hist" data-open="${e(it.date)}" tabindex="0">
-    <div class="lk-hhead">${""}<div class="lk-dtitle"><span class="dayname">${e(it.name)}</span><span class="lk-dmeta">${e(it.dateLabel)}</span></div><span class="num lk-hsum">${it.summaryHtml}</span></div>
+    <div class="lk-hhead"><div class="lk-dtitle"><span class="dayname">${e(it.name)}</span><span class="lk-dmeta">${e(it.dateLabel)}</span></div><span class="num lk-hsum">${it.summaryHtml}</span></div>
     <div class="lk-hchips">${it.chipsHtml}</div>${it.deleteHtml}</div>`).join("");
-  return `<h2>${e(c.t("History"))}</h2>${c.summaryHtml}${`<div class="stack">${rows}</div>`}${c.moreHtml}${c.backupHtml}`;
+  return `<h2>${e(c.t("History"))}</h2>${c.summaryHtml}<div class="stack">${rows}</div>${c.moreHtml}${c.backupHtml}`;
 }
 
 // Friend page: the comparison table first, the two level cards after it, then Remove / Block / Report.
 function friendPage(c) {
-  const duo = `<div class="lk-duo">${c.duoHtml}</div>`;
+  const duo = c.duoHtml ? `<div class="lk-duo">${c.duoHtml}</div>` : "";
   return c.headHtml + c.bodyHtml + c.tableHtml + duo + c.actionsHtml + c.reportHtml;
 }
 
