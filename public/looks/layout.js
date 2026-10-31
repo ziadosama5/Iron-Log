@@ -7,7 +7,7 @@ export const SCREENS = [
   "chrome.tabbar", "chrome.pills",
   "today", "today.new", "workout", "workout.done", "workout.variants", "rest.bar", "demo.thumb", "demo.viewer",
   "sheet.addExercise", "sheet.info", "sheet.food", "sheet.cardio", "sheet.target",
-  "plan.days", "plan.dayEdit", "plan.gym", "sheet.plan", "sheet.split",
+  "plan.days", "plan.dayCard", "plan.dayEdit", "plan.gym", "sheet.plan", "sheet.split",
   "progress.overview", "progress.body", "progress.bodyForm", "progress.lifts", "progress.goals", "progress.coach", "progress.history", "sheet.family",
   "friends.board", "friends.page", "friends.manage", "friends.find", "challenges.list", "challenges.open", "challenges.new",
   "me.root", "me.appearance", "me.privacy", "me.delete",

@@ -2,34 +2,37 @@
    <style>, so every selector carries :root[data-look="bloom"]. */
 
 /* tab bar: a floating pill, the current tab sits in a soft accent bubble */
-:root[data-look="bloom"] .tabbar{inset-inline:16px;max-width:none;bottom:calc(14px + env(safe-area-inset-bottom,0px));height:64px;border-radius:32px;padding:0 6px}
-:root[data-look="bloom"] .tabbar button{border-radius:26px;margin-block:6px}
-:root[data-look="bloom"] .tabbar button[aria-current="page"]{background:var(--accent-soft)}
+html:root[data-look="bloom"] .tabbar{inset-inline:16px;max-width:none;bottom:calc(14px + env(safe-area-inset-bottom,0px));height:64px;border-radius:32px;padding:0 6px}
+html:root[data-look="bloom"] .tabbar button{border-radius:26px;margin-block:6px}
+html:root[data-look="bloom"] .tabbar button[aria-current="page"]{background:var(--accent-soft)}
 
 /* section tabs: glass bubbles, the current one filled */
-:root[data-look="bloom"] .pill{min-height:44px;padding:0 18px;font-size:15px}
-:root[data-look="bloom"] .pill[aria-pressed="true"]{box-shadow:none}
+html:root[data-look="bloom"] .pill{min-height:44px;padding:0 18px;font-size:15px}
+html:root[data-look="bloom"] .pill[aria-pressed="true"]{box-shadow:none}
 
 /* rounded display face for titles and numerals */
-:root[data-look="bloom"] h2{font-family:var(--f-display);font-size:32px;line-height:38px;font-weight:800}
-:root[data-look="bloom"] .card h3{font-family:var(--f-display);font-size:20px;font-weight:800}
-:root[data-look="bloom"] .num,:root[data-look="bloom"] .bigstep input{font-family:var(--f-num)}
-:root[data-look="bloom"] .btn,:root[data-look="bloom"] .chip{border-radius:999px}
-:root[data-look="bloom"] .btn.primary{min-height:56px;font-size:17px}
-:root[data-look="bloom"] .seg{border-radius:20px}
-:root[data-look="bloom"] .seg button{border-radius:17px}
-:root[data-look="bloom"] .exchip{min-height:44px;border-radius:999px}
-:root[data-look="bloom"] .restbar{border-radius:32px}
-:root[data-look="bloom"] .demo{border-radius:22px}
-:root[data-look="bloom"] .lk-name{font-family:var(--f-display);font-weight:800;font-size:30px;line-height:36px}
-:root[data-look="bloom"] .lk-wd b{border-radius:50%}
-:root[data-look="bloom"] .lk-glance>.btn.primary{border-radius:28px}
+html:root[data-look="bloom"] h2{font-family:var(--f-display);font-size:32px;line-height:38px;font-weight:800}
+html:root[data-look="bloom"] .card h3{font-family:var(--f-display);font-size:20px;font-weight:800}
+html:root[data-look="bloom"] .num,:root[data-look="bloom"] .bigstep input{font-family:var(--f-num)}
+html:root[data-look="bloom"] .btn,:root[data-look="bloom"] .chip{border-radius:999px}
+html:root[data-look="bloom"] .btn.primary{min-height:56px;font-size:17px}
+html:root[data-look="bloom"] .seg{border-radius:20px}
+html:root[data-look="bloom"] .seg button{border-radius:17px}
+html:root[data-look="bloom"] .exchip{min-height:44px;border-radius:999px}
+html:root[data-look="bloom"] .restbar{border-radius:32px}
+html:root[data-look="bloom"] .demo{border-radius:22px}
+html:root[data-look="bloom"] .lk-name{font-family:var(--f-display);font-weight:800;font-size:30px;line-height:36px}
+html:root[data-look="bloom"] .lk-wd b{border-radius:50%}
+html:root[data-look="bloom"] .lk-glance>.btn.primary{border-radius:28px}
 
 /* Plan: cards with a round tile before the name and bubble tags */
-:root[data-look="bloom"] .daysum{padding:2px 0;gap:8px}
-:root[data-look="bloom"] .daysum .dayname{font-family:var(--f-display);font-size:20px;font-weight:800}
-:root[data-look="bloom"] .daysum .chip{background:var(--glass2);box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder);color:var(--fg)}
+html:root[data-look="bloom"] .daysum{padding:2px 0;gap:8px}
+html:root[data-look="bloom"] .daysum .dayname{font-family:var(--f-display);font-size:20px;font-weight:800}
+html:root[data-look="bloom"] .daysum .chip{background:var(--glass2);box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder);color:var(--fg)}
 /* Friends: a rounder podium with a lifted first step, rows as soft separators */
-:root[data-look="bloom"] .podium .blk{border-radius:18px 18px 6px 6px}
-:root[data-look="bloom"] .podium .r1 .blk{box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 28%,transparent)}
-:root[data-look="bloom"] .boardrow{padding:12px 0}
+html:root[data-look="bloom"] .podium .blk{border-radius:18px 18px 6px 6px}
+html:root[data-look="bloom"] .podium .r1 .blk{box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 28%,transparent)}
+html:root[data-look="bloom"] .boardrow{padding:12px 0}
+html:root[data-look="bloom"] .lk-wtag{border-radius:999px;padding:3px 12px;background:var(--glass2);box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder)}
+html:root[data-look="bloom"] .lk-wthero{align-items:flex-start;gap:4px;padding:20px}
+html:root[data-look="bloom"] .lk-wthero .bignum{font-size:52px;line-height:1.05}
