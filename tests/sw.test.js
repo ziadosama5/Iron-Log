@@ -7,7 +7,8 @@ const sw = readFileSync(new URL("../public/sw.js", import.meta.url), "utf8");
 const shell = sw.slice(sw.indexOf("const APP_SHELL = ["), sw.indexOf("];", sw.indexOf("const APP_SHELL = [")));
 
 test("the service worker has a new version and caches the new files", () => {
-  assert.match(sw, /const VERSION = "iron-log-v48"/);
+  const v = Number(/const VERSION = "iron-log-v(\d+)"/.exec(sw)?.[1]);
+  assert.ok(v >= 48, "the service worker version was bumped for sub-project 25 (v" + v + ")");
   for (const f of ["/looks.js", "/looks.css", "/exercise-gifs.js"]) assert.ok(shell.includes(`"${f}"`), f + " is in APP_SHELL");
 });
 

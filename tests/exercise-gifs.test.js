@@ -32,9 +32,6 @@ test("gifUrls lists each mapped GIF once", () => {
   assert.ok(urls.every(u => u.startsWith(DEMO_BASE + "videos/") && u.endsWith(".gif")));
 });
 
-test("the exercises with no good picture in the dataset keep their drawings (null)", () => {
-  for (const n of ["Pec Deck", "Reverse Pec Deck", "Skull Crusher", "Dumbbell Skull Crusher", "Hip Thrust", "Dumbbell Hip Thrust", "Glute Kickback Machine", "Plank", "Ab Wheel Rollout"]) assert.equal(GIFS[n], null, n);
-});
 
 import { makeGifs, stillUrls } from "../public/exercise-gifs.js";
 
@@ -57,11 +54,24 @@ test("stillUrls mirrors gifUrls one to one", () => {
   assert.ok(stillUrls().every(u => u.startsWith(DEMO_BASE + "images/") && u.endsWith(".jpg")));
 });
 
-test("no two exercises share one picture (a wrong or duplicated picture is worse than none)", () => {
+import { readFileSync } from "node:fs";
+const HAND = JSON.parse(readFileSync(new URL("../tools/gif-overrides.json", import.meta.url), "utf8"));
+
+test("two exercises share one picture only when a person hand-picked one of them (tools/gif-overrides.json)", () => {
   const seen = new Map();
-  for (const [name, id] of Object.entries(GIFS)) if (id) { assert.ok(!seen.has(id), `${name} and ${seen.get(id)} both use ${id}`); seen.set(id, name); }
+  for (const [name, id] of Object.entries(GIFS)) if (id) {
+    if (seen.has(id)) assert.ok(name in HAND || seen.get(id) in HAND, `${name} and ${seen.get(id)} both use ${id} without a hand pick`);
+    seen.set(id, name);
+  }
 });
 
-test("pictures the final review found to be the wrong movement stay off until checked by hand", () => {
-  for (const n of ["Cable Hip Abduction", "Seated Leg Curl", "Single-leg Leg Press", "Dumbbell Floor Press", "Close-grip Pulldown", "Rope Hammer Curl", "Underhand Barbell Row", "Dumbbell Sumo Squat", "High Cable Curl", "Leg Press"]) assert.equal(GIFS[n], null, n);
+test("every hand pick is in the picture map, and the exercises with no picture in the dataset stay null", () => {
+  for (const [name, id] of Object.entries(HAND)) assert.equal(GIFS[name], id, name);
+  for (const n of ["Box Squat", "Single-leg Leg Press", "Kettlebell Deadlift", "Glute Kickback Machine", "Cable Hip Abduction", "Donkey Kick", "Cable Woodchop"]) assert.equal(GIFS[n], null, n);
+});
+
+test("almost every exercise has a picture, and none uses a movement the final review found to be wrong", () => {
+  assert.ok(Object.values(GIFS).filter(Boolean).length >= 170, "pictures: " + Object.values(GIFS).filter(Boolean).length);
+  const wrong = { "Cable Hip Abduction": "0168-hBGWILP", "Seated Leg Curl": "0689-Hgs6Nl1", "Single-leg Leg Press": "1756-gEyURal", "Dumbbell Floor Press": "2137-Xy4jlWA", "Close-grip Pulldown": "1327-VnfUNW7", "Rope Hammer Curl": "0636-o1ntciW", "Underhand Barbell Row": "0049-dmgMp3n", "Dumbbell Sumo Squat": "0291-mnzcrIB", "High Cable Curl": "1631-NvfE43H", "Leg Press": "0760-7zdxRTl" };
+  for (const [n, id] of Object.entries(wrong)) assert.notEqual(GIFS[n], id, n);
 });

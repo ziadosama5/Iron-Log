@@ -35,6 +35,7 @@ function score(ours, theirs, theirEquip) {
 }
 
 let map, rows = [];
+const alts = {};   // our exercise -> its four closest dataset exercises (printed to docs/gif-alternatives.txt for a hand pick)
 if (keep && fs.existsSync(JSON_PATH)) {
   map = JSON.parse(fs.readFileSync(JSON_PATH, "utf8"));
 } else {
@@ -43,7 +44,9 @@ if (keep && fs.existsSync(JSON_PATH)) {
   for (const name of ALL_EX) {
     if (NONE.includes(name)) { map[name] = null; rows.push({ name, best: "", s: 0, id: null }); continue; }
     let best = null, bs = 0;
-    for (const e of data) { const s = score(name, e.name, e.equipment); if (s > bs) { bs = s; best = e; } }
+    const top = [];
+    for (const e of data) { const s = score(name, e.name, e.equipment); if (s > bs) { bs = s; best = e; } top.push({ s, e }); }
+    top.sort((a, b) => b.s - a.s); alts[name] = top.slice(0, 4).map(x => `${x.e.name} [${x.e.equipment}] ${x.e.id}-${x.e.media_id} ${x.s.toFixed(2)}`);
     const id = best && bs >= 0.75 ? `${best.id}-${best.media_id}` : null;
     map[name] = id; rows.push({ name, best: best ? best.name : "", s: bs, id });
   }
@@ -51,6 +54,10 @@ if (keep && fs.existsSync(JSON_PATH)) {
   const best = {};
   for (const r of rows) if (r.id && (!best[r.id] || r.s > best[r.id].s)) best[r.id] = r;
   for (const r of rows) if (r.id && best[r.id] !== r) { map[r.name] = null; r.id = null; }
+  // hand picks (tools/gif-overrides.json): the closest same-movement picture chosen by a person; they win over the automatic match
+  // and may share a picture with another exercise (e.g. two leg-press variants)
+  const hand = JSON.parse(fs.readFileSync(new URL("./gif-overrides.json", import.meta.url), "utf8"));
+  for (const [name, id] of Object.entries(hand)) { map[name] = id; const r = rows.find(x => x.name === name); if (r) { r.id = id; r.best = "(hand-picked)"; r.s = 1; } }
   fs.writeFileSync(JSON_PATH, JSON.stringify(map, null, 1) + "\n");
 }
 
@@ -76,6 +83,7 @@ export const { gifUrl, stillUrl, gifUrls, stillUrls } = makeGifs(DEMO_BASE, GIFS
 fs.writeFileSync(MODULE_PATH, mod);
 
 if (rows.length) {
+  if (process.argv.includes("--alts")) fs.writeFileSync(new URL("../docs/gif-alternatives.txt", import.meta.url), rows.filter(r => !r.id).map(r => r.name + "\n  " + (alts[r.name] || []).join("\n  ")).join("\n") + "\n");
   const order = rows.sort((x, y) => (x.id ? 1 : 0) - (y.id ? 1 : 0) || x.s - y.s);
   const flag = r => (!r.id ? "NONE" : r.s < 0.75 ? "check" : "ok");
   fs.writeFileSync(REVIEW_PATH, `# GIF matches (owner review)\n\nOur exercise -> the dataset exercise whose GIF it would show. Fix a wrong row by editing \`tools/exercise-gifs.json\` (the id is \`<id>-<media_id>\` from the dataset's \`data/exercises.json\`, or \`null\` for "keep the drawings"), then run \`node tools/match-gifs.mjs --keep\`.\n\n| Status | Our exercise | Dataset exercise | Score | File id |\n|---|---|---|---|---|\n` + order.map(r => `| ${flag(r)} | ${r.name} | ${r.best} | ${r.s.toFixed(2)} | ${r.id || ""} |`).join("\n") + "\n");

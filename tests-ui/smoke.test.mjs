@@ -1456,7 +1456,7 @@ test("injuries: an exercise can be avoided by name from the card and removed aga
 test("injuries: the exercise info sheet can start and stop avoiding an exercise", async () => {
   const { page, ctx } = await open();
   await startPush(page);
-  await page.locator('#open-card [data-act="ex-info"]').first().click();
+  await page.locator('#open-card .ex-name[data-act="ex-info"]').first().click();
   await page.waitForSelector("#exinfo[open]");
   const btn = page.locator('#exinfo [data-act="avoid-toggle"]');
   assert.equal((await btn.innerText()).trim(), "Avoid this exercise");
@@ -1519,7 +1519,7 @@ test("injuries: the Days editor and the day card mark avoided exercises, and not
 test("injuries: the exercise info sheet explains why, and an exercise avoided by name says so", async () => {
   const { page, ctx } = await open(AVOID_WRIST);
   await startPush(page);
-  await page.locator('#open-card [data-act="ex-info"]').first().click();
+  await page.locator('#open-card .ex-name[data-act="ex-info"]').first().click();
   await page.waitForSelector("#exinfo[open]");
   assert.ok((await page.locator("#exinfo .avoidnote").innerText()).includes("wrist"));
   await ctx.close();
@@ -2258,5 +2258,40 @@ test("review: the download status counts only pictures still wanted, drops stale
   const keys = await page.evaluate(async () => (await (await caches.open("ironlog-demo-all")).keys()).map(r => r.url));
   assert.equal(keys.length, total);
   assert.ok(!keys.some(u => u.includes("9999-stale")), "the stale picture was removed");
+  await ctx.close();
+});
+
+// ---- quick pass: no "!" on the card, the demo survives re-renders, the info sheet shows the GIF ----
+test("quick pass: no ! button on the workout card; tapping the exercise name opens its info", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  assert.equal(await page.locator("#open-card .infobtn").count(), 0, "no ! icon on the card");
+  await page.locator('#open-card .ex-name[data-act="ex-info"]').click();
+  await page.waitForSelector("#exinfo[open]");
+  assert.match(await page.locator("#exinfo .sheet-head h2").textContent(), /Bench Press/i);
+  await page.locator('#exinfo [data-act="exinfo-close"]').click();
+  await addEx(page, "My Own Lift");
+  assert.equal(await page.locator('#open-card .ex-name[data-act="ex-info"]').count(), 0, "a custom exercise has no info to open");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("quick pass: logging a set keeps the same demo element, so the GIF does not restart", async () => {
+  const { page, ctx } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  await page.evaluate(() => { document.querySelector("#open-card .demo").__mark = "same"; });
+  await page.locator('#open-card .prow button[data-act="add-set"]').click();
+  await page.waitForTimeout(500);
+  assert.equal(await page.evaluate(() => document.querySelector("#open-card .demo").__mark), "same");
+  await ctx.close();
+});
+
+test("quick pass: the info sheet shows the exercise GIF at the top, with the credit", async () => {
+  const { page, ctx } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  await page.locator('#open-card .ex-name[data-act="ex-info"]').click();
+  await page.waitForSelector("#exinfo[open]");
+  assert.match(await page.locator("#exinfo img.exinfo-gif").getAttribute("src"), /\/videos\/0025-EIeI8Vf\.gif$/);
+  assert.match(await page.locator("#exinfo .ex-credit").last().textContent(), /Gym visual/);
   await ctx.close();
 });

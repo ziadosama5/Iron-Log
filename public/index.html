@@ -397,6 +397,9 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .ptick.live{border-color:var(--accent);cursor:pointer}
 .prow:not([aria-disabled="true"]){border-style:solid;border-color:var(--accent);color:var(--fg)}
 .ex-top{display:flex;gap:12px;align-items:flex-start}
+.ex-name[data-act]{cursor:pointer}
+.exinfo-gifbox{width:min(100%,240px);aspect-ratio:1;margin:10px auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.exinfo-gifbox img{width:100%;height:100%;object-fit:contain;display:block}
 .ex-top .grow{min-width:0;display:flex;flex-direction:column;gap:6px}
 .tagrow{display:flex;flex-wrap:wrap;gap:6px}
 .tag2{font-size:12px;line-height:1.2;padding:3px 9px;border-radius:999px;background:var(--sunk);color:var(--muted)}
@@ -1365,7 +1368,10 @@ function renderLog(){
   h += `<div class="row"><button class="btn secondary grow" data-act="open-exsheet">+ Exercise</button><button class="btn secondary grow" data-act="open-cardiosheet">+ Cardio</button></div>`;
   h += cardioListHtml(w.cardio||[], weightOn(state.body,state.date));
 
-  $("#view-log").innerHTML = h + todayCard(); refreshSheets(); syncWake(); fillFigures($("#open-card")); warmDemos(entries.map(e=>e.ex));
+  const oldDemo=$("#open-card .demo"), demoKey=d=>d&&d.dataset.name+"|"+d.className;
+  $("#view-log").innerHTML = h + todayCard();
+  const newDemo=$("#open-card .demo"); if(oldDemo&&newDemo&&demoKey(oldDemo)===demoKey(newDemo)) newDemo.replaceWith(oldDemo);
+  refreshSheets(); syncWake(); fillFigures($("#open-card")); warmDemos(entries.map(e=>e.ex));
   // keep the open exercise's chip in view without scrolling the page
   const c=$("#exchips"), on=c&&c.querySelector('[aria-current="true"]');
   if(on){ const a=on.getBoundingClientRect(), b=c.getBoundingClientRect(); c.scrollLeft+=(a.left+a.width/2)-(b.left+b.width/2); }
@@ -1438,9 +1444,9 @@ function focusCard(w, ei){
   let runBest=best;
   const nx = nextUnfinished(entries, ei);
   return `<div class="card focus" id="open-card">
-      <div class="row"><span class="label grow">${t("Exercise {n} of {m}",{n:ei+1,m:entries.length})}</span>${infoBtn(e.ex)}</div>
+      <div class="row"><span class="label grow">${t("Exercise {n} of {m}",{n:ei+1,m:entries.length})}</span></div>
       ${demoPref()==="full"?demoThumbHtml(e.ex):""}
-      <div class="ex-top">${demoPref()==="full"?"":demoThumbHtml(e.ex)}<div class="grow"><div class="ex-name">${esc(nameOf("ex",e.ex))}</div>${tagsHtml(e.ex)}</div></div>
+      <div class="ex-top">${demoPref()==="full"?"":demoThumbHtml(e.ex)}<div class="grow"><div class="ex-name"${infoFor(e.ex)?` data-act="ex-info" data-name="${esc(e.ex)}" role="button" tabindex="0" aria-label="${esc(t("About {name}",{name:nameOf("ex",e.ex)}))}"`:""}>${esc(nameOf("ex",e.ex))}</div>${tagsHtml(e.ex)}</div></div>
       ${(()=>{ const w=avoidWarn(e.ex); return w?`<div class="avoidnote"><span aria-hidden="true">⚠</span><span class="grow">${esc(warnText(w))}</span>${e.sets.length?"":`<button type="button" class="btn small" data-act="skip-avoided" data-ei="${ei}">${t("Skip it")}</button>`}</div>`:""; })()}
       ${last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>(bw?formatLoad(s.w,t("BW")):kg(s.w))+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
       ${targetBlock(e.ex,target,sug,ei,hold,whyText(whyFor({last:last&&last.sets,target,sug,bw,hold,deload:!!dlOn})))}
@@ -1569,6 +1575,7 @@ function exerciseFigures(name){
 function fillFigures(root,alive){
   if(!root) return;
   root.querySelectorAll(".ex-fig[data-src]").forEach(box=>{
+    if(box.querySelector("svg")) return;   // already drawn (a kept demo element)
     fetch(box.dataset.src).then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
       .then(svg=>{ if(!alive||alive()) box.innerHTML=svg; })
       .catch(()=>{ if(!alive||alive()) box.innerHTML=`<span class="prev">Drawing not available offline yet</span>`; });
@@ -1577,7 +1584,7 @@ function fillFigures(root,alive){
 // Fetches the GIFs of the day's exercises once in the background (the service worker keeps them), so they are there at the gym.
 const warmedDemos=new Set();
 function warmDemos(names){
-  for(const n of names.slice(0,12)){ const u=gifUrl(n); if(!u||warmedDemos.has(u)) continue; warmedDemos.add(u); const im=new Image(); im.crossOrigin="anonymous"; im.src=u; }
+  for(const n of names.slice(0,12)){ const u=gifUrl(n); if(!u||warmedDemos.has(u)) continue; warmedDemos.add(u); const im=new Image(); im.crossOrigin="anonymous"; im.onerror=()=>warmedDemos.delete(u); im.src=u; }
 }
 /* "Download exercise pictures" (Me > Appearance): the service worker saves every GIF into a cache that is never trimmed. */
 const picsState={cached:null,seen:0,progress:null};
@@ -1595,9 +1602,15 @@ function drawPics(){
 try{ if("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message",e=>{
   const d=e.data||{};
   if(d.type==="demo-status"){ picsState.cached=d.cached; picsState.seen=d.seen||0; picsState.progress=null; drawPics(); }
-  else if(d.type==="demo-progress"){ picsState.progress={done:d.done,total:d.total}; drawPics(); }
+  else if(d.type==="demo-progress"){ picsState.progress={done:d.done,total:d.total}; picsState.last=Date.now(); drawPics(); }
   else if(d.type==="demo-done"){ picsState.progress=null; if(d.failed) toast(t("{n} pictures could not be downloaded. Try again.",{n:d.failed})); picsMsg({type:"demo-status",urls:picsUrls()}); }
 }); }catch(e){}
+function watchPics(){
+  const iv=setInterval(()=>{
+    if(!picsState.progress){ clearInterval(iv); return; }
+    if(Date.now()-picsState.last>30000){ clearInterval(iv); picsState.progress=null; picsMsg({type:"demo-status",urls:picsUrls()}); drawPics(); }
+  },5000);
+}
 window.addEventListener("online",drawPics); window.addEventListener("offline",drawPics);
 // The credit the media owner asks for (NOTICE.md of hasaneyldrm/exercises-dataset): shown wherever a demo GIF is shown big.
 const gifCreditHtml=()=>`<p class="prev ex-credit">${esc(t("Animations: © Gym visual, https://gymvisual.com/ (via hasaneyldrm/exercises-dataset)"))}</p>`;
@@ -1622,6 +1635,7 @@ function tagsHtml(name){
 document.addEventListener("error",e=>{
   const img=e.target;
   if(img&&img.classList&&img.classList.contains("demoview-img")){ demoViewImgFailed(img); return; }
+  if(img&&img.classList&&img.classList.contains("exinfo-gif")){ const bx=img.closest(".exinfo-gifbox"); if(bx) bx.remove(); return; }
   if(!img||!img.classList||!img.classList.contains("demo-gif")) return;
   const box=img.closest(".demo"), info=box&&infoFor(box.dataset.name);
   if(!box) return;
@@ -2859,7 +2873,9 @@ function openExInfo(name){
   const info=infoFor(name); if(!info) return;
   const dlg=$("#exinfo"), token=++exInfoToken;
   const figs = exerciseFigures(info.name);
+  const gifSrc=gifUrl(info.name);
   dlg.innerHTML = `<div class="sheet-head"><h2 id="exinfo-title">${esc(nameOf("ex",info.name))}</h2><button class="btn ghost small" data-act="exinfo-close" aria-label="Close">✕</button></div>
+    ${gifSrc?`<div class="exinfo-gifbox"><img class="exinfo-gif" src="${esc(gifSrc)}" crossorigin="anonymous" decoding="async" alt="${esc(nameOf("ex",info.name))}"></div>`:""}
     ${figs}
     <p class="ex-works">Works: <b>${info.primary.map(m=>esc(nameOf("muscle",m))).join(", ")}</b>${info.secondary.length?` <span class="prev">· ${info.secondary.map(m=>esc(nameOf("muscle",m))).join(", ")}</span>`:""}</p>
     ${(()=>{ const eq=equipmentOf(info.name); return eq?`<p class="ex-works">${t("Equipment")}: <b>${eq.length?eq.map(eqLabel).join(isRtl()?"، ":" · "):t("No equipment")}</b></p>`:""; })()}
@@ -3366,7 +3382,7 @@ document.addEventListener("click",e=>{
     case "lang-set": applyLang(b.dataset.v); syncMe(); drawSwatches(); break;
     case "accent-set": applyAccent(b.dataset.v); drawSwatches(); break;
     case "look-set": applyLook(b.dataset.v); break;
-    case "pics-download": if(!picsMsg({type:"demo-download",urls:picsUrls()})) toast(t("Reload the app once, then try again.")); else { picsState.progress={done:0,total:picsUrls().length}; drawPics(); } break;
+    case "pics-download": if(!picsMsg({type:"demo-download",urls:picsUrls()})) toast(t("Reload the app once, then try again.")); else { picsState.progress={done:0,total:picsUrls().length}; picsState.last=Date.now(); drawPics(); watchPics(); } break;
     case "pics-clear": picsMsg({type:"demo-clear"}); break;
     case "lp-sex": { const st=state.lookPick; st.sex=b.dataset.v; st.sel=suggestLook(st.sex==="skip"?null:st.sex); lookPickRedraw(); break; }
     case "lp-card": state.lookPick.sel=b.dataset.v; lookPickRedraw(); break;

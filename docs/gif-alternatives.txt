@@ -1,0 +1,323 @@
+Pec Deck
+  
+Smith Machine Incline Press
+  smith incline bench press [smith machine] 0757-5v7KYld 0.75
+  smith machine incline tricep extension [smith machine] 1752-o8aOcrz 0.70
+  smith machine decline close grip bench press [smith machine] 1625-yB9SvIF 0.65
+  smith incline reverse-grip press [smith machine] 0758-78VqWQK 0.56
+Low Cable Crossover
+  cable low fly [cable] 0179-FVmZVhk 0.67
+  cable low seated row [cable] 0180-hvV79Si 0.62
+  cable upper chest crossovers [cable] 1270-j7XMAyn 0.62
+  cable rope crossover seated row [cable] 1320-UFGF6gk 0.59
+Cable Fly (Flat Bench)
+  cable bench press [cable] 0151-7xI5MXA 0.50
+  cable decline fly [cable] 0158-7saC5zz 0.50
+  cable incline bench press [cable] 0169-Vh0GsK4 0.50
+  cable incline bench row [cable] 1318-yaMIo4D 0.50
+Dumbbell Floor Press
+  dumbbell arnold press [dumbbell] 2137-Xy4jlWA 0.67
+  dumbbell bench press [dumbbell] 0289-SpYC0Kp 0.67
+  dumbbell cuban press [dumbbell] 0299-QfAKy1G 0.67
+  dumbbell push press [dumbbell] 1700-FS63wTN 0.67
+Lat Pulldown
+  cable pulldown (pro lat bar) [cable] 0197-qdRxqCj 0.57
+  twin handle parallel grip lat pulldown [cable] 0818-rkg41Fb 0.56
+  cable lat pulldown full range of motion [cable] 2330-LEprlgG 0.55
+  reverse grip machine lat pulldown [leverage machine] 0673-ecpY0rH 0.46
+T-bar Row
+  lever t bar row [leverage machine] 0606-aaXr7ld 0.65
+  cambered bar lying row [barbell] 0248-R5swFnc 0.62
+  lever reverse t-bar row [leverage machine] 1349-BgljGjd 0.49
+  lever t-bar reverse grip row [leverage machine] 1351-FVM1AUZ 0.48
+Straight-arm Pulldown
+  cable straight arm pulldown [cable] 0238-x69MAlq 0.65
+  cable straight arm pulldown (with rope) [cable] 0237-DT14T9T 0.59
+  arm slingers hanging straight legs [body weight] 2333-PXTIwgu 0.59
+  crunch (on stability ball, arms straight) [stability ball] 0272-Sn8wxAI 0.57
+Close-grip Pulldown
+  close grip chin-up [body weight] 1327-VnfUNW7 0.62
+  close-grip push-up [body weight] 0259-x6KpKpq 0.62
+  barbell close-grip bench press [barbell] 0030-J6Dx1Mu 0.59
+  barbell lying close-grip press [barbell] 0055-EcaV7aL 0.59
+Assisted Pull-up
+  assisted pull-up [leverage machine] 0017-kiJ4Z2K 0.70
+  archer pull up [body weight] 3293-72BC5Za 0.67
+  assisted sit-up [assisted] 1758-aumB2IV 0.67
+  biceps pull-up [body weight] 0140-guT8YnS 0.67
+Reverse-grip Pulldown
+  reverse grip pull-up [body weight] 0674-YAk5dIw 0.62
+  lever reverse grip lateral pulldown [leverage machine] 2736-ky8FLU8 0.62
+  reverse grip machine lat pulldown [leverage machine] 0673-ecpY0rH 0.62
+  barbell incline reverse-grip press [barbell] 0048-641mIfk 0.59
+Underhand Barbell Row
+  barbell incline row [barbell] 0049-dmgMp3n 0.67
+  barbell pendlay row [barbell] 3017-r0z6xzQ 0.67
+  barbell upright row [barbell] 0120-UDlhcO8 0.67
+  barbell bent over row [barbell] 0027-eZyBC3j 0.62
+Smith Machine Row
+  smith narrow row [smith machine] 0761-JGKowMS 0.67
+  smith upright row [smith machine] 0775-1DN3iz4 0.67
+  smith bent over row [smith machine] 1359-ZX9UZmj 0.62
+  smith machine bicep curl [smith machine] 1683-zILLZ98 0.62
+Chest-supported Dumbbell Row
+  dumbbell bent over row [dumbbell] 0293-BJ0Hz5L 0.50
+  dumbbell incline row [dumbbell] 0327-7vG5o25 0.50
+  dumbbell supported squat [dumbbell] 2803-r5DgrW9 0.50
+  dumbbell upright row [dumbbell] 0437-ainizkb 0.50
+Smith Machine Shrug
+  smith back shrug [smith machine] 0746-MzNnwx9 0.67
+  smith shrug [smith machine] 0767-OUQ0ZyW 0.67
+  smith machine bicep curl [smith machine] 1683-zILLZ98 0.62
+  smith machine incline tricep extension [smith machine] 1752-o8aOcrz 0.59
+Overhead Press
+  barbell seated overhead press [barbell] 0091-kTbSH9h 0.85
+  dumbbell standing overhead press [dumbbell] 0426-A6wtbuL 0.59
+  stalder press [body weight] 3291-zd4P4B2 0.50
+  triceps press [body weight] 0816-fSrPP6B 0.50
+Arnold Press
+  dumbbell arnold press [dumbbell] 2137-Xy4jlWA 0.63
+  kettlebell arnold press [kettlebell] 0523-UM8mgyG 0.63
+  dumbbell arnold press v. 2 [dumbbell] 0287-eOrFCnx 0.57
+  stalder press [body weight] 3291-zd4P4B2 0.50
+Rear Delt Fly
+  barbell rear delt raise [barbell] 0075-Ln9iTbU 0.62
+  barbell rear delt row [barbell] 0076-S9zHIvU 0.62
+  dumbbell rear fly [dumbbell] 0378-8DiFDVA 0.47
+  dumbbell rear delt raise [dumbbell] 2292-mu5Guxt 0.43
+Face Pull
+  pull-up [body weight] 0652-lBDjFxJ 0.50
+  snatch pull [barbell] 0776-dG5Smob 0.50
+  archer pull up [body weight] 3293-72BC5Za 0.45
+  barbell rack pull [barbell] 0074-za9Ni4z 0.45
+Reverse Pec Deck
+  
+Smith Machine Shoulder Press
+  smith seated shoulder press [smith machine] 0765-xUwnBMT 0.75
+  smith shoulder press [smith machine] 0766-903mzG8 0.75
+  smith machine decline close grip bench press [smith machine] 1625-yB9SvIF 0.65
+  smith machine reverse decline close grip bench press [smith machine] 1626-QyO6Uma 0.51
+Push Press
+  dumbbell push press [dumbbell] 1700-FS63wTN 0.63
+  kettlebell double push press [kettlebell] 0528-I4KkPdl 0.59
+  push-up [body weight] 0662-I4hDWkc 0.50
+  stalder press [body weight] 3291-zd4P4B2 0.50
+Cable Rear Delt Fly
+  cable rear delt row (stirrups) [cable] 0202-yUdIGNs 0.70
+  cable rear delt row (with rope) [cable] 0203-wqNPGCg 0.67
+  cable standing rear delt row (with rope) [cable] 0233-ZfyAGhK 0.65
+  cable kneeling rear delt row (with rope) (male) [cable] 3697-G61cXLk 0.51
+Lying Rear Lateral Raise
+  dumbbell lying rear lateral raise [dumbbell] 0348-53Ttlck 0.66
+  dumbbell rear lateral raise [dumbbell] 0380-v1qBec9 0.52
+  assisted lying leg raise with lateral throw down [assisted] 0012-UGhRD1A 0.51
+  barbell rear delt raise [barbell] 0075-Ln9iTbU 0.50
+Cross-body Hammer Curl
+  dumbbell cross body hammer curl [dumbbell] 0298-Qyk5J3p 0.66
+  dumbbell cross body hammer curl v. 2 [dumbbell] 1657-HDYiZcY 0.61
+  cross body crunch [body weight] 0262-rbu5UUb 0.50
+  olympic barbell hammer curl [olympic barbell] 0636-o1ntciW 0.50
+High Cable Curl
+  cable concentration curl [cable] 1631-NvfE43H 0.67
+  cable curl [cable] 0868-G08RZcQ 0.67
+  cable drag curl [cable] 1632-dXz8zjF 0.67
+  cable overhead curl [cable] 1636-wDUqY2u 0.67
+Rope Hammer Curl
+  olympic barbell hammer curl [olympic barbell] 0636-o1ntciW 0.62
+  cable hammer curl (with rope) [cable] 0165-HPlPoQA 0.62
+  cable rope hammer preacher curl [cable] 1639-PcPe0P5 0.62
+  dumbbell hammer curl [dumbbell] 0313-slDvUAU 0.47
+Spider Curl
+  ez barbell spider curl [ez barbell] 0454-Ye5Qxb0 0.59
+  ez barbell spider curl [ez barbell] 1628-2kattbR 0.59
+  barbell curl [barbell] 0031-25GPyDY 0.50
+  curl-up [body weight] 3016-g2oKspu 0.50
+Zottman Curl
+  dumbbell zottman curl [dumbbell] 0439-kXaIn5A 0.63
+  dumbbell zottman preacher curl [dumbbell] 2294-y5U5B9Y 0.59
+  dumbbell standing zottman preacher curl [dumbbell] 2293-P2nRiUa 0.57
+  barbell curl [barbell] 0031-25GPyDY 0.50
+Tricep Pushdown
+  cable triceps pushdown (v-bar) [cable] 0241-gAwDzB3 0.57
+  cable triceps pushdown (v-bar) (with arm blaster) [cable] 2405-OxJk1fg 0.54
+  triceps dip [body weight] 0814-X6C6i5Y 0.50
+  triceps press [body weight] 0816-fSrPP6B 0.50
+Skull Crusher
+  
+Dip
+  chest dip [body weight] 0251-9WTm7dq 0.85
+  elbow dips [body weight] 3287-LkoAWAE 0.85
+  impossible dips [body weight] 3289-05Cf2v8 0.85
+  korean dips [body weight] 3288-rWoBmi5 0.85
+Triceps Kickback
+  cable two arm tricep kickback [cable] 1728-vvNjDJS 0.57
+  dumbbell standing alternating tricep kickback [dumbbell] 1739-Gi2BXfK 0.57
+  dumbbell tricep kickback with stork stance [dumbbell] 1742-wOLmCXc 0.56
+  triceps dip [body weight] 0814-X6C6i5Y 0.50
+Rope Pushdown
+  cable pushdown (with rope attachment) [cable] 0200-dU605di 0.57
+  battling ropes [rope] 0128-RJa4tCo 0.50
+  jump rope [rope] 2612-e1e76I2 0.50
+  rope climb [rope] 0680-yaAxcQr 0.50
+Reverse-grip Pushdown
+  cable reverse-grip pushdown [cable] 0207-VjYliFZ 0.65
+  reverse grip pull-up [body weight] 0674-YAk5dIw 0.62
+  barbell incline reverse-grip press [barbell] 0048-641mIfk 0.59
+  barbell reverse grip skullcrusher [barbell] 1721-yRLPCLu 0.59
+Dumbbell Skull Crusher
+  
+Leg Press
+  smith leg press [smith machine] 0760-7zdxRTl 0.63
+  sled 45в° leg press [sled machine] 0739-10Z2DXU 0.59
+  sled 45в° leg wide press [sled machine] 0740-tj41Nu6 0.57
+  sled calf press on leg press [sled machine] 1391-ykHcWme 0.57
+Bulgarian Split Squat
+  split squats [body weight] 2368-9E25EOx 0.67
+  suspended split squat [body weight] 0809-QpXqiq8 0.67
+  barbell side split squat [barbell] 0098-W31mMjd 0.62
+  barbell split squat v. 2 [barbell] 2810-HBYyX94 0.59
+Leg Extension
+  lever leg extension [leverage machine] 0585-my33uHU 0.63
+  resistance band leg extension [resistance band] 3007-Y1MsI1l 0.48
+  barbell lying extension [barbell] 0057-EMpUwRI 0.45
+  bench hip extension [body weight] 0130-u27Kcdz 0.45
+Lunge
+  barbell lunge [barbell] 0054-t8iSghb 0.85
+  walking lunge [body weight] 1460-IZVHb27 0.85
+  barbell lateral lunge [barbell] 1410-py1HSzx 0.80
+  barbell rear lunge [barbell] 0078-VaP75jl 0.80
+Smith Machine Squat
+  smith chair squat [smith machine] 0750-Gu2rNJd 0.67
+  smith full squat [smith machine] 3281-NNoHCEA 0.67
+  smith hack squat [smith machine] 0755-ZuPXtCK 0.67
+  smith squat [smith machine] 0770-jFtipLl 0.67
+Box Squat
+  curtsey squat [body weight] 3769-gUjqdei 0.50
+  frankenstein squat [barbell] 3194-bdWcbaU 0.50
+  jump squat [body weight] 0514-LIlE5Tn 0.50
+  potty squat [body weight] 3119-75Bgtjy 0.50
+Goblet Squat
+  dumbbell goblet squat [dumbbell] 1760-yn8yg1r 0.63
+  kettlebell goblet squat [kettlebell] 0534-ZA8b5hc 0.63
+  curtsey squat [body weight] 3769-gUjqdei 0.50
+  frankenstein squat [barbell] 3194-bdWcbaU 0.50
+Narrow-stance Leg Press
+  barbell narrow stance squat [barbell] 0063-elhhVgj 0.50
+  sled 45в° leg press [sled machine] 0739-10Z2DXU 0.35
+  smith leg press [smith machine] 0760-7zdxRTl 0.35
+  sled 45в° leg wide press [sled machine] 0740-tj41Nu6 0.33
+Single-leg Leg Press
+  barbell single leg deadlift [barbell] 1756-gEyURal 0.62
+  single leg platform slide [body weight] 0730-LNE3wfo 0.62
+  standing single leg curl [body weight] 0795-C5jncD2 0.62
+  barbell single leg split squat [barbell] 0099-gGNQmVt 0.59
+Smith Machine Split Squat
+  smith single leg split squat [smith machine] 0768-wWFspEi 0.56
+  smith chair squat [smith machine] 0750-Gu2rNJd 0.50
+  smith full squat [smith machine] 3281-NNoHCEA 0.50
+  smith hack squat [smith machine] 0755-ZuPXtCK 0.50
+Reverse Lunge
+  barbell lunge [barbell] 0054-t8iSghb 0.50
+  reverse crunch [body weight] 0872-nCU1Ekp 0.50
+  reverse dip [body weight] 0672-NZ5Qqkz 0.50
+  walking lunge [body weight] 1460-IZVHb27 0.50
+Side Lunge
+  barbell lunge [barbell] 0054-t8iSghb 0.50
+  walking lunge [body weight] 1460-IZVHb27 0.50
+  45° side bend [body weight] 0002-Hy9D21L 0.45
+  barbell lateral lunge [barbell] 1410-py1HSzx 0.45
+Lying Leg Curl
+  lever lying leg curl [leverage machine] 0586-17lJ1kr 0.65
+  barbell lying preacher curl [barbell] 0059-SYJ4Bkt 0.62
+  biceps leg concentration curl [body weight] 1770-sJFIDIp 0.62
+  lying leg-hip raise [body weight] 0865-9IxJdtC 0.62
+Hip Thrust
+  
+Stiff-leg Deadlift
+  dumbbell stiff leg deadlift [dumbbell] 0432-5eLRITT 0.65
+  barbell straight leg deadlift [barbell] 0116-hrVQWvE 0.62
+  barbell stiff leg good morning [barbell] 0115-JrOHAZc 0.59
+  band stiff leg deadlift [band] 1009-kuMiR2T 0.52
+Single-leg Romanian Deadlift
+  barbell single leg deadlift [barbell] 1756-gEyURal 0.75
+  dumbbell single leg deadlift [dumbbell] 1757-gKozT8X 0.52
+  barbell romanian deadlift [barbell] 0085-wQ2c4XD 0.50
+  barbell straight leg deadlift [barbell] 0116-hrVQWvE 0.50
+Kettlebell Deadlift
+  kettlebell swing [kettlebell] 0549-UHJlbu3 0.50
+  kettlebell thruster [kettlebell] 0550-yWxMvB5 0.50
+  kettlebell windmill [kettlebell] 0554-9Tkqa9O 0.50
+  kettlebell advanced windmill [kettlebell] 0517-Kal9cQQ 0.45
+Seated Leg Curl
+  seated leg raise [body weight] 0689-Hgs6Nl1 0.67
+  lever seated leg curl [leverage machine] 0599-Zg3XY7P 0.65
+  biceps leg concentration curl [body weight] 1770-sJFIDIp 0.62
+  inverse leg curl (bench support) [body weight] 0496-ms7tjSG 0.59
+Dumbbell Hip Thrust
+  
+Smith Machine Hip Thrust
+  smith hip raise [smith machine] 0756-CqhoytW 0.50
+  smith machine bicep curl [smith machine] 1683-zILLZ98 0.50
+  smith machine incline tricep extension [smith machine] 1752-o8aOcrz 0.47
+  smith machine decline close grip bench press [smith machine] 1625-yB9SvIF 0.44
+Glute Bridge
+  barbell glute bridge [barbell] 1409-qKBpF7I 0.90
+  glute bridge march [body weight] 3561-GibBPPg 0.90
+  low glute bridge on floor [body weight] 3013-u0cNiij 0.82
+  glute bridge two legs on bench (male) [body weight] 3523-aWedzZX 0.79
+Glute Kickback Machine
+  
+Cable Glute Kickback
+  cable kickback [cable] 0860-HEJ6DIX 0.67
+  cable two arm tricep kickback [cable] 1728-vvNjDJS 0.59
+  cable bench press [cable] 0151-7xI5MXA 0.33
+  cable concentration curl [cable] 1631-NvfE43H 0.33
+Cable Hip Abduction
+  cable hip adduction [cable] 0168-hBGWILP 0.67
+  cable standing hip extension [cable] 0228-Kpajagk 0.62
+  cable bench press [cable] 0151-7xI5MXA 0.33
+  cable concentration curl [cable] 1631-NvfE43H 0.33
+Dumbbell Sumo Squat
+  dumbbell bench squat [dumbbell] 0291-mnzcrIB 0.67
+  dumbbell goblet squat [dumbbell] 1760-yn8yg1r 0.67
+  dumbbell plyo squat [dumbbell] 0371-S4pwGlc 0.67
+  dumbbell squat [dumbbell] 0413-HsvHqgf 0.67
+Donkey Kick
+  flutter kicks [body weight] 0459-UVo2Qs2 0.50
+  donkey calf raise [body weight] 0284-u5ESqzH 0.45
+  kick out sit [body weight] 0555-v7p5bYl 0.45
+  outside leg kick push-up [body weight] 0642-jNU1gFQ 0.41
+Calf Press (Leg Press)
+  sled calf press on leg press [sled machine] 1391-ykHcWme 0.62
+  barbell standing leg calf raise [barbell] 0108-rGwhJ5o 0.59
+  lever seated squat calf raise on leg press machine [leverage machine] 1385-IeDEXTe 0.57
+  barbell standing rocking leg calf raise [barbell] 0111-6HiHHe0 0.57
+Single-leg Calf Raise
+  barbell standing leg calf raise [barbell] 0108-rGwhJ5o 0.70
+  barbell standing rocking leg calf raise [barbell] 0111-6HiHHe0 0.67
+  dumbbell single leg calf raise [dumbbell] 0409-1kB3Wmk 0.66
+  single leg calf raise (on a dumbbell) [dumbbell] 0727-fKZgDEO 0.61
+Plank
+  
+Ab Wheel Rollout
+  
+Sit-up
+  decline sit-up [body weight] 0282-QLL2gdc 0.90
+  jackknife sit-up [body weight] 0507-mbkgB44 0.90
+  janda sit-up [body weight] 0508-1GPHRyK 0.90
+  quarter sit-up [body weight] 3201-enxnJcM 0.90
+Bicycle Crunch
+  band bicycle crunch [band] 0972-tZkGYZ9 0.50
+  crunch floor [body weight] 0274-TFqbd8t 0.50
+  decline crunch [body weight] 0277-9Ap7miY 0.50
+  frog crunch [body weight] 2429-FFRP97T 0.50
+Cable Woodchop
+  cable curl [cable] 0868-G08RZcQ 0.50
+  cable deadlift [cable] 0157-eGDudUV 0.50
+  cable kickback [cable] 0860-HEJ6DIX 0.50
+  cable pulldown [cable] 0198-RVwzP10 0.50
+Pallof Press
+  stalder press [body weight] 3291-zd4P4B2 0.50
+  triceps press [body weight] 0816-fSrPP6B 0.50
+  band horizontal pallof press [band] 0979-9pa4H5m 0.48
+  band vertical pallof press [band] 1015-G7PXMlT 0.48

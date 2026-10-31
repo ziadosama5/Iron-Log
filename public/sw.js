@@ -109,9 +109,11 @@ async function demoFetch(request) {
   if (seen) return seen;
   const response = await fetch(request);
   if (response && response.ok) {
-    await cache.put(request.url, response.clone());
-    const keys = await cache.keys();
-    for (let i = 0; i < keys.length - DEMO_KEEP; i++) await cache.delete(keys[i]);
+    try {   // a full storage must not fail a picture the network did deliver
+      await cache.put(request.url, response.clone());
+      const keys = await cache.keys();
+      for (let i = 0; i < keys.length - DEMO_KEEP; i++) await cache.delete(keys[i]);
+    } catch (e) {}
   }
   return response;
 }
