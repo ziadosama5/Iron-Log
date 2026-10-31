@@ -40,3 +40,4 @@ html:root[data-look="bloom"] .lk-boardhero>.card{background:linear-gradient(160d
 html:root[data-look="bloom"] .boardrow{padding:12px 0}
 html:root[data-look="bloom"] .lk-bodyhero>.card{padding:22px;background:linear-gradient(160deg,var(--accent-soft),var(--glass))}
 html:root[data-look="bloom"] .lk-bodyhero .bignum{font-size:56px;line-height:1.05}
+html:root[data-look="bloom"] .lk-count{align-self:flex-start;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:6px 14px}

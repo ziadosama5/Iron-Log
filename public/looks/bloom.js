@@ -46,6 +46,13 @@ function body(c) {
   return `<h2>${c.esc(c.t("Body"))}</h2><div class="lk-bodyhero">${c.quickHtml}</div>${c.trendHtml}${c.entryHtml}${c.recentHtml}${c.profileHtml}`;
 }
 
+// My Gym: rounded groups of switches under a count pill. Every equipment item stays a gym-toggle button (aria-pressed), drawn as a row with a switch.
+function gym(c) {
+  const e = c.esc;
+  const groups = c.groups.map(g => `<h3 class="lk-gh">${e(g.label)}</h3><div class="card lk-sw-card">${g.items.map(i => `<button type="button" class="lk-swrow" data-act="gym-toggle" data-id="${e(i.id)}" aria-pressed="${i.on}"><span class="lk-swl">${e(i.label)}</span><i class="lk-sw" aria-hidden="true"></i></button>`).join("")}</div>`).join("");
+  return `<h2>${e(c.t("My Gym"))}</h2>${c.introHtml}${c.count ? `<div class="lk-count">${e(c.count)}</div>` : ""}${groups}${c.injuriesHtml}${c.endHtml}`;
+}
+
 // The focus card: a wide demo banner on top, then the name with its tags, the advice, the sets, two stacked steppers and a pill Log button.
 function workout(c) {
   return `<div class="card focus lk-focus lk-bloomcard" id="open-card">
@@ -68,4 +75,4 @@ function workout(c) {
   ${c.footHtml}`;
 }
 
-export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends, "progress.body": body };
+export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends, "progress.body": body, "plan.gym": gym };

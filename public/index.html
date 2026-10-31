@@ -1907,18 +1907,22 @@ function injuriesCardHtml(){
 }
 function renderGym(){
   const gym=state.settings.gym, on=new Set(Array.isArray(gym)?gym:[]), c=gymCounts(gym);
-  let h=`<h2>My Gym</h2><div class="card"><p class="prev" style="margin:0">Tick the equipment your gym has. Exercise suggestions then only offer what you can do. To see every exercise anyway, use Show all under the suggestions: your gym stays saved.</p>
+  const SEP="";   // splits the page into named parts for screenHtml "plan.gym"
+  let h=`<div class="card"><p class="prev" style="margin:0">Tick the equipment your gym has. Exercise suggestions then only offer what you can do. To see every exercise anyway, use Show all under the suggestions: your gym stays saved.</p>
     <span class="label">Start from</span><div class="chips">${GYM_PRESETS.map(p=>`<button class="chip" data-act="gym-preset" data-p="${p.id}" aria-pressed="${sameGym(gym,p.equipment)}">${esc(t(p.name))}</button>`).join("")}</div></div>`;
-  h+=GYM_GROUPS.map(([g,label])=>`<div class="card"><h3>${label}</h3><div class="chips">${EQUIPMENT.filter(e=>e.group===g).map(e=>`<button class="chip" data-act="gym-toggle" data-id="${e.id}" aria-pressed="${on.has(e.id)}">${esc(eqLabel(e.id))}</button>`).join("")}</div></div>`).join("");
-  h+=injuriesCardHtml();
+  h+=SEP+GYM_GROUPS.map(([g,label])=>`<div class="card"><h3>${label}</h3><div class="chips">${EQUIPMENT.filter(e=>e.group===g).map(e=>`<button class="chip" data-act="gym-toggle" data-id="${e.id}" aria-pressed="${on.has(e.id)}">${esc(eqLabel(e.id))}</button>`).join("")}</div></div>`).join("");
+  h+=SEP+injuriesCardHtml()+SEP;
   h+=`<div class="card"><span>${Array.isArray(gym)?esc(t("{a} of {b} items · {c} exercises available",{a:c.items,b:c.itemsTotal,c:c.exercises})):esc(t("Not set yet. Every exercise is suggested."))}</span>
     <span class="prev" role="status">${state.gymStatus==="saving"?esc(t("Saving…")):state.gymStatus==="saved"?esc(t("Saved ✓")):""}</span>
     <div class="row"><button class="btn primary" data-act="gym-done">Done</button></div></div>`;
   if(Array.isArray(gym)) h+=state.gymConfirmClear
     ?`<div class="card"><span>Clear your gym setup? Every exercise will be suggested again.</span><div class="row"><button class="btn small" data-act="gym-clear-no">Keep</button><button class="btn small danger" data-act="gym-clear-yes">Clear</button></div></div>`
     :`<div class="row" style="justify-content:flex-end"><button class="btn ghost small" data-act="gym-clear">Clear my gym</button></div>`;
-  $("#view-gym").innerHTML=h;
+  const [introHtml,groupsHtml,injuriesHtml,endHtml]=h.split(SEP);
+  const groups=GYM_GROUPS.map(([g,label])=>({id:g,label,items:EQUIPMENT.filter(e=>e.group===g).map(e=>({id:e.id,label:eqLabel(e.id),on:on.has(e.id)}))}));
+  $("#view-gym").innerHTML=screenHtml("plan.gym",{introHtml,groupsHtml,groups,injuriesHtml,endHtml,count:Array.isArray(gym)?t("{a} of {b} items · {c} exercises available",{a:c.items,b:c.itemsTotal,c:c.exercises}):""},classicGym);
 }
+function classicGym(P){ return `<h2>My Gym</h2>${P.introHtml}${P.groupsHtml}${P.injuriesHtml}${P.endHtml}`; }
 // Taps change the setting at once (suggestions follow); the Firestore write waits for a pause in tapping.
 function setGym(next){
   state.gymEdit={gym:next}; state.settings={...state.settings,gym:next}; state.gymStatus="saving";
