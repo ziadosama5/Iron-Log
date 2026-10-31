@@ -2221,11 +2221,18 @@ test("review: the full-screen viewer shows a short message, not a broken image, 
   await ctx.close();
 });
 
-test("review: with reduced motion the card shows the still picture, not the animation", async () => {
+test("demos play by default even with reduced motion, and the person can stop and restart them", async () => {
   const { page, ctx } = await open("", undefined, undefined, gifHost);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await startPush(page);
-  assert.match(await page.locator("#open-card .demo img.demo-gif").getAttribute("src"), /\/images\/0025-EIeI8Vf\.jpg$/);
+  const src = () => page.locator("#open-card .demo img.demo-gif").getAttribute("src");
+  assert.match(await src(), /\.gif$/, "plays by default");
+  await page.locator('#open-card [data-act="demo-toggle"]').click();
+  assert.match(await src(), /\/images\/0025-EIeI8Vf\.jpg$/, "stopped: the still picture");
+  assert.equal(await page.evaluate(() => localStorage.getItem("ironlog.demoStill")), "1");
+  await page.locator('#open-card [data-act="demo-toggle"]').click();
+  assert.match(await src(), /\.gif$/, "plays again");
+  assert.equal(await page.evaluate(() => localStorage.getItem("ironlog.demoStill")), null);
   await ctx.close();
 });
 

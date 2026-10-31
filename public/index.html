@@ -413,6 +413,8 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .demoview-stage{width:min(100%,240px);margin:10px auto 12px;aspect-ratio:1;background:#fff;border-radius:16px;position:relative;overflow:hidden;border:1px solid var(--line)}
 .demoview-img{width:100%;height:100%;object-fit:contain;display:block}
 .demo-full{position:absolute;inset-inline-end:0;bottom:0;width:44px;height:44px;appearance:none;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:end;color:#fff}
+.demo-toggle{position:absolute;inset-inline-start:0;top:0;width:44px;height:44px;appearance:none;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:start;color:#fff}
+.demo-toggle span{width:26px;height:26px;margin:3px 0 0 3px;border-radius:8px;background:rgba(15,17,21,.78);display:grid;place-items:center;font-size:11px;line-height:1}
 .demo-full span{width:26px;height:26px;margin:0 3px 3px 0;border-radius:8px;background:rgba(15,17,21,.78);display:grid;place-items:center;font-size:14px;line-height:1}
 :root[dir="rtl"] .demo-full span{margin:0 0 3px 3px}
 .ex-works{margin:10px 0 4px}
@@ -1675,12 +1677,21 @@ const gifCreditHtml=()=>`<p class="prev ex-credit">${esc(t("Animations: © Gym v
 // "mini" (default) = a thumbnail beside the name, "full" = the big box above it; per device, never throws.
 function demoPref(){ try{ return localStorage.getItem("ironlog.demo")==="full"?"full":"mini"; }catch(e){ return "mini"; } }
 // The demo of an exercise: its GIF (an exercise with no GIF, and every custom exercise, shows nothing at all).
+// The demos play by default, whatever the phone's motion setting; a person can stop them (one switch for every picture, kept on this device).
+const demoStill=()=>{ try{ return localStorage.getItem("ironlog.demoStill")==="1"; }catch(e){ return false; } };
+function setDemoStill(v){
+  try{ if(v) localStorage.setItem("ironlog.demoStill","1"); else localStorage.removeItem("ironlog.demoStill"); }catch(e){}
+  document.querySelectorAll(".demo[data-name]").forEach(d=>{
+    const img=d.querySelector("img.demo-gif"), nm=d.dataset.name; if(img) img.src=(v?stillUrl(nm):gifUrl(nm))||gifUrl(nm);
+    const b=d.querySelector('[data-act="demo-toggle"]'); if(b){ b.setAttribute("aria-pressed",v); b.setAttribute("aria-label",t(v?"Play":"Pause")); b.firstChild.textContent=v?"▶":"❚❚"; }
+  });
+}
 function demoThumbHtml(name){
   let g=gifUrl(name);
   if(!g) return "";
-  try{ if(g&&matchMedia("(prefers-reduced-motion: reduce)").matches) g=stillUrl(name); }catch(e){}   // reduced motion: the still picture
+  const still=demoStill(); if(still) g=stillUrl(name)||g;
   const media=`<img class="demo-gif" src="${esc(g)}" crossorigin="anonymous" decoding="async" alt="${esc(nameOf("ex",name))}">`;
-  return `<div class="demo${demoPref()==="full"?" big":""}" data-name="${esc(name)}">${media}<button type="button" class="demo-full" data-act="demo-full" data-name="${esc(name)}" aria-label="${esc(t("Full screen"))}"><span aria-hidden="true">⤢</span></button></div>`;
+  return `<div class="demo${demoPref()==="full"?" big":""}" data-name="${esc(name)}">${media}<button type="button" class="demo-full" data-act="demo-full" data-name="${esc(name)}" aria-label="${esc(t("Full screen"))}"><span aria-hidden="true">⤢</span></button><button type="button" class="demo-toggle" data-act="demo-toggle" aria-pressed="${still}" aria-label="${esc(t(still?"Play":"Pause"))}"><span aria-hidden="true">${still?"▶":"❚❚"}</span></button></div>`;
 }
 // Muscles and equipment of an exercise as small tags (nothing when the library does not know it).
 function tagsHtml(name){
@@ -2966,7 +2977,7 @@ let demoViewToken=0, demoPaused=false;
 function openDemoView(name){
   const g=gifUrl(name); if(!g) return;
   const dlg=$("#demoview"), token=++demoViewToken;
-  demoPaused=!!g&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  demoPaused=!!g&&demoStill();
   dlg.dataset.name=name;
   dlg.innerHTML=`<div class="sheet-head"><h2 id="demoview-title">${esc(nameOf("ex",name))}</h2><button class="btn ghost small" data-act="demo-view-close" aria-label="Close">✕</button></div>
     <div class="demoview-stage"><img class="demoview-img" src="${esc(demoPaused?stillUrl(name):g)}" crossorigin="anonymous" alt="${esc(nameOf("ex",name))}"></div>
@@ -2983,7 +2994,7 @@ function demoViewImgFailed(img){
 }
 function toggleDemoPause(){
   const dlg=$("#demoview"), img=dlg.querySelector(".demoview-img"), name=dlg.dataset.name; if(!img||!name) return;
-  demoPaused=!demoPaused;
+  demoPaused=!demoPaused; setDemoStill(demoPaused);
   img.src=demoPaused?stillUrl(name):gifUrl(name);
   const b=dlg.querySelector('[data-act="demo-pause"]'); b.setAttribute("aria-pressed",demoPaused); b.textContent=t(demoPaused?"Play":"Pause");
 }
@@ -3449,6 +3460,7 @@ document.addEventListener("click",e=>{
     case "rest-skip": clearRest(); break;
     case "ex-info": openExInfo(b.dataset.name); break;
     case "demo-full": openDemoView(b.dataset.name); break;
+    case "demo-toggle": setDemoStill(!demoStill()); break;
     case "demo-pause": toggleDemoPause(); break;
     case "demo-view-close": closeDemoView(); break;
     case "demo-size-set": try{ localStorage.setItem("ironlog.demo",b.dataset.v==="full"?"full":"mini"); }catch(e){} syncMe(); if(state.view==="log") renderLog(); break;
