@@ -38,3 +38,13 @@ export const LOOK_ENV = {
   bloom: { light: { surface: "#ffffff", bg: "#fff4f6" }, dark: { surface: "#2a1c3a", bg: "#17102a" } }
 };
 export function envFor(look) { return own(LOOK_ENV, look) ? LOOK_ENV[look] : LOOK_ENV.classic; }
+
+// A look id read from storage, or null when nothing (valid) was ever chosen on this device.
+export function savedLookOf(raw) { return typeof raw === "string" && LOOKS.includes(raw) ? raw : null; }
+
+// The first-launch picker: for a signed-in, server-synced person with no days and no workouts yet, who has never chosen a look
+// on this device and has not been shown it this session.
+export function shouldPickLook({ authed, synced, days, workouts, savedLook, shown }) {
+  return authed === true && synced === true && Array.isArray(days) && days.length === 0
+    && Array.isArray(workouts) && workouts.length === 0 && !savedLook && !shown;
+}

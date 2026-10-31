@@ -50,3 +50,18 @@ test("every look, mode and accent preset keeps readable contrast", () => {
     }
   }
 });
+
+import { shouldPickLook, savedLookOf } from "../public/looks.js";
+
+test("savedLookOf returns a stored look id and null for nothing or junk", () => {
+  for (const l of LOOKS) assert.equal(savedLookOf(l), l);
+  for (const bad of [null, undefined, "", "x", "CARBON", 3, {}]) assert.equal(savedLookOf(bad), null);
+});
+
+test("shouldPickLook: only a signed-in, synced person with no data, no saved look and not shown yet", () => {
+  const base = { authed: true, synced: true, days: [], workouts: [], savedLook: null, shown: false };
+  assert.equal(shouldPickLook(base), true);
+  for (const [k, v] of [["authed", false], ["synced", false], ["days", [{ id: "d" }]], ["workouts", [{ id: "w" }]], ["savedLook", "carbon"], ["savedLook", "classic"], ["shown", true], ["days", null], ["workouts", undefined]]) {
+    assert.equal(shouldPickLook({ ...base, [k]: v }), false, k + "=" + JSON.stringify(v));
+  }
+});

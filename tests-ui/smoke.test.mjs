@@ -21,6 +21,8 @@ after(async () => { await browser?.close(); server?.kill(); });
 
 async function open(query = "", viewport = { width: 420, height: 860 }, initScript, setup) {
   const ctx = await browser.newContext({ viewport, hasTouch: true, isMobile: true });
+  // a person who already chose a look (Classic) is not asked again; tests of the first-launch picker pass `pick=1` to skip this
+  if (!/(^|&)pick=1/.test(query)) await ctx.addInitScript('try{if(localStorage.getItem("ironlog.look")===null)localStorage.setItem("ironlog.look","classic")}catch(e){}');
   if (initScript) await ctx.addInitScript(initScript);
   if (setup) await setup(ctx);
   const page = await ctx.newPage();
@@ -257,7 +259,7 @@ for (const [card, expected] of [["weight", "Body"], ["training", "History"], ["c
 
 test("Overview with no data shows a hint in every card and no errors", async () => {
   const ctx = await browser.newContext({ viewport: { width: 420, height: 860 }, hasTouch: true, isMobile: true });
-  await ctx.addInitScript(() => localStorage.setItem("ironlog.journey", "skip"));
+  await ctx.addInitScript(() => { localStorage.setItem("ironlog.journey", "skip"); localStorage.setItem("ironlog.look", "classic"); });
   const page = await ctx.newPage(); const errors = [];
   page.on("pageerror", e => errors.push(String(e)));
   await page.goto(BASE + "?fresh=2");
@@ -2015,4 +2017,96 @@ test("looks: every main screen fits the phone in Carbon and Bloom, light and dar
     assert.deepEqual(errors, [], `${look} ${theme} ${lang}`);
     await ctx.close();
   }
+});
+
+// ---- looks: the first-launch picker and the "New looks" card (query token `pick=1` = do not pre-save a look) ----
+const pickerOpen = page => page.locator("#lookpick[open]");
+const journeyShown = page => page.locator("#view-journey").isVisible();
+const pickCard = (page, look) => page.locator(`#lookpick [data-act="lp-card"][data-v="${look}"]`);
+
+test("picker: a new person is asked before the journey; the sex answer preselects the suggested look and Choose applies it", async () => {
+  const { page, ctx, errors } = await open("fresh=2&pick=1");
+  await pickerOpen(page).waitFor();
+  assert.equal(await journeyShown(page), false, "the journey waits for the picker");
+  assert.equal(await page.locator('#lookpick [data-act="lp-card"]').count(), 2, "Carbon and Bloom previews");
+  assert.equal(await page.locator('#lookpick [data-act="lp-choose"]').isDisabled(), true, "nothing suggested yet");
+  await page.locator('#lookpick [data-act="lp-sex"][data-v="male"]').click();
+  assert.equal(await pickCard(page, "carbon").getAttribute("aria-pressed"), "true");
+  assert.equal(await pickCard(page, "bloom").getAttribute("aria-pressed"), "false");
+  assert.match(await pickCard(page, "carbon").textContent(), /Suggested/);
+  await page.locator('#lookpick [data-act="lp-sex"][data-v="female"]').click();
+  assert.equal(await pickCard(page, "bloom").getAttribute("aria-pressed"), "true");
+  await page.locator('#lookpick [data-act="lp-sex"][data-v="male"]').click();
+  await page.locator('#lookpick [data-act="lp-choose"]').click();
+  await page.waitForFunction(() => !document.querySelector("#lookpick").open);
+  assert.equal(await dataLook(page), "carbon");
+  assert.equal(await page.evaluate(() => localStorage.getItem("ironlog.look")), "carbon");
+  assert.equal(await page.evaluate(() => localStorage.getItem("ironlog.accent")), "#ff7a2f");
+  await page.waitForSelector("#view-journey", { state: "visible" });
+  const calls = await page.evaluate(() => localStorage.__calls || "");
+  const profileCall = JSON.parse(calls).find(c => c.startsWith("setDoc:profile:"));
+  assert.ok(profileCall, "the profile was written: " + calls.slice(-300));
+  assert.equal(JSON.parse(profileCall.slice("setDoc:profile:".length)).sex, "male");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("picker: 'Prefer not to say' preselects nothing; tapping a card selects it", async () => {
+  const { page, ctx } = await open("fresh=2&pick=1");
+  await pickerOpen(page).waitFor();
+  await page.locator('#lookpick [data-act="lp-sex"][data-v="skip"]').click();
+  assert.equal(await pickCard(page, "carbon").getAttribute("aria-pressed"), "false");
+  assert.equal(await pickCard(page, "bloom").getAttribute("aria-pressed"), "false");
+  await pickCard(page, "bloom").click();
+  assert.equal(await pickCard(page, "bloom").getAttribute("aria-pressed"), "true");
+  assert.equal(await page.locator('#lookpick [data-act="lp-choose"]').isDisabled(), false);
+  await ctx.close();
+});
+
+test("picker: 'Keep the classic look' saves Classic and the journey still starts; a reload before choosing asks again", async () => {
+  const a = await open("fresh=2&pick=1");
+  await pickerOpen(a.page).waitFor();
+  await a.page.reload(); await a.page.waitForSelector(".tabbar", { state: "attached" });
+  await pickerOpen(a.page).waitFor();
+  await a.page.locator('#lookpick [data-act="lp-classic"]').click();
+  await a.page.waitForFunction(() => !document.querySelector("#lookpick").open);
+  assert.equal(await dataLook(a.page), null);
+  assert.equal(await a.page.evaluate(() => localStorage.getItem("ironlog.look")), "classic");
+  await a.page.waitForSelector("#view-journey", { state: "visible" });
+  await a.ctx.close();
+});
+
+test("New looks card: an existing person sees it once, 'Not now' is remembered, 'See looks' opens the picker without the sex question", async () => {
+  const { page, ctx, errors } = await open("pick=1");
+  const card = page.locator("#view-log .lookhint");
+  await card.waitFor();
+  assert.equal(await pickerOpen(page).count(), 0, "nothing pops up over the workout");
+  await page.locator('#view-log [data-act="look-hint-open"]').click();
+  await pickerOpen(page).waitFor();
+  assert.equal(await page.locator('#lookpick [data-act="lp-sex"]').count(), 0, "no sex question for someone who already has a profile");
+  await page.locator('#lookpick [data-act="lp-card"][data-v="bloom"]').click();
+  await page.locator('#lookpick [data-act="lp-choose"]').click();
+  await page.waitForFunction(() => !document.querySelector("#lookpick").open);
+  assert.equal(await dataLook(page), "bloom");
+  assert.equal(await page.locator("#view-log .lookhint").count(), 0, "the card is gone once a look is chosen");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+  const b = await open("pick=1");
+  await b.page.locator("#view-log .lookhint").waitFor();
+  await b.page.locator('#view-log [data-act="look-hint-close"]').click();
+  await b.page.reload(); await b.page.waitForSelector(".tabbar:not([hidden])"); await b.page.waitForTimeout(600);
+  assert.equal(await b.page.locator("#view-log .lookhint").count(), 0, "dismissed for good");
+  await b.ctx.close();
+});
+
+test("picker: Arabic is right-to-left and fits the phone", async () => {
+  const { page, ctx, errors } = await open("fresh=2&pick=1&lang=ar", { width: 360, height: 740 });
+  await pickerOpen(page).waitFor();
+  assert.equal(await page.evaluate(() => document.documentElement.dir), "rtl");
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+  for (const sel of ['[data-act="lp-sex"]', '[data-act="lp-card"]', '[data-act="lp-choose"]']) {
+    for (const h of await page.locator("#lookpick " + sel).evaluateAll(els => els.map(e => e.getBoundingClientRect().height))) assert.ok(h >= 44, sel + " height " + h);
+  }
+  assert.deepEqual(errors, []);
+  await ctx.close();
 });

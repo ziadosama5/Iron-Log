@@ -78,3 +78,16 @@
 .lk-prev .lk-card{background:var(--surface);border-radius:calc(var(--r-card) / 2);height:22px;box-shadow:var(--shadow)}
 .lk-prev .lk-btn{background:var(--accent);border-radius:var(--r-btn);height:16px;width:60%}
 .lk-prev .lk-bar{margin-top:auto;background:var(--bar);border-radius:calc(var(--r-card) / 2);height:12px}
+
+/* ================= first-launch picker ================= */
+.lp-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.lp-card{appearance:none;border:2px solid var(--line);border-radius:18px;background:var(--surface);color:var(--fg);padding:8px;display:flex;flex-direction:column;gap:8px;align-items:stretch;text-align:start;font:600 14px/1.2 var(--f-body);cursor:pointer;min-height:44px}
+.lp-card[aria-pressed="true"]{border-color:var(--accent)}
+.lp-name{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.lk-prev.big{height:170px;padding:12px;gap:8px}
+.lk-prev.big .lk-title{font:700 19px/1.1 var(--f-display);color:var(--fg)}
+.lk-prev[data-look="carbon"] .lk-title{text-transform:uppercase;letter-spacing:.04em}
+.lk-prev.big .lk-card{height:auto;padding:8px 10px;display:flex;align-items:center}
+.lk-prev.big .lk-card b{font:600 13px/1 var(--f-body)}
+.lk-prev.big .lk-btn{width:auto;height:auto;padding:8px 12px;color:var(--accent-ink);font:700 12px/1 var(--f-body);align-self:flex-start}
+.lookhint .row{flex-wrap:wrap}

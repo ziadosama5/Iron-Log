@@ -66,7 +66,7 @@ export const persistentLocalCache = () => ({});
 export const persistentMultipleTabManager = () => ({});
 export const collection = (...segs) => ({ path: path(segs) });
 export const doc = (...segs) => ({ path: path(segs), id: segs[segs.length - 1] });
-export const setDoc = (ref, data) => { mem[ref.path] = data; return Promise.resolve(); };
+export const setDoc = (ref, data) => { logc("setDoc:" + ref.path + ":" + JSON.stringify(data)); mem[ref.path] = data; return Promise.resolve(); };
 // arrayUnion(...values) is a marker that merge() resolves against the stored array, like Firestore does on the server.
 export const arrayUnion = (...vals) => ({ __union: vals });
 const merge = (target, d) => { for (const k of Object.keys(d)) target[k] = d[k] && d[k].__union ? [...new Set([...(target[k] || []), ...d[k].__union])] : d[k]; return target; };

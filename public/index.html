@@ -558,6 +558,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 </div>
 <dialog id="exinfo" class="sheet" aria-labelledby="exinfo-title"></dialog>
 <dialog id="demoview" class="sheet" aria-labelledby="demoview-title"></dialog>
+<dialog id="lookpick" class="sheet" aria-labelledby="lookpick-title"></dialog>
 <dialog id="familysheet" class="sheet" aria-labelledby="family-title"></dialog>
 <dialog id="celebrate" class="celebrate" role="alertdialog" aria-labelledby="cele-title"></dialog>
 <dialog id="exsheet" class="sheet" aria-label="Add an exercise"></dialog>
@@ -594,7 +595,7 @@ import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsTh
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 import { gifUrl, stillUrl } from "./exercise-gifs.js";
-import { LOOKS, cleanLook, accentPresetsFor, defaultAccentFor, envFor } from "./looks.js";
+import { LOOKS, cleanLook, savedLookOf, suggestLook, shouldPickLook, accentPresetsFor, defaultAccentFor, envFor } from "./looks.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
@@ -647,7 +648,7 @@ const store = {
       this.stopFriends(); state.showMore={}; state.friends=freshFriends(); this.stopChallenges(); state.challenges=freshChallenges(); renderFriendsBadge();
       this.user=user; state.authed=!!user; authKnown=true;
       showAccount(user);
-      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.myFoods=[]; state.serverSynced=false; state.journey=null; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; stopScan(); state.mealDraft=freshMealDraft(); celeQueue.length=0; clearTimeout(tgtTimer); tgtTimer=null; for(const k of Object.keys(pendingTargets)) delete pendingTargets[k]; state.targetEdit=null; setSync(""); onData(); return; }
+      if (!user){ state.workouts=[]; state.days=[]; state.body=[]; state.profile={}; state.settings={rest:{}}; state.food={}; state.myFoods=[]; state.serverSynced=false; state.journey=null; state.lookPickShown=false; state.journeyShown=false; clearTimeout(gymSaveTimer); state.gymEdit=null; state.share={loaded:false,profile:null,busy:false,last:null,lastAt:0}; stopScan(); state.mealDraft=freshMealDraft(); celeQueue.length=0; clearTimeout(tgtTimer); tgtTimer=null; for(const k of Object.keys(pendingTargets)) delete pendingTargets[k]; state.targetEdit=null; setSync(""); onData(); return; }
       setSync(t("Loading your data…"));
       this.loadShare().then(()=>{ maybePublish(); refreshFriendNames(); if(state.view==="profile") renderProfile(); });
       this.watchFriends(); this.watchChallenges();
@@ -1329,7 +1330,7 @@ function gymNote(focus, exclude){
 function renderLog(){
   const w = workoutFor(state.date);
   const dateLabel = state.date===today()?t("Today"):fmtDate(state.date);
-  let h = levelHero() + deloadBannerHtml() + (state.days.length||state.serverSynced!==true?"":journeyCard()) + `<div class="row">
+  let h = levelHero() + deloadBannerHtml() + lookHintHtml() + (state.days.length||state.serverSynced!==true?"":journeyCard()) + `<div class="row">
     <div class="grow"><div class="label">Workout date</div><h2>${dateLabel}</h2></div>
     <input type="date" id="log-date" value="${state.date}" max="${today()}" style="width:auto">
   </div>`;
@@ -1687,6 +1688,7 @@ function markJourneySkipped(){ try{ localStorage.setItem("ironlog.journey","skip
 function endJourney(){ state.journey=null; if(history.state&&history.state.journey) history.back(); }
 window.addEventListener("popstate",()=>{ if(state.journey&&!(history.state&&history.state.journey)){ if(state.journey.fromAuto) markJourneySkipped(); state.journey=null; if(state.view==="journey") go("log"); } });
 function maybeStartJourney(){
+  if(shouldPickLook({authed:state.authed,synced:state.serverSynced===true,days:state.days,workouts:state.workouts,savedLook:savedLook(),shown:state.lookPickShown})){ state.lookPickShown=true; openLookPicker(false); return; }   // a new person chooses a look first; closing it calls this again
   let skipped=false; try{ skipped=localStorage.getItem("ironlog.journey")==="skip"||sessionStorage.getItem("ironlog.wiping")==="1"; }catch(e){}
   if(!shouldAutoJourney({authed:state.authed,synced:state.serverSynced===true,days:state.days,workouts:state.workouts,skipped,shown:state.journeyShown})) return;
   state.journeyShown=true; openJourney(true);
@@ -2984,6 +2986,49 @@ function lookPreviewHtml(look){
   const d=acc==="plate"?null:deriveAccent(acc,isDarkNow()?"dark":"light",env.surface,env.bg);
   return `<span class="lk-prev look-scope" data-look="${look}"${d?` style="--accent:${d.accent};--accent-ink:${d.ink}"`:""} aria-hidden="true"><span class="lk-card"></span><span class="lk-btn"></span><span class="lk-bar"></span></span>`;
 }
+/* ---- first-launch picker (#lookpick) and the one-time "New looks" card ---- */
+const savedLook=()=>{ try{ return savedLookOf(localStorage.getItem("ironlog.look")); }catch(e){ return null; } };
+function lookPreviewBigHtml(look){
+  const env=envFor(look)[isDarkNow()?"dark":"light"], acc=defaultAccentFor(look);
+  const d=acc==="plate"?null:deriveAccent(acc,isDarkNow()?"dark":"light",env.surface,env.bg);
+  return `<span class="lk-prev big look-scope" data-look="${look}"${d?` style="--accent:${d.accent};--accent-ink:${d.ink}"`:""} aria-hidden="true"><span class="lk-title">${esc(nameOf("ex","Bench Press"))}</span><span class="lk-card"><b>3 × 5–8</b></span><span class="lk-btn">${esc(t("Log set"))}</span><span class="lk-bar"></span></span>`;
+}
+function lookPickHtml(){
+  const st=state.lookPick, sex=st.sex||state.profile.sex, suggested=suggestLook(sex);
+  return `<div class="sheet-head"><h2 id="lookpick-title">${t("Choose your look")}</h2></div>
+    <p class="prev" style="margin:0 0 10px">${t("You can change it any time in Me › Appearance.")}</p>
+    ${st.askSex?`<div class="stack" style="gap:6px;margin-bottom:12px"><span class="label">${t("I am…")}</span><div class="chips" role="group" aria-label="${esc(t("I am…"))}">${[["male","Male"],["female","Female"],["skip","Prefer not to say"]].map(([v,l])=>`<button type="button" class="chip" data-act="lp-sex" data-v="${v}" aria-pressed="${st.sex===v}">${esc(t(l))}</button>`).join("")}</div></div>`:""}
+    <div class="lp-cards">${["carbon","bloom"].map(l=>`<button type="button" class="lp-card" data-act="lp-card" data-v="${l}" aria-pressed="${st.sel===l}">${lookPreviewBigHtml(l)}<span class="lp-name">${esc(t(LOOK_NAME[l]))}${suggested===l?` <span class="tag2">${esc(t("Suggested"))}</span>`:""}</span></button>`).join("")}</div>
+    <div class="stack" style="margin-top:14px"><button type="button" class="btn primary" data-act="lp-choose"${st.sel?"":" disabled"}>${t("Choose")}</button>
+    <button type="button" class="btn ghost" data-act="lp-classic">${t("Keep the classic look")}</button></div>`;
+}
+// existing = opened from the "New looks" card (no sex question, nothing happens on dismiss); else the new-person flow before the journey.
+function openLookPicker(existing){
+  const sex=state.profile.sex;
+  state.lookPick={existing:!!existing,askSex:!existing&&!sex,sex:null,sel:suggestLook(sex),done:false};
+  const dlg=$("#lookpick"); dlg.innerHTML=lookPickHtml(); if(!dlg.open) dlg.showModal();
+}
+function lookPickRedraw(){ const dlg=$("#lookpick"); if(dlg.open) dlg.innerHTML=lookPickHtml(); }
+function finishLookPick(look){
+  const st=state.lookPick; if(!st||st.done) return; st.done=true;
+  if(look){
+    if((st.sex==="male"||st.sex==="female")&&!state.profile.sex) store.saveProfile({...state.profile,sex:st.sex});
+    applyLook(look);
+  }
+  const dlg=$("#lookpick"); if(dlg.open) dlg.close();
+}
+// Closing without a choice (Esc, back): a new person gets Classic (and the journey goes on); the card flow changes nothing.
+$("#lookpick").addEventListener("close",()=>{
+  const st=state.lookPick; $("#lookpick").innerHTML=""; if(!st) return;
+  if(!st.done){ st.done=true; if(!st.existing) applyLook("classic"); }
+  if(!st.existing) maybeStartJourney();
+  if(state.view==="log") renderLog();
+});
+const lookHintSeen=()=>{ try{ return localStorage.getItem("ironlog.lookHint")==="1"; }catch(e){ return true; } };
+function lookHintHtml(){
+  if(savedLook()||lookHintSeen()||state.serverSynced!==true||(!state.days.length&&!state.workouts.length)) return "";
+  return `<div class="card lookhint"><h3>New looks</h3><p class="prev" style="margin:0">Try Carbon or Bloom. Your current look stays unless you choose.</p><div class="row"><button type="button" class="btn primary" data-act="look-hint-open">See looks</button><button type="button" class="btn ghost" data-act="look-hint-close">Not now</button></div></div>`;
+}
 function drawLooks(){
   const box=$("#look-tiles"); if(!box) return;
   const cur=currentLook();
@@ -3270,6 +3315,12 @@ document.addEventListener("click",e=>{
     case "lang-set": applyLang(b.dataset.v); syncMe(); drawSwatches(); break;
     case "accent-set": applyAccent(b.dataset.v); drawSwatches(); break;
     case "look-set": applyLook(b.dataset.v); break;
+    case "lp-sex": { const st=state.lookPick; st.sex=b.dataset.v; st.sel=suggestLook(st.sex==="skip"?null:st.sex); lookPickRedraw(); break; }
+    case "lp-card": state.lookPick.sel=b.dataset.v; lookPickRedraw(); break;
+    case "lp-choose": if(state.lookPick&&state.lookPick.sel) finishLookPick(state.lookPick.sel); break;
+    case "lp-classic": finishLookPick("classic"); break;
+    case "look-hint-open": openLookPicker(true); break;
+    case "look-hint-close": try{ localStorage.setItem("ironlog.lookHint","1"); }catch(e){} renderLog(); break;
     case "set-goal": state.editProfile=true; go("body"); setTimeout(()=>document.getElementById("pf-goalw")?.focus(),0); break;
     case "food-open": case "food-serving": case "food-amount": case "food-add": case "food-more": case "tray-step": case "tray-remove": case "manual-toggle": case "recent-add": case "myfood-new": case "myfood-cancel": case "myfood-edit": case "myfood-save": case "myfood-delete": case "meal-edit": case "scan-open": case "scan-close": case "scan-start": case "scan-dismiss": foodClick(b.dataset.act,b.dataset); break;
     case "meal-name": $("#meal-name").value=state.mealDraft.name=nameOf("meal",b.dataset.name); break;
