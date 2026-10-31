@@ -121,3 +121,12 @@
 .lk-prev.big .lk-card b{font:600 13px/1 var(--f-body)}
 .lk-prev.big .lk-btn{width:auto;height:auto;padding:8px 12px;color:var(--accent-ink);font:700 12px/1 var(--f-body);align-self:flex-start}
 .lookhint .row{flex-wrap:wrap}
+
+/* ================= Looks 2.0: sentence case, no condensed capitals (the Classic page shouts; Carbon and Bloom speak plainly) ================= */
+:root[data-look] .brand,:root[data-look] summary,:root[data-look] h2,:root[data-look] h3,:root[data-look] .label,:root[data-look] .ex-name,:root[data-look] .empty strong,
+:root[data-look] .dayname,:root[data-look] .exrow .nm,:root[data-look] .complete b,:root[data-look] .cmp th,:root[data-look] th,:root[data-look] .daynum{text-transform:none;letter-spacing:0}
+:root[data-look] .brand{font-size:20px;letter-spacing:-.01em}
+:root[data-look] h2{font-weight:700;letter-spacing:-.02em}
+:root[data-look] h3,:root[data-look] .label{font-size:13px;font-weight:600}
+:root[data-look] .ex-name{font-size:22px;line-height:1.25;font-weight:700;letter-spacing:-.01em}
+:root[data-look] .dayname{font-size:19px;line-height:1.2;font-weight:700}
