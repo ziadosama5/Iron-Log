@@ -1,5 +1,5 @@
 // Stand-ins for the Firebase SDK so the real app can run signed-in with sample data (screenshots only).
-const day = n => new Date(Date.now() - n * 864e5).toLocaleDateString("en-CA");
+const day = n => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - n); return d.toLocaleDateString("en-CA"); };   // calendar days, not 24-hour steps: a clock change (Egypt, Oct 30) must not repeat a date
 const T = Date.now();
 const S = (w, r, m) => ({ w, r, t: T - m * 60000 });
 const items = [];
