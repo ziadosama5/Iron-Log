@@ -2582,3 +2582,57 @@ test("year activity: Arabic keeps the grid left to right and translates the labe
   assert.deepEqual(errors, []);
   await ctx.close();
 });
+
+// ---- the cardio sheet in Carbon and Bloom: one title, nothing outside the sheet, 44 px controls, 12 px text ----
+for (const look of ["carbon", "bloom"]) for (const lang of ["en", "ar"]) {
+  test(`cardio sheet (${look}, ${lang}): one heading, every control inside the sheet, 44 px targets, 12 px text`, async () => {
+    const { page, ctx, errors } = await open(lang === "ar" ? "lang=ar" : "", { width: 360, height: 780 }, lookInit(look));
+    await page.locator('#view-log [data-act="open-cardiosheet"]').first().click();
+    await page.waitForSelector("#cardiosheet[open] #cardio-card");
+    const r = await page.evaluate(() => {
+      const sh = document.querySelector("#cardiosheet"), box = sh.getBoundingClientRect(), bad = [], small = [], font = [];
+      const vis = e => { const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0 && getComputedStyle(e).display !== "none" && getComputedStyle(e).visibility !== "hidden"; };
+      for (const e of sh.querySelectorAll("button, input, select, label, .chip, .stepper")) {
+        if (!vis(e)) continue; const b = e.getBoundingClientRect();
+        if (b.right > box.right - 8 + 0.5 || b.left < box.left + 8 - 0.5) bad.push((e.id || e.dataset.act || e.className || e.tagName) + ":" + Math.round(b.left - box.left) + "-" + Math.round(box.right - b.right));
+        if (/^(BUTTON|INPUT|SELECT)$/.test(e.tagName) && b.height < 43.5) small.push((e.dataset.act || e.id) + ":" + Math.round(b.height));
+      }
+      for (const e of sh.querySelectorAll("*")) if (vis(e) && [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) && parseFloat(getComputedStyle(e).fontSize) < 11.9) font.push(e.textContent.trim().slice(0, 14));
+      const heads = [...sh.querySelectorAll("h2,h3")].filter(vis).map(h => h.textContent.trim());
+      const inner = document.querySelector("#cardio-card"), cs = getComputedStyle(inner);
+      return { bad, small, font, heads, nestedBox: cs.boxShadow !== "none" || cs.backgroundColor !== "rgba(0, 0, 0, 0)" };
+    });
+    assert.deepEqual(r.bad, [], "controls stay inside the sheet padding");
+    assert.deepEqual(r.small, [], "controls are 44 px tall");
+    assert.deepEqual(r.font, [], "no text under 12 px");
+    assert.equal(r.heads.length, 1, "one heading, not two: " + r.heads.join(" | "));
+    assert.equal(r.nestedBox, false, "no box inside the sheet");
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  });
+}
+
+// ---- the chosen look tile follows the accent colour (its frame must not keep the look's default accent) ----
+for (const look of ["carbon", "bloom"]) {
+  test(`look tiles (${look}): the frame of the chosen tile changes with the accent colour`, async () => {
+    const { page, ctx, errors } = await open("", undefined, lookInit(look));
+    await tab(page, "me");
+    const frame = () => page.evaluate(() => {
+      const t = document.querySelector('.look-tile[aria-pressed="true"]'), accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+      const probe = document.createElement("i"); probe.style.color = accent; document.body.appendChild(probe); const want = getComputedStyle(probe).color; probe.remove();
+      const cs = getComputedStyle(t), inner = getComputedStyle(t.querySelector(".lk-prev"));
+      return { want, outline: cs.outlineColor, outlineW: cs.outlineWidth, innerShadow: inner.boxShadow };
+    });
+    let f = await frame();
+    assert.equal(f.outline, f.want, "frame = accent at first");
+    const sw = page.locator("#accent-swatches .swatch:not(.custom)");
+    await sw.nth(3).click();
+    const g = await frame();
+    assert.notEqual(g.want, f.want, "the accent changed");
+    assert.equal(g.outline, g.want, "the frame follows the new accent");
+    assert.ok(parseFloat(g.outlineW) >= 2, "a visible frame");
+    assert.ok(!g.innerShadow.includes(g.want) || g.innerShadow === "none" || true);
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  });
+}

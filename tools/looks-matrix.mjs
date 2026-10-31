@@ -15,7 +15,8 @@ const screens = [
   ["goals", ['[data-tab="progress"]', '[data-view="goals"]']], ["coach", ['[data-tab="progress"]', '[data-view="coach"]']], ["history", ['[data-tab="progress"]', '[data-view="history"]']],
   ["friends", ['[data-tab="friends"]']], ["challenges", ['[data-tab="friends"]', '[data-view="challenges"]']], ["me", ['[data-tab="me"]']],
   ["dayedit", [], "&go=days:edit"], ["friendpage", [], "&go=friend:u2"], ["find", ['[data-tab="friends"]', '[data-view="find"]']],
-  ["challengeopen", [], "&go=ch:open"], ["challengenew", [], "&go=ch:new"]
+  ["challengeopen", [], "&go=ch:open"], ["challengenew", [], "&go=ch:new"],
+  ["cardiosheet", ['#view-log [data-act="open-cardiosheet"]']], ["mealsheet", ['#view-log [data-act="open-mealsheet"]']], ["addexercise", ['[data-act="start-day"]', '[data-act="open-exsheet"]']]
 ];
 const out = [];
 for (const look of ["carbon", "bloom"]) for (const theme of ["dark", "light"]) for (const lang of ["en", "ar"]) {
@@ -25,11 +26,11 @@ for (const look of ["carbon", "bloom"]) for (const theme of ["dark", "light"]) f
     const p = await ctx.newPage();
     await p.goto(`http://localhost:${PORT}/?friends=1&ch=1&mine=1&look=${look}&theme=${theme}&lang=${lang}${extra}`);
     await p.waitForSelector(".tabbar:not([hidden])"); await p.waitForTimeout(700);
-    for (const sel of clicks) { try { await p.click(sel, { timeout: 2000 }); } catch (e) { out.push(`${look}/${theme}/${lang}/${name}: click failed ${sel}`); break; } await p.waitForTimeout(350); }
+    for (const sel of clicks) { try { await p.locator(sel).first().click({ timeout: 2000 }); } catch (e) { out.push(`${look}/${theme}/${lang}/${name}: click failed ${sel}`); break; } await p.waitForTimeout(350); }
     const r = await p.evaluate(() => {
       const de = document.documentElement, over = de.scrollWidth - de.clientWidth, issues = [];
       const vis = e => { const r = e.getBoundingClientRect(), cs = getComputedStyle(e); return r.width > 0 && r.height > 0 && cs.visibility !== "hidden" && cs.display !== "none" && !e.closest("[hidden]") && !e.closest("dialog:not([open])"); };
-      for (const e of document.querySelectorAll("main button, main [role=button], main a, .tabbar button, #pills button, main input:not([type=hidden]), main select")) {
+      for (const e of document.querySelectorAll("main button, main [role=button], main a, .tabbar button, #pills button, main input:not([type=hidden]), main select, dialog[open] button, dialog[open] input:not([type=hidden]), dialog[open] select")) {
         if (!vis(e)) continue; const r = e.getBoundingClientRect();
         if (e.closest(".exchips,.pills,.scrollx")) { if (r.height < 43.5) issues.push("h" + Math.round(r.height) + ":" + (e.textContent || e.id).trim().slice(0, 18)); continue; }
         if (r.height < 43.5 && !e.closest("table,.setrow") && !e.closest(".chips")) issues.push("h" + Math.round(r.height) + ":" + (e.getAttribute("aria-label") || e.textContent || e.id).trim().slice(0, 18));

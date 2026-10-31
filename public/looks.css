@@ -189,7 +189,10 @@
 :root[data-look] .more-row svg{width:18px;height:18px;color:var(--muted);flex:none}
 :root[data-look] .look-tile{border:0;background:transparent;padding:0;gap:8px;align-items:center}
 :root[data-look] .look-tile .lk-prev{height:112px;border:0;border-radius:18px;width:100%;box-shadow:inset 0 0 0 1px var(--gborder)}
-:root[data-look] .look-tile[aria-pressed="true"] .lk-prev{box-shadow:0 0 0 3px var(--accent)}
+/* the frame belongs to the tile button, which uses the page accent; the preview inside carries its own look colours, so a frame drawn on it kept the look's default accent */
+:root[data-look] .look-tile{border-radius:20px;outline:0 solid transparent;outline-offset:3px}
+:root[data-look] .look-tile[aria-pressed="true"]{outline:3px solid var(--accent)}
+:root[data-look] .look-tile[aria-pressed="true"] .lk-prev{box-shadow:inset 0 0 0 1px var(--gborder)}
 :root[data-look] .swatch{width:44px;height:44px}
 :root[data-look] .swatches{gap:10px}
 :root[data-look] .lk-board{display:flex;flex-direction:column;gap:12px}
@@ -245,3 +248,17 @@
 :root[data-look] .lk-find>.card,:root[data-look] .lk-chboard>.card{gap:12px}
 :root[data-look] .lk-chboard{display:flex;flex-direction:column;gap:12px}
 :root[data-look] .lk-form{display:flex;flex-direction:column;gap:12px}
+
+/* ================= Looks 2.0 cardio sheet: no box inside the sheet, one title, equal columns, 44 px controls ================= */
+:root[data-look] #cardiosheet #cardio-card{background:none;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;border:0;padding:0;gap:16px}
+:root[data-look] #cardiosheet #cardio-card>h3{display:none}   /* the sheet already says Cardio */
+:root[data-look] #cardiosheet .label{font-size:13px;font-weight:600;color:var(--muted)}
+:root[data-look] #cardiosheet .chips{gap:8px}
+:root[data-look] #cardiosheet .chip{min-height:44px;padding:0 16px;font-size:15px;color:var(--fg);display:inline-flex;align-items:center}
+:root[data-look] #cardiosheet .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+:root[data-look] .cardio-adder{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:end}
+:root[data-look] .cardio-adder input{min-height:48px;font-size:17px}
+:root[data-look] .stepper{border-radius:var(--r-btn);overflow:hidden;background:var(--glass2);box-shadow:inset 0 0 0 1px var(--gborder)}
+:root[data-look] .stepper input{border:0;background:transparent;min-width:0;font-size:20px;font-weight:600}
+:root[data-look] .stepper button{border:0;background:transparent;width:48px;min-height:48px;font-size:22px;color:var(--accent);border-radius:0}
+:root[data-look] .cardio-adder .btn.primary{min-height:56px;font-size:17px;width:100%}
