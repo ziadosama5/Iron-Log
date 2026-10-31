@@ -16,7 +16,6 @@ export function glance(c) {
     <div class="lk-up">${e(t(c.scheduled && c.isToday ? "Today" : "Up next"))}</div>
     <div class="lk-name num">${e(n.name)}</div>
     <div class="lk-meta">${e(tn("{n} exercise", "{n} exercises", n.count))}${n.last ? " · " + e(t("last {d}", { d: n.last })) : ""}</div>
-    ${n.focus.length ? `<div class="lk-tags">${n.focus.map(m => `<span class="tag2">${e(m)}</span>`).join("")}</div>` : ""}
     <button type="button" class="btn primary" data-act="start-day" data-id="${e(n.id)}">${e(t("Start workout"))}</button>
     <div class="row lk-alt"><button type="button" class="btn grow" data-act="start-free">${e(t("Free workout"))}</button></div>
     ${others.length ? `<div class="lk-others"><span class="label">${e(t("Other days"))}</span><div class="chips">${others.map(d => `<button type="button" class="chip" data-act="start-day" data-id="${e(d.id)}">${e(d.name)}</button>`).join("")}</div></div>` : ""}

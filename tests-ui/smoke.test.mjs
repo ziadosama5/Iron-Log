@@ -2636,3 +2636,34 @@ for (const look of ["carbon", "bloom"]) {
     await ctx.close();
   });
 }
+
+// ---- density: the new looks must not make a phone scroll more than the Classic page (390 px wide) ----
+async function pageHeight(look, steps) {
+  const { page, ctx } = await open("", { width: 390, height: 844 }, lookInit(look));
+  for (const s of steps) { await page.locator(s).first().click(); await page.waitForTimeout(300); }
+  await page.waitForTimeout(300);
+  const h = await page.evaluate(() => document.documentElement.scrollHeight);
+  await ctx.close();
+  return h;
+}
+test("density: Today in Carbon and Bloom is within 12% of the Classic height", async () => {
+  const classic = await pageHeight("classic", []);
+  for (const look of ["carbon", "bloom"]) assert.ok(await pageHeight(look, []) <= classic * 1.12, look + " Today");
+});
+for (const [name, steps, max] of [["Me", ['.tabbar [data-tab="me"]'], 2000], ["Body", ['.tabbar [data-tab="progress"]', '#pills [data-view="body"]'], 1950], ["Overview", ['.tabbar [data-tab="progress"]'], 1800]]) {
+  test(`density: ${name} in Carbon and Bloom stays under ${max} px on a phone`, async () => {
+    for (const look of ["carbon", "bloom"]) { const h = await pageHeight(look, steps); assert.ok(h <= max, `${look} ${name} is ${h} px`); }
+  });
+}
+test("density: Me folds the rarely used options under one More row in the new looks and keeps them open in Classic", async () => {
+  for (const look of ["carbon", "bloom", "classic"]) {
+    const { page, ctx, errors } = await open("", { width: 390, height: 844 }, lookInit(look));
+    await tab(page, "me");
+    const open_ = await page.evaluate(() => document.querySelector(".me-more:not(.me-share)").open);
+    assert.equal(open_, look === "classic", look);
+    assert.equal(await page.locator('.me-more [data-act="pics-download"]').isVisible(), look === "classic", look);
+    if (look !== "classic") { await page.locator(".me-more:not(.me-share) > summary").click(); assert.ok(await page.locator('.me-more [data-act="pics-download"]').isVisible()); assert.ok(await page.locator('.me-more [data-act="theme-set"]').first().isVisible()); }
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+});

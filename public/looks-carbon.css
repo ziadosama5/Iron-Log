@@ -27,4 +27,4 @@ html:root[data-look="carbon"] .boardrow{padding:12px 0}
 html:root[data-look="carbon"] .boardrow.me{background:var(--accent-soft);margin-inline:-16px;padding-inline:16px;border-radius:0}
 html:root[data-look="carbon"] .lk-board>.card{padding:14px 16px}
 html:root[data-look="carbon"] .boardrow .avatar{border-radius:12px}
-html:root[data-look="carbon"] .bignum{font-size:52px;line-height:1.05;letter-spacing:-.03em}
+html:root[data-look="carbon"] .bignum{font-size:44px;line-height:1.05;letter-spacing:-.03em}

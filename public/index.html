@@ -124,6 +124,9 @@ button.wd{appearance:none;font:inherit;color:inherit;cursor:pointer}
 .brow.off .t b{color:var(--muted)}
 .row>h2.grow{flex:1 1 150px}
 .dyn{display:contents}
+.me-more>summary{list-style:none}
+.me-more>summary::-webkit-details-marker{display:none}
+:root:not([data-look]) .me-more>summary{display:none}   /* Classic keeps every option in view */
 .hm-wrap{flex:1 1 auto;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 4px 2px 0}   /* room on the right so today's outline in the last column is not cut by the edge */
 .hm-wrap::-webkit-scrollbar{display:none}
 .hm-outer{display:flex;gap:3px;align-items:flex-start}
@@ -543,13 +546,14 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
             <div class="looks" id="look-tiles" role="group" aria-label="Look"></div></div>
           <div class="stack" style="gap:6px"><span class="label">Accent</span>
             <div class="swatches" id="accent-swatches" role="group" aria-label="Accent"></div></div>
+          <details class="me-more" open><summary>More options</summary>
           <div class="stack" style="gap:6px"><span class="label">Large demo on the card</span>
             <div class="seg" role="group" aria-label="Large demo on the card"><button data-act="demo-size-set" data-v="mini">Small</button><button data-act="demo-size-set" data-v="full">Large</button></div></div>
           <div class="stack" id="pics-row" style="gap:6px"><span class="label">Exercise pictures offline</span>
             <p class="prev" id="pics-line" style="margin:0"></p>
             <div class="row"><button type="button" class="btn" data-act="pics-download">Download exercise pictures</button><button type="button" class="btn ghost" data-act="pics-clear">Remove downloads</button></div></div>
           <div class="stack" style="gap:6px"><span class="label">Theme</span>
-            <div class="seg" role="group" aria-label="Theme"><button data-act="theme-set" data-v="system">System</button><button data-act="theme-set" data-v="light">Light</button><button data-act="theme-set" data-v="dark">Dark</button></div></div></div>
+            <div class="seg" role="group" aria-label="Theme"><button data-act="theme-set" data-v="system">System</button><button data-act="theme-set" data-v="light">Light</button><button data-act="theme-set" data-v="dark">Dark</button></div></div></details></div>
         <div class="card"><h3>Your data</h3>
           <button class="more-row" data-act="goto-history">History &amp; backup<svg aria-hidden="true"><use href="#i-chev"/></svg></button></div>
       </div>
@@ -2119,7 +2123,7 @@ function chart(pts){
   return lineChart(pts,[{k:"e1",c:"var(--accent)",main:true},{k:"top",c:"var(--muted)",dash:true}],t("Estimated 1RM and top set weight over time"),t("One session logged. The chart appears after your second."));
 }
 function lineChart(all, series, aria, emptyMsg){
-  const W=360,H=220,L=40,R=10,T=12,B=28;
+  const W=360,H=layoutFor==="classic"?220:170,L=40,R=10,T=12,B=28;
   const has=(p,k)=>typeof p[k]==="number"&&isFinite(p[k]);
   const pts=all.filter(p=>series.some(s=>has(p,s.k)));
   if(pts.length<2) return `<div class="empty" style="padding:16px">${emptyMsg}</div>`;
@@ -2160,7 +2164,7 @@ function overviewData(){
 // Vertical bars: bars=[{label,value}] (value null = nothing logged), optional dashed target line, value above each bar.
 function barChart(bars,{target=null,aria,emptyMsg,fmt=v=>String(v)}){
   if(!bars.some(b=>b.value!=null&&b.value>0)) return `<div class="empty" style="padding:16px">${emptyMsg}</div>`;
-  const W=360,H=190,L=10,R=10,T=24,B=26, n=bars.length, hasT=Number.isFinite(target)&&target>0;
+  const W=360,H=layoutFor==="classic"?190:150,L=10,R=10,T=24,B=26, n=bars.length, hasT=Number.isFinite(target)&&target>0;
   const max=Math.max(1,...bars.map(b=>b.value||0),hasT?target:0)*1.1, bw=(W-L-R)/n, y=v=>T+(1-v/max)*(H-T-B);
   let g=`<line x1="${L}" x2="${W-R}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line)" stroke-width="1"/>`;
   bars.forEach((b,i)=>{
@@ -3241,8 +3245,10 @@ function setLookCss(look){
   if(!l){ l=document.createElement("link"); l.rel="stylesheet"; l.id="look-css"; document.head.appendChild(l); }
   const href="/looks-"+look+".css"; if(l.getAttribute("href")!==href) l.setAttribute("href",href);
 }
+document.addEventListener("toggle",e=>{ const d=e.target; if(d&&d.matches&&d.matches("details.me-share")) state.meShareOpen=d.open; },true);
+function foldMeOptions(look){ const d=document.querySelector(".me-more"); if(d) d.open=(look==="classic"); }
 async function activateLayout(look){
-  look=cleanLook(look); wantedLook=look; setLookCss(look);
+  look=cleanLook(look); wantedLook=look; setLookCss(look); foldMeOptions(look);
   const next=await loadLayout(look);
   if(wantedLook!==look) return;   // the person switched again while this was loading
   LAYOUT=next; layoutFor=look;
@@ -3348,6 +3354,7 @@ function renderProfile(){
     <div class="row"><input id="pf-username" maxlength="20" autocapitalize="none" spellcheck="false" placeholder="username" value="${esc(p?p.username:"")}" style="flex:1 1 160px"><button class="btn primary" type="submit" ${dis}>Save</button></div>
     <span class="prev">3–20 letters, numbers, _ and .</span></form>`;
   if(p){
+    const fold=layoutFor!=="classic"; if(fold) h+=`<details class="me-more me-share" data-me="share"${state.meShareOpen?" open":""}><summary>${t("Sharing and privacy")}</summary>`;
     h+=`<form class="card" id="name-form" autocomplete="off"><h3>Display name</h3>
       <div class="row"><input id="pf-display" maxlength="40" value="${esc(p.displayName)}" style="flex:1 1 160px"><button class="btn" type="submit" ${dis}>Save</button></div></form>`;
     const sum=p.visibility==="private"?null:(p.summary||currentSummary());
@@ -3359,6 +3366,7 @@ function renderProfile(){
       <button class="chip" data-act="share-email" aria-pressed="${!!p.findByEmail}" ${emailOk&&!sh.busy?"":"disabled"}>Let people find me by e-mail</button>
       ${emailOk?"":`<span class="prev">Your Google account has no verified e-mail.</span>`}</div>`;
   }
+  if(p&&layoutFor!=="classic") h+="</details>";
   if(p) h+=`<div class="card">${sh.confirmDelete
     ?`<span class="prev">This removes your username and everything you shared. Your workouts stay private and untouched.</span><div class="row"><button class="btn small" data-act="share-delete-no">Keep</button><button class="btn small danger" data-act="share-delete-yes">Delete</button></div>`
     :`<button class="btn ghost danger" data-act="share-delete">Stop sharing and delete my profile</button>`}</div>`;

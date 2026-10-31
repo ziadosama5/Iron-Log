@@ -262,3 +262,30 @@
 :root[data-look] .stepper input{border:0;background:transparent;min-width:0;font-size:20px;font-weight:600}
 :root[data-look] .stepper button{border:0;background:transparent;width:48px;min-height:48px;font-size:22px;color:var(--accent);border-radius:0}
 :root[data-look] .cardio-adder .btn.primary{min-height:56px;font-size:17px;width:100%}
+
+/* ================= Looks 2.0 density: fewer screens of scrolling on a phone ================= */
+:root[data-look] .me-more{margin-top:2px}
+:root[data-look] .me-more>summary{display:flex;align-items:center;justify-content:space-between;min-height:44px;font-size:16px;font-weight:600;color:var(--fg);cursor:pointer}
+:root[data-look] .me-more>summary::after{content:"";width:9px;height:9px;border-inline-end:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin-inline-end:4px;transition:transform .2s}
+:root[data-look] .me-more[open]>summary::after{transform:rotate(-135deg)}
+:root[data-look] .me-more>.stack{margin-top:12px}
+:root[data-look] .card{padding:14px;gap:10px}
+:root[data-look] .stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+:root[data-look] .stat{padding:10px 8px;gap:2px;min-width:0}
+:root[data-look] .stat .label{font-size:12px;line-height:1.2;overflow-wrap:anywhere}
+:root[data-look] .stat .v{font-size:20px;line-height:1.1}
+:root[data-look] .stat .v small{font-size:12px}
+@media (max-width:339px){:root[data-look] .stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+:root[data-look] .lk-week{gap:2px}
+:root[data-look] .lk-wd{gap:3px}
+:root[data-look] .lk-wd b{width:36px;height:36px;font-size:16px}
+:root[data-look] .lk-glance{gap:8px;padding:14px}
+:root[data-look] .lk-name{font-size:28px;line-height:34px}
+:root[data-look] .lk-meta{margin-top:-4px}
+:root[data-look] .lk-glance>.btn.primary{min-height:52px;font-size:18px}
+:root[data-look] .lk-others{flex-direction:row;align-items:center;gap:8px;overflow:hidden}
+:root[data-look] .lk-others .chips{flex-wrap:nowrap;overflow:hidden}
+:root[data-look] .me-share>.card{margin-top:10px}
+:root[data-look] .hero{padding:10px 14px}
+:root[data-look] .lk-wd u{display:none}
+:root[data-look] .lk-week{margin-bottom:-6px}
