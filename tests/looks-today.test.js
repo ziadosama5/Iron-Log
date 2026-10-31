@@ -71,3 +71,14 @@ test("carbon puts the day to train before the level card, bloom after it", async
   assert.ok(pos(ch, 'data-act="start-day"') < pos(ch, 'data-act="hero-go"'));
   assert.ok(pos(bh, 'data-act="hero-go"') < pos(bh, 'data-act="start-day"'));
 });
+
+test("carbon: with the Large demo setting the wide demo sits above the name row, so the name keeps its room", async () => {
+  const C = await loadLayout("carbon");
+  const html = C.workout(buildCtx({ ...workoutCtx({ demoHtml: '<div class="demo big" data-name="x"></div>' }), full: true, t, tn }));
+  const demoAt = html.indexOf('class="demo big"'), rowAt = html.indexOf('class="ex-top lk-top"');
+  assert.ok(demoAt >= 0 && rowAt >= 0);
+  assert.ok(demoAt < rowAt, "the big demo comes before the name row");
+  assert.equal((html.match(/class="demo big"/g) || []).length, 1);
+  const mini = C.workout(buildCtx({ ...workoutCtx({ demoHtml: '<div class="demo" data-name="x"></div>' }), full: false, t, tn }));
+  assert.ok(mini.indexOf('class="ex-top lk-top"') < mini.indexOf('class="demo"'), "the small demo stays beside the name");
+});

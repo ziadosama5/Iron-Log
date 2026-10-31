@@ -43,3 +43,7 @@ test("library expansion: the eager catalog files are in the shell, the lazy How-
   const eager = bytes("exercise-catalog.js") + bytes("lang-ar-catalog.js") + bytes("injuries-catalog.js");
   assert.ok(eager <= 330 * 1024, "eager catalog files: " + Math.round(eager / 1024) + " KB (limit 330 KB)");
 });
+
+test("the look modules and stylesheets are in the shell, so a Carbon or Bloom user still gets their layout offline after an update", () => {
+  for (const f of ["/looks/layout.js", "/looks/carbon.js", "/looks/bloom.js", "/looks/today-parts.js", "/looks-carbon.css", "/looks-bloom.css"]) assert.ok(shell.includes(`"${f}"`), f + " is in APP_SHELL");
+});

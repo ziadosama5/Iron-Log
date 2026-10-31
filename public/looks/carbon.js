@@ -52,7 +52,8 @@ function gym(c) {
 // The focus card: name, tags and target on the left, a 96 px demo on the right; advice, set type, the sets, two stacked steppers, one big Log button.
 function workout(c) {
   return `<div class="card focus lk-focus" id="open-card">
-    <div class="ex-top lk-top"><div class="grow lk-who">${c.nameHtml}${c.tagsHtml}</div>${c.demoHtml}</div>
+    ${c.full ? c.demoHtml : ""}
+    <div class="ex-top lk-top"><div class="grow lk-who">${c.nameHtml}${c.tagsHtml}</div>${c.full ? "" : c.demoHtml}</div>
     ${c.avoidHtml}
     ${c.targetHtml}
     ${c.kindHtml}
