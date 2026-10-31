@@ -19,7 +19,7 @@ What I read in openGym (for reference, nothing is copied): a big autoplaying GIF
 
 ## Scope
 **In:**
-1. Demo on the exercise card (animated GIF with a line-drawing fallback, pause, minimize, muscle and equipment tags).
+1. Demo on the exercise card (animated GIF thumbnail with a full-screen viewer, line-drawing fallback, muscle and equipment tags).
 2. Planned set rows with a tick.
 3. A "why" line under the advice.
 4. **Looks:** three looks, **Classic** (today's design, unchanged), **Carbon** and **Bloom**, each with its own accent colours (section 4).
@@ -36,7 +36,8 @@ What I read in openGym (for reference, nothing is copied): a big autoplaying GIF
 - **Which GIF for which exercise.** A reviewed table `tools/exercise-gifs.json` maps each of our 183 exercise names to a dataset file id (`{"Bench Press": "0025-…"}`). Their names differ from ours ("barbell bench press"), so a dev script `tools/match-gifs.mjs` proposes the best match for each name (a quick token match found a good candidate for 85, a likely one for 89 and none for 9: Pec Deck, Reverse Pec Deck, Skull Crusher, Dumbbell Skull Crusher, Hip Thrust, Dumbbell Hip Thrust, Glute Kickback Machine, Plank, Ab Wheel Rollout) and writes a **review list** like `docs/injury-tags.md` for the owner to check, because a wrong picture (a barbell shown for a dumbbell lift) is worse than none. The generated `public/exercise-gifs.js` exports `GIFS` and `gifFor(name)`; a unit test fails for a library exercise that has neither a mapping nor an explicit `none`.
 - **Fallback.** An exercise with no GIF, a GIF that fails to load (offline, first view) or a custom exercise keeps showing the line drawings: the Start and Finish figures alternate with a CSS crossfade (about 2.4 s per loop, opacity only, theme-aware). Nothing is deleted: the drawings stay in the "!" sheet, with their credit line.
 - **Tap** = pause/play (the still JPG replaces the GIF while paused; `aria-pressed`). A small hint ("Tap to pause") shows on the first view only.
-- **Minimize / Expand** button on the box. Minimized = a 56 px thumbnail beside the name row (still animated), full = the box. The choice is a per-device preference in `localStorage` `ironlog.demo` (`"full"` default, `"mini"`), like Accent and Theme, so there is **no settings round trip**. Wrapped in try/catch like the other localStorage reads.
+- **Default = minimized (owner's decision).** The card shows the animated GIF as a thumbnail (about 96 px square, white tile) at the start of the name row, with the name, tags and "Best" beside it, so the sets stay high on the screen. A **Full screen** button (⤢, 44 px) on the thumbnail opens a viewer (`#demoview`, a `dialog` like the other sheets: dark backdrop, the GIF at the full width of the phone, a pause/play button, a ✕, the Start/Finish line drawings are not shown here). Back (the phone's back gesture) and ✕ close it through the same history-entry pattern as `#exinfo`. Tapping the thumbnail itself does nothing else.
+- **"Large demo on the card"** is a switch in Me › Appearance (per-device `localStorage` `ironlog.demo`: `"mini"` default, `"full"` shows the big box inline as before), like Accent and Theme, so there is **no settings round trip**. Wrapped in try/catch like the other localStorage reads.
 - **Size cap:** `max-height: min(180px, 26vh)` so the sets stay on screen on short phones; the GIF is `object-fit: contain` on a white tile (the pictures have a white background in both themes), `loading="eager"` for the open exercise only, `decoding="async"`, `alt` = the exercise name.
 - **Reduced motion** (`prefers-reduced-motion: reduce`): the still image is shown, no animation, and tapping plays it.
 - **Offline.** The service worker gets a cache-first rule for the demo host (`cdn.jsdelivr.net/gh/hasaneyldrm/`), images requested with `crossorigin="anonymous"` so the responses are cacheable (not opaque), in its own cache that keeps at most 80 files (oldest dropped). When the day's workout opens, the GIFs of its exercises are fetched in the background so they are there at the gym. The current Android app (Chrome-based) gets the same behaviour from the same code.
@@ -88,7 +89,7 @@ The owner picked Bloom and Carbon from the six boards on the design canvas (http
 
 ## Decisions (defaults I chose; tell me if you want others)
 0. **The owner's decisions (2026-10-31):** looks = Bloom and Carbon (+ Classic kept); the user picks, the picker runs on first launch with a preview and suggests from the sex they enter, changeable in settings; the live app stays untouched until the build is bug-free.
-1. Demo default is **full**, remembered per device.
+1. Demo default is **minimized** with a **full-screen** button (owner's decision); the inline large box is an optional switch in Appearance.
 2. The demo is the dataset's **GIF** (owner's decision), loaded from a pinned jsDelivr URL and cached by the service worker; the line drawings are the fallback.
 3. A tick logs immediately with no confirmation or undo toast; ✕ on the row already removes a mistaken set.
 4. Out-of-order ticking is not allowed.
@@ -111,7 +112,7 @@ The owner checked that the dataset's GIFs are public and need no licence, so the
 
 ## Tests
 - **Unit (`npm test`):** every library exercise has a GIF mapping or an explicit `none`, every mapped id looks like a dataset file id, `gifFor`/`stillFor` build the pinned URLs, a custom name has none; `plannedRows` (target 3 with 0/1/2/3/4 working sets; warm-ups and drop sets do not use a row; deload count; hold; bodyweight), `suggestNext` still returns the same `kind/w/r` (existing tests untouched) and now the right `why` for increase / hold / low / bw / hold-seconds, Arabic coverage.
-- **UI (`tests-ui`, Playwright on the harness; the harness serves a tiny local GIF for the demo host so tests need no internet):** demo shows the GIF; a failed GIF falls back to the two drawings; tap pauses (still image); Minimize persists after reload; reduced motion shows the still; first tick logs one set with the pre-filled values and starts the rest bar; later ticks are disabled; extra sets after the last planned row via "Add set"; edit-set and ✕ still work; a warm-up does not consume a row; deload, bodyweight (`bw=1..3`) and hold cases; Arabic/RTL (`lang=ar`); every target ≥ 44 px and text ≥ 12 px; on a 360×640 viewport the first planned row's tick is visible without scrolling when the demo is minimized, and with the capped demo when full.
+- **UI (`tests-ui`, Playwright on the harness; the harness serves a tiny local GIF for the demo host so tests need no internet):** demo shows the GIF; a failed GIF falls back to the two drawings; the card starts with the thumbnail; the full-screen button opens the viewer, pause shows the still, ✕ and Back close it; the "large demo on the card" switch persists after reload; reduced motion shows the still; first tick logs one set with the pre-filled values and starts the rest bar; later ticks are disabled; extra sets after the last planned row via "Add set"; edit-set and ✕ still work; a warm-up does not consume a row; deload, bodyweight (`bw=1..3`) and hold cases; Arabic/RTL (`lang=ar`); every target ≥ 44 px and text ≥ 12 px; on a 360×640 viewport the first planned row's tick is visible without scrolling when the demo is minimized, and with the capped demo when full.
 - **Looks (unit):** `cleanLook`, `suggestLook(male|female|none)`, presets exist for every look, and every look × light/dark × preset × accent has contrast ≥ 4.5:1 for text and for the button label (reusing `theme-tools.js`); Arabic coverage for the picker, tiles and card.
 - **Looks (UI):** a returning user with no saved look sees Classic exactly as before (the existing tests-ui suite passes unchanged); the new-user picker shows both previews, preselects by sex, "Prefer not to say" preselects none, Skip keeps Classic, Choose applies look and accent and then starts the journey; Me › Appearance switches instantly and survives a reload; the Today card appears once and stays gone; every main screen (Today, Plan, Progress, Friends, Me, sheets) renders in both new looks, light and dark, English and Arabic, with no horizontal scroll, targets ≥ 44 px and text ≥ 12 px; screenshots of each look for the owner.
 
@@ -131,7 +132,8 @@ The owner checked that the dataset's GIFs are public and need no licence, so the
 - **Snapshot re-render under a finger:** rows are drawn by the same `renderLog` path that already defers while typing.
 
 ## Open questions for you
-1. Is the default **full** demo right, or should it start minimized once you have trained a few weeks?
-2. GIF delivery for the web app: CDN plus the "Download exercise pictures" button (my recommendation; the APK in step 26 carries them inside). Say so if you would rather copy the ~183 files into `public/` (works offline from the first run, but counts against the free 360 MB/day hosting transfer).
-3. The names **Carbon** and **Bloom** and the "New looks" card for existing users: fine, or do you want different names or no card?
-4. Which follow-up comes first after step 28: supersets, the muscle map, or the hold timer?
+All answered by the owner (2026-10-31):
+1. Demo starts **minimized** with a full-screen button.
+2. Web app: CDN plus the "Download exercise pictures" button; the standalone APK (step 26) embeds the GIFs.
+3. Names Carbon and Bloom and the "New looks" card for existing users: approved.
+4. After step 28: the muscle map first, then every other openGym feature in the order listed in the roadmap doc.

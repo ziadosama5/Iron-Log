@@ -27,5 +27,21 @@ Recorded from the owner's answers. Each step gets its own brainstorm, spec, plan
 - Cut reads per app open (listen to the last 90 days of workouts, load older on demand), add a usage trigger (reads above about 60% of the daily 50,000 for a week = revisit), add Firebase App Check (free) against quota-burning abuse.
 - No data migration in this step.
 
-## Follow-ups after 28
-Meal templates, challenge types and rematch, CSV export, Google Play pack, V2 flows (see `docs/roadmap-v1-features.md`), then supersets, muscle map, hold timer.
+## Follow-ups after 28: the openGym feature backlog (owner: muscle map first, then everything openGym has, then our own ideas)
+Priority order (value for a gym logger first, then effort; the owner can reorder). Each is its own small sub-project (spec, plan, review). "Have" = Iron Log already does it.
+1. **Muscle map:** front and back body figure shaded by work per muscle (week / month / all time), names the muscles not trained, previews what a routine hits while building it, shows what you just trained at the end of a workout. Geometry from MuscleMap (MIT, credit in the notices). A male and a female figure option.
+2. **Supersets:** link exercises, log them back to back, rest only after the pair.
+3. **Timed holds with a work timer:** plank, wall sit, carries: a count-up/down timer that logs the seconds actually held (we log seconds by hand today).
+4. **Effort per set:** optional RIR or RPE column, off by default, never changes progression.
+5. **Move a day's workout** to another day without touching the weekly plan.
+6. **Choice of progression rule** per routine / exercise (linear, Greyskull LP, double progression, add time) with the "why" line; today only double progression.
+7. **Estimated 1RM extras:** the 1RM calculator, "from this set" line, 1RM progress curve (we have per-set e1RM and the Lifts chart).
+8. **Year activity heatmap** (GitHub-style, shaded by time trained) on Progress.
+9. **Notifications on Android:** rest-timer alert with the app closed and a workout-day reminder (needs the standalone APK).
+10. **Imports:** Strong, Hevy and FitNotes CSV (names matched against the library, unknown ones become own exercises). Apple Health weight is iPhone only, so not needed.
+11. **Share a plan** as a small file or a printable PDF (routines and schedule only).
+12. **Bigger exercise library:** the dataset has 1,324 exercises with GIFs and instructions against our 183; add them with equipment and joint tags so My Gym and Injuries keep working.
+13. **Cardio speed and distance** (we log minutes and intensity).
+14. **Plate calculator and per-exercise notes** (on openGym's own wish list).
+Already have: body-weight chart and goal, weekly plan, guided workout with rest timer and PR detection, wake lock, equipment filter (My Gym), own exercises, themes and accents, import/export of our JSON backup, languages (English and Arabic). Left out on purpose: passkeys, admin dashboard, 12 languages, the AI Coach (our rule-based Coach stays), iOS.
+After this list: meal templates, challenge types and rematch, CSV export, Google Play pack, V2 flows (see `docs/roadmap-v1-features.md`), and our own improvements on top.
