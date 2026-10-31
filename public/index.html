@@ -383,10 +383,6 @@ dialog.sheet{position:fixed;inset:auto 0 0 0;margin:0 auto;width:100%;max-width:
 dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .sheet-head{display:flex;align-items:flex-start;gap:8px}
 .sheet-head h2{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;padding-top:4px}
-.ex-figs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 6px}
-.ex-figs figure{margin:0;display:flex;flex-direction:column;gap:4px;min-width:0}
-.ex-fig{aspect-ratio:1;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);display:grid;place-items:center;overflow:hidden;padding:6px;text-align:center}
-.ex-fig svg{width:100%;height:100%;display:block}
 .advice-why{font-size:13px;color:var(--muted);line-height:1.4}
 .planned{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
 .prow{display:flex;align-items:center;gap:10px;min-height:48px;padding:2px 6px 2px 12px;padding-inline:12px 6px;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}
@@ -406,21 +402,11 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .demo{position:relative;flex:none;width:96px;height:96px;border-radius:14px;background:#fff;overflow:hidden;border:1px solid var(--line)}
 .demo img.demo-gif{width:100%;height:100%;object-fit:contain;display:block}
 .demo.big{width:100%;height:auto;aspect-ratio:1;max-height:min(180px,26vh);margin-bottom:10px}
-.demo-fallback{position:absolute;inset:0;color:#141a23}
-.demo-fallback .ex-fig{position:absolute;inset:0;border:0;border-radius:0;background:#fff;padding:4px;animation:demoA 2.4s ease-in-out infinite}
-.demo-fallback .ex-fig:last-child{animation-name:demoB}
-.demo-fallback .exbg{fill:#fff}
-.demo-fallback .exbg-s{stroke:#fff}
-@keyframes demoA{0%,40%{opacity:1}55%,90%{opacity:0}100%{opacity:1}}
-@keyframes demoB{0%,40%{opacity:0}55%,90%{opacity:1}100%{opacity:0}}
-@media (prefers-reduced-motion:reduce){.demo-fallback .ex-fig{animation:none}.demo-fallback .ex-fig:last-child{opacity:0}}
 .demoview-stage{width:min(100%,360px);margin:10px auto 12px;aspect-ratio:1;background:#fff;border-radius:16px;position:relative;overflow:hidden;border:1px solid var(--line)}
 .demoview-img{width:100%;height:100%;object-fit:contain;display:block}
 .demo-full{position:absolute;inset-inline-end:0;bottom:0;width:44px;height:44px;appearance:none;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:end;color:#fff}
 .demo-full span{width:26px;height:26px;margin:0 3px 3px 0;border-radius:8px;background:rgba(15,17,21,.78);display:grid;place-items:center;font-size:14px;line-height:1}
 :root[dir="rtl"] .demo-full span{margin:0 0 3px 3px}
-.ex-fig .exbg{fill:var(--surface)}
-.ex-fig .exbg-s{stroke:var(--surface)}
 .ex-works{margin:10px 0 4px}
 .ex-tips{margin:6px 0 10px;padding-inline-start:20px}
 .ex-tips li{margin:3px 0}
@@ -1371,7 +1357,7 @@ function renderLog(){
   const oldDemo=$("#open-card .demo"), demoKey=d=>d&&d.dataset.name+"|"+d.className;
   $("#view-log").innerHTML = h + todayCard();
   const newDemo=$("#open-card .demo"); if(oldDemo&&newDemo&&demoKey(oldDemo)===demoKey(newDemo)) newDemo.replaceWith(oldDemo);
-  refreshSheets(); syncWake(); fillFigures($("#open-card")); warmDemos(entries.map(e=>e.ex));
+  refreshSheets(); syncWake(); warmDemos(entries.map(e=>e.ex));
   // keep the open exercise's chip in view without scrolling the page
   const c=$("#exchips"), on=c&&c.querySelector('[aria-current="true"]');
   if(on){ const a=on.getBoundingClientRect(), b=c.getBoundingClientRect(); c.scrollLeft+=(a.left+a.width/2)-(b.left+b.width/2); }
@@ -1565,22 +1551,6 @@ function cardioCard(){
 function infoBtn(name){ return infoFor(name) ? `<button class="infobtn" data-act="ex-info" data-name="${esc(name)}" aria-label="${esc(t("About {name}",{name:nameOf("ex",name)}))}"><span class="ib" aria-hidden="true">!</span></button>` : ""; }
 function chipInfo(chip,name){ const i=infoBtn(name); return i ? `<span class="chipgrp">${chip}${i}</span>` : chip; }
 /* ---------- exercise demo: GIF (thumbnail on the card), line drawings as the fallback ---------- */
-// One drawing box; openExInfo and the card's fallback both fill it through fillFigures.
-const figureBox=(info,p)=>`<div class="ex-fig" data-src="/exercises/${info.slug}-${p}.svg" aria-hidden="true"></div>`;
-function exerciseFigures(name){
-  const info=infoFor(name); if(!info||!info.img) return "";
-  return `<div class="ex-figs">${[["start",t("Start")],["end",t("Finish")]].map(([p,l])=>`<figure>${figureBox(info,p)}<figcaption class="label">${l}</figcaption></figure>`).join("")}</div>`;
-}
-// Loads the SVG of every drawing box under root (cached by the service worker after the first view).
-function fillFigures(root,alive){
-  if(!root) return;
-  root.querySelectorAll(".ex-fig[data-src]").forEach(box=>{
-    if(box.querySelector("svg")) return;   // already drawn (a kept demo element)
-    fetch(box.dataset.src).then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
-      .then(svg=>{ if(!alive||alive()) box.innerHTML=svg; })
-      .catch(()=>{ if(!alive||alive()) box.innerHTML=`<span class="prev">Drawing not available offline yet</span>`; });
-  });
-}
 // Fetches the GIFs of the day's exercises once in the background (the service worker keeps them), so they are there at the gym.
 const warmedDemos=new Set();
 function warmDemos(names){
@@ -1616,13 +1586,12 @@ window.addEventListener("online",drawPics); window.addEventListener("offline",dr
 const gifCreditHtml=()=>`<p class="prev ex-credit">${esc(t("Animations: © Gym visual, https://gymvisual.com/ (via hasaneyldrm/exercises-dataset)"))}</p>`;
 // "mini" (default) = a thumbnail beside the name, "full" = the big box above it; per device, never throws.
 function demoPref(){ try{ return localStorage.getItem("ironlog.demo")==="full"?"full":"mini"; }catch(e){ return "mini"; } }
-const demoFallbackHtml=info=>`<div class="demo-fallback">${figureBox(info,"start")}${figureBox(info,"end")}</div>`;
-// The demo of an exercise: its GIF, or the two drawings when it has none (custom exercises: nothing at all).
+// The demo of an exercise: its GIF (an exercise with no GIF, and every custom exercise, shows nothing at all).
 function demoThumbHtml(name){
-  let g=gifUrl(name); const info=infoFor(name), draw=info&&info.img?info:null;
-  if(!g&&!draw) return "";
+  let g=gifUrl(name);
+  if(!g) return "";
   try{ if(g&&matchMedia("(prefers-reduced-motion: reduce)").matches) g=stillUrl(name); }catch(e){}   // reduced motion: the still picture
-  const media=g?`<img class="demo-gif" src="${esc(g)}" crossorigin="anonymous" decoding="async" alt="${esc(nameOf("ex",name))}">`:demoFallbackHtml(draw);
+  const media=`<img class="demo-gif" src="${esc(g)}" crossorigin="anonymous" decoding="async" alt="${esc(nameOf("ex",name))}">`;
   return `<div class="demo${demoPref()==="full"?" big":""}" data-name="${esc(name)}">${media}<button type="button" class="demo-full" data-act="demo-full" data-name="${esc(name)}" aria-label="${esc(t("Full screen"))}"><span aria-hidden="true">⤢</span></button></div>`;
 }
 // Muscles and equipment of an exercise as small tags (nothing when the library does not know it).
@@ -1631,16 +1600,12 @@ function tagsHtml(name){
   const tags=[...(info?info.primary.map(m=>nameOf("muscle",m)):[]),...eq.slice(0,2).map(eqLabel)];
   return tags.length?`<div class="tagrow">${tags.map(x=>`<span class="tag2">${esc(x)}</span>`).join("")}</div>`:"";
 }
-// A GIF that fails to load (offline on the first view, CDN down) is replaced by the drawings; `error` does not bubble, so listen in capture.
+// A GIF that fails to load (offline on the first view, CDN down) is taken out so no broken image is left; `error` does not bubble, so listen in capture.
 document.addEventListener("error",e=>{
-  const img=e.target;
-  if(img&&img.classList&&img.classList.contains("demoview-img")){ demoViewImgFailed(img); return; }
-  if(img&&img.classList&&img.classList.contains("exinfo-gif")){ const bx=img.closest(".exinfo-gifbox"); if(bx) bx.remove(); return; }
-  if(!img||!img.classList||!img.classList.contains("demo-gif")) return;
-  const box=img.closest(".demo"), info=box&&infoFor(box.dataset.name);
-  if(!box) return;
-  if(info&&info.img){ img.replaceWith(Object.assign(document.createElement("div"),{className:"demo-fallback",innerHTML:figureBox(info,"start")+figureBox(info,"end")})); fillFigures(box); }
-  else box.querySelector(".demo-full")&&box.remove();
+  const img=e.target; if(!img||!img.classList) return;
+  if(img.classList.contains("demoview-img")){ demoViewImgFailed(img); return; }
+  if(img.classList.contains("exinfo-gif")){ const bx=img.closest(".exinfo-gifbox"); if(bx) bx.remove(); return; }
+  if(img.classList.contains("demo-gif")){ const box=img.closest(".demo"); if(box) box.remove(); }
 },true);
 // Reads the weight/reps inputs of exercise ei; shows a toast and returns null if invalid.
 function readSet(ei){
@@ -2872,43 +2837,38 @@ let exInfoToken=0;
 function openExInfo(name){
   const info=infoFor(name); if(!info) return;
   const dlg=$("#exinfo"), token=++exInfoToken;
-  const figs = exerciseFigures(info.name);
   const gifSrc=gifUrl(info.name);
   dlg.innerHTML = `<div class="sheet-head"><h2 id="exinfo-title">${esc(nameOf("ex",info.name))}</h2><button class="btn ghost small" data-act="exinfo-close" aria-label="Close">✕</button></div>
     ${gifSrc?`<div class="exinfo-gifbox"><img class="exinfo-gif" src="${esc(gifSrc)}" crossorigin="anonymous" decoding="async" alt="${esc(nameOf("ex",info.name))}"></div>`:""}
-    ${figs}
     <p class="ex-works">Works: <b>${info.primary.map(m=>esc(nameOf("muscle",m))).join(", ")}</b>${info.secondary.length?` <span class="prev">· ${info.secondary.map(m=>esc(nameOf("muscle",m))).join(", ")}</span>`:""}</p>
     ${(()=>{ const eq=equipmentOf(info.name); return eq?`<p class="ex-works">${t("Equipment")}: <b>${eq.length?eq.map(eqLabel).join(isRtl()?"، ":" · "):t("No equipment")}</b></p>`:""; })()}
     <ul class="ex-tips">${(isRtl()&&info.ar&&info.ar.tips?info.ar.tips:info.tips).map(tip=>`<li>${esc(tip)}</li>`).join("")}</ul>
     ${(()=>{ const w=avoidWarn(info.name); return w?`<p class="avoidnote"><span aria-hidden="true">⚠</span><span>${esc(warnText(w))}</span></p>`:""; })()}
     <div class="row"><button type="button" class="btn small" data-act="avoid-toggle" data-name="${esc(info.name)}">${t(avoidsName(info.name)?"Stop avoiding":"Avoid this exercise")}</button></div>
-    ${info.img&&!info.own?`<p class="prev ex-credit">Illustrations: Everkinetic, CC BY-SA 4.0</p>`:""}${gifUrl(info.name)?gifCreditHtml():""}`;
+    ${gifUrl(info.name)?gifCreditHtml():""}`;
   if(!dlg.open){ dlg.showModal(); history.pushState({exinfo:1},""); }
-  fillFigures(dlg,()=>token===exInfoToken);
 }
 function closeExInfo(){ const d=$("#exinfo"); if(d.open) d.close(); }
 /* ---------- full-screen demo viewer (same history-entry pattern as the info sheet) ---------- */
 // The picture is shown at most about twice its 180 px source, so it stays sharp. With reduced motion it opens on the still.
 let demoViewToken=0, demoPaused=false;
 function openDemoView(name){
-  const g=gifUrl(name), info=infoFor(name), draw=info&&info.img?info:null; if(!g&&!draw) return;
+  const g=gifUrl(name); if(!g) return;
   const dlg=$("#demoview"), token=++demoViewToken;
   demoPaused=!!g&&matchMedia("(prefers-reduced-motion: reduce)").matches;
   dlg.dataset.name=name;
   dlg.innerHTML=`<div class="sheet-head"><h2 id="demoview-title">${esc(nameOf("ex",name))}</h2><button class="btn ghost small" data-act="demo-view-close" aria-label="Close">✕</button></div>
-    <div class="demoview-stage">${g?`<img class="demoview-img" src="${esc(demoPaused?stillUrl(name):g)}" crossorigin="anonymous" alt="${esc(nameOf("ex",name))}">`:`<div class="demo-fallback demoview-fallback">${figureBox(draw,"start")}${figureBox(draw,"end")}</div>`}</div>
-    ${g?`<div class="row" style="justify-content:center"><button type="button" class="btn" data-act="demo-pause" aria-pressed="${demoPaused}">${t(demoPaused?"Play":"Pause")}</button></div>${gifCreditHtml()}`:""}`;
+    <div class="demoview-stage"><img class="demoview-img" src="${esc(demoPaused?stillUrl(name):g)}" crossorigin="anonymous" alt="${esc(nameOf("ex",name))}"></div>
+    <div class="row" style="justify-content:center"><button type="button" class="btn" data-act="demo-pause" aria-pressed="${demoPaused}">${t(demoPaused?"Play":"Pause")}</button></div>${gifCreditHtml()}`;
   if(!dlg.open){ dlg.showModal(); history.pushState({demoview:1},""); }
-  fillFigures(dlg,()=>token===demoViewToken);
 }
 // The viewer's picture failed: the still of a paused picture goes back to the GIF; a GIF that cannot load is replaced by the drawings.
 function demoViewImgFailed(img){
-  const dlg=$("#demoview"), name=dlg.dataset.name, info=name&&infoFor(name);
+  const dlg=$("#demoview"), name=dlg.dataset.name;
   if(demoPaused&&name&&gifUrl(name)){ demoPaused=false; img.src=gifUrl(name); const b=dlg.querySelector('[data-act="demo-pause"]'); if(b){ b.setAttribute("aria-pressed","false"); b.textContent=t("Pause"); } return; }
   const stage=dlg.querySelector(".demoview-stage"); if(!stage) return;
   const pause=dlg.querySelector('[data-act="demo-pause"]'); if(pause) pause.hidden=true;
-  if(info&&info.img){ stage.innerHTML=`<div class="demo-fallback demoview-fallback">${figureBox(info,"start")}${figureBox(info,"end")}</div>`; fillFigures(stage); }
-  else stage.innerHTML=`<p class="prev" style="padding:12px">${esc(t("Not available offline yet"))}</p>`;
+  stage.innerHTML=`<p class="prev" style="padding:12px">${esc(t("Not available offline yet"))}</p>`;
 }
 function toggleDemoPause(){
   const dlg=$("#demoview"), img=dlg.querySelector(".demoview-img"), name=dlg.dataset.name; if(!img||!name) return;

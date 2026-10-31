@@ -157,11 +157,7 @@ self.addEventListener("fetch", event => {
 
   if (DEMO_BASE && req.url.startsWith(DEMO_BASE)) { event.respondWith(demoFetch(req)); return; }
 
-  // Exercise drawings never change at the same address within a VERSION, so serve them from
-  // the cache once seen (they are saved on first view, not at install, to keep install light).
-  if (url.origin === self.location.origin && url.pathname.startsWith("/exercises/")) {
-    event.respondWith(cacheFirst(req));
-  } else if (url.origin === self.location.origin) {
+  if (url.origin === self.location.origin) {
     event.respondWith(networkFirst(req));
   } else if (url.href.startsWith(FIREBASE_SDK) || url.host === "fonts.googleapis.com" || url.host === "fonts.gstatic.com") {
     event.respondWith(cacheFirst(req));

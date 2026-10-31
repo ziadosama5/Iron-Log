@@ -1768,13 +1768,14 @@ test("a custom exercise has no demo and no empty gap, and still logs sets", asyn
   await ctx.close();
 });
 
-test("when the GIF cannot load the two drawings take its place, with no broken image left", async () => {
+test("when the GIF cannot load the demo box goes away, with no broken image and no gap", async () => {
   const { page, ctx, errors } = await open("", undefined, undefined, gifHostDown);
   await swReady(page); await failCdnInSw(ctx);   // the service worker answers the picture requests, so make its network fail
   await startPush(page);
-  await page.locator("#open-card .demo .demo-fallback").waitFor();
-  assert.equal(await page.locator("#open-card .demo img.demo-gif").count(), 0, "failed image removed");
-  await page.waitForFunction(() => document.querySelectorAll("#open-card .demo-fallback .ex-fig svg").length === 2);
+  await page.waitForFunction(() => !document.querySelector("#open-card .demo"));
+  assert.equal(await page.locator("#open-card img.demo-gif").count(), 0, "failed image removed");
+  const nameBox = await page.locator("#open-card .ex-name").boundingBox(), cardBox = await page.locator("#open-card").boundingBox();
+  assert.ok(nameBox.y - cardBox.y < 90, "the name moves up to the top of the card");
   assert.deepEqual(errors, []);
   await ctx.close();
 });
@@ -2206,15 +2207,16 @@ test("review: keeping the classic look keeps the person's own accent, and Classi
   await ctx.close();
 });
 
-test("review: the full-screen viewer shows the drawings, not a broken image, when the GIF cannot load", async () => {
-  const { page, ctx, errors } = await open("", undefined, undefined, gifHostDown);
-  await swReady(page); await failCdnInSw(ctx);
+test("review: the full-screen viewer shows a short message, not a broken image, when the GIF cannot load", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
+  await swReady(page);
   await startPush(page);
-  await page.locator("#open-card .demo .demo-fallback").waitFor();
   await page.locator('#open-card [data-act="demo-full"]').click();
   await page.waitForSelector("#demoview[open]");
-  await page.locator("#demoview .demo-fallback").waitFor();
-  assert.equal(await page.locator("#demoview img.demoview-img").count(), 0, "no broken image left");
+  await page.evaluate(() => document.querySelector("#demoview img.demoview-img").dispatchEvent(new Event("error")));
+  await page.waitForFunction(() => !document.querySelector("#demoview img.demoview-img"));
+  assert.match(await page.locator("#demoview .demoview-stage").textContent(), /Not available offline yet/);
+  assert.equal(await page.locator("#demoview .ex-fig").count(), 0, "no drawings");
   assert.deepEqual(errors, []);
   await ctx.close();
 });
@@ -2293,5 +2295,19 @@ test("quick pass: the info sheet shows the exercise GIF at the top, with the cre
   await page.waitForSelector("#exinfo[open]");
   assert.match(await page.locator("#exinfo img.exinfo-gif").getAttribute("src"), /\/videos\/0025-EIeI8Vf\.gif$/);
   assert.match(await page.locator("#exinfo .ex-credit").last().textContent(), /Gym visual/);
+  await ctx.close();
+});
+
+test("no drawings: an exercise with no GIF (Push Press) shows no demo box and the info sheet has no figures", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  await addEx(page, "Push Press");
+  assert.equal(await page.locator("#open-card .demo").count(), 0);
+  await page.locator('#open-card .ex-name[data-act="ex-info"]').click();
+  await page.waitForSelector("#exinfo[open]");
+  assert.equal(await page.locator("#exinfo .ex-fig, #exinfo .ex-figs").count(), 0);
+  assert.equal(await page.locator("#exinfo img.exinfo-gif").count(), 0);
+  assert.equal(await page.locator("#exinfo .ex-credit").count(), 0, "no credit line without a GIF");
+  assert.deepEqual(errors, []);
   await ctx.close();
 });
