@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { SET_TYPES, setType, kOf, isWorking, countsForVolume, countsAsSet, workingSets, volumeSets, countedSets,
-  validTarget, cleanTargets, defaultTarget, targetFor, stepFor, suggestNext } from "../public/progression.js";
+  validTarget, cleanTargets, defaultTarget, targetFor, stepFor, suggestNext, plannedRows, whyFor } from "../public/progression.js";
 import { defaultRest } from "../public/workout-tools.js";
 
 const S = (w, r, k) => (k ? { w, r, k } : { w, r });
@@ -191,4 +191,48 @@ test("exerciseSessions marks the sessions of a deload workout", async () => {
   const same = (a, b) => a === b;
   const ws = [{ date: "2026-10-01", entries: [{ ex: "Squat", sets: [S(100, 5)] }] }, { date: "2026-10-03", deload: true, entries: [{ ex: "Squat", sets: [S(70, 5)] }] }];
   assert.deepEqual(exerciseSessions(ws, "Squat", same), [{ date: "2026-10-01", sets: [S(100, 5)] }, { date: "2026-10-03", sets: [S(70, 5)], deload: true }]);
+});
+
+test("plannedRows: how many working sets of the target are still to do", () => {
+  const target = { sets: 3, min: 8, max: 12 };
+  assert.equal(plannedRows(target, []), 3);
+  assert.equal(plannedRows(target, [S(80, 10)]), 2);
+  assert.equal(plannedRows(target, [S(80, 10), S(80, 10), S(80, 10)]), 0);
+  assert.equal(plannedRows(target, [1, 2, 3, 4, 5].map(() => S(80, 10))), 0);
+});
+
+test("plannedRows: warm-ups and drop sets never use up a planned row", () => {
+  const target = { sets: 3, min: 8, max: 12 };
+  assert.equal(plannedRows(target, [S(40, 10, "w"), S(80, 10, "d")]), 3);
+  assert.equal(plannedRows(target, [S(40, 10, "w"), S(80, 10)]), 2);
+});
+
+test("plannedRows: a deload week uses its own set count, and a bad target plans nothing", () => {
+  assert.equal(plannedRows({ sets: 3, min: 8, max: 12 }, [], 2), 2);
+  assert.equal(plannedRows({ sets: 3, min: 8, max: 12 }, [S(60, 10)], 2), 1);
+  assert.equal(plannedRows(null, []), 0);
+  assert.equal(plannedRows({ sets: 0, min: 8, max: 12 }, []), 0);
+});
+
+test("whyFor explains the advice in codes and numbers", () => {
+  const target = { sets: 3, min: 8, max: 12 }, step = 2.5;
+  const why = (last, extra = {}) => whyFor({ last, target, sug: suggestNext({ last, target, step, ...extra }), ...extra });
+  assert.deepEqual(why([S(80, 12), S(80, 12), S(80, 12)]), { code: "top", n: 3, r: 12 });
+  assert.deepEqual(why([S(80, 9), S(80, 10)]), { code: "more", r: 9 });
+  assert.deepEqual(why([S(80, 5), S(80, 6)]), { code: "low", min: 8 });
+  assert.deepEqual(why([S(0, 12), S(0, 12), S(0, 12)], { bw: true }), { code: "bw-top" });
+  assert.deepEqual(why([S(0, 30), S(0, 40)], { bw: true, hold: true }), { code: "hold-sec", r: 30 });
+  assert.deepEqual(why([S(80, 9)], { hold: false }), { code: "more", r: 9 });
+});
+
+test("whyFor: deload wins, and no advice means no reason", () => {
+  const target = { sets: 3, min: 8, max: 12 };
+  assert.deepEqual(whyFor({ last: [S(80, 9)], target, sug: { kind: "deload", w: 72, sets: 2 }, deload: true }), { code: "deload" });
+  assert.equal(whyFor({ last: [], target, sug: null }), null);
+  assert.equal(whyFor({ last: [S(80, 9)], target, sug: undefined }), null);
+});
+
+test("suggestNext still returns its plain result (whyFor is separate)", () => {
+  const target = { sets: 3, min: 8, max: 12 };
+  assert.deepEqual(suggestNext({ last: [S(80, 12), S(80, 12), S(80, 12)], target, step: 2.5 }), { kind: "increase", w: 82.5, r: 8 });
 });

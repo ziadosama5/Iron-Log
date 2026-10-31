@@ -84,6 +84,30 @@ export function suggestNext({ last, target, step, bw = false, hold = false }) {
   return { kind: "hold", w: top, r: Math.min(target.max, Math.min(...atTop.map(s => s.r)) + 1), ...tag };
 }
 
+// How many working sets of the target are still to do ("planned rows" on the workout card). A deload week passes its own
+// set count. Warm-ups and drop sets are not working sets, so they never use up a planned row. 0 for an invalid target.
+export function plannedRows(target, sets, deloadSets) {
+  if (!validTarget(target)) return 0;
+  const planned = Number.isInteger(deloadSets) && deloadSets > 0 ? deloadSets : target.sets;
+  return Math.max(0, planned - workingSets(sets).length);
+}
+
+// Why suggestNext said what it said, as a code plus numbers (the page words it): "top" = every target set reached the top of
+// the range (n sets, r reps); "more" = same weight, one more rep (r = the weakest set at the top weight); "low" = below the
+// range (min); "hold-sec" = a hold, aim for longer (r seconds); "bw-top" = a bodyweight lift at the top of its range; "deload".
+// null when there is no advice. suggestNext itself is not changed.
+export function whyFor({ last, target, sug, bw = false, hold = false, deload = false }) {
+  if (!sug) return null;
+  if (deload) return { code: "deload" };
+  const ws = workingSets(last);
+  if (!ws.length || !validTarget(target)) return null;
+  const top = Math.max(...ws.map(s => s.w)), atTop = ws.filter(s => s.w === top), weakest = Math.min(...atTop.map(s => s.r));
+  if (hold) return { code: "hold-sec", r: weakest };
+  if (sug.kind === "increase") return bw ? { code: "bw-top" } : { code: "top", n: atTop.length, r: target.max };
+  if (sug.low) return { code: "low", min: target.min };
+  return { code: "more", r: weakest };
+}
+
 // An exercise's past sessions as {date, sets} with working sets only (warm-ups and drop sets are not "last time"),
 // oldest first; workouts must already be sorted by date. `same(a, b)` says whether two exercise names are the same one.
 export function exerciseSessions(workouts, exName, same) {
