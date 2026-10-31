@@ -2474,3 +2474,56 @@ test("library: a former custom exercise that is now a body-weight library exerci
   assert.deepEqual(errors, []);
   await ctx.close();
 });
+
+// ---- Looks 2.0: per-look layouts (Carbon, Bloom), the Classic fallback, Classic users download nothing extra ----
+for (const look of ["carbon", "bloom"]) {
+  test(`looks 2.0 (${look}): Today shows the glance card and the workout card opens in the look's own layout`, async () => {
+    const { page, ctx, errors } = await open("", undefined, lookInit(look));
+    await page.waitForSelector(".lk-glance");
+    assert.ok(await page.locator('.lk-glance [data-act="start-day"]').first().isVisible());
+    assert.equal(await page.locator(".lk-wd").count(), 7);
+    assert.equal(await page.locator('#view-log [data-act="start-free"]').count(), 1);
+    await page.locator('.lk-glance [data-act="start-day"]').first().click();
+    await page.waitForSelector("#open-card.lk-focus");
+    assert.equal(await page.locator("#open-card.lk-bloomcard .lk-banner").count(), look === "bloom" ? 1 : 0);
+    for (const act of ["add-set", "done-ex", "set-kind", "step", "target-edit"]) assert.ok(await page.locator(`#view-log [data-act="${act}"]`).count() >= 1, act);
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  });
+}
+
+test("looks 2.0: Classic never requests a look module or a look stylesheet", async () => {
+  const seen = [];
+  const { page, ctx, errors } = await open("", undefined, undefined, async c => { c.on("request", r => { if (/\/looks\/(carbon|bloom)\.js|looks-(carbon|bloom)\.css/.test(r.url())) seen.push(r.url()); }); });
+  await page.waitForSelector("#view-log .daypick");
+  assert.deepEqual(seen, []);
+  assert.equal(await page.locator(".lk-glance").count(), 0);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("looks 2.0: a look module that cannot load still draws Today (Classic layout, look colours) without errors", async () => {
+  const { page, ctx, errors } = await open("", undefined, lookInit("carbon"), async c => { await c.route("**/looks/carbon.js", r => r.abort()); });
+  await page.waitForSelector("#view-log .daypick");
+  assert.equal(await page.locator(".lk-glance").count(), 0);
+  assert.equal(await dataLook(page), "carbon");
+  assert.deepEqual(errors.filter(e => !/Failed to fetch dynamically imported|Importing a module script failed|carbon\.js/.test(e)), []);
+  await ctx.close();
+});
+
+test("looks 2.0: switching the look in Me redraws Today with the new layout and back to Classic removes it", async () => {
+  const { page, ctx, errors } = await open("", undefined, lookInit("carbon"));
+  await page.waitForSelector(".lk-glance");
+  await tab(page, "me");
+  await page.locator('[data-act="look-set"][data-v="bloom"]').click();
+  await tab(page, "today");
+  await page.waitForSelector(".lk-glance");
+  assert.equal(await dataLook(page), "bloom");
+  await tab(page, "me");
+  await page.locator('[data-act="look-set"][data-v="classic"]').click();
+  await tab(page, "today");
+  await page.waitForSelector("#view-log .daypick");
+  assert.equal(await page.locator(".lk-glance").count(), 0);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
