@@ -1072,15 +1072,18 @@ function renderChallenges(){
   if(c.form){ renderChallengeForm(el); return; }
   const me=store.user.uid, t0=today(), mine=c.docs.map(ch=>({ch,st:statusOf(ch,t0)}));
   const inv=mine.filter(x=>!x.ch.joined.includes(me)&&x.st!=="finished"), act=mine.filter(x=>x.ch.joined.includes(me)&&x.st!=="finished"), fin=mine.filter(x=>x.ch.joined.includes(me)&&x.st==="finished"), old=mine.filter(x=>!x.ch.joined.includes(me)&&x.st==="finished");
-  let h=`<div class="row"><h2 class="grow">Challenges</h2><button class="btn small primary" data-act="ch-new">New challenge</button></div>`;
-  if(!mine.length) h+=`<div class="card"><p class="prev" style="margin:0">No challenges yet. Start one with your friends: whoever trains on more days wins.</p></div>`;
-  if(inv.length) h+=`<div class="card"><h3>Invitations</h3>${inv.map(({ch})=>`<div class="stack" style="gap:6px"><div class="row" style="gap:10px;flex-wrap:nowrap">${chIcon("invited")}<div class="grow stack" style="gap:2px"><div class="row" style="gap:8px"><b class="grow">${esc(chWeeksLabel(ch.weeks))}</b>${chBadge("invited",t("Invited"))}</div><span class="prev">${esc(chRange(ch))}</span></div></div>${chAvs(ch)}<span class="prev">${esc(t("From {name}",{name:iso("@"+(ch.names[ch.owner]||"?"))}))}</span>${ch.members.some(m=>m!==me&&m!==ch.owner)?`<span class="prev">${esc(t("With {names}",{names:ch.members.filter(m=>m!==me&&m!==ch.owner).map(m=>iso("@"+(ch.names[m]||"?"))).join(", ")}))}</span>`:""}${state.friends.blocks.some(b=>ch.members.includes(b.blocked))?`<span class="prev">${esc(t("Someone you blocked is in this challenge."))}</span>`:""}<div class="row">${state.friends.blocks.some(b=>ch.members.includes(b.blocked))?"":`<button type="button" class="btn small primary" data-act="ch-accept" data-id="${esc(ch.id)}">Accept</button>`}<button type="button" class="btn small" data-act="ch-decline" data-id="${esc(ch.id)}">Decline</button></div></div>`).join("")}</div>`;
-  if(act.length) h+=`<div class="card"><h3>Active</h3>${act.map(x=>chRow(x.ch)).join("")}</div>`;
-  if(fin.length) h+=`<div class="card"><h3>Finished</h3>${fin.map(x=>chRow(x.ch)).join("")}</div>`;
+  let emptyHtml="",invHtml="",actHtml="",finHtml="",oldHtml="";
+  const headHtml=`<div class="row"><h2 class="grow">Challenges</h2><button class="btn small primary" data-act="ch-new">New challenge</button></div>`;
+  if(!mine.length) emptyHtml+=`<div class="card"><p class="prev" style="margin:0">No challenges yet. Start one with your friends: whoever trains on more days wins.</p></div>`;
+  if(inv.length) invHtml+=`<div class="card"><h3>Invitations</h3>${inv.map(({ch})=>`<div class="stack" style="gap:6px"><div class="row" style="gap:10px;flex-wrap:nowrap">${chIcon("invited")}<div class="grow stack" style="gap:2px"><div class="row" style="gap:8px"><b class="grow">${esc(chWeeksLabel(ch.weeks))}</b>${chBadge("invited",t("Invited"))}</div><span class="prev">${esc(chRange(ch))}</span></div></div>${chAvs(ch)}<span class="prev">${esc(t("From {name}",{name:iso("@"+(ch.names[ch.owner]||"?"))}))}</span>${ch.members.some(m=>m!==me&&m!==ch.owner)?`<span class="prev">${esc(t("With {names}",{names:ch.members.filter(m=>m!==me&&m!==ch.owner).map(m=>iso("@"+(ch.names[m]||"?"))).join(", ")}))}</span>`:""}${state.friends.blocks.some(b=>ch.members.includes(b.blocked))?`<span class="prev">${esc(t("Someone you blocked is in this challenge."))}</span>`:""}<div class="row">${state.friends.blocks.some(b=>ch.members.includes(b.blocked))?"":`<button type="button" class="btn small primary" data-act="ch-accept" data-id="${esc(ch.id)}">Accept</button>`}<button type="button" class="btn small" data-act="ch-decline" data-id="${esc(ch.id)}">Decline</button></div></div>`).join("")}</div>`;
+  if(act.length) actHtml+=`<div class="card"><h3>Active</h3>${act.map(x=>chRow(x.ch)).join("")}</div>`;
+  if(fin.length) finHtml+=`<div class="card"><h3>Finished</h3>${fin.map(x=>chRow(x.ch)).join("")}</div>`;
   // invitations never answered before the challenge ended: nothing to accept, but they can be cleared
-  if(old.length) h+=`<div class="card"><h3>Expired invitations</h3>${old.map(({ch})=>`<div class="row" style="gap:8px"><div class="grow stack" style="gap:2px"><b>${esc(chWeeksLabel(ch.weeks))}</b><span class="prev">${esc(chRange(ch))} · ${esc(t("From {name}",{name:iso("@"+(ch.names[ch.owner]||"?"))}))}</span></div><button type="button" class="btn small" data-act="ch-decline" data-id="${esc(ch.id)}">Remove</button></div>`).join("")}</div>`;
-  el.innerHTML=h;
+  if(old.length) oldHtml+=`<div class="card"><h3>Expired invitations</h3>${old.map(({ch})=>`<div class="row" style="gap:8px"><div class="grow stack" style="gap:2px"><b>${esc(chWeeksLabel(ch.weeks))}</b><span class="prev">${esc(chRange(ch))} · ${esc(t("From {name}",{name:iso("@"+(ch.names[ch.owner]||"?"))}))}</span></div><button type="button" class="btn small" data-act="ch-decline" data-id="${esc(ch.id)}">Remove</button></div>`).join("")}</div>`;
+  // named parts so a look can arrange them its own way (screenHtml "challenges.list")
+  el.innerHTML=screenHtml("challenges.list",{headHtml,emptyHtml,invHtml,actHtml,finHtml,oldHtml},classicChallenges);
 }
+function classicChallenges(P){ return P.headHtml+P.emptyHtml+P.invHtml+P.actHtml+P.finHtml+P.oldHtml; }
 function chFriends(){ return groupFriendships(state.friends.docs,store.user.uid,state.friends.blocks).friends.filter(x=>x.name); }
 function renderChallengeForm(el){
   if(!state.friends.loaded){ el.innerHTML=`<div class="row"><button class="btn small" data-act="ch-form-cancel">Cancel</button></div><h2>New challenge</h2><p class="prev">Loading…</p>`; return; }
@@ -1210,21 +1213,23 @@ function renderFriendPage(el,g){
   if(!x){ f.open=null; f.confirm=null; renderFriends(); return; }
   const d=f.data[uid], p=d&&d.profile, sm=p&&p.summary, who=p?p.displayName:iso("@"+(x.name||""));
   if(!d) store.friendProfile(uid).then(()=>{ if(inFriends()&&f.open===uid) renderFriends(); });
-  let h=`<div class="row"><button class="btn small" data-act="fr-back">Back</button></div><h2>${esc(who)}</h2>${x.name?`<bdi dir="ltr" class="prev">@${esc(x.name)}</bdi>`:""}`;
-  if(!d) h+=`<p class="prev">Loading…</p>`;
-  else if(!sm) h+=`<p class="prev">${esc(t("{name} isn't sharing right now",{name:who}))}</p>`;
+  const head=`<div class="row"><button class="btn small" data-act="fr-back">Back</button></div><h2>${esc(who)}</h2>${x.name?`<bdi dir="ltr" class="prev">@${esc(x.name)}</bdi>`:""}`;
+  let body="", duo="", table="";
+  if(!d) body+=`<p class="prev">Loading…</p>`;
+  else if(!sm) body+=`<p class="prev">${esc(t("{name} isn't sharing right now",{name:who}))}</p>`;
   else{
     const cell=(r,v,lead)=>`<td class="${lead?"lead":""}">${r.key==="volumeWeekKg"?Math.round(v).toLocaleString("en-US"):v}${lead?' <span role="img" aria-label="Ahead">✓</span>':""}</td>`;
-    h+=duoHtml(who,currentSummary(),sm)+`<div class="card"><table class="cmp"><thead><tr><th></th><th>You</th><th>${esc(who)}</th></tr></thead><tbody>${compareSummaries(currentSummary(),sm).map(r=>`<tr><td>${esc(t(CMP_LABEL[r.key]))}</td>${cell(r,r.mine,r.leader==="me")}${cell(r,r.theirs,r.leader==="them")}</tr>`).join("")}</tbody></table>
+    duo=duoHtml(who,currentSummary(),sm); table=`<div class="card"><table class="cmp"><thead><tr><th></th><th>You</th><th>${esc(who)}</th></tr></thead><tbody>${compareSummaries(currentSummary(),sm).map(r=>`<tr><td>${esc(t(CMP_LABEL[r.key]))}</td>${cell(r,r.mine,r.leader==="me")}${cell(r,r.theirs,r.leader==="them")}</tr>`).join("")}</tbody></table>
       <span class="prev">${esc(sm.lastWorkout?t("Last workout: {d}",{d:fmtDate(sm.lastWorkout)}):t("No workouts yet"))}</span></div>`;
   }
   const ask=(msg,yes,label)=>`<div class="card"><span>${esc(msg)}</span><div class="row"><button class="btn small" data-act="fr-no">Keep</button>${frBtn(yes,x,label,"danger")}</div></div>`;
-  h+=f.confirm==="remove"?ask(t("Remove {name} from your friends?",{name:who}),"fr-remove-yes","Remove")
+  const acts=f.confirm==="remove"?ask(t("Remove {name} from your friends?",{name:who}),"fr-remove-yes","Remove")
     :f.confirm==="block"?ask(t("Block {name}? They are removed from your friends and cannot send you requests.",{name:who}),"fr-block-yes","Block")
     :`<div class="row"><button class="btn small" data-act="fr-remove">Remove friend</button><button class="btn small danger" data-act="fr-block">Block</button>${x.name?frBtn("fr-report",x,"Report"):""}</div>`;
-  h+=reportPanelHtml();
-  el.innerHTML=h;
+  // named parts so a look can arrange them its own way (screenHtml "friends.page")
+  el.innerHTML=screenHtml("friends.page",{headHtml:head,bodyHtml:body,duoHtml:duo,tableHtml:table,actionsHtml:acts,reportHtml:reportPanelHtml()},classicFriendPage);
 }
+function classicFriendPage(P){ return P.headHtml+P.bodyHtml+P.duoHtml+P.tableHtml+P.actionsHtml+P.reportHtml; }
 // One write plan, one toast. Offline and every failure share a message, so a block is never revealed.
 async function frDo(plan,okMsg){
   const r=await store.friendAction(plan);
@@ -2928,24 +2933,30 @@ function checkBadges(){
 /* ---------- HISTORY ---------- */
 function renderHistory(){
   const ws=sorted().filter(trainedOn).reverse();
-  let h=`<h2>History</h2>`;
-  if(!ws.length){ $("#view-history").innerHTML=h+`<div class="empty"><strong>No workouts yet</strong>Every day you log shows up here. Tap one to open and edit it.</div>`+backupCard(); return; }
+  if(!ws.length){ $("#view-history").innerHTML=`<h2>History</h2><div class="empty"><strong>No workouts yet</strong>Every day you log shows up here. Tap one to open and edit it.</div>`+backupCard(); return; }
   const week=ws.filter(w=>(Date.now()-new Date(w.date+"T12:00:00"))/864e5<7).length;
-  h+=`<div class="row label" style="gap:16px"><span>${tn("{n} workout logged","{n} workouts logged",ws.length)}</span><span>${t("{n} in the last 7 days",{n:week})}</span></div><div class="stack">`;
+  const summaryHtml=`<div class="row label" style="gap:16px"><span>${tn("{n} workout logged","{n} workouts logged",ws.length)}</span><span>${t("{n} in the last 7 days",{n:week})}</span></div>`;
   const hist=moreList(ws,"history");
-  hist.shown.forEach(w=>{
+  const items=hist.shown.map(w=>{
     const done=w.entries.filter(e=>e.sets.length);
     const v=done.reduce((a,e)=>a+vol(volumeSets(e.sets)),0), sets=done.reduce((a,e)=>a+countedSets(e.sets).length,0);
     const day=dayById(w.dayId), dname=day?day.name:(w.dayName||"Free workout");
-    h+=`<div class="card" data-open="${esc(w.date)}" tabindex="0" style="cursor:pointer">
-      <div class="ex-head"><div class="stack" style="gap:6px;min-width:0"><span class="prev">${fmtDateY(w.date)}</span><span class="daytag" style="align-self:flex-start">${esc(nameOf("day",dname))}</span></div><span class="num prev" style="white-space:nowrap">${historySummary(w,sets,v)}</span></div>
-      <div class="chips">${done.filter(e=>countedSets(e.sets).length).map(e=>`<span class="chip">${esc(nameOf("ex",e.ex))} · ${countedSets(e.sets).length}</span>`).join("")}${(w.cardio||[]).map(c=>`<span class="chip">${cardioLabel(c.type)} ${c.min} min</span>`).join("")}</div>
-      <div class="row" style="justify-content:flex-end">${state.confirmDel===w.id
+    return {date:w.date,dateLabel:fmtDateY(w.date),name:nameOf("day",dname),summaryHtml:historySummary(w,sets,v),
+      chipsHtml:`<div class="chips">${done.filter(e=>countedSets(e.sets).length).map(e=>`<span class="chip">${esc(nameOf("ex",e.ex))} · ${countedSets(e.sets).length}</span>`).join("")}${(w.cardio||[]).map(c=>`<span class="chip">${cardioLabel(c.type)} ${c.min} min</span>`).join("")}</div>`,
+      deleteHtml:`<div class="row" style="justify-content:flex-end">${state.confirmDel===w.id
         ?`<span class="prev">Delete this workout?</span><button class="btn small" data-act="cancel-del">Keep</button><button class="btn small danger" data-act="del-w" data-id="${w.id}">Delete</button>`
-        :`<button class="btn ghost small danger" data-act="ask-del" data-id="${w.id}">Delete</button>`}</div></div>`;
+        :`<button class="btn ghost small danger" data-act="ask-del" data-id="${w.id}">Delete</button>`}</div>`};
   });
-  $("#view-history").innerHTML=h+"</div>"+hist.btn+backupCard();
+  // named parts so a look can arrange them its own way (screenHtml "progress.history")
+  $("#view-history").innerHTML=screenHtml("progress.history",{summaryHtml,items,moreHtml:hist.btn,backupHtml:backupCard()},classicHistory);
 }
+function classicHistItem(it){
+  return `<div class="card" data-open="${esc(it.date)}" tabindex="0" style="cursor:pointer">
+      <div class="ex-head"><div class="stack" style="gap:6px;min-width:0"><span class="prev">${it.dateLabel}</span><span class="daytag" style="align-self:flex-start">${esc(it.name)}</span></div><span class="num prev" style="white-space:nowrap">${it.summaryHtml}</span></div>
+      ${it.chipsHtml}
+      ${it.deleteHtml}</div>`;
+}
+function classicHistory(P){ return `<h2>History</h2>${P.summaryHtml}<div class="stack">${P.items.map(classicHistItem).join("")}</div>${P.moreHtml}${P.backupHtml}`; }
 function historySummary(w,sets,v){
   const parts=[]; if(sets) parts.push(`${tn("{n} set","{n} sets",sets)} · ${kg(v)} kg`);
   const ek=exerciseKcal(w,weightOn(state.body,w.date)).total; if(ek) parts.push(t("{n} kcal exercise",{n:ek.toLocaleString("en-US")}));

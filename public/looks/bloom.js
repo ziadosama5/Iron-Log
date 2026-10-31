@@ -54,6 +54,25 @@ function gym(c) {
   return `<h2>${e(c.t("My Gym"))}</h2>${c.introHtml}${groups}${c.injuriesHtml}${c.endHtml}`;
 }
 
+// History: each workout is a soft card with a round tile and bubble chips; the backup card comes first when it is a reminder.
+function history(c) {
+  const e = c.esc, rows = c.items.map(it => `<div class="card lk-hist" data-open="${e(it.date)}" tabindex="0">
+    <div class="lk-hhead">${`<span class="lk-dtile" aria-hidden="true">${c.icon("bar", 22)}</span>`}<div class="lk-dtitle"><span class="dayname">${e(it.name)}</span><span class="lk-dmeta">${e(it.dateLabel)}</span></div><span class="num lk-hsum">${it.summaryHtml}</span></div>
+    <div class="lk-hchips">${it.chipsHtml}</div>${it.deleteHtml}</div>`).join("");
+  return `<h2>${e(c.t("History"))}</h2>${c.summaryHtml}${c.backupHtml + `<div class="stack">${rows}</div>`}${c.moreHtml}${""}`;
+}
+
+// Friend page: the two level cards sit in a tinted hero panel, then the comparison, then Remove / Block / Report.
+function friendPage(c) {
+  const duo = `<div class="lk-duo">${c.duoHtml}</div>`;
+  return c.headHtml + c.bodyHtml + duo + c.tableHtml + c.actionsHtml + c.reportHtml;
+}
+
+// Challenges list: active challenges lead, invitations follow.
+function challenges(c) {
+  return c.headHtml + c.emptyHtml + c.actHtml + c.invHtml + c.finHtml + c.oldHtml;
+}
+
 // The focus card: a wide demo banner on top, then the name with its tags, the advice, the sets, two stacked steppers and a pill Log button.
 function workout(c) {
   return `<div class="card focus lk-focus lk-bloomcard" id="open-card">
@@ -76,4 +95,4 @@ function workout(c) {
   ${c.footHtml}`;
 }
 
-export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends, "progress.body": body, "plan.gym": gym };
+export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends, "progress.body": body, "plan.gym": gym, "progress.history": history, "friends.page": friendPage, "challenges.list": challenges };

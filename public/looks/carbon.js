@@ -50,6 +50,25 @@ function gym(c) {
   return `<h2>${e(c.t("My Gym"))}</h2>${c.introHtml}${groups}${c.injuriesHtml}${c.endHtml}`;
 }
 
+// History: one dense row per workout (name, date, totals), the exercise chips on one line; the backup card stays last.
+function history(c) {
+  const e = c.esc, rows = c.items.map(it => `<div class="card lk-hist" data-open="${e(it.date)}" tabindex="0">
+    <div class="lk-hhead">${""}<div class="lk-dtitle"><span class="dayname">${e(it.name)}</span><span class="lk-dmeta">${e(it.dateLabel)}</span></div><span class="num lk-hsum">${it.summaryHtml}</span></div>
+    <div class="lk-hchips">${it.chipsHtml}</div>${it.deleteHtml}</div>`).join("");
+  return `<h2>${e(c.t("History"))}</h2>${c.summaryHtml}${`<div class="stack">${rows}</div>`}${c.moreHtml}${c.backupHtml}`;
+}
+
+// Friend page: the comparison table first, the two level cards after it, then Remove / Block / Report.
+function friendPage(c) {
+  const duo = `<div class="lk-duo">${c.duoHtml}</div>`;
+  return c.headHtml + c.bodyHtml + c.tableHtml + duo + c.actionsHtml + c.reportHtml;
+}
+
+// Challenges list: invitations first (they need an answer), then active and finished.
+function challenges(c) {
+  return c.headHtml + c.emptyHtml + c.invHtml + c.actHtml + c.finHtml + c.oldHtml;
+}
+
 // The focus card: name, tags and target on the left, a 96 px demo on the right; advice, set type, the sets, two stacked steppers, one big Log button.
 function workout(c) {
   return `<div class="card focus lk-focus" id="open-card">
@@ -70,4 +89,4 @@ function workout(c) {
   ${c.footHtml}`;
 }
 
-export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends, "progress.body": body, "plan.gym": gym };
+export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends, "progress.body": body, "plan.gym": gym, "progress.history": history, "friends.page": friendPage, "challenges.list": challenges };

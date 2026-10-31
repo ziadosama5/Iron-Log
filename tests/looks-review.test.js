@@ -18,6 +18,9 @@ const BUILDERS = {
   "progress.goals": { parts: ["targetHtml", "streaksHtml", "badgesHtml"], ctx: {} },
   "progress.body": { parts: ["quickHtml", "profileHtml", "entryHtml", "trendHtml", "recentHtml"], ctx: {} },
   "friends.board": { parts: ["requestsHtml", "boardHtml", "friendsHtml", "manageHtml"], ctx: {} },
+  "progress.history": { parts: ["summaryHtml", "moreHtml", "backupHtml"], ctx: { items: [{ date: "2026-10-30", dateLabel: "30 Oct", name: "Push", summaryHtml: "<i data-act=\"mark-item\">x</i>", chipsHtml: "<div class=\"chips\"></div>", deleteHtml: "<button data-act=\"ask-del\">d</button>" }] } },
+  "friends.page": { parts: ["headHtml", "bodyHtml", "duoHtml", "tableHtml", "actionsHtml", "reportHtml"], ctx: {} },
+  "challenges.list": { parts: ["headHtml", "emptyHtml", "invHtml", "actHtml", "finHtml", "oldHtml"], ctx: {} },
   "plan.gym": { parts: ["introHtml", "injuriesHtml", "endHtml"], ctx: { groups: [{ id: "w", label: "Weights", items: [{ id: "barbell", label: "Barbell", on: true }] }], count: "1 of 53 items" } }
 };
 for (const look of ["carbon", "bloom"]) for (const [name, b] of Object.entries(BUILDERS)) {
