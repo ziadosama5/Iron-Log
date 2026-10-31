@@ -1844,3 +1844,106 @@ test("the viewer works in Arabic without sideways scrolling", async () => {
   assert.deepEqual(errors, []);
   await ctx.close();
 });
+
+// ---- workout screen 2.0: planned set rows with a tick, and the why line ----
+const targetSets = async page => +(/Target (\d+)/.exec(await page.locator("#open-card button.chip[data-act='target-edit']").first().textContent())[1]);
+const planned = page => page.locator("#open-card .prow");
+const liveTick = page => page.locator('#open-card .prow button[data-act="add-set"]');
+
+test("planned rows: one per target set, only the next tick is live, ticking logs the set and starts the rest bar", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  const n = await targetSets(page);
+  assert.equal(await planned(page).count(), n);
+  assert.equal(await liveTick(page).count(), 1, "only the next planned row has a live tick");
+  assert.equal(await page.locator('#open-card .prow[aria-disabled="true"]').count(), n - 1);
+  assert.equal(await page.locator('#open-card button.btn.primary[data-act="add-set"]').count(), 0, "no separate Add set button while rows are planned");
+  const w = await page.locator("#w-0").inputValue(), r = await page.locator("#r-0").inputValue();
+  await liveTick(page).click(); await page.waitForTimeout(300);
+  assert.equal(await rowsOf(page).count(), 1);
+  const cells = await rowsOf(page).first().locator("td").allTextContents();
+  assert.ok(cells[1].includes(w.replace(/\.0$/, "")) && cells[2].trim() === r, "logged with the values in the steppers: " + cells);
+  assert.equal(await planned(page).count(), n - 1);
+  assert.equal(await page.locator("#restbar").isVisible(), true, "rest timer started");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("planned rows: after the last planned set the Add set button takes over and extra sets keep working", async () => {
+  const { page, ctx } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  const n = await targetSets(page);
+  for (let i = 0; i < n; i++) { await liveTick(page).click(); await page.waitForTimeout(250); }
+  assert.equal(await planned(page).count(), 0);
+  const add = page.locator('#open-card [data-act="add-set"]');
+  assert.equal((await add.textContent()).trim(), "Add set " + (n + 1));
+  await add.click(); await page.waitForTimeout(250);
+  assert.equal(await rowsOf(page).count(), n + 1);
+  assert.equal(await planned(page).count(), 0, "more sets than the target never makes a negative or planned row");
+  assert.equal((await page.locator('#open-card [data-act="add-set"]').textContent()).trim(), "Add set " + (n + 2));
+  await ctx.close();
+});
+
+test("planned rows: a warm-up or a drop set does not use up a planned row", async () => {
+  const { page, ctx } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  const n = await targetSets(page);
+  await kindChip(page, "warmup").click();
+  await liveTick(page).click(); await page.waitForTimeout(250);
+  assert.equal(await rowsOf(page).count(), 1);
+  assert.equal(await planned(page).count(), n, "warm-up left the planned rows alone");
+  await ctx.close();
+});
+
+test("planned rows: while a logged set is being edited the rows give way to Save set", async () => {
+  const { page, ctx } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  await liveTick(page).click(); await page.waitForTimeout(250);
+  await rowsOf(page).first().click();
+  assert.equal(await planned(page).count(), 0);
+  assert.match(await page.locator('#open-card [data-act="save-set"]').textContent(), /Save set 1/);
+  await ctx.close();
+});
+
+test("planned rows: the live row follows the steppers", async () => {
+  const { page, ctx } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  const before = await page.locator("#open-card .prow").first().locator(".pval").textContent();
+  await page.locator('#open-card [data-act="step"][data-f="w"][data-d="2.5"]').click();
+  const after = await page.locator("#open-card .prow").first().locator(".pval").textContent();
+  assert.notEqual(before, after);
+  await ctx.close();
+});
+
+test("planned rows: a deload week plans the lighter number of sets", async () => {
+  const { page, ctx } = await open(DELOAD_START_TODAY, undefined, undefined, gifHost);
+  await startPush(page);
+  const n = await planned(page).count();
+  const text = await page.locator("#open-card .advice").first().textContent();
+  const m = /about (\d+) set/.exec(text);
+  assert.ok(m, "deload advice names a set count: " + text);
+  assert.equal(n, +m[1]);
+  await ctx.close();
+});
+
+test("the why line explains the advice for an exercise with history and is absent for a new one", async () => {
+  const { page, ctx } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  const why = page.locator("#open-card .advice-why");
+  assert.equal(await why.count(), 1);
+  assert.ok((await why.textContent()).trim().length > 10);
+  await addEx(page, "Brand New Lift");
+  assert.equal(await page.locator("#open-card .advice-why").count(), 0);
+  await ctx.close();
+});
+
+test("planned rows mirror in Arabic and cause no sideways scrolling", async () => {
+  const { page, ctx, errors } = await open("lang=ar", undefined, undefined, gifHost);
+  await startPush(page);
+  assert.ok(await planned(page).count() >= 1);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+  const tick = await liveTick(page).boundingBox();
+  assert.ok(tick.width >= 44 && tick.height >= 44, "tick is a 44 px target");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});

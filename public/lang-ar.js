@@ -142,7 +142,7 @@ export const AR = {
     "That file isn't an Iron Log backup": "هذا الملف ليس نسخة احتياطية من Iron Log", "Couldn't restore that file": "تعذّرت استعادة هذا الملف",
 
     /* ---- Exercise info sheet ---- */
-    "Start": "البداية", "Finish": "النهاية", "Full screen": "ملء الشاشة", "Large demo on the card": "عرض توضيحي كبير على البطاقة", "Small": "صغير", "Large": "كبير", "Play": "تشغيل", "Pause": "إيقاف مؤقت", "Works:": "يعمل على:",
+    "Start": "البداية", "Finish": "النهاية", "Full screen": "ملء الشاشة", "Large demo on the card": "عرض توضيحي كبير على البطاقة", "Planned sets": "المجموعات المخططة", "Log set {n}": "سجّل المجموعة {n}", "{n} s": "{n} ث", "All {n} sets reached {r} reps last time, the top of your range.": "وصلت كل المجموعات ({n}) إلى {r} عدة في المرة الماضية، وهي أعلى حد في نطاقك.", "Last time your lowest set was {r} reps. One more rep each set.": "كانت أضعف مجموعة لديك {r} عدة في المرة الماضية. زد عدة واحدة في كل مجموعة.", "Last time was under {min} reps. Build up to {min} first.": "كانت المرة الماضية أقل من {min} عدة. ارفع عدّاتك إلى {min} أولاً.", "Last time you held {r} seconds. Aim for a little longer.": "ثبّتَّ {r} ثانية في المرة الماضية. حاول أن تثبت أطول قليلاً.", "You reached the top of your range last time. Add a little extra weight.": "وصلت إلى أعلى نطاقك في المرة الماضية. أضف وزنًا زائدًا بسيطًا.", "Easy week: about 90% of your last weight for about 60% of the sets.": "أسبوع خفيف: حوالي 90% من وزنك الأخير وحوالي 60% من المجموعات.", "Small": "صغير", "Large": "كبير", "Play": "تشغيل", "Pause": "إيقاف مؤقت", "Works:": "يعمل على:",
     "Illustrations: Everkinetic, CC BY-SA 4.0": "الرسوم التوضيحية: Everkinetic، CC BY-SA 4.0",
     "Drawing not available offline yet": "الرسم غير متاح دون اتصال بعد",
 

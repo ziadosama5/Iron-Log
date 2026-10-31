@@ -385,6 +385,15 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .ex-figs figure{margin:0;display:flex;flex-direction:column;gap:4px;min-width:0}
 .ex-fig{aspect-ratio:1;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);display:grid;place-items:center;overflow:hidden;padding:6px;text-align:center}
 .ex-fig svg{width:100%;height:100%;display:block}
+.advice-why{font-size:13px;color:var(--muted);line-height:1.4}
+.planned{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;align-items:center;gap:10px;min-height:48px;padding:2px 6px 2px 12px;padding-inline:12px 6px;border:1px dashed var(--line);border-radius:14px;color:var(--muted)}
+.prow .num{width:22px;font-weight:700}
+.prow .pval{flex:1;font-size:15px}
+.prow[aria-disabled="true"]{opacity:.6}
+.ptick{flex:none;width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:none;color:var(--accent);font:700 18px/1 var(--f-body);display:grid;place-items:center;padding:0;appearance:none}
+.ptick.live{border-color:var(--accent);cursor:pointer}
+.prow:not([aria-disabled="true"]){border-style:solid;border-color:var(--accent);color:var(--fg)}
 .ex-top{display:flex;gap:12px;align-items:flex-start}
 .ex-top .grow{min-width:0;display:flex;flex-direction:column;gap:6px}
 .tagrow{display:flex;flex-wrap:wrap;gap:6px}
@@ -571,7 +580,7 @@ import { cleanBackupItems } from "./backup.js";
 import { cleanDeload, deloadDate, deloadFlag, canSuggest, stalledLifts, activeDeload, suggestDeload, deloadAdvice, DISMISS_DAYS, DELOAD_DAYS } from "./deload.js";
 import { AREAS, AREA_EN, cleanAvoid, avoidFilter, avoidedBecause, hiddenAvoidCount, hasAvoid } from "./injuries.js";
 import { cleanBodyweight, bwFor, bwDefault, isHold, formatLoad, loadKg, bwScore, bestBwSet, legacyBodyweight } from "./bodyweight.js";
-import { workingSets, liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
+import { workingSets, liftNames, applyPendingTargets, targetFor, defaultTarget, stepFor, suggestNext, plannedRows, whyFor, cleanTargets, SET_TYPES, setType, kOf, isWorking, countedSets, volumeSets, exerciseSessions } from "./progression.js";
 import { themeAttr, sortTips, withWeight, visibleItems, settingsDoc, showGymHint, daysSince, initialsOf, avatarHue } from "./ui-helpers.js";
 import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX, goalAdjustment, explainTarget, weightOn, cardioKcal, exerciseKcal, bmrFor, dayEnergy } from "./energy.js";
 import { cleanDigits, canonicalBarcode, productUrl, normalizeProduct } from "./barcode.js";
@@ -1363,8 +1372,30 @@ function adviceText(sug){
   }
   return sug.kind==="increase"?t("Try {w} kg × {r}",{w:kg(sug.w),r:sug.r}):sug.low?t("Same weight: build up to {r} reps",{r:sug.r}):t("Same weight: aim for {r} on every set",{r:sug.r});
 }
-function targetBlock(ex,tg,sug,ei,hold){
-  const adv=adviceText(sug), advHtml=adv?`<div class="advice"><b>${esc(adv)}</b></div>`:"";
+// The reason behind the advice, one short sentence (whyFor in progression.js gives the code and numbers).
+function whyText(w){
+  if(!w) return "";
+  switch(w.code){
+    case "top": return t("All {n} sets reached {r} reps last time, the top of your range.",{n:w.n,r:w.r});
+    case "more": return t("Last time your lowest set was {r} reps. One more rep each set.",{r:w.r});
+    case "low": return t("Last time was under {min} reps. Build up to {min} first.",{min:w.min});
+    case "hold-sec": return t("Last time you held {r} seconds. Aim for a little longer.",{r:w.r});
+    case "bw-top": return t("You reached the top of your range last time. Add a little extra weight.");
+    case "deload": return t("Easy week: about 90% of your last weight for about 60% of the sets.");
+  }
+  return "";
+}
+// "87.5 × 6", "BW × 12", "+10 × 8" or "45 s": what a planned row shows.
+function plannedValue(d,bw,hold){
+  const w=parseFloat(String(d&&d.w).replace(",","."))||0, r=(d&&d.r)||"";
+  return hold?t("{n} s",{n:r}):(bw?formatLoad(w,t("BW")):kg(w))+" × "+r;
+}
+function syncPlanned(ex){
+  const ol=document.querySelector("#open-card .planned"); if(!ol||!ui[ex]) return;
+  ol.querySelectorAll(".pval").forEach(el=>{ el.textContent=plannedValue(ui[ex],ol.dataset.bw==="1",ol.dataset.hold==="1"); });
+}
+function targetBlock(ex,tg,sug,ei,hold,why){
+  const adv=adviceText(sug), advHtml=(adv?`<div class="advice"><b>${esc(adv)}</b></div>`:"")+(adv&&why?`<div class="advice-why">${esc(why)}</div>`:"");
   if(state.targetEdit!==ex) return `<div class="row" style="gap:8px;flex-wrap:wrap"><button type="button" class="chip" data-act="target-edit" data-ei="${ei}" aria-label="${esc(t("Change target"))}">${t(hold?"Target {sets} × {min}–{max} s":"Target {sets} × {min}–{max}",{sets:tg.sets,min:tg.min,max:tg.max})}</button></div>${advHtml}`;
   const row=(f,label)=>`<div class="row" data-row="${f}" style="gap:10px"><span class="label grow">${esc(t(label))}</span><span dir="ltr" class="row" style="gap:10px;flex-wrap:nowrap"><button type="button" class="btn small" data-act="tgt-step" data-f="${f}" data-d="-1" aria-label="${esc(t("Less"))}">−</button><b class="num" style="min-width:32px;text-align:center">${tg[f]}</b><button type="button" class="btn small" data-act="tgt-step" data-f="${f}" data-d="1" aria-label="${esc(t("More"))}">+</button></span></div>`;
   return `<div class="stack" style="gap:6px">${row("sets","Sets")}${row("min",hold?"Min seconds":"Min reps")}${row("max",hold?"Max seconds":"Max reps")}<div class="row"><button type="button" class="btn small" data-act="tgt-reset">${t("Reset to default")}</button><button type="button" class="btn primary small" data-act="tgt-done">${t("Done")}</button></div></div>${advHtml}`;
@@ -1392,6 +1423,9 @@ function focusCard(w, ei){
   const sug=dlOn?(dAdv?{kind:"deload",...dAdv}:null):suggestNext({last:last&&last.sets,target,step:bw?2.5:stepFor(e.ex),bw,hold});   // in a deload week the lighter plan replaces the usual advice
   const d = ui[e.ex] || (ui[e.ex]=prefillFor(e,last,sug&&sug.w!==undefined?sug:undefined,{bw,hold}));
   const editSi = editIndexFor(state.editSet, state.date, e.ex, e.sets), kind=state.setKind||"normal";
+  const left=editSi>=0?0:plannedRows(target,e.sets,dlOn&&dAdv?dAdv.sets:undefined);   // working sets of the target still to do (none while a set is being edited)
+  const plannedHtml=left>0?`<ol class="planned" data-bw="${bw?1:0}" data-hold="${hold?1:0}" aria-label="${esc(t("Planned sets"))}">${Array.from({length:left},(_,i)=>{ const n=e.sets.length+i+1;
+    return `<li class="prow"${i?' aria-disabled="true"':""}><span class="num">${n}</span><span class="pval">${esc(plannedValue(d,bw,hold))}</span>${i?'<span class="ptick" aria-hidden="true"></span>':`<button type="button" class="ptick live" data-act="add-set" data-ei="${ei}" aria-label="${esc(t("Log set {n}",{n}))}">✓</button>`}</li>`; }).join("")}</ol>`:"";
   let runBest=best;
   const nx = nextUnfinished(entries, ei);
   return `<div class="card focus" id="open-card">
@@ -1400,7 +1434,7 @@ function focusCard(w, ei){
       <div class="ex-top">${demoPref()==="full"?"":demoThumbHtml(e.ex)}<div class="grow"><div class="ex-name">${esc(nameOf("ex",e.ex))}</div>${tagsHtml(e.ex)}</div></div>
       ${(()=>{ const w=avoidWarn(e.ex); return w?`<div class="avoidnote"><span aria-hidden="true">⚠</span><span class="grow">${esc(warnText(w))}</span>${e.sets.length?"":`<button type="button" class="btn small" data-act="skip-avoided" data-ei="${ei}">${t("Skip it")}</button>`}</div>`:""; })()}
       ${last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>(bw?formatLoad(s.w,t("BW")):kg(s.w))+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
-      ${targetBlock(e.ex,target,sug,ei,hold)}
+      ${targetBlock(e.ex,target,sug,ei,hold,whyText(whyFor({last:last&&last.sets,target,sug,bw,hold,deload:!!dlOn})))}
       <div class="row" style="gap:8px"><button type="button" class="chip" data-act="bw-toggle" data-ei="${ei}" aria-pressed="${bw}"${e.sets.length?" disabled":""}>${t("Bodyweight")}</button>${e.sets.length?`<span class="prev">${t("Switch before your first set")}</span>`:""}</div>
       <div class="stack" style="gap:4px"><span class="label">${t(bw?"Extra weight · kg":"Weight · kg")}</span>${bw?`<span class="prev">${t("0 = your body. Negative = assisted.")}</span>`:""}
         <div class="bigstep"><button data-act="step" data-f="w" data-d="-2.5" data-ei="${ei}" aria-label="Minus 2.5 kg">−</button><input id="w-${ei}" inputmode="${bw?"text":"decimal"}" value="${d.w}" data-f="w" data-ex="${esc(e.ex)}" aria-label="${esc(t(bw?"Extra weight in kg":"Weight in kg"))}"><button data-act="step" data-f="w" data-d="2.5" data-ei="${ei}" aria-label="Plus 2.5 kg">+</button></div></div>
@@ -1409,16 +1443,17 @@ function focusCard(w, ei){
       <div class="chips" role="group" aria-label="${esc(t("Set type"))}">${SET_TYPES.map(ty=>`<button type="button" class="chip" data-act="set-kind" data-k="${ty}" aria-pressed="${kind===ty}">${esc(t(KIND_LABEL[ty]))}</button>`).join("")}</div>
       ${editSi>=0
         ? `<button class="btn primary" data-act="save-set" data-ei="${ei}">${t("Save set {n}",{n:editSi+1})}</button><div class="row"><span class="prev grow">${t("Editing set {n}",{n:editSi+1})}</span><button class="btn ghost small" data-act="cancel-edit">Cancel</button></div>`
-        : `<button class="btn primary" data-act="add-set" data-ei="${ei}">${t("Add set {n}",{n:e.sets.length+1})}</button>`}
+        : left>0 ? "" : `<button class="btn primary" data-act="add-set" data-ei="${ei}">${t("Add set {n}",{n:e.sets.length+1})}</button>`}
       ${e.sets.length?`<table><thead><tr><th>Set</th><th class="r">kg</th><th class="r">Reps</th><th class="r">e1RM</th><th></th></tr></thead><tbody>${
         e.sets.map((s,si)=>{ const wk=isWorking(s), est=wk&&!bw?e1rm(s.w,s.r):0, score=wk?(bw?bwScore(s):e1rm(s.w,s.r)):0, ty=setType(s); const isPr=score>0&&score>runBest&&best>0; if(score>runBest) runBest=score;   // only normal sets can be a PR
           return `<tr class="setrow${si===editSi?" editing":""}" data-act="edit-set" data-ei="${ei}" data-si="${si}" tabindex="0" aria-label="${esc(t("Edit set {n}",{n:si+1}))}"><td class="num">${si+1}${ty==="normal"?"":`<span class="settag">${esc(t(KIND_LABEL[ty]))}</span>`}</td><td class="r num">${bw?formatLoad(s.w,t("BW")):kg(s.w)}</td><td class="r num">${s.r}</td><td class="r num">${est?kg(Math.round(est*10)/10):"–"}${isPr?'<span class="pr">PR</span>':""}</td><td class="r"><button class="btn ghost small" data-act="rm-set" data-ei="${ei}" data-si="${si}" aria-label="${esc(t("Delete set {n}",{n:si+1}))}">✕</button></td></tr>`;}).join("")
       }</tbody></table>`:""}
+      ${plannedHtml}
       <div class="row"><button class="btn ghost small danger" data-act="rm-ex" data-ei="${ei}">Remove exercise</button></div>
     </div>
     <div class="row">${e.done
       ? `<button class="btn secondary grow" data-act="undone-ex" data-ei="${ei}">Mark as not done</button>`
-      : `<button class="btn secondary grow" data-act="done-ex" data-ei="${ei}">✓ Done</button>`}${
+      : `<button class="btn ${left===0&&editSi<0&&e.sets.length?"primary":"secondary"} grow" data-act="done-ex" data-ei="${ei}">✓ Done</button>`}${
       nx>=0?`<button class="btn secondary grow nextbtn" data-act="next-ex" data-ei="${ei}">${esc(t("Next: {name}",{name:nameOf("ex",entries[nx].ex)}))}</button>`:""}</div>`;
 }
 function completeCard(w){
@@ -3037,7 +3072,7 @@ function go(view){ const tb0=tabOf(view); if(tb0&&tb0!=="today"&&!tabEntry){ try
 
 let renameTimer=null;
 document.addEventListener("input",e=>{
-  const r=e.target; if(r.dataset&&r.dataset.actChange==="rename"){ clearTimeout(renameTimer); renameTimer=setTimeout(()=>{ const v=r.value.trim(); if(v&&dayById(r.dataset.id)&&dayById(r.dataset.id).name!==v) editDays(ds=>{ ds.find(d=>d.id===r.dataset.id).name=v; },{quiet:true}); },700); } const t=e.target; if(t.id==="meal-kcal") state.mealDraft.kcal=t.value; if(t.id==="meal-protein") state.mealDraft.protein=t.value; if(t.id==="meal-name") state.mealDraft.name=t.value; if(t.id==="cardio-min") state.cardioDraft.min=t.value; if(t.id==="cardio-kcal") state.cardioDraft.kcal=t.value; if(t.dataset.f&&t.dataset.ex!=null){ (ui[t.dataset.ex]||={w:"",r:""})[t.dataset.f]=t.value; } });
+  const r=e.target; if(r.dataset&&r.dataset.actChange==="rename"){ clearTimeout(renameTimer); renameTimer=setTimeout(()=>{ const v=r.value.trim(); if(v&&dayById(r.dataset.id)&&dayById(r.dataset.id).name!==v) editDays(ds=>{ ds.find(d=>d.id===r.dataset.id).name=v; },{quiet:true}); },700); } const t=e.target; if(t.id==="meal-kcal") state.mealDraft.kcal=t.value; if(t.id==="meal-protein") state.mealDraft.protein=t.value; if(t.id==="meal-name") state.mealDraft.name=t.value; if(t.id==="cardio-min") state.cardioDraft.min=t.value; if(t.id==="cardio-kcal") state.cardioDraft.kcal=t.value; if(t.dataset.f&&t.dataset.ex!=null){ (ui[t.dataset.ex]||={w:"",r:""})[t.dataset.f]=t.value; syncPlanned(t.dataset.ex); } });
 document.addEventListener("change",e=>{
   const t=e.target;
   if(t.id==="log-date"&&t.value){ stopEditing(); state.date=t.value; state.pickDay=false; state.openEx=undefined; renderLog(); }
