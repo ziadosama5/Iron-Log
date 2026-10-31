@@ -89,3 +89,16 @@ test("the privacy policy says the exercise pictures come from a public CDN and w
   assert.ok(en.includes("jsDelivr") && /IP address/.test(en) && /no account data/i.test(en), "English names jsDelivr, the IP address and that no account data is sent");
   assert.ok(ar.includes("jsDelivr") && /عنوان IP/.test(ar), "Arabic names jsDelivr and the IP address");
 });
+
+// ---- credits and licences page ----
+test("licenses.html credits every third-party source with its licence, is offline-cached and is linked from Me and the sign-in screen", () => {
+  const html = readFileSync(new URL("../public/licenses.html", import.meta.url), "utf8");
+  for (const must of ["MIT License", "Copyright (c) 2026 Hasan Emir Yıldırım", "Gym visual", "https://gymvisual.com/", "https://gymvisual.com/content/3-terms-and-conditions-of-use", "180", "Open Food Facts", "ODbL", "ZXing", "Apache", "Google Fonts"]) assert.ok(html.includes(must), must);
+  assert.ok(/Permission is hereby granted, free of charge/.test(html), "the full MIT text is included");
+  assert.ok(html.includes("charset=\"utf-8\"") && html.includes("viewport"), "a standalone page");
+  const sw = readFileSync(new URL("../public/sw.js", import.meta.url), "utf8");
+  assert.ok(sw.includes('"/licenses.html"'), "in APP_SHELL");
+  const index = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
+  assert.ok(index.includes('href="/licenses.html"'), "linked from the app");
+  assert.ok((index.match(/href="\/licenses\.html"/g) || []).length >= 2, "linked from Me and from the sign-in screen");
+});

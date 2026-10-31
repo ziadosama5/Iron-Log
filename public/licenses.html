@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Credits and licences · Iron Log</title>
+<style>
+:root{--bg:#f2f4f8;--surface:#fff;--fg:#10131a;--muted:#59606e;--line:#dfe3ea;--accent:#1f5fd1}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1118;--surface:#161b24;--fg:#e9edf5;--muted:#9aa3b2;--line:#252c38;--accent:#6c9cff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Arabic",sans-serif}
+header,main,footer{max-width:640px;margin:0 auto;padding:0 16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:16px;padding-bottom:8px}
+a{color:var(--accent)}
+.sw{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px}
+.sw button{border:0;background:none;color:var(--muted);font:600 14px/1 inherit;padding:8px 12px;border-radius:7px;cursor:pointer}
+.sw button[aria-pressed="true"]{background:var(--accent);color:#fff}
+section{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:8px 20px 20px;margin:12px 0}
+h1{font-size:28px;line-height:1.2;margin:16px 0 4px}
+h2{font-size:18px;margin:24px 0 4px}
+p,li{margin:6px 0}
+ul{padding-inline-start:22px}
+.upd{color:var(--muted);font-size:14px;margin:0 0 8px}
+footer{padding-top:8px;padding-bottom:32px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <a href="/">&larr; Iron Log</a>
+  <div class="sw" role="group" aria-label="Language">
+    <button type="button" data-l="en" aria-pressed="true">English</button>
+    <button type="button" data-l="ar" aria-pressed="false">العربية</button>
+  </div>
+</header>
+<main>
+<section lang="en" data-l="en">
+<h1>Credits and licences</h1>
+<p class="upd">Iron Log uses the work of others. This page names each source and the terms it comes with.</p>
+<h2>Exercise animations and pictures</h2>
+<p>© Gym visual, <a href="https://gymvisual.com/" target="_blank" rel="noopener">https://gymvisual.com/</a>. The exercise animations and pictures belong to Gym visual. The dataset we load them from states that it redistributes them with Gym visual's permission, at 180×180 pixels only, and requires this copyright notice wherever they are shown. Their use is governed by <a href="https://gymvisual.com/content/3-terms-and-conditions-of-use" target="_blank" rel="noopener">Gym visual's Terms and Conditions of Use</a>. They are shown as they are (small and unedited) and are not licensed to you by Iron Log.</p>
+<h2>Exercise names, muscles, equipment and how-to text</h2>
+<p>From the open dataset hasaneyldrm/exercises-dataset (<a href="https://github.com/hasaneyldrm/exercises-dataset" target="_blank" rel="noopener">github.com/hasaneyldrm/exercises-dataset</a>), released under the MIT License. Names, translations and joint tags were adapted for this app. The licence text:</p>
+<pre>MIT License
+
+Copyright (c) 2026 Hasan Emir Yıldırım
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation and data files (the "Software"),
+to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</pre>
+<h2>Packaged food data</h2>
+<p>When you scan a barcode, only its digits are sent to Open Food Facts (<a href="https://world.openfoodfacts.org/" target="_blank" rel="noopener">openfoodfacts.org</a>). The product data comes from the Open Food Facts database, made available under the Open Database Licence (ODbL), and its contents under the Database Contents Licence.</p>
+<h2>Barcode reader</h2>
+<p>On phones without a built-in barcode reader, Iron Log loads ZXing (@zxing/library 0.21.3), licensed under the Apache License 2.0. The licence file is shipped with it.</p>
+<h2>Fonts</h2>
+<p>Fonts are served by Google Fonts and are open-source fonts licensed under the SIL Open Font License or the Apache License.</p>
+</section>
+<section lang="ar" dir="rtl" data-l="ar" hidden>
+<h1>الحقوق والتراخيص</h1>
+<p class="upd">يستخدم Iron Log أعمال آخرين. تذكر هذه الصفحة كل مصدر وشروطه.</p>
+<h2>رسوم وصور التمارين</h2>
+<p>© Gym visual، <a href="https://gymvisual.com/" target="_blank" rel="noopener">https://gymvisual.com/</a>. الرسوم المتحركة والصور ملك لشركة Gym visual. تذكر مجموعة البيانات التي نحمّلها منها أنها تعيد نشرها بإذن من Gym visual وبحجم 180×180 بكسل فقط، وتشترط إظهار إشعار الحقوق هذا أينما عُرضت. يخضع استخدامها لـ<a href="https://gymvisual.com/content/3-terms-and-conditions-of-use" target="_blank" rel="noopener">شروط وأحكام استخدام Gym visual</a>. تُعرض كما هي (صغيرة وبلا تعديل) ولا يمنحك Iron Log ترخيصًا بها.</p>
+<h2>أسماء التمارين والعضلات والأدوات ونصوص الشرح</h2>
+<p>من مجموعة البيانات المفتوحة hasaneyldrm/exercises-dataset (<a href="https://github.com/hasaneyldrm/exercises-dataset" target="_blank" rel="noopener">github.com/hasaneyldrm/exercises-dataset</a>) المرخّصة برخصة MIT. عُدّلت الأسماء والترجمات ووسوم المفاصل لتناسب التطبيق. نص الرخصة بالإنجليزية في القسم الإنجليزي من هذه الصفحة.</p>
+<h2>بيانات الأطعمة المعبأة</h2>
+<p>عند مسح باركود تُرسل أرقامه فقط إلى Open Food Facts. بيانات المنتج من قاعدة Open Food Facts المتاحة برخصة قاعدة البيانات المفتوحة (ODbL) ومحتواها برخصة محتويات قاعدة البيانات.</p>
+<h2>قارئ الباركود</h2>
+<p>على الهواتف التي لا تملك قارئ باركود مدمجًا يحمّل Iron Log مكتبة ZXing (‎@zxing/library 0.21.3‎) المرخّصة برخصة Apache 2.0، وملف الرخصة مرفق معها.</p>
+<h2>الخطوط</h2>
+<p>تُقدَّم الخطوط من Google Fonts وهي خطوط مفتوحة المصدر برخصة SIL Open Font أو Apache.</p>
+</section>
+</main>
+<footer><a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms</a></footer>
+
