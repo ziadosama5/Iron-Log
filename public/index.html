@@ -584,7 +584,7 @@ import { cleanDigits, canonicalBarcode, productUrl, normalizeProduct } from "./b
 import { FOODS, searchFoods, portionTotals, mealTotals, mealNumbers, asEntry, makeMyFood, keepOtherServings, recentFoods } from "./food-table.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
 import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth, cacheKey } from "./overview.js";
-import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
+import { LIB, CURATED_LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 import { gifUrl, stillUrl, gifUrls, stillUrls } from "./exercise-gifs.js";
 import { LOOKS, cleanLook, savedLookOf, suggestLook, shouldPickLook, accentPresetsFor, defaultAccentFor, envFor } from "./looks.js";
@@ -2194,7 +2194,7 @@ function insights(){
     if(wk.length<2) add("Training","warn",tn("{n} workout in the last 7 days","{n} workouts in the last 7 days",wk.length),t("Training each muscle about twice a week gives the best results for most people. Aim for 3–4 sessions a week."));
     else add("Training","good",tn("{n} workout in the last 7 days","{n} workouts in the last 7 days",wk.length),t("Good consistency."));
     if(lows.length) add("Training","warn",t("Under-trained muscle groups"),t("These got fewer than 6 hard sets this week: <b>{list}</b>. About 10–20 sets per muscle per week works best for growth.",{list:names(lows,"muscle")}),
-      lows.flatMap(m=>avoidFilter(gymFilter(LIB[m],state.settings.gym),state.settings.avoid).slice(0,2)).filter((n,i,a)=>a.indexOf(n)===i));
+      lows.flatMap(m=>avoidFilter(gymFilter(CURATED_LIB[m],state.settings.gym),state.settings.avoid).slice(0,2)).filter((n,i,a)=>a.indexOf(n)===i));
   }
 
   // Lift progress

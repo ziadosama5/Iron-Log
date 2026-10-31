@@ -62,7 +62,7 @@ test("every section is translated (PENDING is empty)", () => {
 });
 
 // ---- names of library things (Task 7) ----
-import { ALL_EX, MUSCLES, TEMPLATES } from "../public/exercise-library.js";
+import { ALL_EX, MUSCLES, TEMPLATES, isCurated } from "../public/exercise-library.js";
 import { BADGES } from "../public/achievements.js";
 import { CARDIO_TYPES, INTENSITIES } from "../public/energy.js";
 
@@ -73,7 +73,7 @@ const needNames = (kind, list) => {
 };
 
 test("every exercise, muscle, template, day and badge has an Arabic name", () => {
-  needNames("ex", ALL_EX);
+  needNames("ex", ALL_EX.filter(isCurated));   // the dataset exercises get Arabic names in Task 4
   needNames("muscle", MUSCLES);
   needNames("template", TEMPLATES.map(t => t.name));
   needNames("tplnote", TEMPLATES.map(t => t.note));
@@ -93,7 +93,7 @@ test("cardio, intensity, goal, weekday, meal and level names exist", () => {
 });
 
 test("Arabic exercise names are unique", () => {
-  const v = ALL_EX.map(n => AR.names.ex[n]);
+  const v = ALL_EX.filter(isCurated).map(n => AR.names.ex[n]);
   assert.equal(new Set(v).size, v.length);
 });
 

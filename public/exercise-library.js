@@ -1,4 +1,5 @@
 // Exercise library and split templates. Shared by the app and the unit tests.
+import { CATALOG } from "./exercise-catalog.js";
 
 // Equipment a gym can have. `group` is how the My Gym checklist will lay them out.
 export const EQUIPMENT = [
@@ -62,7 +63,7 @@ export const EQUIPMENT = [
 // Order inside a group is the order suggestions show first (popular first).
 const GROUPS = ["Chest", "Back", "Shoulders", "Biceps", "Triceps", "Quads", "Hamstrings & Glutes", "Calves", "Core"];
 const X = (group, rows) => rows.map(([name, ...eq]) => ({ name, group, eq }));
-export const EXERCISES = [
+const CURATED_ROWS = [
   ...X("Chest", [
     ["Bench Press", "barbell", "bench"], ["Incline Barbell Press", "barbell", "bench"], ["Incline Dumbbell Press", "dumbbell", "bench"],
     ["Dumbbell Bench Press", "dumbbell", "bench"], ["Machine Chest Press", "chest-press"], ["Dumbbell Fly", "dumbbell", "bench"],
@@ -126,6 +127,13 @@ export const EXERCISES = [
     ["Machine Crunch", "ab-crunch-machine"], ["Decline Sit-up", "decline-bench"], ["Sit-up"], ["Reverse Crunch"], ["Bicycle Crunch"], ["V-up"],
     ["Flutter Kick"], ["Mountain Climber"], ["Dead Bug"], ["Cable Woodchop", "cable"], ["Pallof Press", "cable"], ["Dumbbell Side Bend", "dumbbell"]])
 ];
+// The 183 reviewed exercises (CURATED_ROWS) come first in every group; the dataset exercises (exercise-catalog.js, generated) follow,
+// alphabetically. Generated plans and Coach suggestions use only the curated ones (CURATED_LIB).
+export const CURATED = new Set(CURATED_ROWS.map(e => e.name.toLowerCase()));
+export const isCurated = name => CURATED.has(String(name).toLowerCase());
+const CATALOG_ROWS = CATALOG.map(([name, group, eq]) => ({ name, group, eq }));
+export const EXERCISES = GROUPS.flatMap(g => [...CURATED_ROWS.filter(e => e.group === g).map(e => ({ ...e, curated: true })), ...CATALOG_ROWS.filter(e => e.group === g).map(e => ({ ...e, curated: false }))]);
+export const CURATED_LIB = Object.fromEntries(GROUPS.map(g => [g, CURATED_ROWS.filter(e => e.group === g).map(e => e.name)]));
 export const LIB = Object.fromEntries(GROUPS.map(g => [g, EXERCISES.filter(e => e.group === g).map(e => e.name)]));
 // Exercises merged into another one. Saved days and workouts keep the old name; these only decide
 // which info/muscle to show for it and what a typed old name turns into.

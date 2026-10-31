@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { LIB, MUSCLES, ALL_EX, ALIASES, resolveAlias, TEMPLATES, muscleOf, fillFocus, fillAllFocus, migrateProgram, PROGRAM_VERSION } from "../public/exercise-library.js";
+import { LIB, CURATED_LIB, MUSCLES, ALL_EX, ALIASES, resolveAlias, TEMPLATES, muscleOf, fillFocus, fillAllFocus, migrateProgram, PROGRAM_VERSION } from "../public/exercise-library.js";
 
 test("every template day is tagged with the muscle group of each exercise", () => {
   for (const t of TEMPLATES) for (const d of t.days) for (const ex of d.exercises) {
@@ -95,7 +95,7 @@ test("equipment tags agree with the words in the exercise name", () => {
   const word = { Smith: "smith", Cable: "cable", Dumbbell: "dumbbell", Barbell: "barbell", "EZ-bar": "ez-bar", Kettlebell: "kettlebell", "Trap Bar": "trap-bar" };
   const machineIds = new Set(EQUIPMENT.filter(e => e.group === "machine").map(e => e.id));
   const machineName = /Machine|Pec Deck|Leg Press|Hack Squat|Leg Extension|Lat Pulldown|Close-grip Pulldown|Reverse-grip Pulldown|Assisted|T-bar|Leg Curl|^Hip (Abduction|Adduction)|^(Standing|Seated) Calf/;
-  for (const x of EXERCISES) {
+  for (const x of EXERCISES.filter(x => x.curated)) {   // the catalog rows come from the dataset's own equipment field; tests/catalog.test.js and the GIF tests cover them
     for (const [w, id] of Object.entries(word)) if (x.name.includes(w)) assert.ok(x.eq.includes(id), `${x.name} needs ${id}`);
     if (machineName.test(x.name) && !/Smith|Cable|Dumbbell|Barbell/.test(x.name)) assert.ok(x.eq.some(q => machineIds.has(q)), `${x.name} needs a machine`);
   }
@@ -125,13 +125,11 @@ test("ALIASES is empty and resolveAlias leaves every name alone, even names like
 
 // ---- library 2.0 final shape ----
 test("library 2.0: 183 exercises in the agreed per-group counts, every equipment item used", () => {
-  assert.equal(EXERCISES.length, 183);
+  assert.equal(EXERCISES.filter(x => x.curated).length, 183);
   const counts = { "Chest": 22, "Back": 28, "Shoulders": 22, "Biceps": 16, "Triceps": 18, "Quads": 23, "Hamstrings & Glutes": 24, "Calves": 8, "Core": 22 };
-  for (const [g, n] of Object.entries(counts)) assert.equal(LIB[g].length, n, g);
+  for (const [g, n] of Object.entries(counts)) assert.equal(CURATED_LIB[g].length, n, g);
   const used = new Set(EXERCISES.flatMap(x => x.eq));
-  // the 14 ids added for the dataset exercises are used once the catalog is merged (the library-expansion Task 2 removes this exemption)
-  const PENDING = new Set(["olympic-barbell","weight-plate","stability-ball","bosu-ball","medicine-ball","resistance-band","battle-rope","foam-roller","wheel-roller","tire","sledgehammer","sled-machine","lever-machine","ergometer"]);
-  assert.deepEqual(EQUIPMENT.filter(e => !used.has(e.id) && !PENDING.has(e.id)).map(e => e.id), [], "every equipment item is needed by at least one exercise");
+  assert.deepEqual(EQUIPMENT.filter(e => !used.has(e.id)).map(e => e.id), [], "every equipment item is needed by at least one exercise");
 });
 
 test("library 2.0: the four exercises that were merged earlier are their own exercises again", () => {

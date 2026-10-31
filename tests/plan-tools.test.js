@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { LIB, MUSCLES, muscleOf, gymFilter, GYM_PRESETS } from "../public/exercise-library.js";
+import { LIB, CURATED_LIB, MUSCLES, muscleOf, gymFilter, GYM_PRESETS } from "../public/exercise-library.js";
 import { AR } from "../public/lang-ar.js";
 import { EXPERIENCE, GOAL_DEFAULT_DAYS, movementFamily, buildPlan, splitOptions, SPLIT_FAMILIES, splitFor } from "../public/plan-tools.js";
 
@@ -168,7 +168,7 @@ test("every muscle a day trains keeps at least one exercise when the gym can wor
     const p = buildPlan({ goal, daysPerWeek, experience, gym, splitId: so.id });
     for (const d of p.days) {
       for (const m of DAY_MUSCLES[baseName(d.name)]) {
-        if (gymFilter(LIB[m], gym).length > 0) assert.ok(d.focus.includes(m), [d.name, m, goal, daysPerWeek, experience, gym ? gym.length : "all"].join("/"));
+        if (gymFilter(CURATED_LIB[m], gym).length > 0) assert.ok(d.focus.includes(m), [d.name, m, goal, daysPerWeek, experience, gym ? gym.length : "all"].join("/"));
       }
     }
   }

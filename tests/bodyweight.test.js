@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { ALL_EX } from "../public/exercise-library.js";
+import { ALL_EX, isCurated } from "../public/exercise-library.js";
 import { BW_STATIONS, bwDefault, isHold, bwFor, cleanBodyweight, loadKg, bwScore, bestBwSet, formatLoad } from "../public/bodyweight.js";
 
 const PINNED = ["Push-up", "Chest Dip", "Incline Push-up", "Decline Push-up", "Pull-up", "Chin-up", "Back Extension", "Wide-grip Pull-up", "Assisted Pull-up",
@@ -9,7 +9,7 @@ const PINNED = ["Push-up", "Chest Dip", "Incline Push-up", "Decline Push-up", "P
   "Hanging Knee Raise", "Captain's Chair Leg Raise", "Decline Sit-up", "Sit-up", "Reverse Crunch", "Bicycle Crunch", "V-up", "Flutter Kick", "Mountain Climber", "Dead Bug"];
 
 test("the bodyweight exercises of the library are exactly the pinned list (a library change must be a conscious one)", () => {
-  assert.deepEqual(ALL_EX.filter(bwDefault).sort(), [...PINNED].sort());
+  assert.deepEqual(ALL_EX.filter(isCurated).filter(bwDefault).sort(), [...PINNED].sort());   // the 183 reviewed exercises; the catalog has its own tests
   assert.equal(PINNED.length, 38);
   assert.equal(BW_STATIONS.length, 9);
 });

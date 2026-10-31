@@ -2,11 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { INFO, infoFor } from "../public/exercise-info.js";
-import { ALL_EX, MUSCLES, muscleOf } from "../public/exercise-library.js";
+import { ALL_EX, MUSCLES, muscleOf, isCurated, CURATED } from "../public/exercise-library.js";
 
-test("every library exercise has an entry", () => { for (const n of ALL_EX) assert.ok(infoFor(n), n); });
+test("every curated library exercise has an entry (the dataset ones get a lazily loaded How-to instead)", () => { for (const n of ALL_EX.filter(isCurated)) assert.ok(infoFor(n), n); });
 
-test("no entries for unknown exercises", () => assert.equal(Object.keys(INFO).length, ALL_EX.length));
+test("no entries for unknown exercises", () => assert.equal(Object.keys(INFO).length, CURATED.size));
 
 test("tips: 2-4 each, short, no trailing period", () => {
   for (const e of Object.values(INFO)) {

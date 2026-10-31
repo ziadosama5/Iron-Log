@@ -1,0 +1,6788 @@
+{
+ "Archer Push Up": {
+  "dataset": "archer push up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Assisted Chest Dip (Kneeling)": {
+  "dataset": "assisted chest dip (kneeling)",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Assisted Seated Pectoralis Major Stretch with Stability Ball": {
+  "dataset": "assisted seated pectoralis major stretch with stability ball",
+  "equipment": "assisted",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Assisted Wide-grip Chest Dip (Kneeling)": {
+  "dataset": "assisted wide-grip chest dip (kneeling)",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Band Bench Press": {
+  "dataset": "band bench press",
+  "equipment": "band",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Band One Arm Twisting Chest Press": {
+  "dataset": "band one arm twisting chest press",
+  "equipment": "band",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Barbell Decline Pullover": {
+  "dataset": "barbell decline pullover",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Barbell Decline Wide-grip Press": {
+  "dataset": "barbell decline wide-grip press",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Barbell Front Raise and Pullover": {
+  "dataset": "barbell front raise and pullover",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Barbell Guillotine Bench Press": {
+  "dataset": "barbell guillotine bench press",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Barbell Reverse Grip Decline Bench Press": {
+  "dataset": "barbell reverse grip decline bench press",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Barbell Reverse Grip Incline Bench Press": {
+  "dataset": "barbell reverse grip incline bench press",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Barbell Wide Bench Press": {
+  "dataset": "barbell wide bench press",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Barbell Wide Reverse Grip Bench Press": {
+  "dataset": "barbell wide reverse grip bench press",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Behind Head Chest Stretch": {
+  "dataset": "behind head chest stretch",
+  "equipment": "assisted",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Bench Press": {
+  "dataset": "cable bench press",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Cross-over Variation": {
+  "dataset": "cable cross-over variation",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Decline Fly": {
+  "dataset": "cable decline fly",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Decline One Arm Press": {
+  "dataset": "cable decline one arm press",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Decline Press": {
+  "dataset": "cable decline press",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Incline Bench Press": {
+  "dataset": "cable incline bench press",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Incline Fly": {
+  "dataset": "cable incline fly",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Incline Fly (on Stability Ball)": {
+  "dataset": "cable incline fly (on stability ball)",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Middle Fly": {
+  "dataset": "cable middle fly",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable One Arm Decline Chest Fly": {
+  "dataset": "cable one arm decline chest fly",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable One Arm Fly on Exercise Ball": {
+  "dataset": "cable one arm fly on exercise ball",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable One Arm Incline Fly on Exercise Ball": {
+  "dataset": "cable one arm incline fly on exercise ball",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable One Arm Incline Press": {
+  "dataset": "cable one arm incline press",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable One Arm Incline Press on Exercise Ball": {
+  "dataset": "cable one arm incline press on exercise ball",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable One Arm Lateral Bent-over": {
+  "dataset": "cable one arm lateral bent-over",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable One Arm Press on Exercise Ball": {
+  "dataset": "cable one arm press on exercise ball",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Press on Exercise Ball": {
+  "dataset": "cable press on exercise ball",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Seated Chest Press": {
+  "dataset": "cable seated chest press",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Standing Fly": {
+  "dataset": "cable standing fly",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Cable Standing Up Straight Crossovers": {
+  "dataset": "cable standing up straight crossovers",
+  "equipment": "cable",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Chest and Front of Shoulder Stretch": {
+  "dataset": "chest and front of shoulder stretch",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Chest Dip (on Dip-pull-up Cage)": {
+  "dataset": "chest dip (on dip-pull-up cage)",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Chest Dip on Straight Bar": {
+  "dataset": "chest dip on straight bar",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Chest Stretch with Exercise Ball": {
+  "dataset": "chest stretch with exercise ball",
+  "equipment": "stability ball",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Chest Tap Push-up": {
+  "dataset": "chest tap push-up (male)",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Clap Push Up": {
+  "dataset": "clap push up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Clock Push-up": {
+  "dataset": "clock push-up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Deep Push Up": {
+  "dataset": "deep push up",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Drop Push Up": {
+  "dataset": "drop push up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Around Pullover": {
+  "dataset": "dumbbell around pullover",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Decline Fly": {
+  "dataset": "dumbbell decline fly",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Decline Hammer Press": {
+  "dataset": "dumbbell decline hammer press",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Decline One Arm Fly": {
+  "dataset": "dumbbell decline one arm fly",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Decline Twist Fly": {
+  "dataset": "dumbbell decline twist fly",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Fly on Exercise Ball": {
+  "dataset": "dumbbell fly on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Incline Alternate Press": {
+  "dataset": "dumbbell incline alternate press",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Incline Breeding": {
+  "dataset": "dumbbell incline breeding",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Incline Fly on Exercise Ball": {
+  "dataset": "dumbbell incline fly on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Incline Hammer Press": {
+  "dataset": "dumbbell incline hammer press",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Incline One Arm Fly": {
+  "dataset": "dumbbell incline one arm fly",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Incline One Arm Fly on Exercise Ball": {
+  "dataset": "dumbbell incline one arm fly on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Incline One Arm Press": {
+  "dataset": "dumbbell incline one arm press",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Incline One Arm Press on Exercise Ball": {
+  "dataset": "dumbbell incline one arm press on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Incline Palm-in Press": {
+  "dataset": "dumbbell incline palm-in press",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Incline Press on Exercise Ball": {
+  "dataset": "dumbbell incline press on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Incline Twisted Flyes": {
+  "dataset": "dumbbell incline twisted flyes",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Lying Hammer Press": {
+  "dataset": "dumbbell lying hammer press",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Lying One Arm Press": {
+  "dataset": "dumbbell lying one arm press v. 2",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Lying Pullover on Exercise Ball": {
+  "dataset": "dumbbell lying pullover on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell One Arm Bench Fly": {
+  "dataset": "dumbbell one arm bench fly",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell One Arm Chest Fly on Exercise Ball": {
+  "dataset": "dumbbell one arm chest fly on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell One Arm Decline Chest Press": {
+  "dataset": "dumbbell one arm decline chest press",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell One Arm Fly on Exercise Ball": {
+  "dataset": "dumbbell one arm fly on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell One Arm Incline Chest Press": {
+  "dataset": "dumbbell one arm incline chest press",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell One Arm Press on Exercise Ball": {
+  "dataset": "dumbbell one arm press on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell One Arm Pullover on Exercise Ball": {
+  "dataset": "dumbbell one arm pullover on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell One Arm Reverse Grip Press": {
+  "dataset": "dumbbell one arm reverse grip press",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell One Leg Fly on Exercise Ball": {
+  "dataset": "dumbbell one leg fly on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Press on Exercise Ball": {
+  "dataset": "dumbbell press on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Pullover Hip Extension on Exercise Ball": {
+  "dataset": "dumbbell pullover hip extension on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Pullover on Exercise Ball": {
+  "dataset": "dumbbell pullover on exercise ball",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Reverse Bench Press": {
+  "dataset": "dumbbell reverse bench press",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dumbbell Straight Arm Pullover": {
+  "dataset": "dumbbell straight arm pullover",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Dynamic Chest Stretch": {
+  "dataset": "dynamic chest stretch (male)",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Exercise Ball Pike Push Up": {
+  "dataset": "exercise ball pike push up",
+  "equipment": "stability ball",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Floor Fly (with Barbell)": {
+  "dataset": "floor fly (with barbell)",
+  "equipment": "barbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Full Planche Push-up": {
+  "dataset": "full planche push-up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Hands Bike": {
+  "dataset": "hands bike",
+  "equipment": "upper body ergometer",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Hyght Dumbbell Fly": {
+  "dataset": "hyght dumbbell fly",
+  "equipment": "dumbbell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Incline Push Up Depth Jump": {
+  "dataset": "incline push up depth jump",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Incline Push-up (on Box)": {
+  "dataset": "incline push-up (on box)",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Incline Reverse Grip Push-up": {
+  "dataset": "incline reverse grip push-up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Isometric Chest Squeeze": {
+  "dataset": "isometric chest squeeze",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Isometric Wipers": {
+  "dataset": "isometric wipers",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Kettlebell Alternating Press on Floor": {
+  "dataset": "kettlebell alternating press on floor",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Kettlebell Extended Range One Arm Press on Floor": {
+  "dataset": "kettlebell extended range one arm press on floor",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Kettlebell One Arm Floor Press": {
+  "dataset": "kettlebell one arm floor press",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Kettlebell Plyo Push-up": {
+  "dataset": "kettlebell plyo push-up",
+  "equipment": "kettlebell",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Kneeling Push-up": {
+  "dataset": "kneeling push-up (male)",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Korean Dips": {
+  "dataset": "korean dips",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Machine Decline Chest Press": {
+  "dataset": "lever decline chest press",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Machine Inner Chest Press": {
+  "dataset": "machine inner chest press",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Machine Standing Chest Press": {
+  "dataset": "lever standing chest press",
+  "equipment": "leverage machine",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Medicine Ball Chest Pass": {
+  "dataset": "medicine ball chest pass",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Medicine Ball Chest Push from 3 Point Stance": {
+  "dataset": "medicine ball chest push from 3 point stance",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Medicine Ball Chest Push Multiple Response": {
+  "dataset": "medicine ball chest push multiple response",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Medicine Ball Chest Push Single Response": {
+  "dataset": "medicine ball chest push single response",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Medicine Ball Chest Push with Run Release": {
+  "dataset": "medicine ball chest push with run release",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Modified Hindu Push-up": {
+  "dataset": "modified hindu push-up (male)",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Plyo Push Up": {
+  "dataset": "plyo push up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Push and Pull Bodyweight": {
+  "dataset": "push and pull bodyweight",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Push Up on Bosu Ball": {
+  "dataset": "push up on bosu ball",
+  "equipment": "bosu ball",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Push-up (Bosu Ball)": {
+  "dataset": "push-up (bosu ball)",
+  "equipment": "bosu ball",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Push-up (on Stability Ball)": {
+  "dataset": "push-up (on stability ball)",
+  "equipment": "stability ball",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Push-up (Wall)": {
+  "dataset": "push-up (wall) v. 2",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Push-up Medicine Ball": {
+  "dataset": "push-up medicine ball",
+  "equipment": "medicine ball",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Push-up Plus": {
+  "dataset": "push-up plus",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Raise Single Arm Push-up": {
+  "dataset": "raise single arm push-up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Resistance Band Seated Chest Press": {
+  "dataset": "resistance band seated chest press",
+  "equipment": "resistance band",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Roller Seated Shoulder Flexor Depresor Retractor": {
+  "dataset": "roller seated shoulder flexor depresor retractor",
+  "equipment": "roller",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Roller Seated Single Leg Shoulder Flexor Depresor Retractor": {
+  "dataset": "roller seated single leg shoulder flexor depresor retractor",
+  "equipment": "roller",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Shoulder Tap Push-up": {
+  "dataset": "shoulder tap push-up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Single Arm Push-up": {
+  "dataset": "single arm push-up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Smith Machine Decline Bench Press": {
+  "dataset": "smith decline bench press",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Smith Machine Decline Reverse-grip Press": {
+  "dataset": "smith decline reverse-grip press",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Smith Machine Incline Reverse-grip Press": {
+  "dataset": "smith incline reverse-grip press",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Smith Machine Reverse Decline Close Grip Bench Press": {
+  "dataset": "smith machine reverse decline close grip bench press",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Smith Machine Reverse-grip Press": {
+  "dataset": "smith reverse-grip press",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Smith Machine Wide Grip Bench Press": {
+  "dataset": "smith wide grip bench press",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Smith Machine Wide Grip Decline Bench Press": {
+  "dataset": "smith wide grip decline bench press",
+  "equipment": "smith machine",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Superman Push-up": {
+  "dataset": "superman push-up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Suspended Push-up": {
+  "dataset": "suspended push-up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Weighted Drop Push Up": {
+  "dataset": "weighted drop push up",
+  "equipment": "weighted",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Weighted Straight Bar Dip": {
+  "dataset": "weighted straight bar dip",
+  "equipment": "weighted",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Weighted Svend Press": {
+  "dataset": "weighted svend press",
+  "equipment": "weighted",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Wide Hand Push Up": {
+  "dataset": "wide hand push up",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Wide-grip Chest Dip on High Parallel Bars": {
+  "dataset": "wide-grip chest dip on high parallel bars",
+  "equipment": "body weight",
+  "target": "pectorals",
+  "category": "chest"
+ },
+ "Alternate Lateral Pulldown": {
+  "dataset": "alternate lateral pulldown",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Archer Pull Up": {
+  "dataset": "archer pull up",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Assisted Parallel Close Grip Pull-up": {
+  "dataset": "assisted parallel close grip pull-up",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "category": "back"
+ },
+ "Assisted Standing Chin-up": {
+  "dataset": "assisted standing chin-up",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "category": "back"
+ },
+ "Assisted Standing Pull-up": {
+  "dataset": "assisted standing pull-up",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "category": "back"
+ },
+ "Back Extension on Exercise Ball": {
+  "dataset": "back extension on exercise ball",
+  "equipment": "stability ball",
+  "target": "spine",
+  "category": "back"
+ },
+ "Back Lever": {
+  "dataset": "back lever",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Back Pec Stretch": {
+  "dataset": "back pec stretch",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Band Assisted Pull-up": {
+  "dataset": "band assisted pull-up",
+  "equipment": "band",
+  "target": "lats",
+  "category": "back"
+ },
+ "Band Close-grip Pulldown": {
+  "dataset": "band close-grip pulldown",
+  "equipment": "band",
+  "target": "lats",
+  "category": "back"
+ },
+ "Band Fixed Back Close Grip Pulldown": {
+  "dataset": "band fixed back close grip pulldown",
+  "equipment": "band",
+  "target": "lats",
+  "category": "back"
+ },
+ "Band Fixed Back Underhand Pulldown": {
+  "dataset": "band fixed back underhand pulldown",
+  "equipment": "band",
+  "target": "lats",
+  "category": "back"
+ },
+ "Band Kneeling One Arm Pulldown": {
+  "dataset": "band kneeling one arm pulldown",
+  "equipment": "band",
+  "target": "lats",
+  "category": "back"
+ },
+ "Band One Arm Standing Low Row": {
+  "dataset": "band one arm standing low row",
+  "equipment": "band",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Band One Arm Twisting Seated Row": {
+  "dataset": "band one arm twisting seated row",
+  "equipment": "band",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Band Shrug": {
+  "dataset": "band shrug",
+  "equipment": "band",
+  "target": "traps",
+  "category": "back"
+ },
+ "Band Straight Leg Deadlift": {
+  "dataset": "band straight leg deadlift",
+  "equipment": "band",
+  "target": "spine",
+  "category": "back"
+ },
+ "Band Underhand Pulldown": {
+  "dataset": "band underhand pulldown",
+  "equipment": "band",
+  "target": "lats",
+  "category": "back"
+ },
+ "Barbell Bent Arm Pullover": {
+  "dataset": "barbell bent arm pullover",
+  "equipment": "barbell",
+  "target": "lats",
+  "category": "back"
+ },
+ "Barbell Decline Bent Arm Pullover": {
+  "dataset": "barbell decline bent arm pullover",
+  "equipment": "barbell",
+  "target": "lats",
+  "category": "back"
+ },
+ "Barbell Decline Wide-grip Pullover": {
+  "dataset": "barbell decline wide-grip pullover",
+  "equipment": "barbell",
+  "target": "lats",
+  "category": "back"
+ },
+ "Barbell Incline Row": {
+  "dataset": "barbell incline row",
+  "equipment": "barbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Barbell One Arm Bent over Row": {
+  "dataset": "barbell one arm bent over row",
+  "equipment": "barbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Barbell Pendlay Row": {
+  "dataset": "barbell pendlay row",
+  "equipment": "barbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Barbell Pullover": {
+  "dataset": "barbell pullover",
+  "equipment": "barbell",
+  "target": "lats",
+  "category": "back"
+ },
+ "Barbell Pullover to Press": {
+  "dataset": "barbell pullover to press",
+  "equipment": "barbell",
+  "target": "lats",
+  "category": "back"
+ },
+ "Barbell Reverse Grip Incline Bench Row": {
+  "dataset": "barbell reverse grip incline bench row",
+  "equipment": "barbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Bench Pull-ups": {
+  "dataset": "bench pull-ups",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Bodyweight Squatting Row": {
+  "dataset": "bodyweight squatting row",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Bodyweight Squatting Row (with Towel)": {
+  "dataset": "bodyweight squatting row (with towel)",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Bodyweight Standing Close-grip One Arm Row": {
+  "dataset": "bodyweight standing close-grip one arm row",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Bodyweight Standing Close-grip Row": {
+  "dataset": "bodyweight standing close-grip row",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Bodyweight Standing One Arm Row": {
+  "dataset": "bodyweight standing one arm row",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Bodyweight Standing One Arm Row (with Towel)": {
+  "dataset": "bodyweight standing one arm row (with towel)",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Bodyweight Standing Row": {
+  "dataset": "bodyweight standing row",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Bodyweight Standing Row (with Towel)": {
+  "dataset": "bodyweight standing row (with towel)",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Bar Lateral Pulldown": {
+  "dataset": "cable bar lateral pulldown",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Cross-over Lateral Pulldown": {
+  "dataset": "cable cross-over lateral pulldown",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Decline Seated Wide-grip Row": {
+  "dataset": "cable decline seated wide-grip row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Floor Seated Wide-grip Row": {
+  "dataset": "cable floor seated wide-grip row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable High Row (Kneeling)": {
+  "dataset": "cable high row (kneeling)",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Incline Bench Row": {
+  "dataset": "cable incline bench row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Incline Pushdown": {
+  "dataset": "cable incline pushdown",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Lateral Pulldown (with Rope Attachment)": {
+  "dataset": "cable lateral pulldown (with rope attachment)",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Lateral Pulldown with V-bar": {
+  "dataset": "cable lateral pulldown with v-bar",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Low Seated Row": {
+  "dataset": "cable low seated row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Lying Extension Pullover (with Rope Attachment)": {
+  "dataset": "cable lying extension pullover (with rope attachment)",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable One Arm Pulldown": {
+  "dataset": "cable one arm pulldown",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable One Arm Straight Back High Row (Kneeling)": {
+  "dataset": "cable one arm straight back high row (kneeling)",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Palm Rotational Row": {
+  "dataset": "cable palm rotational row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Pulldown": {
+  "dataset": "cable pulldown",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Pulldown (Pro Lat Bar)": {
+  "dataset": "cable pulldown (pro lat bar)",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Pushdown (Straight Arm)": {
+  "dataset": "cable pushdown (straight arm) v. 2",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Rear Pulldown": {
+  "dataset": "cable rear pulldown",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Reverse-grip Straight Back Seated High Row": {
+  "dataset": "cable reverse-grip straight back seated high row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Rope Crossover Seated Row": {
+  "dataset": "cable rope crossover seated row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Rope Elevated Seated Row": {
+  "dataset": "cable rope elevated seated row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Rope Extension Incline Bench Row": {
+  "dataset": "cable rope extension incline bench row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Rope Seated Row": {
+  "dataset": "cable rope seated row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Seated High Row (V-bar)": {
+  "dataset": "cable seated high row (v-bar)",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Seated One Arm Alternate Row": {
+  "dataset": "cable seated one arm alternate row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Squat Row (with Rope Attachment)": {
+  "dataset": "cable squat row (with rope attachment)",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Standing Row (V-bar)": {
+  "dataset": "cable standing row (v-bar)",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Standing Twist Row (V-bar)": {
+  "dataset": "cable standing twist row (v-bar)",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Straight Arm Pulldown (with Rope)": {
+  "dataset": "cable straight arm pulldown (with rope)",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Straight Back Seated Row": {
+  "dataset": "cable straight back seated row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Thibaudeau Kayak Row": {
+  "dataset": "cable thibaudeau kayak row",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Twisting Pull": {
+  "dataset": "cable twisting pull",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Underhand Pulldown": {
+  "dataset": "cable underhand pulldown",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cable Upper Row": {
+  "dataset": "cable upper row",
+  "equipment": "cable",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Cable Wide Grip Rear Pulldown Behind Neck": {
+  "dataset": "cable wide grip rear pulldown behind neck",
+  "equipment": "cable",
+  "target": "lats",
+  "category": "back"
+ },
+ "Cambered Bar Lying Row": {
+  "dataset": "cambered bar lying row",
+  "equipment": "barbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Chin-ups (Narrow Parallel Grip)": {
+  "dataset": "chin-ups (narrow parallel grip)",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Close Grip Chin-up": {
+  "dataset": "close grip chin-up",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Dumbbell Decline Shrug": {
+  "dataset": "dumbbell decline shrug v. 2",
+  "equipment": "dumbbell",
+  "target": "traps",
+  "category": "back"
+ },
+ "Dumbbell Incline Shrug": {
+  "dataset": "dumbbell incline shrug",
+  "equipment": "dumbbell",
+  "target": "traps",
+  "category": "back"
+ },
+ "Dumbbell Incline Y-raise": {
+  "dataset": "dumbbell incline y-raise",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Dumbbell Lying Rear Delt Row": {
+  "dataset": "dumbbell lying rear delt row",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Dumbbell Palm Rotational Bent over Row": {
+  "dataset": "dumbbell palm rotational bent over row",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Dumbbell Reverse Grip Incline Bench One Arm Row": {
+  "dataset": "dumbbell reverse grip incline bench one arm row",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Dumbbell Reverse Grip Incline Bench Two Arm Row": {
+  "dataset": "dumbbell reverse grip incline bench two arm row",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Dumbbell Reverse Grip Row": {
+  "dataset": "dumbbell reverse grip row (female)",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Dumbbell Side Plank with Rear Fly": {
+  "dataset": "dumbbell side plank with rear fly",
+  "equipment": "dumbbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Elbow Lift - Reverse Push-up": {
+  "dataset": "elbow lift - reverse push-up",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Elevator": {
+  "dataset": "elevator",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Exercise Ball Alternating Arm Ups": {
+  "dataset": "exercise ball alternating arm ups",
+  "equipment": "stability ball",
+  "target": "lats",
+  "category": "back"
+ },
+ "Exercise Ball Back Extension with Arms Extended": {
+  "dataset": "exercise ball back extension with arms extended",
+  "equipment": "stability ball",
+  "target": "spine",
+  "category": "back"
+ },
+ "Exercise Ball Back Extension with Hands Behind Head": {
+  "dataset": "exercise ball back extension with hands behind head",
+  "equipment": "stability ball",
+  "target": "spine",
+  "category": "back"
+ },
+ "Exercise Ball Back Extension with Knees off Ground": {
+  "dataset": "exercise ball back extension with knees off ground",
+  "equipment": "stability ball",
+  "target": "spine",
+  "category": "back"
+ },
+ "Exercise Ball Back Extension with Rotation": {
+  "dataset": "exercise ball back extension with rotation",
+  "equipment": "stability ball",
+  "target": "spine",
+  "category": "back"
+ },
+ "Exercise Ball Hug": {
+  "dataset": "exercise ball hug",
+  "equipment": "stability ball",
+  "target": "spine",
+  "category": "back"
+ },
+ "Exercise Ball Lat Stretch": {
+  "dataset": "exercise ball lat stretch",
+  "equipment": "stability ball",
+  "target": "lats",
+  "category": "back"
+ },
+ "Exercise Ball Lower Back Stretch (Pyramid)": {
+  "dataset": "exercise ball lower back stretch (pyramid)",
+  "equipment": "stability ball",
+  "target": "lats",
+  "category": "back"
+ },
+ "Exercise Ball Lying Side Lat Stretch": {
+  "dataset": "exercise ball lying side lat stretch",
+  "equipment": "stability ball",
+  "target": "lats",
+  "category": "back"
+ },
+ "Exercise Ball Prone Leg Raise": {
+  "dataset": "exercise ball prone leg raise",
+  "equipment": "stability ball",
+  "target": "spine",
+  "category": "back"
+ },
+ "EZ-bar Lying Bent Arms Pullover": {
+  "dataset": "ez bar lying bent arms pullover",
+  "equipment": "ez barbell",
+  "target": "lats",
+  "category": "back"
+ },
+ "EZ-bar Reverse Grip Bent over Row": {
+  "dataset": "ez bar reverse grip bent over row",
+  "equipment": "ez barbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Front Lever Reps": {
+  "dataset": "front lever reps",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Gironda Sternum Chin": {
+  "dataset": "gironda sternum chin",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Hyperextension": {
+  "dataset": "hyperextension",
+  "equipment": "body weight",
+  "target": "spine",
+  "category": "back"
+ },
+ "Inverted Row Bent Knees": {
+  "dataset": "inverted row bent knees",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Inverted Row on Bench": {
+  "dataset": "inverted row on bench",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Inverted Row with Straps": {
+  "dataset": "inverted row with straps",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Kettlebell Alternating Renegade Row": {
+  "dataset": "kettlebell alternating renegade row",
+  "equipment": "kettlebell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Kettlebell Alternating Row": {
+  "dataset": "kettlebell alternating row",
+  "equipment": "kettlebell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Kettlebell One Arm Row": {
+  "dataset": "kettlebell one arm row",
+  "equipment": "kettlebell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Kettlebell Sumo High Pull": {
+  "dataset": "kettlebell sumo high pull",
+  "equipment": "kettlebell",
+  "target": "traps",
+  "category": "back"
+ },
+ "Kettlebell Two Arm Row": {
+  "dataset": "kettlebell two arm row",
+  "equipment": "kettlebell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Kipping Muscle Up": {
+  "dataset": "kipping muscle up",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Kneeling Lat Stretch": {
+  "dataset": "kneeling lat stretch",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "L-pull-up": {
+  "dataset": "l-pull-up",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "London Bridge": {
+  "dataset": "london bridge",
+  "equipment": "rope",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Lower Back Curl": {
+  "dataset": "lower back curl",
+  "equipment": "body weight",
+  "target": "spine",
+  "category": "back"
+ },
+ "Machine Alternating Narrow Grip Seated Row": {
+  "dataset": "lever alternating narrow grip seated row",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Machine Assisted Chin-up": {
+  "dataset": "lever assisted chin-up",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "category": "back"
+ },
+ "Machine Back Extension": {
+  "dataset": "lever back extension",
+  "equipment": "leverage machine",
+  "target": "spine",
+  "category": "back"
+ },
+ "Machine Bent over Row": {
+  "dataset": "lever bent over row",
+  "equipment": "barbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Machine Bent-over Row with V-bar": {
+  "dataset": "lever bent-over row with v-bar",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Machine Front Pulldown": {
+  "dataset": "lever front pulldown",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "category": "back"
+ },
+ "Machine Gripless Shrug": {
+  "dataset": "lever gripless shrug",
+  "equipment": "leverage machine",
+  "target": "traps",
+  "category": "back"
+ },
+ "Machine High Row": {
+  "dataset": "lever high row",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Machine Narrow Grip Seated Row": {
+  "dataset": "lever narrow grip seated row",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Machine One Arm Bent over Row": {
+  "dataset": "lever one arm bent over row",
+  "equipment": "barbell",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Machine One Arm Lateral High Row": {
+  "dataset": "lever one arm lateral high row",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Machine One Arm Lateral Wide Pulldown": {
+  "dataset": "lever one arm lateral wide pulldown",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "category": "back"
+ },
+ "Machine Pullover": {
+  "dataset": "lever pullover",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "category": "back"
+ },
+ "Machine Reverse Grip Lateral Pulldown": {
+  "dataset": "lever reverse grip lateral pulldown",
+  "equipment": "leverage machine",
+  "target": "lats",
+  "category": "back"
+ },
+ "Machine Reverse Grip Vertical Row": {
+  "dataset": "lever reverse grip vertical row",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Machine Reverse T-bar Row": {
+  "dataset": "lever reverse t-bar row",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Machine Shrug": {
+  "dataset": "lever shrug",
+  "equipment": "leverage machine",
+  "target": "traps",
+  "category": "back"
+ },
+ "Machine T-bar Reverse Grip Row": {
+  "dataset": "lever t-bar reverse grip row",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Machine Unilateral Row": {
+  "dataset": "lever unilateral row",
+  "equipment": "leverage machine",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Medicine Ball Catch and Overhead Throw": {
+  "dataset": "medicine ball catch and overhead throw",
+  "equipment": "medicine ball",
+  "target": "lats",
+  "category": "back"
+ },
+ "Medicine Ball Overhead Slam": {
+  "dataset": "medicine ball overhead slam",
+  "equipment": "medicine ball",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Mixed Grip Chin-up": {
+  "dataset": "mixed grip chin-up",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Muscle Up": {
+  "dataset": "muscle up",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Muscle-up (on Vertical Bar)": {
+  "dataset": "muscle-up (on vertical bar)",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Neck Side Stretch": {
+  "dataset": "neck side stretch",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "category": "neck"
+ },
+ "One Arm Against Wall": {
+  "dataset": "one arm against wall",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "One Arm Chin-up": {
+  "dataset": "one arm chin-up",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "One Arm Towel Row": {
+  "dataset": "one arm towel row",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Pull Up (Neutral Grip)": {
+  "dataset": "pull up (neutral grip)",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Rear Pull-up": {
+  "dataset": "rear pull-up",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Resistance Band Seated Straight Back Row": {
+  "dataset": "resistance band seated straight back row",
+  "equipment": "resistance band",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Reverse Grip Pull-up": {
+  "dataset": "reverse grip pull-up",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Rocky Pull-up Pulldown": {
+  "dataset": "rocky pull-up pulldown",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Roller Back Stretch": {
+  "dataset": "roller back stretch",
+  "equipment": "roller",
+  "target": "spine",
+  "category": "back"
+ },
+ "Roller Side Lat Stretch": {
+  "dataset": "roller side lat stretch",
+  "equipment": "roller",
+  "target": "lats",
+  "category": "back"
+ },
+ "Rope Climb": {
+  "dataset": "rope climb",
+  "equipment": "rope",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Scapula Dips": {
+  "dataset": "scapula dips",
+  "equipment": "body weight",
+  "target": "traps",
+  "category": "back"
+ },
+ "Scapular Pull-up": {
+  "dataset": "scapular pull-up",
+  "equipment": "body weight",
+  "target": "traps",
+  "category": "back"
+ },
+ "Seated Lower Back Stretch": {
+  "dataset": "seated lower back stretch",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Shoulder Grip Pull-up": {
+  "dataset": "shoulder grip pull-up",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Side Lying Floor Stretch": {
+  "dataset": "side lying floor stretch",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Side Push Neck Stretch": {
+  "dataset": "side push neck stretch",
+  "equipment": "body weight",
+  "target": "levator scapulae",
+  "category": "neck"
+ },
+ "Side-to-side Chin": {
+  "dataset": "side-to-side chin",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Skin the Cat": {
+  "dataset": "skin the cat",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Smith Machine Back Shrug": {
+  "dataset": "smith back shrug",
+  "equipment": "smith machine",
+  "target": "traps",
+  "category": "back"
+ },
+ "Smith Machine Narrow Row": {
+  "dataset": "smith narrow row",
+  "equipment": "smith machine",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Smith Machine One Arm Row": {
+  "dataset": "smith one arm row",
+  "equipment": "smith machine",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Smith Machine Reverse Grip Bent over Row": {
+  "dataset": "smith reverse grip bent over row",
+  "equipment": "smith machine",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Sphinx": {
+  "dataset": "sphinx",
+  "equipment": "body weight",
+  "target": "spine",
+  "category": "back"
+ },
+ "Spine Stretch": {
+  "dataset": "spine stretch",
+  "equipment": "body weight",
+  "target": "spine",
+  "category": "back"
+ },
+ "Standing Archer": {
+  "dataset": "standing archer",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Standing Lateral Stretch": {
+  "dataset": "standing lateral stretch",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Standing Pelvic Tilt": {
+  "dataset": "standing pelvic tilt",
+  "equipment": "body weight",
+  "target": "spine",
+  "category": "back"
+ },
+ "Suspended Row": {
+  "dataset": "suspended row",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Two Toe Touch": {
+  "dataset": "two toe touch (male)",
+  "equipment": "body weight",
+  "target": "spine",
+  "category": "back"
+ },
+ "Upper Back Stretch": {
+  "dataset": "upper back stretch",
+  "equipment": "body weight",
+  "target": "upper back",
+  "category": "back"
+ },
+ "Upward Facing Dog": {
+  "dataset": "upward facing dog",
+  "equipment": "body weight",
+  "target": "spine",
+  "category": "back"
+ },
+ "Weighted Close Grip Chin-up on Dip Cage": {
+  "dataset": "weighted close grip chin-up on dip cage",
+  "equipment": "weighted",
+  "target": "lats",
+  "category": "back"
+ },
+ "Weighted Hyperextension (on Stability Ball)": {
+  "dataset": "weighted hyperextension (on stability ball)",
+  "equipment": "weighted",
+  "target": "spine",
+  "category": "back"
+ },
+ "Weighted Muscle Up": {
+  "dataset": "weighted muscle up",
+  "equipment": "weighted",
+  "target": "lats",
+  "category": "back"
+ },
+ "Weighted Muscle Up (on Bar)": {
+  "dataset": "weighted muscle up (on bar)",
+  "equipment": "weighted",
+  "target": "lats",
+  "category": "back"
+ },
+ "Weighted One Hand Pull Up": {
+  "dataset": "weighted one hand pull up",
+  "equipment": "weighted",
+  "target": "lats",
+  "category": "back"
+ },
+ "Weighted Pull-up": {
+  "dataset": "weighted pull-up",
+  "equipment": "weighted",
+  "target": "lats",
+  "category": "back"
+ },
+ "Wide Grip Rear Pull-up": {
+  "dataset": "wide grip rear pull-up",
+  "equipment": "body weight",
+  "target": "lats",
+  "category": "back"
+ },
+ "Band Front Lateral Raise": {
+  "dataset": "band front lateral raise",
+  "equipment": "band",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Band Front Raise": {
+  "dataset": "band front raise",
+  "equipment": "band",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Band Reverse Fly": {
+  "dataset": "band reverse fly",
+  "equipment": "band",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Band Shoulder Press": {
+  "dataset": "band shoulder press",
+  "equipment": "band",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Band Standing Rear Delt Row": {
+  "dataset": "band standing rear delt row",
+  "equipment": "band",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Band Twisting Overhead Press": {
+  "dataset": "band twisting overhead press",
+  "equipment": "band",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Band Y-raise": {
+  "dataset": "band y-raise",
+  "equipment": "band",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell Front Raise": {
+  "dataset": "barbell front raise",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell One Arm Snatch": {
+  "dataset": "barbell one arm snatch",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell Rear Delt Raise": {
+  "dataset": "barbell rear delt raise",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell Seated Behind Head Military Press": {
+  "dataset": "barbell seated behind head military press",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell Seated Bradford Rocky Press": {
+  "dataset": "barbell seated bradford rocky press",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell Skier": {
+  "dataset": "barbell skier",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell Standing Bradford Press": {
+  "dataset": "barbell standing bradford press",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell Standing Close Grip Military Press": {
+  "dataset": "barbell standing close grip military press",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell Standing Front Raise over Head": {
+  "dataset": "barbell standing front raise over head",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell Standing Wide Military Press": {
+  "dataset": "barbell standing wide military press",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell Thruster": {
+  "dataset": "barbell thruster",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell Upright Row": {
+  "dataset": "barbell upright row v. 2",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Barbell Wide-grip Upright Row": {
+  "dataset": "barbell wide-grip upright row",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Battling Ropes": {
+  "dataset": "battling ropes",
+  "equipment": "rope",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable Alternate Shoulder Press": {
+  "dataset": "cable alternate shoulder press",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable Cross-over Revers Fly": {
+  "dataset": "cable cross-over revers fly",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable Forward Raise": {
+  "dataset": "cable forward raise",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable Front Shoulder Raise": {
+  "dataset": "cable front shoulder raise",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable Kneeling Rear Delt Row (with Rope)": {
+  "dataset": "cable kneeling rear delt row (with rope) (male)",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable One Arm Lateral Raise": {
+  "dataset": "cable one arm lateral raise",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable Rear Delt Row (Stirrups)": {
+  "dataset": "cable rear delt row (stirrups)",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable Seated Rear Lateral Raise": {
+  "dataset": "cable seated rear lateral raise",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable Seated Shoulder Internal Rotation": {
+  "dataset": "cable seated shoulder internal rotation",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable Shoulder Press": {
+  "dataset": "cable shoulder press",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable Standing Rear Delt Row (with Rope)": {
+  "dataset": "cable standing rear delt row (with rope)",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable Standing Shoulder External Rotation": {
+  "dataset": "cable standing shoulder external rotation",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Cable Supine Reverse Fly": {
+  "dataset": "cable supine reverse fly",
+  "equipment": "cable",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Alternate Side Press": {
+  "dataset": "dumbbell alternate side press",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Arnold Press": {
+  "dataset": "dumbbell arnold press v. 2",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Cuban Press": {
+  "dataset": "dumbbell cuban press",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Front Raise": {
+  "dataset": "dumbbell front raise v. 2",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Full Can Lateral Raise": {
+  "dataset": "dumbbell full can lateral raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Incline One Arm Lateral Raise": {
+  "dataset": "dumbbell incline one arm lateral raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Incline Raise": {
+  "dataset": "dumbbell incline raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Incline Rear Lateral Raise": {
+  "dataset": "dumbbell incline rear lateral raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Incline T-raise": {
+  "dataset": "dumbbell incline t-raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Iron Cross": {
+  "dataset": "dumbbell iron cross",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Lateral to Front Raise": {
+  "dataset": "dumbbell lateral to front raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Lying External Shoulder Rotation": {
+  "dataset": "dumbbell lying external shoulder rotation",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Lying on Floor Rear Delt Raise": {
+  "dataset": "dumbbell lying on floor rear delt raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Lying One Arm Deltoid Rear": {
+  "dataset": "dumbbell lying one arm deltoid rear",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Lying One Arm Rear Lateral Raise": {
+  "dataset": "dumbbell lying one arm rear lateral raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell One Arm Lateral Raise": {
+  "dataset": "dumbbell one arm lateral raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell One Arm Lateral Raise with Support": {
+  "dataset": "dumbbell one arm lateral raise with support",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell One Arm Reverse Fly (with Support)": {
+  "dataset": "dumbbell one arm reverse fly (with support)",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell One Arm Shoulder Press": {
+  "dataset": "dumbbell one arm shoulder press v. 2",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell One Arm Upright Row": {
+  "dataset": "dumbbell one arm upright row",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Push Press": {
+  "dataset": "dumbbell push press",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Raise": {
+  "dataset": "dumbbell raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Rear Delt Raise": {
+  "dataset": "dumbbell rear delt raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Rear Delt Row_shoulder": {
+  "dataset": "dumbbell rear delt row_shoulder",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Rear Lateral Raise": {
+  "dataset": "dumbbell rear lateral raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Rear Lateral Raise (Support Head)": {
+  "dataset": "dumbbell rear lateral raise (support head)",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Reverse Fly": {
+  "dataset": "dumbbell reverse fly",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Rotation Reverse Fly": {
+  "dataset": "dumbbell rotation reverse fly",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Scott Press": {
+  "dataset": "dumbbell scott press",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Seated Alternate Front Raise": {
+  "dataset": "dumbbell seated alternate front raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Seated Alternate Press": {
+  "dataset": "dumbbell seated alternate press",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Seated Alternate Shoulder": {
+  "dataset": "dumbbell seated alternate shoulder",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Seated Bent Arm Lateral Raise": {
+  "dataset": "dumbbell seated bent arm lateral raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Seated Front Raise": {
+  "dataset": "dumbbell seated front raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Seated Lateral Raise": {
+  "dataset": "dumbbell seated lateral raise v. 2",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Seated Shoulder Press (Parallel Grip)": {
+  "dataset": "dumbbell seated shoulder press (parallel grip)",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Side Lying One Hand Raise": {
+  "dataset": "dumbbell side lying one hand raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Single Arm Overhead Carry": {
+  "dataset": "dumbbell single arm overhead carry",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Standing Alternate Overhead Press": {
+  "dataset": "dumbbell standing alternate overhead press",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Standing Alternate Raise": {
+  "dataset": "dumbbell standing alternate raise",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Standing Around World": {
+  "dataset": "dumbbell standing around world",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Standing Front Raise Above Head": {
+  "dataset": "dumbbell standing front raise above head",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Standing One Arm Palm in Press": {
+  "dataset": "dumbbell standing one arm palm in press",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Standing Overhead Press": {
+  "dataset": "dumbbell standing overhead press",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Standing Palms in Press": {
+  "dataset": "dumbbell standing palms in press",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell Upright Shoulder External Rotation": {
+  "dataset": "dumbbell upright shoulder external rotation",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Dumbbell W-press": {
+  "dataset": "dumbbell w-press",
+  "equipment": "dumbbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "EZ-bar Anti Gravity Press": {
+  "dataset": "ez barbell anti gravity press",
+  "equipment": "ez barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell Alternating Press": {
+  "dataset": "kettlebell alternating press",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell Arnold Press": {
+  "dataset": "kettlebell arnold press",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell Double Jerk": {
+  "dataset": "kettlebell double jerk",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell Double Push Press": {
+  "dataset": "kettlebell double push press",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell Double Snatch": {
+  "dataset": "kettlebell double snatch",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell One Arm Clean and Jerk": {
+  "dataset": "kettlebell one arm clean and jerk",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell One Arm Jerk": {
+  "dataset": "kettlebell one arm jerk",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell One Arm Military Press to the Side": {
+  "dataset": "kettlebell one arm military press to the side",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell One Arm Push Press": {
+  "dataset": "kettlebell one arm push press",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell One Arm Snatch": {
+  "dataset": "kettlebell one arm snatch",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell Pirate Supper Legs": {
+  "dataset": "kettlebell pirate supper legs",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell Seated Press": {
+  "dataset": "kettlebell seated press",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell Seated Two Arm Military Press": {
+  "dataset": "kettlebell seated two arm military press",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell Seesaw Press": {
+  "dataset": "kettlebell seesaw press",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell Thruster": {
+  "dataset": "kettlebell thruster",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell Two Arm Clean": {
+  "dataset": "kettlebell two arm clean",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Kettlebell Two Arm Military Press": {
+  "dataset": "kettlebell two arm military press",
+  "equipment": "kettlebell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Landmine Lateral Raise": {
+  "dataset": "landmine lateral raise",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Left Hook. Boxing": {
+  "dataset": "left hook. boxing",
+  "equipment": "body weight",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Machine Military Press": {
+  "dataset": "lever military press",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Machine One Arm Shoulder Press": {
+  "dataset": "lever one arm shoulder press",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Machine Seated Reverse Fly (Parallel Grip)": {
+  "dataset": "lever seated reverse fly (parallel grip)",
+  "equipment": "leverage machine",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Rear Deltoid Stretch": {
+  "dataset": "rear deltoid stretch",
+  "equipment": "body weight",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Resistance Band Seated Shoulder Press": {
+  "dataset": "resistance band seated shoulder press",
+  "equipment": "resistance band",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Smith Machine Behind Neck Press": {
+  "dataset": "smith behind neck press",
+  "equipment": "smith machine",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Smith Machine Rear Delt Row": {
+  "dataset": "smith rear delt row",
+  "equipment": "smith machine",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Smith Machine Seated Shoulder Press": {
+  "dataset": "smith seated shoulder press",
+  "equipment": "smith machine",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Smith Machine Standing Behind Head Military Press": {
+  "dataset": "smith standing behind head military press",
+  "equipment": "smith machine",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Smith Machine Standing Military Press": {
+  "dataset": "smith standing military press",
+  "equipment": "smith machine",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Smith Machine Upright Row": {
+  "dataset": "smith upright row",
+  "equipment": "smith machine",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Standing Behind Neck Press": {
+  "dataset": "standing behind neck press",
+  "equipment": "barbell",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Weighted Front Raise": {
+  "dataset": "weighted front raise",
+  "equipment": "weighted",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Weighted Kneeling Step with Swing": {
+  "dataset": "weighted kneeling step with swing",
+  "equipment": "weighted",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Weighted Round Arm": {
+  "dataset": "weighted round arm",
+  "equipment": "weighted",
+  "target": "delts",
+  "category": "shoulders"
+ },
+ "Band Alternating Biceps Curl": {
+  "dataset": "band alternating biceps curl",
+  "equipment": "band",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Band Concentration Curl": {
+  "dataset": "band concentration curl",
+  "equipment": "band",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Band One Arm Overhead Biceps Curl": {
+  "dataset": "band one arm overhead biceps curl",
+  "equipment": "band",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Band Reverse Wrist Curl": {
+  "dataset": "band reverse wrist curl",
+  "equipment": "band",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Band Wrist Curl": {
+  "dataset": "band wrist curl",
+  "equipment": "band",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Barbell Alternate Biceps Curl": {
+  "dataset": "barbell alternate biceps curl",
+  "equipment": "barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Barbell Biceps Curl (with Arm Blaster)": {
+  "dataset": "barbell biceps curl (with arm blaster)",
+  "equipment": "barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Barbell Drag Curl": {
+  "dataset": "barbell drag curl",
+  "equipment": "barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Barbell Lying Preacher Curl": {
+  "dataset": "barbell lying preacher curl",
+  "equipment": "barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Barbell Palms Down Wrist Curl over a Bench": {
+  "dataset": "barbell palms down wrist curl over a bench",
+  "equipment": "barbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Barbell Palms Up Wrist Curl over a Bench": {
+  "dataset": "barbell palms up wrist curl over a bench",
+  "equipment": "barbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Barbell Prone Incline Curl": {
+  "dataset": "barbell prone incline curl",
+  "equipment": "barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Barbell Revers Wrist Curl": {
+  "dataset": "barbell revers wrist curl v. 2",
+  "equipment": "barbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Barbell Reverse Preacher Curl": {
+  "dataset": "barbell reverse preacher curl",
+  "equipment": "barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Barbell Reverse Wrist Curl": {
+  "dataset": "barbell reverse wrist curl",
+  "equipment": "barbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Barbell Seated Close-grip Concentration Curl": {
+  "dataset": "barbell seated close-grip concentration curl",
+  "equipment": "barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Barbell Standing Back Wrist Curl": {
+  "dataset": "barbell standing back wrist curl",
+  "equipment": "barbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Barbell Standing Close Grip Curl": {
+  "dataset": "barbell standing close grip curl",
+  "equipment": "barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Barbell Standing Concentration Curl": {
+  "dataset": "barbell standing concentration curl",
+  "equipment": "barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Barbell Standing Reverse Grip Curl": {
+  "dataset": "barbell standing reverse grip curl",
+  "equipment": "barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Barbell Standing Wide Grip Biceps Curl": {
+  "dataset": "barbell standing wide grip biceps curl",
+  "equipment": "barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Barbell Standing Wide-grip Curl": {
+  "dataset": "barbell standing wide-grip curl",
+  "equipment": "barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Barbell Wrist Curl": {
+  "dataset": "barbell wrist curl v. 2",
+  "equipment": "barbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Biceps Leg Concentration Curl": {
+  "dataset": "biceps leg concentration curl",
+  "equipment": "body weight",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Biceps Narrow Pull-ups": {
+  "dataset": "biceps narrow pull-ups",
+  "equipment": "body weight",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Biceps Pull-up": {
+  "dataset": "biceps pull-up",
+  "equipment": "body weight",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Bodyweight Side Lying Biceps Curl": {
+  "dataset": "bodyweight side lying biceps curl",
+  "equipment": "body weight",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Close Grip Curl": {
+  "dataset": "cable close grip curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Concentration Curl": {
+  "dataset": "cable concentration curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Drag Curl": {
+  "dataset": "cable drag curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Lying Bicep Curl": {
+  "dataset": "cable lying bicep curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Lying Close-grip Curl": {
+  "dataset": "cable lying close-grip curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable One Arm Curl": {
+  "dataset": "cable one arm curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable One Arm Preacher Curl": {
+  "dataset": "cable one arm preacher curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable One Arm Reverse Preacher Curl": {
+  "dataset": "cable one arm reverse preacher curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Overhead Curl": {
+  "dataset": "cable overhead curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Overhead Curl on Exercise Ball": {
+  "dataset": "cable overhead curl on exercise ball",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Preacher Curl": {
+  "dataset": "cable preacher curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Pulldown Bicep Curl": {
+  "dataset": "cable pulldown bicep curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Reverse Curl": {
+  "dataset": "cable reverse curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Reverse One Arm Curl": {
+  "dataset": "cable reverse one arm curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Reverse Preacher Curl": {
+  "dataset": "cable reverse preacher curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Reverse Wrist Curl": {
+  "dataset": "cable reverse wrist curl",
+  "equipment": "cable",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Cable Rope Hammer Preacher Curl": {
+  "dataset": "cable rope hammer preacher curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Rope One Arm Hammer Preacher Curl": {
+  "dataset": "cable rope one arm hammer preacher curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Seated Curl": {
+  "dataset": "cable seated curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Seated One Arm Concentration Curl": {
+  "dataset": "cable seated one arm concentration curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Seated Overhead Curl": {
+  "dataset": "cable seated overhead curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Squatting Curl": {
+  "dataset": "cable squatting curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Standing Back Wrist Curl": {
+  "dataset": "cable standing back wrist curl",
+  "equipment": "cable",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Cable Standing Inner Curl": {
+  "dataset": "cable standing inner curl",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Standing Pulldown (with Rope)": {
+  "dataset": "cable standing pulldown (with rope)",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Two Arm Curl on Incline Bench": {
+  "dataset": "cable two arm curl on incline bench",
+  "equipment": "cable",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Cable Wrist Curl": {
+  "dataset": "cable wrist curl",
+  "equipment": "cable",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell Alternate Biceps Curl": {
+  "dataset": "dumbbell alternate biceps curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Alternate Biceps Curl (with Arm Blaster)": {
+  "dataset": "dumbbell alternate biceps curl (with arm blaster)",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Alternate Hammer Preacher Curl": {
+  "dataset": "dumbbell alternate hammer preacher curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Alternate Preacher Curl": {
+  "dataset": "dumbbell alternate preacher curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Alternate Seated Hammer Curl": {
+  "dataset": "dumbbell alternate seated hammer curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Alternating Bicep Curl with Leg Raised on Exercise Ball": {
+  "dataset": "dumbbell alternating bicep curl with leg raised on exercise ball",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Alternating Seated Bicep Curl on Exercise Ball": {
+  "dataset": "dumbbell alternating seated bicep curl on exercise ball",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Bicep Curl Lunge with Bowling Motion": {
+  "dataset": "dumbbell bicep curl lunge with bowling motion",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Bicep Curl on Exercise Ball with Leg Raised": {
+  "dataset": "dumbbell bicep curl on exercise ball with leg raised",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Bicep Curl with Stork Stance": {
+  "dataset": "dumbbell bicep curl with stork stance",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Biceps Curl (with Arm Blaster)": {
+  "dataset": "dumbbell biceps curl (with arm blaster)",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Biceps Curl Reverse": {
+  "dataset": "dumbbell biceps curl reverse",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Biceps Curl Squat": {
+  "dataset": "dumbbell biceps curl squat",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Biceps Curl V Sit on Bosu Ball": {
+  "dataset": "dumbbell biceps curl v sit on bosu ball",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Finger Curls": {
+  "dataset": "dumbbell finger curls",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell Hammer Curl": {
+  "dataset": "dumbbell hammer curl v. 2",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Hammer Curl on Exercise Ball": {
+  "dataset": "dumbbell hammer curl on exercise ball",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Hammer Curls (with Arm Blaster)": {
+  "dataset": "dumbbell hammer curls (with arm blaster)",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell High Curl": {
+  "dataset": "dumbbell high curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Incline Biceps Curl": {
+  "dataset": "dumbbell incline biceps curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Incline Curl": {
+  "dataset": "dumbbell incline curl v. 2",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Incline Hammer Curl": {
+  "dataset": "dumbbell incline hammer curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Incline Inner Biceps Curl": {
+  "dataset": "dumbbell incline inner biceps curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Kneeling Bicep Curl Exercise Ball": {
+  "dataset": "dumbbell kneeling bicep curl exercise ball",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Lunge with Bicep Curl": {
+  "dataset": "dumbbell lunge with bicep curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Lying Pronation": {
+  "dataset": "dumbbell lying pronation",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell Lying Pronation on Floor": {
+  "dataset": "dumbbell lying pronation on floor",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell Lying Supination": {
+  "dataset": "dumbbell lying supination",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell Lying Supination on Floor": {
+  "dataset": "dumbbell lying supination on floor",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell Lying Supine Biceps Curl": {
+  "dataset": "dumbbell lying supine biceps curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Lying Supine Curl": {
+  "dataset": "dumbbell lying supine curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Lying Wide Curl": {
+  "dataset": "dumbbell lying wide curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Concentration Curl (on Stability Ball)": {
+  "dataset": "dumbbell one arm concentration curl (on stability ball)",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Hammer Preacher Curl": {
+  "dataset": "dumbbell one arm hammer preacher curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Prone Curl": {
+  "dataset": "dumbbell one arm prone curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Prone Hammer Curl": {
+  "dataset": "dumbbell one arm prone hammer curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Reverse Preacher Curl": {
+  "dataset": "dumbbell one arm reverse preacher curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Reverse Spider Curl": {
+  "dataset": "dumbbell one arm reverse spider curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Reverse Wrist Curl": {
+  "dataset": "dumbbell one arm reverse wrist curl",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell One Arm Seated Bicep Curl on Exercise Ball": {
+  "dataset": "dumbbell one arm seated bicep curl on exercise ball",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Seated Hammer Curl": {
+  "dataset": "dumbbell one arm seated hammer curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Seated Neutral Wrist Curl": {
+  "dataset": "dumbbell one arm seated neutral wrist curl",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell One Arm Standing Curl": {
+  "dataset": "dumbbell one arm standing curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Standing Hammer Curl": {
+  "dataset": "dumbbell one arm standing hammer curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Wrist Curl": {
+  "dataset": "dumbbell one arm wrist curl",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell One Arm Zottman Preacher Curl": {
+  "dataset": "dumbbell one arm zottman preacher curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell over Bench Neutral Wrist Curl": {
+  "dataset": "dumbbell over bench neutral wrist curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell over Bench One Arm Neutral Wrist Curl": {
+  "dataset": "dumbbell over bench one arm neutral wrist curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell over Bench One Arm Reverse Wrist Curl": {
+  "dataset": "dumbbell over bench one arm reverse wrist curl",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell over Bench One Arm Wrist Curl": {
+  "dataset": "dumbbell over bench one arm wrist curl",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell over Bench Revers Wrist Curl": {
+  "dataset": "dumbbell over bench revers wrist curl",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell over Bench Wrist Curl": {
+  "dataset": "dumbbell over bench wrist curl",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell Peacher Hammer Curl": {
+  "dataset": "dumbbell peacher hammer curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Preacher Curl over Exercise Ball": {
+  "dataset": "dumbbell preacher curl over exercise ball",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Prone Incline Curl": {
+  "dataset": "dumbbell prone incline curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Prone Incline Hammer Curl": {
+  "dataset": "dumbbell prone incline hammer curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Revers Grip Biceps Curl": {
+  "dataset": "dumbbell revers grip biceps curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Reverse Preacher Curl": {
+  "dataset": "dumbbell reverse preacher curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Reverse Spider Curl": {
+  "dataset": "dumbbell reverse spider curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Reverse Wrist Curl": {
+  "dataset": "dumbbell reverse wrist curl",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell Seated Alternate Hammer Curl on Exercise Ball": {
+  "dataset": "dumbbell seated alternate hammer curl on exercise ball",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Bicep Curl": {
+  "dataset": "dumbbell seated bicep curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Biceps Curl (on Stability Ball)": {
+  "dataset": "dumbbell seated biceps curl (on stability ball)",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Biceps Curl to Shoulder Press": {
+  "dataset": "dumbbell seated biceps curl to shoulder press",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Curl": {
+  "dataset": "dumbbell seated curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Hammer Curl": {
+  "dataset": "dumbbell seated hammer curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Inner Biceps Curl": {
+  "dataset": "dumbbell seated inner biceps curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Neutral Wrist Curl": {
+  "dataset": "dumbbell seated neutral wrist curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated One Arm Bicep Curl on Exercise Ball with Leg Raised": {
+  "dataset": "dumbbell seated one arm bicep curl on exercise ball with leg raised",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated One Arm Rotate": {
+  "dataset": "dumbbell seated one arm rotate",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell Seated Palms Up Wrist Curl": {
+  "dataset": "dumbbell seated palms up wrist curl",
+  "equipment": "dumbbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Dumbbell Seated Preacher Curl": {
+  "dataset": "dumbbell seated preacher curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Revers Grip Concentration Curl": {
+  "dataset": "dumbbell seated revers grip concentration curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing Alternate Hammer Curl and Press": {
+  "dataset": "dumbbell standing alternate hammer curl and press",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing Biceps Curl": {
+  "dataset": "dumbbell standing biceps curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing Concentration Curl": {
+  "dataset": "dumbbell standing concentration curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing Inner Biceps Curl": {
+  "dataset": "dumbbell standing inner biceps curl v. 2",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing One Arm Concentration Curl": {
+  "dataset": "dumbbell standing one arm concentration curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing One Arm Curl (over Incline Bench)": {
+  "dataset": "dumbbell standing one arm curl (over incline bench)",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing One Arm Reverse Curl": {
+  "dataset": "dumbbell standing one arm reverse curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing Preacher Curl": {
+  "dataset": "dumbbell standing preacher curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing Reverse Curl": {
+  "dataset": "dumbbell standing reverse curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing Zottman Preacher Curl": {
+  "dataset": "dumbbell standing zottman preacher curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Step Up Single Leg Balance with Bicep Curl": {
+  "dataset": "dumbbell step up single leg balance with bicep curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Waiter Biceps Curl": {
+  "dataset": "dumbbell waiter biceps curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Zottman Preacher Curl": {
+  "dataset": "dumbbell zottman preacher curl",
+  "equipment": "dumbbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Biceps Curl (with Arm Blaster)": {
+  "dataset": "ez-bar biceps curl (with arm blaster)",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Close Grip Preacher Curl": {
+  "dataset": "ez barbell close grip preacher curl",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Close-grip Curl": {
+  "dataset": "ez barbell close-grip curl",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Reverse Grip Curl": {
+  "dataset": "ez barbell reverse grip curl",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Reverse Grip Preacher Curl": {
+  "dataset": "ez barbell reverse grip preacher curl",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Seated Close Grip Concentration Curl": {
+  "dataset": "ez bar seated close grip concentration curl",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Seated Curls": {
+  "dataset": "ez barbell seated curls",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Spider Curl": {
+  "dataset": "ez barbell spider curl",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Standing Wide Grip Biceps Curl": {
+  "dataset": "ez-barbell standing wide grip biceps curl",
+  "equipment": "ez barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Finger Curls": {
+  "dataset": "finger curls",
+  "equipment": "barbell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Kettlebell Alternating Hang Clean": {
+  "dataset": "kettlebell alternating hang clean",
+  "equipment": "kettlebell",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Kettlebell Bottoms Up Clean from the Hang Position": {
+  "dataset": "kettlebell bottoms up clean from the hang position",
+  "equipment": "kettlebell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Kettlebell Double Alternating Hang Clean": {
+  "dataset": "kettlebell double alternating hang clean",
+  "equipment": "kettlebell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Machine Gripper Hands": {
+  "dataset": "lever gripper hands",
+  "equipment": "leverage machine",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Machine Hammer Grip Preacher Curl": {
+  "dataset": "lever hammer grip preacher curl",
+  "equipment": "leverage machine",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Machine Preacher Curl": {
+  "dataset": "lever preacher curl",
+  "equipment": "leverage machine",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Machine Reverse Grip Preacher Curl": {
+  "dataset": "lever reverse grip preacher curl",
+  "equipment": "leverage machine",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Modified Push Up to Lower Arms": {
+  "dataset": "modified push up to lower arms",
+  "equipment": "body weight",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Olympic Barbell Hammer Curl": {
+  "dataset": "olympic barbell hammer curl",
+  "equipment": "olympic barbell",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Resistance Band Seated Biceps Curl": {
+  "dataset": "resistance band seated biceps curl",
+  "equipment": "resistance band",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Side Wrist Pull Stretch": {
+  "dataset": "side wrist pull stretch",
+  "equipment": "body weight",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Smith Machine Bicep Curl": {
+  "dataset": "smith machine bicep curl",
+  "equipment": "smith machine",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Smith Machine Seated Wrist Curl": {
+  "dataset": "smith seated wrist curl",
+  "equipment": "smith machine",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Smith Machine Standing Back Wrist Curl": {
+  "dataset": "smith standing back wrist curl",
+  "equipment": "smith machine",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Weighted Seated Bicep Curl (on Stability Ball)": {
+  "dataset": "weighted seated bicep curl (on stability ball)",
+  "equipment": "medicine ball",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Weighted Standing Curl": {
+  "dataset": "weighted standing curl",
+  "equipment": "weighted",
+  "target": "biceps",
+  "category": "upper arms"
+ },
+ "Weighted Standing Hand Squeeze": {
+  "dataset": "weighted standing hand squeeze",
+  "equipment": "weighted",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Wrist Circles": {
+  "dataset": "wrist circles",
+  "equipment": "body weight",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Wrist Rollerer": {
+  "dataset": "wrist rollerer",
+  "equipment": "weighted",
+  "target": "forearms",
+  "category": "lower arms"
+ },
+ "Assisted Standing Triceps Extension (with Towel)": {
+  "dataset": "assisted standing triceps extension (with towel)",
+  "equipment": "assisted",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Assisted Triceps Dip (Kneeling)": {
+  "dataset": "assisted triceps dip (kneeling)",
+  "equipment": "leverage machine",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Band Close-grip Push-up": {
+  "dataset": "band close-grip push-up",
+  "equipment": "band",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Band Side Triceps Extension": {
+  "dataset": "band side triceps extension",
+  "equipment": "band",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Decline Close Grip to Skull Press": {
+  "dataset": "barbell decline close grip to skull press",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Incline Close Grip Bench Press": {
+  "dataset": "barbell incline close grip bench press",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Incline Reverse-grip Press": {
+  "dataset": "barbell incline reverse-grip press",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Lying Back of the Head Tricep Extension": {
+  "dataset": "barbell lying back of the head tricep extension",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Lying Close-grip Press": {
+  "dataset": "barbell lying close-grip press",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Lying Close-grip Triceps Extension": {
+  "dataset": "barbell lying close-grip triceps extension",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Lying Extension": {
+  "dataset": "barbell lying extension",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Lying Triceps Extension": {
+  "dataset": "barbell lying triceps extension",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell One Arm Floor Press": {
+  "dataset": "barbell one arm floor press",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Pin Presses": {
+  "dataset": "barbell pin presses",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Reverse Close-grip Bench Press": {
+  "dataset": "barbell reverse close-grip bench press",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Reverse Grip Skullcrusher": {
+  "dataset": "barbell reverse grip skullcrusher",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Seated Close Grip Behind Neck Triceps Extension": {
+  "dataset": "barbell seated close grip behind neck triceps extension",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Seated Overhead Triceps Extension": {
+  "dataset": "barbell seated overhead triceps extension",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Barbell Standing Overhead Triceps Extension": {
+  "dataset": "barbell standing overhead triceps extension",
+  "equipment": "barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Bench Dip on Floor": {
+  "dataset": "bench dip on floor",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Body-up": {
+  "dataset": "body-up",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Bodyweight Kneeling Triceps Extension": {
+  "dataset": "bodyweight kneeling triceps extension",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Alternate Triceps Extension": {
+  "dataset": "cable alternate triceps extension",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Concentration Extension (on Knee)": {
+  "dataset": "cable concentration extension (on knee)",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Incline Triceps Extension": {
+  "dataset": "cable incline triceps extension",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Kneeling Triceps Extension": {
+  "dataset": "cable kneeling triceps extension",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Lying Triceps Extension": {
+  "dataset": "cable lying triceps extension v. 2",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Overhead Triceps Extension (Rope Attachment)": {
+  "dataset": "cable overhead triceps extension (rope attachment)",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Pushdown": {
+  "dataset": "cable pushdown",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Rear Drive": {
+  "dataset": "cable rear drive",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Reverse Grip Triceps Pushdown (Ez-bar) (with Arm Blaster)": {
+  "dataset": "cable reverse grip triceps pushdown (sz-bar) (with arm blaster)",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Rope High Pulley Overhead Tricep Extension": {
+  "dataset": "cable rope high pulley overhead tricep extension",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Rope Incline Tricep Extension": {
+  "dataset": "cable rope incline tricep extension",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Rope Lying on Floor Tricep Extension": {
+  "dataset": "cable rope lying on floor tricep extension",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Standing One Arm Triceps Extension": {
+  "dataset": "cable standing one arm triceps extension",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Standing Reverse Grip One Arm Overhead Tricep Extension": {
+  "dataset": "cable standing reverse grip one arm overhead tricep extension",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Triceps Pushdown (V-bar) (with Arm Blaster)": {
+  "dataset": "cable triceps pushdown (v-bar) (with arm blaster)",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Cable Two Arm Tricep Kickback": {
+  "dataset": "cable two arm tricep kickback",
+  "equipment": "cable",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Close-grip Push-up": {
+  "dataset": "close-grip push-up",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Close-grip Push-up (on Knees)": {
+  "dataset": "close-grip push-up (on knees)",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Close-grip Press": {
+  "dataset": "dumbbell close-grip press",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Decline One Arm Hammer Press": {
+  "dataset": "dumbbell decline one arm hammer press",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Decline Triceps Extension": {
+  "dataset": "dumbbell decline triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Forward Lunge Triceps Extension": {
+  "dataset": "dumbbell forward lunge triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Incline Hammer Press on Exercise Ball": {
+  "dataset": "dumbbell incline hammer press on exercise ball",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Incline One Arm Hammer Press": {
+  "dataset": "dumbbell incline one arm hammer press",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Incline One Arm Hammer Press on Exercise Ball": {
+  "dataset": "dumbbell incline one arm hammer press on exercise ball",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Incline Triceps Extension": {
+  "dataset": "dumbbell incline triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Incline Two Arm Extension": {
+  "dataset": "dumbbell incline two arm extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Kickback": {
+  "dataset": "dumbbell kickback",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Kickbacks on Exercise Ball": {
+  "dataset": "dumbbell kickbacks on exercise ball",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Lying Alternate Extension": {
+  "dataset": "dumbbell lying alternate extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Lying Elbow Press": {
+  "dataset": "dumbbell lying elbow press",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Lying Extension (Across Face)": {
+  "dataset": "dumbbell lying extension (across face)",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Lying One Arm Pronated Triceps Extension": {
+  "dataset": "dumbbell lying one arm pronated triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Lying One Arm Supinated Triceps Extension": {
+  "dataset": "dumbbell lying one arm supinated triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Lying Single Extension": {
+  "dataset": "dumbbell lying single extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Neutral Grip Bench Press": {
+  "dataset": "dumbbell neutral grip bench press",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm French Press on Exercise Ball": {
+  "dataset": "dumbbell one arm french press on exercise ball",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Hammer Press on Exercise Ball": {
+  "dataset": "dumbbell one arm hammer press on exercise ball",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Kickback": {
+  "dataset": "dumbbell one arm kickback",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell One Arm Triceps Extension (on Bench)": {
+  "dataset": "dumbbell one arm triceps extension (on bench)",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Palms in Incline Bench Press": {
+  "dataset": "dumbbell palms in incline bench press",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Pronate-grip Triceps Extension": {
+  "dataset": "dumbbell pronate-grip triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Bench Extension": {
+  "dataset": "dumbbell seated bench extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Bent over Alternate Kickback": {
+  "dataset": "dumbbell seated bent over alternate kickback",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Bent over Triceps Extension": {
+  "dataset": "dumbbell seated bent over triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Kickback": {
+  "dataset": "dumbbell seated kickback",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated One Arm Kickback": {
+  "dataset": "dumbbell seated one arm kickback",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Reverse Grip One Arm Overhead Tricep Extension": {
+  "dataset": "dumbbell seated reverse grip one arm overhead tricep extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Seated Triceps Extension": {
+  "dataset": "dumbbell seated triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing Bent over One Arm Triceps Extension": {
+  "dataset": "dumbbell standing bent over one arm triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing Bent over Two Arm Triceps Extension": {
+  "dataset": "dumbbell standing bent over two arm triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing Kickback": {
+  "dataset": "dumbbell standing kickback",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing One Arm Extension": {
+  "dataset": "dumbbell standing one arm extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Standing Triceps Extension": {
+  "dataset": "dumbbell standing triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Tate Press": {
+  "dataset": "dumbbell tate press",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Tricep Kickback with Stork Stance": {
+  "dataset": "dumbbell tricep kickback with stork stance",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbell Twisting Bench Press": {
+  "dataset": "dumbbell twisting bench press",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Dumbbells Seated Triceps Extension": {
+  "dataset": "dumbbells seated triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Elbow Dips": {
+  "dataset": "elbow dips",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Exercise Ball Dip": {
+  "dataset": "exercise ball dip",
+  "equipment": "stability ball",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Exercise Ball Seated Triceps Stretch": {
+  "dataset": "exercise ball seated triceps stretch",
+  "equipment": "stability ball",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Exercise Ball Supine Triceps Extension": {
+  "dataset": "exercise ball supine triceps extension",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Close-grip Bench Press": {
+  "dataset": "ez-bar close-grip bench press",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Decline Close Grip Face Press": {
+  "dataset": "ez barbell decline close grip face press",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Decline Triceps Extension": {
+  "dataset": "ez barbell decline triceps extension",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "EZ-bar French Press on Exercise Ball": {
+  "dataset": "ez bar french press on exercise ball",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Incline Triceps Extension": {
+  "dataset": "ez barbell incline triceps extension",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Jm Bench Press": {
+  "dataset": "ez barbell jm bench press",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Lying Close Grip Triceps Extension Behind Head": {
+  "dataset": "ez bar lying close grip triceps extension behind head",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Seated Triceps Extension": {
+  "dataset": "ez barbell seated triceps extension",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "EZ-bar Standing French Press": {
+  "dataset": "ez bar standing french press",
+  "equipment": "ez barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Handstand": {
+  "dataset": "handstand",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Handstand Push-up": {
+  "dataset": "handstand push-up",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Impossible Dips": {
+  "dataset": "impossible dips",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Incline Close-grip Push-up": {
+  "dataset": "incline close-grip push-up",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Machine Overhand Triceps Dip": {
+  "dataset": "lever overhand triceps dip",
+  "equipment": "leverage machine",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Medicine Ball Close Grip Push Up": {
+  "dataset": "medicine ball close grip push up",
+  "equipment": "medicine ball",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Medicine Ball Supine Chest Throw": {
+  "dataset": "medicine ball supine chest throw",
+  "equipment": "medicine ball",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Narrow Push-up on Exercise Ball": {
+  "dataset": "narrow push-up on exercise ball",
+  "equipment": "stability ball",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Olympic Barbell Triceps Extension": {
+  "dataset": "olympic barbell triceps extension",
+  "equipment": "olympic barbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "One Arm Dip": {
+  "dataset": "one arm dip",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Overhead Triceps Stretch": {
+  "dataset": "overhead triceps stretch",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Push-up Close-grip off Dumbbell": {
+  "dataset": "push-up close-grip off dumbbell",
+  "equipment": "dumbbell",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Push-up on Lower Arms": {
+  "dataset": "push-up on lower arms",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Reverse Dip": {
+  "dataset": "reverse dip",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Ring Dips": {
+  "dataset": "ring dips",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Side Push-up": {
+  "dataset": "side push-up",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Ski Ergometer": {
+  "dataset": "ski ergometer",
+  "equipment": "skierg machine",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Smith Machine Decline Close Grip Bench Press": {
+  "dataset": "smith machine decline close grip bench press",
+  "equipment": "smith machine",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Smith Machine Incline Tricep Extension": {
+  "dataset": "smith machine incline tricep extension",
+  "equipment": "smith machine",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Stalder Press": {
+  "dataset": "stalder press",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Three Bench Dip": {
+  "dataset": "three bench dip",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Triceps Dip (Bench Leg)": {
+  "dataset": "triceps dip (bench leg)",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Triceps Dip (Between Benches)": {
+  "dataset": "triceps dip (between benches)",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Triceps Dips Floor": {
+  "dataset": "triceps dips floor",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Triceps Press": {
+  "dataset": "triceps press",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Triceps Stretch": {
+  "dataset": "triceps stretch",
+  "equipment": "body weight",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Weighted Bench Dip": {
+  "dataset": "weighted bench dip",
+  "equipment": "weighted",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Weighted Three Bench Dips": {
+  "dataset": "weighted three bench dips",
+  "equipment": "weighted",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Weighted Tricep Dips": {
+  "dataset": "weighted tricep dips",
+  "equipment": "weighted",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "Weighted Triceps Dip on High Parallel Bars": {
+  "dataset": "weighted triceps dip on high parallel bars",
+  "equipment": "weighted",
+  "target": "triceps",
+  "category": "upper arms"
+ },
+ "All Fours Squad Stretch": {
+  "dataset": "all fours squad stretch",
+  "equipment": "body weight",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Assisted Prone Lying Quads Stretch": {
+  "dataset": "assisted prone lying quads stretch",
+  "equipment": "assisted",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Backward Jump": {
+  "dataset": "backward jump",
+  "equipment": "body weight",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Balance Board": {
+  "dataset": "balance board",
+  "equipment": "body weight",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Band One Arm Single Leg Split Squat": {
+  "dataset": "band one arm single leg split squat",
+  "equipment": "band",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Band Single Leg Split Squat": {
+  "dataset": "band single leg split squat",
+  "equipment": "band",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Band Squat": {
+  "dataset": "band squat",
+  "equipment": "band",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Band Squat Row": {
+  "dataset": "band squat row",
+  "equipment": "band",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Band Step-up": {
+  "dataset": "band step-up",
+  "equipment": "band",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Bench Front Squat": {
+  "dataset": "barbell bench front squat",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Barbell Bench Squat": {
+  "dataset": "barbell bench squat",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Barbell Clean and Press": {
+  "dataset": "barbell clean and press",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Barbell Clean-grip Front Squat": {
+  "dataset": "barbell clean-grip front squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Front Chest Squat": {
+  "dataset": "barbell front chest squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Full Zercher Squat": {
+  "dataset": "barbell full zercher squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Hack Squat": {
+  "dataset": "barbell hack squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell High Bar Squat": {
+  "dataset": "barbell high bar squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Jefferson Squat": {
+  "dataset": "barbell jefferson squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Jump Squat": {
+  "dataset": "barbell jump squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Lateral Lunge": {
+  "dataset": "barbell lateral lunge",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Low Bar Squat": {
+  "dataset": "barbell low bar squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Narrow Stance Squat": {
+  "dataset": "barbell narrow stance squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell One Leg Squat": {
+  "dataset": "barbell one leg squat",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Barbell Overhead Squat": {
+  "dataset": "barbell overhead squat",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Barbell Rear Lunge": {
+  "dataset": "barbell rear lunge v. 2",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Side Split Squat": {
+  "dataset": "barbell side split squat v. 2",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Barbell Single Leg Split Squat": {
+  "dataset": "barbell single leg split squat",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Barbell Speed Squat": {
+  "dataset": "barbell speed squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Split Squat": {
+  "dataset": "barbell split squat v. 2",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Barbell Squat (on Knees)": {
+  "dataset": "barbell squat (on knees)",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Barbell Squat Jump Step Rear Lunge": {
+  "dataset": "barbell squat jump step rear lunge",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Barbell Step-up": {
+  "dataset": "barbell step-up",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Wide Squat": {
+  "dataset": "barbell wide squat",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Barbell Zercher Squat": {
+  "dataset": "barbell zercher squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Bodyweight Drop Jump Squat": {
+  "dataset": "bodyweight drop jump squat",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Chair Leg Extended Stretch": {
+  "dataset": "chair leg extended stretch",
+  "equipment": "body weight",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Curtsey Squat": {
+  "dataset": "curtsey squat",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Dumbbell Bench Squat": {
+  "dataset": "dumbbell bench squat",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Dumbbell Contralateral Forward Lunge": {
+  "dataset": "dumbbell contralateral forward lunge",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Dumbbell Plyo Squat": {
+  "dataset": "dumbbell plyo squat",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Dumbbell Single Leg Squat": {
+  "dataset": "dumbbell single leg squat",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Dumbbell Step-up Lunge": {
+  "dataset": "dumbbell step-up lunge",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Dumbbell Step-up Split Squat": {
+  "dataset": "dumbbell step-up split squat",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Dumbbell Supported Squat": {
+  "dataset": "dumbbell supported squat",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Farmers Walk": {
+  "dataset": "farmers walk",
+  "equipment": "dumbbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Forward Jump": {
+  "dataset": "forward jump",
+  "equipment": "body weight",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Forward Lunge": {
+  "dataset": "forward lunge (male)",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Frankenstein Squat": {
+  "dataset": "frankenstein squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Intermediate Hip Flexor and Quad Stretch": {
+  "dataset": "intermediate hip flexor and quad stretch",
+  "equipment": "rope",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Jump Squat": {
+  "dataset": "jump squat v. 2",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Kettlebell Front Squat": {
+  "dataset": "kettlebell front squat",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Kettlebell Goblet Squat": {
+  "dataset": "kettlebell goblet squat",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Kettlebell Lunge Pass Through": {
+  "dataset": "kettlebell lunge pass through",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Kettlebell Pistol Squat": {
+  "dataset": "kettlebell pistol squat",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Kettlebell Turkish Get Up (Squat Style)": {
+  "dataset": "kettlebell turkish get up (squat style)",
+  "equipment": "kettlebell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Kneeling Jump Squat": {
+  "dataset": "kneeling jump squat",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Lunge with Jump": {
+  "dataset": "lunge with jump",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Lying (Side) Quads Stretch": {
+  "dataset": "lying (side) quads stretch",
+  "equipment": "body weight",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Machine Alternate Leg Press": {
+  "dataset": "lever alternate leg press",
+  "equipment": "leverage machine",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Machine Horizontal One Leg Press": {
+  "dataset": "lever horizontal one leg press",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "One Leg Squat": {
+  "dataset": "one leg squat",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Potty Squat with Support": {
+  "dataset": "potty squat with support",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Quads": {
+  "dataset": "quads",
+  "equipment": "body weight",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Quick Feet": {
+  "dataset": "quick feet v. 2",
+  "equipment": "body weight",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Resistance Band Leg Extension": {
+  "dataset": "resistance band leg extension",
+  "equipment": "resistance band",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Single Leg Squat (Pistol) Male": {
+  "dataset": "single leg squat (pistol) male",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Sled 45 Degrees One Leg Press": {
+  "dataset": "sled 45 degrees one leg press",
+  "equipment": "sled machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Sled 45° Leg Press": {
+  "dataset": "sled 45° leg press (side pov)",
+  "equipment": "sled machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Sled Closer Hack Squat": {
+  "dataset": "sled closer hack squat",
+  "equipment": "sled machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Sled Lying Squat": {
+  "dataset": "sled lying squat",
+  "equipment": "sled machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Smith Machine Chair Squat": {
+  "dataset": "smith chair squat",
+  "equipment": "smith machine",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Smith Machine Front Squat (Clean Grip)": {
+  "dataset": "smith front squat (clean grip)",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Smith Machine Full Squat": {
+  "dataset": "smith full squat",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Smith Machine Hack Squat": {
+  "dataset": "smith hack squat",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Smith Machine Leg Press": {
+  "dataset": "smith leg press",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Smith Machine Low Bar Squat": {
+  "dataset": "smith low bar squat",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Smith Machine Sprint Lunge": {
+  "dataset": "smith sprint lunge",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Smith Machine Sumo Squat": {
+  "dataset": "smith sumo squat",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Snatch Pull": {
+  "dataset": "snatch pull",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Split Squats": {
+  "dataset": "split squats",
+  "equipment": "body weight",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Squat Jerk": {
+  "dataset": "squat jerk",
+  "equipment": "barbell",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Squat on Bosu Ball": {
+  "dataset": "squat on bosu ball",
+  "equipment": "bosu ball",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Squat to Overhead Reach": {
+  "dataset": "squat to overhead reach",
+  "equipment": "body weight",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Squat to Overhead Reach with Twist": {
+  "dataset": "squat to overhead reach with twist",
+  "equipment": "body weight",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Suspended Split Squat": {
+  "dataset": "suspended split squat",
+  "equipment": "body weight",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Weighted Cossack Squats": {
+  "dataset": "weighted cossack squats (male)",
+  "equipment": "weighted",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Weighted Lunge with Swing": {
+  "dataset": "weighted lunge with swing",
+  "equipment": "weighted",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Weighted Sissy Squat": {
+  "dataset": "weighted sissy squat",
+  "equipment": "weighted",
+  "target": "quads",
+  "category": "upper legs"
+ },
+ "Weighted Squat": {
+  "dataset": "weighted squat",
+  "equipment": "weighted",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Weighted Stretch Lunge": {
+  "dataset": "weighted stretch lunge",
+  "equipment": "weighted",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Arms Apart Circular Toe Touch": {
+  "dataset": "arms apart circular toe touch (male)",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Assisted Lying Glutes Stretch": {
+  "dataset": "assisted lying glutes stretch",
+  "equipment": "assisted",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Assisted Lying Gluteus and Piriformis Stretch": {
+  "dataset": "assisted lying gluteus and piriformis stretch",
+  "equipment": "assisted",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Assisted Prone Hamstring": {
+  "dataset": "assisted prone hamstring",
+  "equipment": "assisted",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Assisted Side Lying Adductor Stretch": {
+  "dataset": "assisted side lying adductor stretch",
+  "equipment": "assisted",
+  "target": "adductors",
+  "category": "upper legs"
+ },
+ "Band Bent-over Hip Extension": {
+  "dataset": "band bent-over hip extension",
+  "equipment": "band",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Band Hip Lift": {
+  "dataset": "band hip lift",
+  "equipment": "band",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Band Lying Hip Internal Rotation": {
+  "dataset": "band lying hip internal rotation",
+  "equipment": "band",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Band Pull Through": {
+  "dataset": "band pull through",
+  "equipment": "band",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Band Seated Hip Internal Rotation": {
+  "dataset": "band seated hip internal rotation",
+  "equipment": "band",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Band Stiff Leg Deadlift": {
+  "dataset": "band stiff leg deadlift",
+  "equipment": "band",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Band Straight Back Stiff Leg Deadlift": {
+  "dataset": "band straight back stiff leg deadlift",
+  "equipment": "band",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Lying Lifting (on Hip)": {
+  "dataset": "barbell lying lifting (on hip)",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell One Arm Side Deadlift": {
+  "dataset": "barbell one arm side deadlift",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Seated Good Morning": {
+  "dataset": "barbell seated good morning",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Single Leg Deadlift": {
+  "dataset": "barbell single leg deadlift",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Barbell Stiff Leg Good Morning": {
+  "dataset": "barbell stiff leg good morning",
+  "equipment": "barbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Basic Toe Touch": {
+  "dataset": "basic toe touch (male)",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Bench Hip Extension": {
+  "dataset": "bench hip extension",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Bent Knee Lying Twist": {
+  "dataset": "bent knee lying twist (male)",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Butterfly Yoga Pose": {
+  "dataset": "butterfly yoga pose",
+  "equipment": "body weight",
+  "target": "adductors",
+  "category": "upper legs"
+ },
+ "Cable Assisted Inverse Leg Curl": {
+  "dataset": "cable assisted inverse leg curl",
+  "equipment": "cable",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Cable Deadlift": {
+  "dataset": "cable deadlift",
+  "equipment": "cable",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Cable Hip Adduction": {
+  "dataset": "cable hip adduction",
+  "equipment": "cable",
+  "target": "adductors",
+  "category": "upper legs"
+ },
+ "Cable Standing Hip Extension": {
+  "dataset": "cable standing hip extension",
+  "equipment": "cable",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Dumbbell Clean": {
+  "dataset": "dumbbell clean",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Dumbbell Deadlift": {
+  "dataset": "dumbbell deadlift",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Dumbbell Lying Femoral": {
+  "dataset": "dumbbell lying femoral",
+  "equipment": "dumbbell",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Dumbbell One Arm Snatch": {
+  "dataset": "dumbbell one arm snatch",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Dumbbell Single Leg Deadlift with Stepbox Support": {
+  "dataset": "dumbbell single leg deadlift with stepbox support",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Dumbbell Stiff Leg Deadlift": {
+  "dataset": "dumbbell stiff leg deadlift",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Dumbbell Straight Leg Deadlift": {
+  "dataset": "dumbbell straight leg deadlift",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Dumbbell Sumo Pull Through": {
+  "dataset": "dumbbell sumo pull through",
+  "equipment": "dumbbell",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Exercise Ball Hip Flexor Stretch": {
+  "dataset": "exercise ball hip flexor stretch",
+  "equipment": "stability ball",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Exercise Ball One Leg Prone Lower Body Rotation": {
+  "dataset": "exercise ball one leg prone lower body rotation",
+  "equipment": "stability ball",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Exercise Ball One Legged Diagonal Kick Hamstring Curl": {
+  "dataset": "exercise ball one legged diagonal kick hamstring curl",
+  "equipment": "stability ball",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Exercise Ball Seated Hamstring Stretch": {
+  "dataset": "exercise ball seated hamstring stretch",
+  "equipment": "stability ball",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Glute Bridge March": {
+  "dataset": "glute bridge march",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Glute Bridge Two Legs on Bench": {
+  "dataset": "glute bridge two legs on bench (male)",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Hamstring Stretch": {
+  "dataset": "hamstring stretch",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Hands Clasped Circular Toe Touch": {
+  "dataset": "hands clasped circular toe touch (male)",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Hands Reversed Clasped Circular Toe Touch": {
+  "dataset": "hands reversed clasped circular toe touch (male)",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Hug Keens to Chest": {
+  "dataset": "hug keens to chest",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Inverse Leg Curl (Bench Support)": {
+  "dataset": "inverse leg curl (bench support)",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Inverse Leg Curl (on Pull-up Cable Machine)": {
+  "dataset": "inverse leg curl (on pull-up cable machine)",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Iron Cross Stretch": {
+  "dataset": "iron cross stretch",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Kettlebell Hang Clean": {
+  "dataset": "kettlebell hang clean",
+  "equipment": "kettlebell",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Kick Out Sit": {
+  "dataset": "kick out sit",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Leg Up Hamstring Stretch": {
+  "dataset": "leg up hamstring stretch",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Machine Deadlift": {
+  "dataset": "lever deadlift",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Machine Hip Extension": {
+  "dataset": "lever hip extension v. 2",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Machine Kneeling Leg Curl": {
+  "dataset": "lever kneeling leg curl",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Machine Lying Two-one Leg Curl": {
+  "dataset": "lever lying two-one leg curl",
+  "equipment": "leverage machine",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Machine Reverse Hyperextension": {
+  "dataset": "lever reverse hyperextension",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Machine Seated Good Morning": {
+  "dataset": "lever seated good morning",
+  "equipment": "leverage machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "March Sit (Wall)": {
+  "dataset": "march sit (wall)",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Monster Walk": {
+  "dataset": "monster walk",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Outside Leg Kick Push-up": {
+  "dataset": "outside leg kick push-up",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Pelvic Tilt Into Bridge": {
+  "dataset": "pelvic tilt into bridge",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Pike-to-cobra Push-up": {
+  "dataset": "pike-to-cobra push-up",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Power Clean": {
+  "dataset": "power clean",
+  "equipment": "barbell",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Push-up Inside Leg Kick": {
+  "dataset": "push-up inside leg kick",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Rear Decline Bridge": {
+  "dataset": "rear decline bridge",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Reclining Big Toe Pose with Rope": {
+  "dataset": "reclining big toe pose with rope",
+  "equipment": "rope",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Resistance Band Hip Thrusts on Knees": {
+  "dataset": "resistance band hip thrusts on knees (female)",
+  "equipment": "resistance band",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Resistance Band Seated Hip Abduction": {
+  "dataset": "resistance band seated hip abduction",
+  "equipment": "resistance band",
+  "target": "abductors",
+  "category": "upper legs"
+ },
+ "Reverse Hyper Extension (on Stability Ball)": {
+  "dataset": "reverse hyper extension (on stability ball)",
+  "equipment": "stability ball",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Reverse Hyper on Flat Bench": {
+  "dataset": "reverse hyper on flat bench",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Rocking Frog Stretch": {
+  "dataset": "rocking frog stretch",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Roller Hip Lat Stretch": {
+  "dataset": "roller hip lat stretch",
+  "equipment": "roller",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Roller Hip Stretch": {
+  "dataset": "roller hip stretch",
+  "equipment": "roller",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Runners Stretch": {
+  "dataset": "runners stretch",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Seated Glute Stretch": {
+  "dataset": "seated glute stretch",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Seated Piriformis Stretch": {
+  "dataset": "seated piriformis stretch",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Seated Wide Angle Pose Sequence": {
+  "dataset": "seated wide angle pose sequence",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Self Assisted Inverse Leg Curl": {
+  "dataset": "self assisted inverse leg curl",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Self Assisted Inverse Leg Curl (on Floor)": {
+  "dataset": "self assisted inverse leg curl (on floor)",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Side Bridge Hip Abduction": {
+  "dataset": "side bridge hip abduction",
+  "equipment": "body weight",
+  "target": "abductors",
+  "category": "upper legs"
+ },
+ "Side Hip Abduction": {
+  "dataset": "side hip abduction",
+  "equipment": "body weight",
+  "target": "abductors",
+  "category": "upper legs"
+ },
+ "Side Lying Hip Adduction": {
+  "dataset": "side lying hip adduction (male)",
+  "equipment": "body weight",
+  "target": "adductors",
+  "category": "upper legs"
+ },
+ "Side Plank Hip Adduction": {
+  "dataset": "side plank hip adduction",
+  "equipment": "body weight",
+  "target": "adductors",
+  "category": "upper legs"
+ },
+ "Single Leg Bridge with Outstretched Leg": {
+  "dataset": "single leg bridge with outstretched leg",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Single Leg Platform Slide": {
+  "dataset": "single leg platform slide",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Sled 45в° Leg Wide Press": {
+  "dataset": "sled 45в° leg wide press",
+  "equipment": "sled machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Smith Machine Bent Knee Good Morning": {
+  "dataset": "smith bent knee good morning",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Smith Machine Deadlift": {
+  "dataset": "smith deadlift",
+  "equipment": "smith machine",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Spider Crawl Push Up": {
+  "dataset": "spider crawl push up",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Standing Hamstring and Calf Stretch with Strap": {
+  "dataset": "standing hamstring and calf stretch with strap",
+  "equipment": "rope",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Standing Single Leg Curl": {
+  "dataset": "standing single leg curl",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Straight Leg Outer Hip Abductor": {
+  "dataset": "straight leg outer hip abductor",
+  "equipment": "body weight",
+  "target": "abductors",
+  "category": "upper legs"
+ },
+ "Swimmer Kicks": {
+  "dataset": "swimmer kicks v. 2 (male)",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Tire Flip": {
+  "dataset": "tire flip",
+  "equipment": "tire",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "Twist Hip Lift": {
+  "dataset": "twist hip lift",
+  "equipment": "body weight",
+  "target": "glutes",
+  "category": "upper legs"
+ },
+ "World Greatest Stretch": {
+  "dataset": "world greatest stretch",
+  "equipment": "body weight",
+  "target": "hamstrings",
+  "category": "upper legs"
+ },
+ "Ankle Circles": {
+  "dataset": "ankle circles",
+  "equipment": "body weight",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Assisted Lying Calves Stretch": {
+  "dataset": "assisted lying calves stretch",
+  "equipment": "assisted",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Band Single Leg Calf Raise": {
+  "dataset": "band single leg calf raise",
+  "equipment": "band",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Band Single Leg Reverse Calf Raise": {
+  "dataset": "band single leg reverse calf raise",
+  "equipment": "band",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Band Two Legs Calf Raise - (Band under Both Legs)": {
+  "dataset": "band two legs calf raise - (band under both legs) v. 2",
+  "equipment": "band",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Barbell Floor Calf Raise": {
+  "dataset": "barbell floor calf raise",
+  "equipment": "barbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Barbell Seated Calf Raise": {
+  "dataset": "barbell seated calf raise",
+  "equipment": "barbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Barbell Standing Leg Calf Raise": {
+  "dataset": "barbell standing leg calf raise",
+  "equipment": "barbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Barbell Standing Rocking Leg Calf Raise": {
+  "dataset": "barbell standing rocking leg calf raise",
+  "equipment": "barbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Bodyweight Standing Calf Raise": {
+  "dataset": "bodyweight standing calf raise",
+  "equipment": "body weight",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Box Jump Down with One Leg Stabilization": {
+  "dataset": "box jump down with one leg stabilization",
+  "equipment": "body weight",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Cable Standing Calf Raise": {
+  "dataset": "cable standing calf raise",
+  "equipment": "cable",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Cable Standing One Leg Calf Raise": {
+  "dataset": "cable standing one leg calf raise",
+  "equipment": "cable",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Calf Push Stretch with Hands Against Wall": {
+  "dataset": "calf push stretch with hands against wall",
+  "equipment": "body weight",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Calf Stretch with Hands Against Wall": {
+  "dataset": "calf stretch with hands against wall",
+  "equipment": "body weight",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Calf Stretch with Rope": {
+  "dataset": "calf stretch with rope",
+  "equipment": "rope",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Circles Knee Stretch": {
+  "dataset": "circles knee stretch",
+  "equipment": "body weight",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Dumbbell Seated Calf Raise": {
+  "dataset": "dumbbell seated calf raise",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Dumbbell Seated One Leg Calf Raise": {
+  "dataset": "dumbbell seated one leg calf raise",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Dumbbell Seated One Leg Calf Raise - Hammer Grip": {
+  "dataset": "dumbbell seated one leg calf raise - hammer grip",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Dumbbell Seated One Leg Calf Raise - Palm Up": {
+  "dataset": "dumbbell seated one leg calf raise - palm up",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Dumbbell Single Leg Calf Raise": {
+  "dataset": "dumbbell single leg calf raise",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Exercise Ball on the Wall Calf Raise": {
+  "dataset": "exercise ball on the wall calf raise",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Exercise Ball on the Wall Calf Raise (Tennis Ball Between Ankles)": {
+  "dataset": "exercise ball on the wall calf raise (tennis ball between ankles)",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Exercise Ball on the Wall Calf Raise (Tennis Ball Between Knees)": {
+  "dataset": "exercise ball on the wall calf raise (tennis ball between knees)",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Hack Calf Raise": {
+  "dataset": "hack calf raise",
+  "equipment": "sled machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Hack One Leg Calf Raise": {
+  "dataset": "hack one leg calf raise",
+  "equipment": "sled machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Machine Calf Press": {
+  "dataset": "lever calf press",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Machine Donkey Calf Raise": {
+  "dataset": "lever donkey calf raise",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Machine Rotary Calf": {
+  "dataset": "lever rotary calf",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Machine Seated Calf Raise": {
+  "dataset": "lever seated calf raise",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Machine Seated Squat Calf Raise on Leg Press Machine": {
+  "dataset": "lever seated squat calf raise on leg press machine",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Machine Standing Calf Raise": {
+  "dataset": "lever standing calf raise",
+  "equipment": "leverage machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "One Leg Donkey Calf Raise": {
+  "dataset": "one leg donkey calf raise",
+  "equipment": "body weight",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "One Leg Floor Calf Raise": {
+  "dataset": "one leg floor calf raise",
+  "equipment": "body weight",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Peroneals Stretch": {
+  "dataset": "peroneals stretch",
+  "equipment": "rope",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Posterior Tibialis Stretch": {
+  "dataset": "posterior tibialis stretch",
+  "equipment": "rope",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Seated Calf Stretch": {
+  "dataset": "seated calf stretch (male)",
+  "equipment": "body weight",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Single Leg Calf Raise (on a Dumbbell)": {
+  "dataset": "single leg calf raise (on a dumbbell)",
+  "equipment": "dumbbell",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Sled 45в° Calf Press": {
+  "dataset": "sled 45в° calf press",
+  "equipment": "sled machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Sled Forward Angled Calf Raise": {
+  "dataset": "sled forward angled calf raise",
+  "equipment": "sled machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Sled Lying Calf Press": {
+  "dataset": "sled lying calf press",
+  "equipment": "sled machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Sled One Leg Calf Press on Leg Press": {
+  "dataset": "sled one leg calf press on leg press",
+  "equipment": "sled machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Smith Machine One Leg Floor Calf Raise": {
+  "dataset": "smith one leg floor calf raise",
+  "equipment": "smith machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Smith Machine Reverse Calf Raises": {
+  "dataset": "smith reverse calf raises",
+  "equipment": "smith machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Smith Machine Seated One Leg Calf Raise": {
+  "dataset": "smith seated one leg calf raise",
+  "equipment": "smith machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Smith Machine Toe Raise": {
+  "dataset": "smith toe raise",
+  "equipment": "smith machine",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Standing Calf Raise (on a Staircase)": {
+  "dataset": "standing calf raise (on a staircase)",
+  "equipment": "body weight",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Standing Calves": {
+  "dataset": "standing calves",
+  "equipment": "body weight",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Standing Calves Calf Stretch": {
+  "dataset": "standing calves calf stretch",
+  "equipment": "body weight",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "Weighted Donkey Calf Raise": {
+  "dataset": "weighted donkey calf raise",
+  "equipment": "weighted",
+  "target": "calves",
+  "category": "lower legs"
+ },
+ "3/4 Sit-up": {
+  "dataset": "3/4 sit-up",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "45° Side Bend": {
+  "dataset": "45° side bend",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Alternate Heel Touchers": {
+  "dataset": "alternate heel touchers",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Arm Slingers Hanging Bent Knee Legs": {
+  "dataset": "arm slingers hanging bent knee legs",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Arm Slingers Hanging Straight Legs": {
+  "dataset": "arm slingers hanging straight legs",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Arms Overhead Full Sit-up": {
+  "dataset": "arms overhead full sit-up (male)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Assisted Hanging Knee Raise": {
+  "dataset": "assisted hanging knee raise",
+  "equipment": "assisted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Assisted Hanging Knee Raise with Throw Down": {
+  "dataset": "assisted hanging knee raise with throw down",
+  "equipment": "assisted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Assisted Lying Leg Raise with Lateral Throw Down": {
+  "dataset": "assisted lying leg raise with lateral throw down",
+  "equipment": "assisted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Assisted Lying Leg Raise with Throw Down": {
+  "dataset": "assisted lying leg raise with throw down",
+  "equipment": "assisted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Assisted Motion Russian Twist": {
+  "dataset": "assisted motion russian twist",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Assisted Prone Rectus Femoris Stretch": {
+  "dataset": "assisted prone rectus femoris stretch",
+  "equipment": "assisted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Assisted Sit-up": {
+  "dataset": "assisted sit-up",
+  "equipment": "assisted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Astride Jumps": {
+  "dataset": "astride jumps (male)",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Back and Forth Step": {
+  "dataset": "back and forth step",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Band Alternating V-up": {
+  "dataset": "band alternating v-up",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Band Assisted Wheel Rollerout": {
+  "dataset": "band assisted wheel rollerout",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Band Bicycle Crunch": {
+  "dataset": "band bicycle crunch",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Band Horizontal Pallof Press": {
+  "dataset": "band horizontal pallof press",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Band Jack Knife Sit-up": {
+  "dataset": "band jack knife sit-up",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Band Kneeling Twisting Crunch": {
+  "dataset": "band kneeling twisting crunch",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Band Lying Straight Leg Raise": {
+  "dataset": "band lying straight leg raise",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Band Push Sit-up": {
+  "dataset": "band push sit-up",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Band Seated Twist": {
+  "dataset": "band seated twist",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Band Standing Crunch": {
+  "dataset": "band standing crunch",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Band Standing Twisting Crunch": {
+  "dataset": "band standing twisting crunch",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Band V-up": {
+  "dataset": "band v-up",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Band Vertical Pallof Press": {
+  "dataset": "band vertical pallof press",
+  "equipment": "band",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Barbell Incline Shoulder Raise": {
+  "dataset": "barbell incline shoulder raise",
+  "equipment": "barbell",
+  "target": "serratus anterior",
+  "category": "chest"
+ },
+ "Barbell Press Sit-up": {
+  "dataset": "barbell press sit-up",
+  "equipment": "barbell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Barbell Rollerout": {
+  "dataset": "barbell rollerout",
+  "equipment": "barbell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Barbell Rollerout from Bench": {
+  "dataset": "barbell rollerout from bench",
+  "equipment": "barbell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Barbell Seated Twist": {
+  "dataset": "barbell seated twist",
+  "equipment": "barbell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Barbell Side Bent": {
+  "dataset": "barbell side bent v. 2",
+  "equipment": "barbell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Barbell Sitted Alternate Leg Raise": {
+  "dataset": "barbell sitted alternate leg raise",
+  "equipment": "barbell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Barbell Standing Ab Rollerout": {
+  "dataset": "barbell standing ab rollerout",
+  "equipment": "barbell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Barbell Standing Twist": {
+  "dataset": "barbell standing twist",
+  "equipment": "barbell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Bear Crawl": {
+  "dataset": "bear crawl",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Bottoms-up": {
+  "dataset": "bottoms-up",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Bridge - Mountain Climber (Cross Body)": {
+  "dataset": "bridge - mountain climber (cross body)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Burpee": {
+  "dataset": "burpee",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Butt-ups": {
+  "dataset": "butt-ups",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Judo Flip": {
+  "dataset": "cable judo flip",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Kneeling Crunch": {
+  "dataset": "cable kneeling crunch",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Reverse Crunch": {
+  "dataset": "cable reverse crunch",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Russian Twists (on Stability Ball)": {
+  "dataset": "cable russian twists (on stability ball)",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Seated Twist": {
+  "dataset": "cable seated twist",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Side Bend": {
+  "dataset": "cable side bend",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Side Bend Crunch (Bosu Ball)": {
+  "dataset": "cable side bend crunch (bosu ball)",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Side Crunch": {
+  "dataset": "cable side crunch",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Standing Crunch": {
+  "dataset": "cable standing crunch",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Standing Crunch (with Rope Attachment)": {
+  "dataset": "cable standing crunch (with rope attachment)",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Standing Lift": {
+  "dataset": "cable standing lift",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Tuck Reverse Crunch": {
+  "dataset": "cable tuck reverse crunch",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Twist": {
+  "dataset": "cable twist",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cable Twist (Up-down)": {
+  "dataset": "cable twist (up-down)",
+  "equipment": "cable",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cocoons": {
+  "dataset": "cocoons",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Crab Twist Toe Touch": {
+  "dataset": "crab twist toe touch",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cross Body Crunch": {
+  "dataset": "cross body crunch",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Crunch (Hands Overhead)": {
+  "dataset": "crunch (hands overhead)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Crunch (on Stability Ball, Arms Straight)": {
+  "dataset": "crunch (on stability ball, arms straight)",
+  "equipment": "stability ball",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Crunch (on Stability Ball)": {
+  "dataset": "crunch (on stability ball)",
+  "equipment": "stability ball",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Curl-up": {
+  "dataset": "curl-up",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Cycle Cross Trainer": {
+  "dataset": "cycle cross trainer",
+  "equipment": "leverage machine",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Decline Crunch": {
+  "dataset": "decline crunch",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Dumbbell Burpee": {
+  "dataset": "dumbbell burpee",
+  "equipment": "dumbbell",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Dumbbell Incline Shoulder Raise": {
+  "dataset": "dumbbell incline shoulder raise",
+  "equipment": "dumbbell",
+  "target": "serratus anterior",
+  "category": "chest"
+ },
+ "Elbow-to-knee": {
+  "dataset": "elbow-to-knee",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Flag": {
+  "dataset": "flag",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Flexion Leg Sit Up (Bent Knee)": {
+  "dataset": "flexion leg sit up (bent knee)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Flexion Leg Sit Up (Straight Arm)": {
+  "dataset": "flexion leg sit up (straight arm)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Frog Crunch": {
+  "dataset": "frog crunch",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Frog Planche": {
+  "dataset": "frog planche",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Front Lever": {
+  "dataset": "front lever",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Front Plank with Twist": {
+  "dataset": "front plank with twist",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Full Maltese": {
+  "dataset": "full maltese",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Full Planche": {
+  "dataset": "full planche",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Gorilla Chin": {
+  "dataset": "gorilla chin",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Groin Crunch": {
+  "dataset": "groin crunch",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Half Knee Bends": {
+  "dataset": "half knee bends (male)",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Half Sit-up": {
+  "dataset": "half sit-up (male)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Hanging Leg Hip Raise": {
+  "dataset": "hanging leg hip raise",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Hanging Pike": {
+  "dataset": "hanging pike",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Hanging Straight Leg Hip Raise": {
+  "dataset": "hanging straight leg hip raise",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Hanging Straight Leg Raise": {
+  "dataset": "hanging straight leg raise",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Hanging Straight Twisting Leg Hip Raise": {
+  "dataset": "hanging straight twisting leg hip raise",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "High Knee Against Wall": {
+  "dataset": "high knee against wall",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Hip Raise (Bent Knee)": {
+  "dataset": "hip raise (bent knee)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Inchworm": {
+  "dataset": "inchworm",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Incline Leg Hip Raise (Leg Straight)": {
+  "dataset": "incline leg hip raise (leg straight)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Incline Scapula Push Up": {
+  "dataset": "incline scapula push up",
+  "equipment": "body weight",
+  "target": "serratus anterior",
+  "category": "chest"
+ },
+ "Incline Twisting Sit-up": {
+  "dataset": "incline twisting sit-up",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Jack Burpee": {
+  "dataset": "jack burpee",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Jack Jump": {
+  "dataset": "jack jump (male)",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Jackknife Sit-up": {
+  "dataset": "jackknife sit-up",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Janda Sit-up": {
+  "dataset": "janda sit-up",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Jump Rope": {
+  "dataset": "jump rope",
+  "equipment": "rope",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Kettlebell Advanced Windmill": {
+  "dataset": "kettlebell advanced windmill",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Kettlebell Bent Press": {
+  "dataset": "kettlebell bent press",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Kettlebell Double Windmill": {
+  "dataset": "kettlebell double windmill",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Kettlebell Figure 8": {
+  "dataset": "kettlebell figure 8",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Kettlebell Windmill": {
+  "dataset": "kettlebell windmill",
+  "equipment": "kettlebell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Knee Touch Crunch": {
+  "dataset": "knee touch crunch",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Kneeling Plank Tap Shoulder": {
+  "dataset": "kneeling plank tap shoulder (male)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "L-sit on Floor": {
+  "dataset": "l-sit on floor",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Landmine 180": {
+  "dataset": "landmine 180",
+  "equipment": "barbell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Lean Planche": {
+  "dataset": "lean planche",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Leg Pull in Flat Bench": {
+  "dataset": "leg pull in flat bench",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Lunge with Twist": {
+  "dataset": "lunge with twist",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Lying Elbow to Knee": {
+  "dataset": "lying elbow to knee",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Lying Leg Raise Flat Bench": {
+  "dataset": "lying leg raise flat bench",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Machine Kneeling Twist": {
+  "dataset": "lever kneeling twist",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Machine Seated Crunch (Chest Pad)": {
+  "dataset": "lever seated crunch (chest pad)",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Machine Seated Leg Raise Crunch": {
+  "dataset": "lever seated leg raise crunch",
+  "equipment": "leverage machine",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Negative Crunch": {
+  "dataset": "negative crunch",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Oblique Crunch": {
+  "dataset": "oblique crunch v. 2",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Oblique Crunches Floor": {
+  "dataset": "oblique crunches floor",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "One Arm Slam (with Medicine Ball)": {
+  "dataset": "one arm slam (with medicine ball)",
+  "equipment": "medicine ball",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Otis Up": {
+  "dataset": "otis up",
+  "equipment": "weighted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Pelvic Tilt": {
+  "dataset": "pelvic tilt",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Posterior Step to Overhead Reach": {
+  "dataset": "posterior step to overhead reach",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Potty Squat": {
+  "dataset": "potty squat",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Prisoner Half Sit-up": {
+  "dataset": "prisoner half sit-up (male)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Prone Twist on Stability Ball": {
+  "dataset": "prone twist on stability ball",
+  "equipment": "stability ball",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Pull-in (on Stability Ball)": {
+  "dataset": "pull-in (on stability ball)",
+  "equipment": "stability ball",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Push to Run": {
+  "dataset": "push to run",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Push-up to Side Plank": {
+  "dataset": "push-up to side plank",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Quarter Sit-up": {
+  "dataset": "quarter sit-up",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Reverse Plank with Leg Lift": {
+  "dataset": "reverse plank with leg lift",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Roller Body Saw": {
+  "dataset": "roller body saw",
+  "equipment": "roller",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Roller Reverse Crunch": {
+  "dataset": "roller reverse crunch",
+  "equipment": "roller",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Run": {
+  "dataset": "run",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Run (Equipment)": {
+  "dataset": "run (equipment)",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Scapula Push-up": {
+  "dataset": "scapula push-up",
+  "equipment": "body weight",
+  "target": "serratus anterior",
+  "category": "chest"
+ },
+ "Scissor Jumps": {
+  "dataset": "scissor jumps (male)",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Seated Leg Raise": {
+  "dataset": "seated leg raise",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Seated Side Crunch (Wall)": {
+  "dataset": "seated side crunch (wall)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Semi Squat Jump": {
+  "dataset": "semi squat jump (male)",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Short Stride Run": {
+  "dataset": "short stride run",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Shoulder Tap": {
+  "dataset": "shoulder tap",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Side Bridge": {
+  "dataset": "side bridge v. 2",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Side Hip (on Parallel Bars)": {
+  "dataset": "side hip (on parallel bars)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Side-to-side Toe Touch": {
+  "dataset": "side-to-side toe touch (male)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Sit-up with Arms on Chest": {
+  "dataset": "sit-up with arms on chest",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Skater Hops": {
+  "dataset": "skater hops",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Ski Step": {
+  "dataset": "ski step",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Sledge Hammer": {
+  "dataset": "sledge hammer",
+  "equipment": "hammer",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Smith Machine Incline Shoulder Raises": {
+  "dataset": "smith incline shoulder raises",
+  "equipment": "smith machine",
+  "target": "serratus anterior",
+  "category": "chest"
+ },
+ "Spell Caster": {
+  "dataset": "spell caster",
+  "equipment": "dumbbell",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Spine Twist": {
+  "dataset": "spine twist",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Stability Ball Crunch (Full Range Hands Behind Head)": {
+  "dataset": "stability ball crunch (full range hands behind head)",
+  "equipment": "stability ball",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Standing Wheel Rollerout": {
+  "dataset": "standing wheel rollerout",
+  "equipment": "wheel roller",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Star Jump": {
+  "dataset": "star jump (male)",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Stationary Bike Run": {
+  "dataset": "stationary bike run v. 3",
+  "equipment": "stationary bike",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Stationary Bike Walk": {
+  "dataset": "stationary bike walk",
+  "equipment": "leverage machine",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Straddle Maltese": {
+  "dataset": "straddle maltese",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Straddle Planche": {
+  "dataset": "straddle planche",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Suspended Abdominal Fallout": {
+  "dataset": "suspended abdominal fallout",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Suspended Reverse Crunch": {
+  "dataset": "suspended reverse crunch",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Swing 360": {
+  "dataset": "swing 360",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Tuck Crunch": {
+  "dataset": "tuck crunch",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Twisted Leg Raise": {
+  "dataset": "twisted leg raise (female)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "V-sit on Floor": {
+  "dataset": "v-sit on floor",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Vertical Leg Raise (on Parallel Bars)": {
+  "dataset": "vertical leg raise (on parallel bars)",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Walk Elliptical Cross Trainer": {
+  "dataset": "walk elliptical cross trainer",
+  "equipment": "elliptical machine",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Walking High Knees Lunge": {
+  "dataset": "walking high knees lunge",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Walking on Incline Treadmill": {
+  "dataset": "walking on incline treadmill",
+  "equipment": "leverage machine",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Walking on Stepmill": {
+  "dataset": "walking on stepmill",
+  "equipment": "stepmill machine",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Weighted Crunch": {
+  "dataset": "weighted crunch",
+  "equipment": "weighted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Weighted Decline Sit-up": {
+  "dataset": "weighted decline sit-up",
+  "equipment": "weighted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Weighted Front Plank": {
+  "dataset": "weighted front plank",
+  "equipment": "weighted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Weighted Hanging Leg-hip Raise": {
+  "dataset": "weighted hanging leg-hip raise",
+  "equipment": "weighted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Weighted Overhead Crunch (on Stability Ball)": {
+  "dataset": "weighted overhead crunch (on stability ball)",
+  "equipment": "weighted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Weighted Russian Twist": {
+  "dataset": "weighted russian twist",
+  "equipment": "weighted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Weighted Russian Twist (Legs Up)": {
+  "dataset": "weighted russian twist (legs up)",
+  "equipment": "weighted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Weighted Seated Twist (on Stability Ball)": {
+  "dataset": "weighted seated twist (on stability ball)",
+  "equipment": "weighted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Weighted Side Bend (on Stability Ball)": {
+  "dataset": "weighted side bend (on stability ball)",
+  "equipment": "weighted",
+  "target": "abs",
+  "category": "waist"
+ },
+ "Wheel Run": {
+  "dataset": "wheel run",
+  "equipment": "body weight",
+  "target": "cardiovascular system",
+  "category": "cardio"
+ },
+ "Wind Sprints": {
+  "dataset": "wind sprints",
+  "equipment": "body weight",
+  "target": "abs",
+  "category": "waist"
+ }
+}

@@ -51,14 +51,15 @@ test("hiddenAvoidCount adds up what the filter removes", () => {
 });
 
 // ---- the joint table of the whole library ----
-import { ALL_EX } from "../public/exercise-library.js";
+import { ALL_EX, isCurated } from "../public/exercise-library.js";
 import { AREA_EN } from "../public/injuries.js";
 import { AR } from "../public/lang-ar.js";
 
 test("the joint table has exactly one entry per library exercise, with valid areas in order", () => {
-  const missing = ALL_EX.filter(n => !Object.hasOwn(JOINTS, n));
+  const LIBN = ALL_EX.filter(isCurated);   // the dataset exercises get their joint tags in Task 5
+  const missing = LIBN.filter(n => !Object.hasOwn(JOINTS, n));
   assert.deepEqual(missing, [], "library exercises with no joint entry: " + missing.join(", "));
-  const extra = Object.keys(JOINTS).filter(n => !ALL_EX.includes(n));
+  const extra = Object.keys(JOINTS).filter(n => !LIBN.includes(n));
   assert.deepEqual(extra, [], "entries that are not library exercises: " + extra.join(", "));
   for (const [name, areas] of Object.entries(JOINTS)) {
     assert.ok(Array.isArray(areas), name);

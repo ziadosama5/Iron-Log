@@ -1,6 +1,6 @@
 // Personal journey: builds a week of training days from a few answers. Pure (no DOM, no Firebase).
 // Rules live here so they can be tested for every combination of answers.
-import { LIB, MUSCLES, muscleOf, gymFilter } from "./exercise-library.js";
+import { CURATED_LIB as LIB, MUSCLES, muscleOf, gymFilter } from "./exercise-library.js";   // generated plans use only the reviewed (curated) exercises
 import { avoidFilter, hasAvoid } from "./injuries.js";
 
 export const EXPERIENCE = ["beginner", "intermediate", "advanced"];
