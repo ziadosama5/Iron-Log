@@ -2552,6 +2552,8 @@ for (const look of ["classic", "carbon", "bloom"]) {
     assert.equal((await page.locator(".hm-days span").allInnerTexts()).filter(Boolean).length, 3, "three weekday labels");
     const scrolledToEnd = await page.locator(".hm-wrap").evaluate(e => e.scrollLeft + e.clientWidth >= e.scrollWidth - 2);
     assert.ok(scrolledToEnd, "starts at today");
+    const labelsInView = await page.evaluate(() => { const w = document.querySelector(".hm-outer").getBoundingClientRect(), d = document.querySelector(".hm-days").getBoundingClientRect(), g = document.querySelector(".hm-wrap").getBoundingClientRect(); return d.left >= w.left - 1 && d.right <= g.left + 1 && d.height > 50; });
+    assert.ok(labelsInView, "the weekday labels stay in view at the left while the grid scrolls");
     const cell = page.locator(".hm-c[data-n]:not([data-n='0'])").last();
     await cell.click({ force: true });
     assert.match(await page.locator("#hm-cap").innerText(), /workout.*min/);
@@ -2564,7 +2566,7 @@ test("year activity: Arabic keeps the grid left to right and translates the labe
   const { page, ctx, errors } = await open("lang=ar");
   await tab(page, "progress");
   await page.waitForSelector(".hm-wrap");
-  assert.equal(await page.locator(".hm-wrap").getAttribute("dir"), "ltr");
+  assert.equal(await page.locator(".hm-outer").getAttribute("dir"), "ltr");
   assert.match(await page.locator("#hm-cap").innerText(), /تدريب/);
   assert.match(await page.locator(".hm-legend").innerText(), /وقت أقل/);
   assert.deepEqual(errors, []);

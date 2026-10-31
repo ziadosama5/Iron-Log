@@ -124,12 +124,12 @@ button.wd{appearance:none;font:inherit;color:inherit;cursor:pointer}
 .brow.off .t b{color:var(--muted)}
 .row>h2.grow{flex:1 1 150px}
 .dyn{display:contents}
-.hm-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+.hm-wrap{flex:1 1 auto;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
 .hm-wrap::-webkit-scrollbar{display:none}
-.hm-months{display:flex;gap:3px;margin-left:31px;margin-bottom:5px}
+.hm-outer{display:flex;gap:3px;align-items:flex-start}
+.hm-months{display:flex;gap:3px;height:14px;line-height:14px;margin-bottom:5px;width:max-content}
 .hm-months span{flex:none;width:11px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:visible}
-.hm-body{display:flex;gap:3px}
-.hm-days{display:flex;flex-direction:column;gap:3px;flex:none;width:28px;position:sticky;inset-inline-start:0;z-index:1;background:var(--surface)}
+.hm-days{display:flex;flex-direction:column;gap:3px;flex:none;width:28px;padding-top:19px}
 .hm-days span{height:11px;font-size:12px;color:var(--muted);line-height:11px;overflow:visible;white-space:nowrap}
 .hm-grid{display:flex;gap:3px}
 .hm-col{display:flex;flex-direction:column;gap:3px}
@@ -2144,8 +2144,8 @@ function yearHtml(y){
   const mon=m=>new Date(2000,m,1).toLocaleDateString(locale(),{month:"short"}), wd=i=>nameOf("weekday",WD[(i+6)%7]);   // grid row 0 = Saturday
   const months=y.weeks.map((w,c)=>{ const m=y.months.find(x=>x.col===c); return `<span>${m?esc(mon(m.month)):""}</span>`; }).join("");
   const cols=y.weeks.map(w=>`<div class="hm-col">${w.days.map(d=>`<div class="hm-c l${d.level}${d.today?" today":""}${d.future?" future":""}"${d.future?"":` data-date="${d.date}" data-n="${d.workouts}" data-min="${d.minutes}" data-vol="${d.volume}"`}></div>`).join("")}</div>`).join("");
-  return `<div class="hm-wrap" dir="ltr" role="img" aria-label="${esc(tn("{n} day trained in the last year","{n} days trained in the last year",y.trainedDays))}"><div class="hm-months">${months}</div>
-    <div class="hm-body"><div class="hm-days"><span></span><span></span><span>${esc(wd(2))}</span><span></span><span>${esc(wd(4))}</span><span></span><span>${esc(wd(6))}</span></div><div class="hm-grid">${cols}</div></div></div>
+  return `<div class="hm-outer" dir="ltr" role="img" aria-label="${esc(tn("{n} day trained in the last year","{n} days trained in the last year",y.trainedDays))}"><div class="hm-days"><span></span><span></span><span>${esc(wd(2))}</span><span></span><span>${esc(wd(4))}</span><span></span><span>${esc(wd(6))}</span></div>
+    <div class="hm-wrap"><div class="hm-months">${months}</div><div class="hm-grid">${cols}</div></div></div>
     <div class="hm-legend">${esc(t("Less time"))} <div class="hm-c l0"></div><div class="hm-c l1"></div><div class="hm-c l2"></div><div class="hm-c l3"></div><div class="hm-c l4"></div> ${esc(t("More time"))}</div>
     <p class="prev hm-cap" id="hm-cap" aria-live="polite" style="margin:0">${esc(tn("{n} day trained in the last year","{n} days trained in the last year",y.trainedDays))}</p>`;
 }
