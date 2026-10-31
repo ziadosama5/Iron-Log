@@ -75,10 +75,10 @@ test("merged exercises are gone from the library but resolve to the one that sta
 // ---- equipment model (library 2.0) ----
 import { EQUIPMENT, EXERCISES, equipmentOf, exercisesFor } from "../public/exercise-library.js";
 
-test("EQUIPMENT: 39 unique ids in three groups; every tag used by an exercise exists", () => {
-  assert.equal(EQUIPMENT.length, 39);
-  assert.equal(new Set(EQUIPMENT.map(e => e.id)).size, 39);
-  for (const e of EQUIPMENT) { assert.ok(["weights", "station", "machine"].includes(e.group), e.id); assert.ok(e.name.trim().length > 0, e.id); }
+test("EQUIPMENT: 53 unique ids in four groups; every tag used by an exercise exists", () => {
+  assert.equal(EQUIPMENT.length, 53);
+  assert.equal(new Set(EQUIPMENT.map(e => e.id)).size, 53);
+  for (const e of EQUIPMENT) { assert.ok(["weights", "station", "machine", "accessories"].includes(e.group), e.id); assert.ok(e.name.trim().length > 0, e.id); }
   const ids = new Set(EQUIPMENT.map(e => e.id));
   for (const x of EXERCISES) for (const q of x.eq) assert.ok(ids.has(q), `${x.name}: unknown equipment ${q}`);
 });
@@ -129,7 +129,9 @@ test("library 2.0: 183 exercises in the agreed per-group counts, every equipment
   const counts = { "Chest": 22, "Back": 28, "Shoulders": 22, "Biceps": 16, "Triceps": 18, "Quads": 23, "Hamstrings & Glutes": 24, "Calves": 8, "Core": 22 };
   for (const [g, n] of Object.entries(counts)) assert.equal(LIB[g].length, n, g);
   const used = new Set(EXERCISES.flatMap(x => x.eq));
-  assert.deepEqual(EQUIPMENT.filter(e => !used.has(e.id)).map(e => e.id), [], "every equipment item is needed by at least one exercise");
+  // the 14 ids added for the dataset exercises are used once the catalog is merged (the library-expansion Task 2 removes this exemption)
+  const PENDING = new Set(["olympic-barbell","weight-plate","stability-ball","bosu-ball","medicine-ball","resistance-band","battle-rope","foam-roller","wheel-roller","tire","sledgehammer","sled-machine","lever-machine","ergometer"]);
+  assert.deepEqual(EQUIPMENT.filter(e => !used.has(e.id) && !PENDING.has(e.id)).map(e => e.id), [], "every equipment item is needed by at least one exercise");
 });
 
 test("library 2.0: the four exercises that were merged earlier are their own exercises again", () => {
@@ -168,7 +170,7 @@ test("GYM_PRESETS: fixed order, real ids, nested from Bodyweight to Full gym", (
   }
   assert.deepEqual(GYM_PRESETS[0].equipment, []);
   assert.equal(GYM_PRESETS[3].equipment.length, EQUIPMENT.length);
-  const basicIds = EQUIPMENT.filter(e => e.group === "weights" || e.group === "station").map(e => e.id);
+  const basicIds = EQUIPMENT.filter(e => e.group === "weights" || e.group === "station" || ["resistance-band", "stability-ball", "medicine-ball", "foam-roller", "bosu-ball", "battle-rope"].includes(e.id)).map(e => e.id);
   assert.deepEqual([...GYM_PRESETS[2].equipment].sort(), [...basicIds].sort());
   for (let i = 0; i < 3; i++) {
     const next = new Set(GYM_PRESETS[i + 1].equipment);
@@ -234,4 +236,25 @@ test("typeaheadNames with a focus keeps only exercises of those muscles (own nam
   assert.ok(!out.includes("Bench Press") && !out.includes("Lateral Raise") && !out.includes("My Custom Move"));
   // no focus (or an empty one) means everything, as before
   assert.equal(typeaheadNames({ history: [], dayNames: [], all, gym: null, focus: [] }).length, 4);
+});
+
+
+// ---- library expansion, Task 1: 14 new equipment ids ----
+import { AR } from "../public/lang-ar.js";
+const NEW_EQUIPMENT = ["olympic-barbell","weight-plate","stability-ball","bosu-ball","medicine-ball","resistance-band","battle-rope","foam-roller","wheel-roller","tire","sledgehammer","sled-machine","lever-machine","ergometer"];
+test("14 new equipment ids exist with names, groups and Arabic names", () => {
+  const byId = new Map(EQUIPMENT.map(e => [e.id, e]));
+  for (const id of NEW_EQUIPMENT) { const e = byId.get(id); assert.ok(e, id); assert.ok(e.name.trim()); assert.ok(["weights", "station", "machine", "accessories"].includes(e.group), id); }
+  for (const e of EQUIPMENT) assert.ok(AR.names.equipment[e.id], "Arabic name for " + e.id);
+  assert.deepEqual(EQUIPMENT.slice(0, 39).map(e => e.id), EQUIPMENT.map(e => e.id).filter(id => !NEW_EQUIPMENT.includes(id)), "the original 39 keep their order, the new ones come after");
+});
+test("presets with the new ids: home gains bands and balls, basic stays weights + stations, full is everything", () => {
+  const home = new Set(GYM_PRESETS[1].equipment);
+  for (const id of ["resistance-band", "stability-ball", "medicine-ball", "foam-roller"]) assert.ok(home.has(id), "home has " + id);
+  assert.ok(!home.has("lever-machine") && !home.has("sled-machine"));
+  const basic = new Set(GYM_PRESETS[2].equipment);
+  assert.ok(basic.has("olympic-barbell") && basic.has("weight-plate"), "basic has the new weights");
+  assert.ok(!basic.has("lever-machine") && !basic.has("ergometer"), "basic has no machines");
+  assert.equal(GYM_PRESETS[3].equipment.length, 53);
+  assert.equal(gymCounts([]).itemsTotal, 53);
 });

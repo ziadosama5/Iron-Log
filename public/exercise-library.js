@@ -40,7 +40,22 @@ export const EQUIPMENT = [
   { id: "glute-kickback", group: "machine", name: "Glute kickback machine" },
   { id: "standing-calf-machine", group: "machine", name: "Standing calf raise machine" },
   { id: "seated-calf-machine", group: "machine", name: "Seated calf raise machine" },
-  { id: "ab-crunch-machine", group: "machine", name: "Ab crunch machine" }
+  { id: "ab-crunch-machine", group: "machine", name: "Ab crunch machine" },
+  // added for the dataset exercises (the originals above keep their order)
+  { id: "olympic-barbell", group: "weights", name: "Olympic barbell" },
+  { id: "weight-plate", group: "weights", name: "Weight plate" },
+  { id: "sled-machine", group: "machine", name: "Sled machine (leg press / hack)" },
+  { id: "lever-machine", group: "machine", name: "Other selectorized machine" },
+  { id: "ergometer", group: "machine", name: "Ergometer / cardio machine" },
+  { id: "stability-ball", group: "accessories", name: "Stability ball" },
+  { id: "bosu-ball", group: "accessories", name: "Bosu ball" },
+  { id: "medicine-ball", group: "accessories", name: "Medicine ball" },
+  { id: "resistance-band", group: "accessories", name: "Resistance band" },
+  { id: "battle-rope", group: "accessories", name: "Battle rope" },
+  { id: "foam-roller", group: "accessories", name: "Foam roller" },
+  { id: "wheel-roller", group: "accessories", name: "Wheel roller" },
+  { id: "tire", group: "accessories", name: "Tire" },
+  { id: "sledgehammer", group: "accessories", name: "Sledgehammer" }
 ];
 
 // Every exercise: name, muscle group and ALL the equipment it needs (none = bodyweight).
@@ -133,10 +148,12 @@ export function exercisesFor(gym) {
 
 // ---- My Gym: which equipment a person has ----
 // Starting points for the My Gym checklist. Each preset is inside the next one.
-const BASIC_GYM = EQUIPMENT.filter(e => e.group === "weights" || e.group === "station").map(e => e.id);
+// A basic gym has the weights and stations plus the small accessories most gyms keep (bands, balls, roller, rope); no machines.
+const BASIC_ACCESSORIES = ["resistance-band", "stability-ball", "medicine-ball", "foam-roller", "bosu-ball", "battle-rope"];
+const BASIC_GYM = EQUIPMENT.filter(e => e.group === "weights" || e.group === "station" || BASIC_ACCESSORIES.includes(e.id)).map(e => e.id);
 export const GYM_PRESETS = [
   { id: "bodyweight", name: "Bodyweight only", equipment: [] },
-  { id: "home", name: "Home", equipment: ["dumbbell", "bench", "pullup-bar", "kettlebell", "box", "ab-wheel"] },
+  { id: "home", name: "Home", equipment: ["dumbbell", "bench", "pullup-bar", "kettlebell", "box", "ab-wheel", "resistance-band", "stability-ball", "medicine-ball", "foam-roller"] },
   { id: "basic", name: "Basic gym", equipment: BASIC_GYM },
   { id: "full", name: "Full gym", equipment: EQUIPMENT.map(e => e.id) }
 ];
