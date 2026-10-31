@@ -28,7 +28,7 @@ function overview(c) {
   return `<h2>${e(t("Overview"))}</h2>
   <div class="card lk-wthero"><div class="label">${e(t("Weight"))}</div><div class="bignum num">${e(s.weight)} <small>kg</small></div><div class="prev">${e(t("vs. 4 weeks ago"))}: <b class="num">${e(s.change)}</b> kg</div></div>
   <div class="stats"><div class="stat"><div class="label">${e(t("Workouts this week"))}</div><div class="v">${e(s.thisWeek)} <small>/ ${e(s.target)}</small></div></div><div class="stat"><div class="label">${e(t("Training streak (weeks)"))}</div><div class="v">${e(s.streak)}</div></div></div>
-  ${c.weightHtml}${c.trainingHtml}${c.caloriesHtml}${c.strengthHtml}`;
+  ${c.yearHtml}${c.weightHtml}${c.trainingHtml}${c.caloriesHtml}${c.strengthHtml}`;
 }
 
 // Goals: the badges first (the rewards), then streaks and the target.

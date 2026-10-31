@@ -14,7 +14,7 @@ const once = (html, names, label) => { for (const n of names) assert.equal(html.
 
 const BUILDERS = {
   "plan.dayCard": { parts: ["listHtml", "trainHtml"], ctx: { id: "d1", name: "Push", wds: ["Sat"], focus: ["Chest"], exCount: 3, next: true } },
-  "progress.overview": { parts: ["statsHtml", "weightHtml", "trainingHtml", "caloriesHtml", "strengthHtml"], ctx: { stats: { weight: "86", change: "−1", thisWeek: 2, target: 3, streak: 4 } } },
+  "progress.overview": { parts: ["statsHtml", "yearHtml", "weightHtml", "trainingHtml", "caloriesHtml", "strengthHtml"], ctx: { stats: { weight: "86", change: "−1", thisWeek: 2, target: 3, streak: 4 } } },
   "progress.goals": { parts: ["targetHtml", "streaksHtml", "badgesHtml"], ctx: {} },
   "progress.body": { parts: ["quickHtml", "profileHtml", "entryHtml", "trendHtml", "recentHtml"], ctx: {} },
   "friends.board": { parts: ["requestsHtml", "boardHtml", "friendsHtml", "manageHtml"], ctx: {} },

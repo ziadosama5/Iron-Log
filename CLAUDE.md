@@ -58,7 +58,7 @@ public/challenges.js       training-days challenges: weekStart/nextSaturday/chal
 public/safety.js            REPORT_REASONS, reportId, buildReport (report documents), chunk (batching), wipePlan (the Delete-my-account steps). Pure, unit-tested
 public/privacy.html, public/terms.html  standalone Privacy Policy and Terms of Use, English + Arabic blocks (language from `ironlog.lang`), contact ziadosamaabdo@gmail.com. Offline-cached; keep them true to what the app does (tests/pages.test.js checks key statements)
 public/social.js            profiles/privacy/search helpers: validUsername, normalizeEmail, buildSummary (the shared progress summary), planShare (exact write batch), shouldPublish, lookupResult. Unit-tested
-public/overview.js         Progress Overview series: weeklyCounts, weightSeries/weightChange, caloriesWeek, topLifts, prsThisMonth. Pure, unit-tested
+public/overview.js         Progress Overview series: weeklyCounts, weightSeries/weightChange, caloriesWeek, topLifts, prsThisMonth, yearActivity (the GitHub-style year grid: 53 Saturday-first weeks, days shaded by time trained in quartiles, month labels; `yearHtml` draws it on Overview). Pure, unit-tested
 public/friends.js          friends: pairId, write plans (planRequest/Accept/Remove/Block/Unblock/NameRefresh), groupFriendships, relationTo, compareSummaries. Pure, unit-tested
 public/i18n.js             English/Arabic layer: t(text,{params}), tn(one,other,n), nameOf(kind,name), trDom(root) (swaps plain labels + isolates numbers in Arabic), withLang, detectLang. Unit-tested
 public/lang-ar.js          AR = {ui: English text → Arabic, names: ex/muscle/template/tplnote/day/badge/cardio/intensity/goal/weekday/meal/level}

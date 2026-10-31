@@ -2534,3 +2534,38 @@ test("looks 2.0: switching the look in Me redraws Today with the new layout and 
   assert.deepEqual(errors, []);
   await ctx.close();
 });
+
+// ---- Year activity: a GitHub-style grid on Progress > Overview ----
+for (const look of ["classic", "carbon", "bloom"]) {
+  test(`year activity (${look}): a 53-week grid with month and weekday labels, legend, and a tapped day shows its detail`, async () => {
+    const { page, ctx, errors } = await open("", undefined, lookInit(look));
+    await tab(page, "progress");
+    await page.waitForSelector(".hm-wrap");
+    assert.equal(await page.locator(".hm-col").count(), 53);
+    assert.ok(await page.locator(".hm-c[data-date]").count() > 300, "past and today cells");
+    assert.ok(await page.locator(".hm-c.future").count() < 7, "only this week's later days are future");
+    assert.equal(await page.locator(".hm-c.today").count(), 1);
+    assert.ok(await page.locator(".hm-c.l1, .hm-c.l2, .hm-c.l3, .hm-c.l4").count() > 5, "shaded days");
+    assert.equal(await page.locator(".hm-legend .hm-c").count(), 5);
+    assert.ok((await page.locator(".hm-months span").allInnerTexts()).filter(Boolean).length >= 11, "month labels");
+    assert.equal((await page.locator(".hm-days span").allInnerTexts()).filter(Boolean).length, 3, "three weekday labels");
+    const scrolledToEnd = await page.locator(".hm-wrap").evaluate(e => e.scrollLeft + e.clientWidth >= e.scrollWidth - 2);
+    assert.ok(scrolledToEnd, "starts at today");
+    const cell = page.locator(".hm-c[data-n]:not([data-n='0'])").last();
+    await cell.click({ force: true });
+    assert.match(await page.locator("#hm-cap").innerText(), /workout.*min/);
+    assert.equal(await page.locator('#hm-cap [data-open]').count(), 1, "Open button for that day");
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  });
+}
+test("year activity: Arabic keeps the grid left to right and translates the labels", async () => {
+  const { page, ctx, errors } = await open("lang=ar");
+  await tab(page, "progress");
+  await page.waitForSelector(".hm-wrap");
+  assert.equal(await page.locator(".hm-wrap").getAttribute("dir"), "ltr");
+  assert.match(await page.locator("#hm-cap").innerText(), /تدريب/);
+  assert.match(await page.locator(".hm-legend").innerText(), /وقت أقل/);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});

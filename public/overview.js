@@ -1,8 +1,9 @@
 // Progress Overview: the series behind the headline numbers and graphs. Pure (no DOM/Firebase), unit-tested in tests/overview.test.js.
 import { weekKey, addDays, weeklyTarget, e1rm, prEvents } from "./achievements.js";
 import { trainedOn } from "./workout-tools.js";
-import { workingSets } from "./progression.js";
-import { weightOn, bmrFor, dayEnergy } from "./energy.js";
+import { workingSets, volumeSets } from "./progression.js";
+import { loadKg } from "./bodyweight.js";
+import { weightOn, bmrFor, dayEnergy, liftMinutes } from "./energy.js";
 
 export const weeklyTargetFor = weeklyTarget;
 // Key for the memoised Overview series: a different account, data revision or day must never reuse another's.
@@ -66,4 +67,35 @@ export function topLifts(workouts, today, n = 3) {
 export function prsThisMonth(workouts, today) {
   const cut = addDays(today, -30);
   return prEvents(workouts).filter(e => e.date > cut && e.date <= today).length;
+}
+
+// Year activity (a GitHub-style grid): `weeks` columns of 7 days, Saturday first, the last column is the week of `today`.
+// A day is shaded by the time trained that day (lifting by liftMinutes + cardio minutes): level 1-4 by quartiles of the days that have
+// time, 0 = nothing, days after today are `future`. Only days with sets or cardio count (trainedOn). Volume = extra load only.
+export function yearActivity(workouts, today, weeks = 53) {
+  const last = weekKey(today), first = addDays(last, -(weeks - 1) * 7), agg = {};
+  for (const w of Array.isArray(workouts) ? workouts : []) {
+    if (!w || typeof w.date !== "string" || !trainedOn(w) || w.date < first || w.date > today) continue;
+    const a = agg[w.date] || (agg[w.date] = { workouts: 0, minutes: 0, volume: 0 });
+    a.workouts++;
+    a.minutes += liftMinutes(w) + (w.cardio || []).reduce((n, c) => n + (Number(c && c.min) || 0), 0);
+    a.volume += (w.entries || []).reduce((n, e) => n + volumeSets(e.sets || []).reduce((m, s) => m + loadKg(s) * s.r, 0), 0);
+  }
+  const mins = Object.values(agg).map(a => a.minutes).filter(v => v > 0).sort((a, b) => a - b);
+  const q = p => (mins.length ? mins[Math.min(mins.length - 1, Math.floor(p * mins.length))] : 0), t1 = q(0.25), t2 = q(0.5), t3 = q(0.75);
+  const levelOf = a => !a ? 0 : !a.minutes ? 1 : a.minutes >= t3 ? 4 : a.minutes >= t2 ? 3 : a.minutes >= t1 ? 2 : 1;
+  const cols = [], months = [];
+  let lastMonth = -1;
+  for (let wk = 0; wk < weeks; wk++) {
+    const start = addDays(first, wk * 7), days = [];
+    for (let d = 0; d < 7; d++) {
+      const date = addDays(start, d), a = agg[date], future = date > today;
+      days.push({ date, level: future ? 0 : levelOf(a), minutes: a ? Math.round(a.minutes) : 0, workouts: a ? a.workouts : 0, volume: a ? Math.round(a.volume) : 0, future, today: date === today });
+    }
+    cols.push({ start, days });
+    const month = Number(start.slice(5, 7)) - 1, dom = Number(start.slice(8));
+    if (month !== lastMonth && dom <= 7 && wk < weeks - 2) months.push({ col: wk, month });
+    if (dom <= 7) lastMonth = month;
+  }
+  return { weeks: cols, months, trainedDays: Object.keys(agg).length, thresholds: [t1, t2, t3] };
 }

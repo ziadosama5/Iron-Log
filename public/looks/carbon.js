@@ -24,7 +24,7 @@ function dayCard(c) {
 
 // Progress overview: the numbers first, training per week leads the charts.
 function overview(c) {
-  return `<h2>${c.esc(c.t("Overview"))}</h2>${c.statsHtml}${c.trainingHtml}${c.weightHtml}${c.caloriesHtml}${c.strengthHtml}`;
+  return `<h2>${c.esc(c.t("Overview"))}</h2>${c.statsHtml}${c.yearHtml}${c.trainingHtml}${c.weightHtml}${c.caloriesHtml}${c.strengthHtml}`;
 }
 
 // Goals: streaks and the target first, badges last.

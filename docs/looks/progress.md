@@ -9,3 +9,4 @@ Boards: Overview dark / light / Arabic, Body, Body entry form, Lifts, Goals, Bad
 - **History:** five workouts + Show all (N), Backup card (age reminder, Download, Restore).
 - **Classic data-act kept:** pill, goto-body, body-full, edit-profile, cancel-profile, more-list, tips-all, coach-more, coach-add, copy-review, family-open, family-close, badges-all, badges-back, export, goto-history, del-w, del-body, hero-go.
 - **Removed / moved:** nothing removed.
+- **Year activity** (owner request 2026-11-01, like openGym and GitHub): a card on Progress > Overview in all three looks (`yearActivity` in overview.js, `yearHtml`): 53 weeks, Saturday first, shade = time trained (quartiles), month and weekday labels, legend, a tapped day shows its detail with an Open button.

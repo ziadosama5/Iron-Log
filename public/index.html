@@ -124,6 +124,26 @@ button.wd{appearance:none;font:inherit;color:inherit;cursor:pointer}
 .brow.off .t b{color:var(--muted)}
 .row>h2.grow{flex:1 1 150px}
 .dyn{display:contents}
+.hm-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+.hm-wrap::-webkit-scrollbar{display:none}
+.hm-months{display:flex;gap:3px;margin-left:31px;margin-bottom:5px}
+.hm-months span{flex:none;width:11px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:visible}
+.hm-body{display:flex;gap:3px}
+.hm-days{display:flex;flex-direction:column;gap:3px;flex:none;width:28px;position:sticky;inset-inline-start:0;z-index:1;background:var(--surface)}
+.hm-days span{height:11px;font-size:12px;color:var(--muted);line-height:11px;overflow:visible;white-space:nowrap}
+.hm-grid{display:flex;gap:3px}
+.hm-col{display:flex;flex-direction:column;gap:3px}
+.hm-c{width:11px;height:11px;border-radius:3px;background:var(--sunk);flex:none;cursor:default}
+.hm-c[data-date]{cursor:pointer}
+.hm-c.l1{background:color-mix(in srgb,var(--accent) 30%,var(--sunk))}
+.hm-c.l2{background:color-mix(in srgb,var(--accent) 55%,var(--sunk))}
+.hm-c.l3{background:color-mix(in srgb,var(--accent) 78%,var(--sunk))}
+.hm-c.l4{background:var(--accent)}
+.hm-c.today{box-shadow:0 0 0 1.5px var(--accent)}
+.hm-c.future{opacity:.3}
+.hm-legend{display:flex;align-items:center;justify-content:flex-end;gap:4px;font-size:12px;color:var(--muted)}
+.hm-legend .hm-c{width:10px;height:10px}
+.hm-cap{min-height:24px}
 .pills{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px;margin:-2px}
 .pills::-webkit-scrollbar{display:none}
 .pill{flex:none;appearance:none;border:1px solid var(--card-border);border-radius:999px;padding:0 15px;min-height:44px;background:var(--surface);color:var(--muted);font:600 13px/1 var(--f-body);box-shadow:var(--shadow);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
@@ -594,7 +614,7 @@ import { CARDIO_TYPES, INTENSITIES, ACTIVITY_IDS, ADJUST_MIN, ADJUST_MAX, goalAd
 import { cleanDigits, canonicalBarcode, productUrl, normalizeProduct } from "./barcode.js";
 import { FOODS, searchFoods, portionTotals, mealTotals, mealNumbers, asEntry, makeMyFood, keepOtherServings, recentFoods } from "./food-table.js";
 import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./achievements.js";
-import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth, cacheKey } from "./overview.js";
+import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth, yearActivity, cacheKey } from "./overview.js";
 import { LIB, CURATED_LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 import { gifUrl, stillUrl, gifUrls, stillUrls } from "./exercise-gifs.js";
@@ -2097,7 +2117,7 @@ let ovCache=null;
 function overviewData(){
   const td=today(), key=cacheKey(store.user&&store.user.uid,state.dataRev,td); if(ovCache&&ovCache.key===key) return ovCache.v;
   const ws=state.workouts, weight=weightSeries(state.body,td);
-  const v={weight, change:weightChange(weight,td), weeks:weeklyCounts(ws,td), cal:caloriesWeek(state.food,ws,state.body,state.profile,td), lifts:topLifts(ws,td), prs:prsThisMonth(ws,td), streak:trainingStreak(ws,state.days,td)};
+  const v={weight, change:weightChange(weight,td), weeks:weeklyCounts(ws,td), cal:caloriesWeek(state.food,ws,state.body,state.profile,td), lifts:topLifts(ws,td), prs:prsThisMonth(ws,td), streak:trainingStreak(ws,state.days,td), year:yearActivity(ws,td)};
   ovCache={key,v}; return v;
 }
 // Vertical bars: bars=[{label,value}] (value null = nothing logged), optional dashed target line, value above each bar.
@@ -2118,6 +2138,22 @@ function barChart(bars,{target=null,aria,emptyMsg,fmt=v=>String(v)}){
   if(hasT) g+=`<line x1="${L}" x2="${W-R}" y1="${y(target).toFixed(1)}" y2="${y(target).toFixed(1)}" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>`;
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria)}" style="direction:ltr">${g}</svg>`;
 }
+// Year activity: a GitHub-style grid (53 weeks of 7 days, Saturday first), each day shaded by the time trained. The cells are plain boxes (a
+// picture of the year, not 370 buttons): tapping one shows its day under the grid, with a button that opens that day.
+function yearHtml(y){
+  const mon=m=>new Date(2000,m,1).toLocaleDateString(locale(),{month:"short"}), wd=i=>nameOf("weekday",WD[(i+6)%7]);   // grid row 0 = Saturday
+  const months=y.weeks.map((w,c)=>{ const m=y.months.find(x=>x.col===c); return `<span>${m?esc(mon(m.month)):""}</span>`; }).join("");
+  const cols=y.weeks.map(w=>`<div class="hm-col">${w.days.map(d=>`<div class="hm-c l${d.level}${d.today?" today":""}${d.future?" future":""}"${d.future?"":` data-date="${d.date}" data-n="${d.workouts}" data-min="${d.minutes}" data-vol="${d.volume}"`}></div>`).join("")}</div>`).join("");
+  return `<div class="hm-wrap" dir="ltr" role="img" aria-label="${esc(tn("{n} day trained in the last year","{n} days trained in the last year",y.trainedDays))}"><div class="hm-months">${months}</div>
+    <div class="hm-body"><div class="hm-days"><span></span><span></span><span>${esc(wd(2))}</span><span></span><span>${esc(wd(4))}</span><span></span><span>${esc(wd(6))}</span></div><div class="hm-grid">${cols}</div></div></div>
+    <div class="hm-legend">${esc(t("Less time"))} <div class="hm-c l0"></div><div class="hm-c l1"></div><div class="hm-c l2"></div><div class="hm-c l3"></div><div class="hm-c l4"></div> ${esc(t("More time"))}</div>
+    <p class="prev hm-cap" id="hm-cap" aria-live="polite" style="margin:0">${esc(tn("{n} day trained in the last year","{n} days trained in the last year",y.trainedDays))}</p>`;
+}
+function showHmDay(c){
+  const cap=$("#hm-cap"); if(!cap) return;
+  const d=c.dataset.date, n=Number(c.dataset.n), min=Number(c.dataset.min), vol=Number(c.dataset.vol);
+  cap.innerHTML=n?`${esc(fmtDate(d))} · ${esc(tn("{n} workout","{n} workouts",n))} · ${esc(t("{n} min",{n:min}))} · ${esc(t("{n} kg moved",{n:kg(vol)}))} <button type="button" class="btn ghost small" data-open="${esc(d)}">${esc(t("Open"))}</button>`:`${esc(fmtDate(d))} · ${esc(t("No workout"))}`;
+}
 function renderOverview(){
   const o=overviewData(), wNow=weightOn(state.body,today()), sgn=d=>(d>0?"+":"")+d;
   const ovCard=(id,title,go,chart)=>`<div class="card ovcard" data-card="${id}"><div class="row"><h3 class="grow">${title}</h3>${go}</div>${chart}</div>`;
@@ -2130,15 +2166,17 @@ function renderOverview(){
       <div class="stat"><div class="label">Workouts this week</div><div class="v">${o.streak.thisWeek} <small>/ ${o.streak.target}</small></div></div>
       <div class="stat"><div class="label">Training streak (weeks)</div><div class="v">${o.streak.weeks}</div></div>
     </div>`,
+    YR=`${ovCard("year",t("Year activity"),"",yearHtml(o.year))}`,
     W=`${ovCard("weight",t("Weight trend"),open("pill",'data-view="body"'),lineChart(o.weight,[{k:"weight",c:"var(--accent)",main:true}],t("Body weight over the last 90 days"),t("Log your weight on two days to see the trend.")))}`,
     TR=`${ovCard("training",t("Training per week"),open("pill",'data-view="history"'),barChart(o.weeks.map(w=>({label:short(w.start),value:w.count})),{target:o.streak.target,aria:t("Workouts per week, last 8 weeks"),emptyMsg:t("Log a workout to start your weekly chart.")})+`<p class="prev" style="margin:0">${tn("Target: {n} day a week","Target: {n} days a week",o.streak.target)}</p>`)}`,
     CA=`${ovCard("calories",t("Calories vs target"),open("tab",'data-tab="today"'),barChart(o.cal.map(c=>({label:dow(c.date),value:c.eaten})),{target,aria:t("Calories eaten, last 7 days"),emptyMsg:t("Add meals on Today to compare with your target."),fmt:v=>(Math.round(v/100)/10)+"k"})+(target!=null?`<p class="prev" style="margin:0">${t("Target: {n} kcal a day",{n:Math.round(target).toLocaleString("en-US")})}</p>`:""))}`,
     ST=`${ovCard("strength",t("Strength"),open("pill",'data-view="progress"'),o.lifts.length?`<ul class="cardio-list">${o.lifts.map(l=>`<li><span class="grow">${esc(nameOf("ex",l.ex))}</span><span class="num">${kg(l.best)} kg${l.change30!=null?` · ${sgn(l.change30)}`:""}</span></li>`).join("")}</ul><p class="prev" style="margin:0">${tn("{n} PR this month","{n} PRs this month",o.prs)}</p>`:`<div class="empty" style="padding:16px">${t("Log a few sessions to see your strongest lifts.")}</div>`)}`;
   // The cards are named parts so a look can arrange them its own way (screenHtml "progress.overview").
-  const P={stats:{weight:wNow!=null?kg(wNow):"–",change:o.change==null?"–":sgn(o.change),thisWeek:o.streak.thisWeek,target:o.streak.target,streak:o.streak.weeks},statsHtml:STATS,weightHtml:W,trainingHtml:TR,caloriesHtml:CA,strengthHtml:ST};
+  const P={yearHtml:YR,stats:{weight:wNow!=null?kg(wNow):"–",change:o.change==null?"–":sgn(o.change),thisWeek:o.streak.thisWeek,target:o.streak.target,streak:o.streak.weeks},statsHtml:STATS,weightHtml:W,trainingHtml:TR,caloriesHtml:CA,strengthHtml:ST};
   $("#view-overview").innerHTML=screenHtml("progress.overview",P,classicOverview);
+  const hm=document.querySelector("#view-overview .hm-wrap"); if(hm) hm.scrollLeft=hm.scrollWidth;   // start at today, the right edge
 }
-function classicOverview(P){ return `<h2>Overview</h2>${P.statsHtml}${P.weightHtml}${P.trainingHtml}${P.caloriesHtml}${P.strengthHtml}`; }
+function classicOverview(P){ return `<h2>Overview</h2>${P.statsHtml}${P.yearHtml}${P.weightHtml}${P.trainingHtml}${P.caloriesHtml}${P.strengthHtml}`; }
 
 /* ---------- BODY ---------- */
 const BF = {
@@ -3421,6 +3459,7 @@ document.addEventListener("submit",e=>{
 document.addEventListener("click",e=>{
   const b=e.target.closest("[data-act]");
   if(!b){
+    const hm=e.target.closest(".hm-c[data-date]"); if(hm){ showHmDay(hm); return; }
     const c=e.target.closest("[data-open]"); if(c){ state.date=c.dataset.open; state.pickDay=false; state.openEx=undefined; go("log"); return; }
     const r=e.target.closest("[data-bdate]"); if(r){ state.bdate=r.dataset.bdate; renderBody(); window.scrollTo(0,0); }
     return;
