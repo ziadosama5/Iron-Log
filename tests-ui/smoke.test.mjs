@@ -1800,7 +1800,7 @@ test("the full-screen button opens the viewer: pause shows the still, X and Back
   const img = page.locator("#demoview img.demoview-img");
   assert.match(await img.getAttribute("src"), /\/videos\/0025-EIeI8Vf\.gif$/);
   const w = (await img.boundingBox()).width;
-  assert.ok(w >= 300 && w <= 372, "viewer image about twice the 180 px source, got " + w);
+  assert.ok(w >= 200 && w <= 250, "viewer image at most 240 px (the source is 180 px, so a smaller picture looks sharper), got " + w);
   const pause = page.locator('#demoview [data-act="demo-pause"]');
   assert.equal(await pause.getAttribute("aria-pressed"), "false");
   await pause.click();
