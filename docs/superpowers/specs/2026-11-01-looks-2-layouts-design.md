@@ -1,6 +1,6 @@
 # Looks 2.0: real layouts for Carbon and Bloom (sub-project 27): design
 
-Status: draft for the owner's review (2026-11-01). Branch `looks-2` (cut from `library-expansion`, which is cut from `workout-screen-2`). Nothing deployed; the live app is untouched.
+Status: approved (2026-11-01); design boards: https://claude.ai/artifact/SSZFbydoQhtnhwbNn9PXPC, index docs/looks/INDEX.md. Branch `looks-2` (cut from `library-expansion`, which is cut from `workout-screen-2`). Nothing deployed; the live app is untouched.
 
 ## Why
 Carbon and Bloom (sub-project 25) change colours, fonts and a few shapes, but every screen still has the old layout. The owner wants each look to feel like its own app: the layouts of the design-canvas boards (https://claude.ai/artifact/35ekGA7CkuEcnEQAtKJbDL: Carbon = a glanceable workout card with big weight/rep numbers and one large "Log set" button, flat full-width bar; Bloom = soft rounded cards, a floating bar, serif headings), for **every** screen.
