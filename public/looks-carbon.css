@@ -13,7 +13,7 @@ html:root[data-look="carbon"] .pill[aria-pressed="true"]{background:none;color:v
 html:root[data-look="carbon"] h2{font-size:34px;line-height:41px;font-weight:700;letter-spacing:-.02em}
 html:root[data-look="carbon"] .card h3{font-size:17px;font-weight:600}
 html:root[data-look="carbon"] .num{font-weight:600;letter-spacing:-.02em}
-html:root[data-look="carbon"] .exchip{min-height:34px;padding:0 13px 0 6px;border-radius:999px}
+html:root[data-look="carbon"] .exchip{min-height:44px;padding:0 13px 0 6px;border-radius:999px}
 html:root[data-look="carbon"] .exchip[aria-current="true"]{box-shadow:none}
 html:root[data-look="carbon"] .btn.primary{border-radius:var(--r-btn);min-height:56px;font-size:17px}
 html:root[data-look="carbon"] .restbar{border-radius:20px}
