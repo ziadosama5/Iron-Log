@@ -9,6 +9,12 @@ Recorded from the owner's answers. Each step gets its own brainstorm, spec, plan
 - No pay-as-you-go: the owner does not want a billing account because of attack risk. Stay on the Firebase free plan (Spark cannot be billed; at its limit the app only pauses until the next day).
 - Current users' data must be kept in any future change.
 
+## 25b. Exercise library expansion (spec 2026-11-01-library-expansion-design.md)
+All 1,129 new dataset exercises with exact GIFs, Arabic names, joint tags, search. Built before the APK because the APK bundles the GIFs.
+
+## 25c. Looks 2.0: real layouts (not started; the owner asked for it on 2026-11-01)
+Today Carbon and Bloom only restyle (tokens, fonts, a few shapes); the screens keep the old layout. Goal: the layouts of the design-canvas boards (https://claude.ai/artifact/35ekGA7CkuEcnEQAtKJbDL): Carbon = a glanceable workout card with big weight/rep numbers and one large "Log set" button, flat full-width bar; Bloom = soft cards, floating bar, rounded rows; the new Today with level ring and watch card; all five tabs and the sheets. Needs its own brainstorm (which screens first, what changes per look, whether the two looks share one layout with different skins or have different layouts) and spec before any code.
+
 ## 26. Standalone APK (Capacitor)
 - Replace the thin TWA with a Capacitor app (package `app.ironlog`, same signing key `C:/Android/keys/ironlog.keystore`) that carries the web code and the ~183 exercise GIFs inside the APK, so the app and every demo work offline from the first launch.
 - Native Google sign-in (the WebView cannot use the popup flow): a Capacitor Firebase Auth plugin, then `signInWithCredential` on the web SDK. Firestore keeps its offline cache.

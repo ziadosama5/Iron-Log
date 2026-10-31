@@ -1,6 +1,6 @@
 # Exercise library expansion (sub-project 26): design
 
-Status: draft for the owner's review (2026-11-01). Branch `library-expansion` (cut from `workout-screen-2`, because it builds on its GIF mapping). Nothing deployed; the live app is untouched.
+Status: owner answered (2026-11-01): **add them all**, cardio and stretches included. Open items 2 and 3 were left to the defaults below (English How-to steps only; ship the review lists as-is and fix what the owner reports). Branch `library-expansion` (cut from `workout-screen-2`, because it builds on its GIF mapping). Nothing deployed; the live app is untouched.
 
 ## Why
 Today the app knows 183 curated exercises. The GIF dataset it now uses (`hasaneyldrm/exercises-dataset`, names, muscles and instructions MIT-licensed; the media is © Gym visual, see the licence gate in CLAUDE.md) has **1,324 exercises, every one with a GIF**. The owner asked to use all of them, so every exercise has a picture that matches it exactly (right equipment, right movement) instead of a "closest match".
@@ -12,7 +12,7 @@ Today the app knows 183 curated exercises. The GIF dataset it now uses (`hasaney
 - New ones by equipment: dumbbell 245, body weight 236, cable 132, barbell 115, machine ("leverage") 51, band 60, smith 37, kettlebell 40, weighted 33, stability ball 20, EZ bar 21, sled machine 11, medicine ball 13, other 20.
 
 ## Scope
-**In:** import the 1,129 new exercises (minus whatever the owner excludes below) into the library with name, muscle group, equipment, GIF and a How-to; Arabic names; injury joint tags; a real search in the Add-exercise sheet; My Gym and Injuries keep working on all of them.
+**In:** import **all 1,129** new exercises into the library with name, muscle group, equipment, GIF and a How-to; Arabic names; injury joint tags; a real search in the Add-exercise sheet; My Gym and Injuries keep working on all of them.
 **Out:** Arabic instructions (English steps are shown), tips for the new ones (the curated 183 keep their tips), changing generated training plans, new muscle groups, any change to stored data (workouts keep storing the exercise name).
 
 ## Design
@@ -45,9 +45,12 @@ Eager: about +120 KB catalog, +70 KB Arabic names, +60 KB joint tags (minified-i
 ### Licence note (unchanged gate)
 Dataset text/data are MIT (the LICENSE is copied to `docs/notices/exercises-dataset-LICENSE.txt`). The pictures remain © Gym visual: the same owner decision and kill switch as before applies to all 1,324 pictures; a wider catalog makes the Play review more likely to look at it, so settle it first.
 
+## The UI is not redesigned here
+The owner pointed out that the Carbon and Bloom looks so far change colours, type and a few shapes but the **screens are laid out as before**. This sub-project adds only the one new screen element it needs (the search in the Add-exercise sheet) and builds it from the existing components and tokens, so it follows whatever look is active and is restyled for free when the layouts change. The real layout redesign (the screens shown on the design canvas: big-number workout card, floating bars, new Today, etc.) is its own sub-project, tracked in `docs/superpowers/specs/2026-10-31-standalone-health-data-roadmap.md` as "Looks 2.0: real layouts".
+
 ## Decisions (defaults I chose; tell me to change any)
 1. **Fold the 77 duplicates** (v. 2, male, female, pov) into one entry each.
-2. **Strength-type (1,034): include.** **Stretch/mobility/foam-roller (68): include as timed holds** (seconds, no weight). **Cardio category (29: burpees, jump rope, bear crawl…): exclude**, because the app has a separate "+ Cardio" log with minutes; say so if you want them anyway.
+2. **All 1,129 are included (owner's decision).** Strength-type (1,034) log weight × reps as usual. **Stretch/mobility/foam-roller (68) and cardio-category (29)** are logged as **timed holds** (seconds, no weight, like Plank); in the library they appear under their body part (cardio under Core). The separate "+ Cardio" log (minutes, kcal) is unchanged.
 3. **Forearm exercises go under "Biceps"** (no new muscle group).
 4. **Arabic for names only;** the How-to steps show in English in the Arabic app (translating ~560 KB of steps is a separate, optional step).
 5. **Generated plans and Coach suggestions stay on the curated 183.**
