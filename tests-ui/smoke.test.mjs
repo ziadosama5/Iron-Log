@@ -1643,8 +1643,9 @@ test("deload: Last time skips a deload-week session, Lifts still lists it", asyn
 });
 
 const bannerText = async page => (await page.locator("#view-log").innerText());
-const DELOAD_START_TODAY = "deload=" + encodeURIComponent(JSON.stringify({ start: new Date().toLocaleDateString("en-CA") }));
-const daysAgoISO = n => new Date(Date.now() - n * 864e5).toLocaleDateString("en-CA");
+// computed when used, not when the file loads: a suite that runs across midnight must not see "day 2"
+const deloadToday = () => "deload=" + encodeURIComponent(JSON.stringify({ start: new Date().toLocaleDateString("en-CA") }));
+const daysAgoISO = n => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - n); return d.toLocaleDateString("en-CA"); };   // calendar days: a clock change must not repeat a date
 
 test("deload: a long streak or several stalled lifts shows the suggestion; a short streak shows nothing", async () => {
   const a = await open("streak=8");
@@ -1676,7 +1677,7 @@ test("deload: Not now hides the suggestion, Start shows the week, End deload clo
 });
 
 test("deload: a stored deload opens active; one that is over shows nothing; Arabic renders", async () => {
-  const a = await open(DELOAD_START_TODAY);
+  const a = await open(deloadToday());
   assert.ok((await bannerText(a.page)).includes("Deload week · day 1 of 7"));
   await a.ctx.close();
   const old = "deload=" + encodeURIComponent(JSON.stringify({ start: daysAgoISO(8) }));
@@ -1689,7 +1690,7 @@ test("deload: a stored deload opens active; one that is over shows nothing; Arab
 });
 
 test("deload: during a deload week the card shows the lighter plan and pre-fills it", async () => {
-  const { page, ctx } = await open(DELOAD_START_TODAY);
+  const { page, ctx } = await open(deloadToday());
   await startPush(page);
   assert.equal((await bwText(advice(page))), "Deload: 55 kg for about 2 sets", "90% of the last normal 62.5 kg, to 2.5 kg");
   assert.equal(await page.locator('#open-card input[data-f="w"]').inputValue(), "55");
@@ -1698,7 +1699,7 @@ test("deload: during a deload week the card shows the lighter plan and pre-fills
 });
 
 test("deload: bodyweight exercises get a set count only, a new exercise gets no line, and the normal advice returns when the week is over", async () => {
-  const a = await open(DELOAD_START_TODAY + "&bw=1");
+  const a = await open(deloadToday() + "&bw=1");
   await startPush(a.page);
   await addEx(a.page, "Push-up");
   assert.equal(await bwText(advice(a.page)), "Deload: about 2 sets, stay well short of your best");
@@ -1714,7 +1715,7 @@ test("deload: bodyweight exercises get a set count only, a new exercise gets no 
 });
 
 test("deload: in Arabic the deload line is translated", async () => {
-  const { page, ctx } = await open("lang=ar&" + DELOAD_START_TODAY);
+  const { page, ctx } = await open("lang=ar&" + deloadToday());
   await startPush(page);
   assert.ok(/[؀-ۿ]/.test(await advice(page).innerText()));
   await ctx.close();
@@ -1921,7 +1922,7 @@ test("planned rows: the live row follows the steppers", async () => {
 });
 
 test("planned rows: a deload week plans the lighter number of sets", async () => {
-  const { page, ctx } = await open(DELOAD_START_TODAY, undefined, undefined, gifHost);
+  const { page, ctx } = await open(deloadToday(), undefined, undefined, gifHost);
   await startPush(page);
   const n = await planned(page).count();
   const text = await page.locator("#open-card .advice").first().textContent();
