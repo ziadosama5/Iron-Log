@@ -1597,6 +1597,8 @@ try{ if("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("
   else if(d.type==="demo-done"){ picsState.progress=null; if(d.failed) toast(t("{n} pictures could not be downloaded. Try again.",{n:d.failed})); picsMsg({type:"demo-status"}); }
 }); }catch(e){}
 window.addEventListener("online",drawPics); window.addEventListener("offline",drawPics);
+// The credit the media owner asks for (NOTICE.md of hasaneyldrm/exercises-dataset): shown wherever a demo GIF is shown big.
+const gifCreditHtml=()=>`<p class="prev ex-credit">${esc(t("Animations: © Gym visual, https://gymvisual.com/ (via hasaneyldrm/exercises-dataset)"))}</p>`;
 // "mini" (default) = a thumbnail beside the name, "full" = the big box above it; per device, never throws.
 function demoPref(){ try{ return localStorage.getItem("ironlog.demo")==="full"?"full":"mini"; }catch(e){ return "mini"; } }
 const demoFallbackHtml=info=>`<div class="demo-fallback">${figureBox(info,"start")}${figureBox(info,"end")}</div>`;
@@ -2858,7 +2860,7 @@ function openExInfo(name){
     <ul class="ex-tips">${(isRtl()&&info.ar&&info.ar.tips?info.ar.tips:info.tips).map(tip=>`<li>${esc(tip)}</li>`).join("")}</ul>
     ${(()=>{ const w=avoidWarn(info.name); return w?`<p class="avoidnote"><span aria-hidden="true">⚠</span><span>${esc(warnText(w))}</span></p>`:""; })()}
     <div class="row"><button type="button" class="btn small" data-act="avoid-toggle" data-name="${esc(info.name)}">${t(avoidsName(info.name)?"Stop avoiding":"Avoid this exercise")}</button></div>
-    ${info.img&&!info.own?`<p class="prev ex-credit">Illustrations: Everkinetic, CC BY-SA 4.0</p>`:""}`;
+    ${info.img&&!info.own?`<p class="prev ex-credit">Illustrations: Everkinetic, CC BY-SA 4.0</p>`:""}${gifUrl(info.name)?gifCreditHtml():""}`;
   if(!dlg.open){ dlg.showModal(); history.pushState({exinfo:1},""); }
   fillFigures(dlg,()=>token===exInfoToken);
 }
@@ -2873,7 +2875,7 @@ function openDemoView(name){
   dlg.dataset.name=name;
   dlg.innerHTML=`<div class="sheet-head"><h2 id="demoview-title">${esc(nameOf("ex",name))}</h2><button class="btn ghost small" data-act="demo-view-close" aria-label="Close">✕</button></div>
     <div class="demoview-stage">${g?`<img class="demoview-img" src="${esc(demoPaused?stillUrl(name):g)}" crossorigin="anonymous" alt="${esc(nameOf("ex",name))}">`:`<div class="demo-fallback demoview-fallback">${figureBox(draw,"start")}${figureBox(draw,"end")}</div>`}</div>
-    ${g?`<div class="row" style="justify-content:center"><button type="button" class="btn" data-act="demo-pause" aria-pressed="${demoPaused}">${t(demoPaused?"Play":"Pause")}</button></div>`:""}`;
+    ${g?`<div class="row" style="justify-content:center"><button type="button" class="btn" data-act="demo-pause" aria-pressed="${demoPaused}">${t(demoPaused?"Play":"Pause")}</button></div>${gifCreditHtml()}`:""}`;
   if(!dlg.open){ dlg.showModal(); history.pushState({demoview:1},""); }
   fillFigures(dlg,()=>token===demoViewToken);
 }

@@ -32,6 +32,10 @@ Each improvement was designed first (spec), then broken into tasks (plan), built
 | 23 | Injuries / exercises to avoid (7 body areas, joint table for all 183 exercises, avoid list, filtered suggestions and generated week, warnings) | [spec](superpowers/specs/2026-10-24-injuries-design.md) | [plan](superpowers/plans/2026-10-24-injuries.md) | sw v46 |
 | 24 | Deload suggestions (banner after 6 weeks or 3 stalled lifts, 7-day deload week with lighter advice, deload sessions kept out of Last time and stalls) | [spec](superpowers/specs/2026-10-25-deload-design.md) | [plan](superpowers/plans/2026-10-25-deload.md) | sw v47 |
 
+| 25 | Workout screen 2.0 and the Carbon / Bloom looks (GIF demo on the card, tick rows, why line, first-launch look picker, offline pictures) | [spec](superpowers/specs/2026-10-31-workout-screen-2-design.md) | [plan](superpowers/plans/2026-10-31-workout-screen-2.md) | not deployed (branch `workout-screen-2`) |
+
+Roadmap after it (standalone APK, Health Connect, data layer, openGym feature backlog): [standalone-health-data-roadmap](superpowers/specs/2026-10-31-standalone-health-data-roadmap.md).
+
 Open points (everything still to do or decide): [open-points.md](open-points.md).
 
 Plans describe the code at the time they were written. For how the app works today, read [CLAUDE.md](../CLAUDE.md).

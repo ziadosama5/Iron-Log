@@ -82,3 +82,10 @@ test("the privacy policy says injury choices are stored, in English and Arabic",
   for (const phrase of ["injur", "body areas", "exercises you avoid"]) assert.ok(en.includes(phrase), "privacy (en) mentions: " + phrase);
   assert.ok(ar.includes("الإصابات"), "privacy (ar) mentions injuries");
 });
+
+test("the privacy policy says the exercise pictures come from a public CDN and what it can see", () => {
+  const html = read("privacy.html");
+  const en = block(html, "en"), ar = block(html, "ar");
+  assert.ok(en.includes("jsDelivr") && /IP address/.test(en) && /no account data/i.test(en), "English names jsDelivr, the IP address and that no account data is sent");
+  assert.ok(ar.includes("jsDelivr") && /عنوان IP/.test(ar), "Arabic names jsDelivr and the IP address");
+});
