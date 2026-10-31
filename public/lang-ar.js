@@ -1,3 +1,4 @@
+import { AR_CATALOG_EX } from "./lang-ar-catalog.js";
 // Arabic (simple Modern Standard Arabic). English text is the key.
 //   ui:    English UI text -> Arabic. Keep {placeholders} identical to the key.
 //   names: display names of library things, looked up with nameOf(kind, name). Stored data stays English.
@@ -510,3 +511,5 @@ export const AR = {
     }
   }
 };
+// the dataset exercises (generated, see tools/build-ar-catalog.mjs) join the curated names
+Object.assign(AR.names.ex, AR_CATALOG_EX);

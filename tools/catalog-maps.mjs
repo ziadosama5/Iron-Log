@@ -6,7 +6,7 @@ const SMALL = new Set(["to", "with", "on", "of", "and", "the", "a", "in", "for",
 // "barbell full squat" -> "Barbell Full Squat". Matches the library's style: hyphen words keep only their first part capitalised
 // ("Close-grip"), small words stay lower case, a few gear names are normalised ("EZ-bar", "T-bar", leading "lever" -> "Machine").
 export function titleCase(name) {
-  let s = String(name).trim().toLowerCase().replace(/\s+/g, " ");
+  let s = String(name).trim().toLowerCase().replace(/в°/g, "°").replace(/\s+/g, " ");   // the dataset has a broken "45в°" in a few names
   s = s.replace(/^lever\b/, "machine").replace(/^smith(?! machine)\b/, "smith machine").replace(/\bez[- ]?bar(bell)?\b/g, "ez-bar").replace(/\bsz[- ]bar\b/g, "ez-bar").replace(/\bt[- ]bar\b/g, "t-bar");
   const words = s.split(" ").map((w, i) => {
     const open = w.startsWith("(") ? "(" : "", core = open ? w.slice(1) : w;

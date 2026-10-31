@@ -5339,7 +5339,7 @@
   "target": "hamstrings",
   "category": "upper legs"
  },
- "Sled 45в° Leg Wide Press": {
+ "Sled 45° Leg Wide Press": {
   "dataset": "sled 45в° leg wide press",
   "equipment": "sled machine",
   "target": "glutes",
@@ -5639,7 +5639,7 @@
   "target": "calves",
   "category": "lower legs"
  },
- "Sled 45в° Calf Press": {
+ "Sled 45° Calf Press": {
   "dataset": "sled 45в° calf press",
   "equipment": "sled machine",
   "target": "calves",
