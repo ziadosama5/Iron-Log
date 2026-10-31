@@ -119,10 +119,18 @@ async function tellClients(msg) { for (const c of await self.clients.matchAll({ 
 // The page asks for: a status count, a download of a list of URLs (4 at a time, skipping saved ones, resumable) or a clear.
 self.addEventListener("message", event => {
   const d = event.data || {};
-  if (d.type === "demo-status") event.waitUntil((async () => { const keys = await (await caches.open(DEMO_ALL)).keys(); await tellClients({ type: "demo-status", cached: keys.length }); })());
-  else if (d.type === "demo-clear") event.waitUntil((async () => { await caches.delete(DEMO_ALL); await tellClients({ type: "demo-status", cached: 0 }); })());
+  if (d.type === "demo-status") event.waitUntil((async () => {
+    // counts only the pictures the page still wants (d.urls) and drops the stale rest, so a changed picture list can be downloaded again
+    const wanted = Array.isArray(d.urls) ? new Set(d.urls.filter(u => typeof u === "string")) : null, all = await caches.open(DEMO_ALL);
+    let cached = 0;
+    for (const k of await all.keys()) { if (wanted && !wanted.has(k.url)) await all.delete(k); else cached++; }
+    const seen = (await (await caches.open(DEMO_CACHE)).keys()).length;
+    await tellClients({ type: "demo-status", cached, seen });
+  })());
+  else if (d.type === "demo-clear") event.waitUntil((async () => { await caches.delete(DEMO_ALL); await caches.delete(DEMO_CACHE); await tellClients({ type: "demo-status", cached: 0, seen: 0 }); })());
   else if (d.type === "demo-download" && Array.isArray(d.urls)) event.waitUntil((async () => {
     const urls = d.urls.filter(u => typeof u === "string" && u.startsWith(DEMO_BASE)), cache = await caches.open(DEMO_ALL);
+    for (const k of await cache.keys()) if (!urls.includes(k.url)) await cache.delete(k);   // stale: no longer in the picture list
     let done = 0, failed = 0, next = 0;
     const worker = async () => {
       while (next < urls.length) {
@@ -145,7 +153,7 @@ self.addEventListener("fetch", event => {
   // Never touch sign-in or database traffic; Firebase handles those itself.
   if (url.pathname.startsWith("/__/")) return;
 
-  if (req.url.startsWith(DEMO_BASE)) { event.respondWith(demoFetch(req)); return; }
+  if (DEMO_BASE && req.url.startsWith(DEMO_BASE)) { event.respondWith(demoFetch(req)); return; }
 
   // Exercise drawings never change at the same address within a VERSION, so serve them from
   // the cache once seen (they are saved on first view, not at install, to keep install light).

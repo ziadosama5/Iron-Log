@@ -66,7 +66,9 @@ export const persistentLocalCache = () => ({});
 export const persistentMultipleTabManager = () => ({});
 export const collection = (...segs) => ({ path: path(segs) });
 export const doc = (...segs) => ({ path: path(segs), id: segs[segs.length - 1] });
-export const setDoc = (ref, data) => { logc("setDoc:" + ref.path + ":" + JSON.stringify(data)); mem[ref.path] = data; return Promise.resolve(); };
+// ?echo=1: like Firestore, a write comes straight back as a new snapshot of the items collection
+let itemsCb = null; const ECHO = new URLSearchParams(location.search).get("echo") === "1";
+export const setDoc = (ref, data) => { logc("setDoc:" + ref.path + ":" + JSON.stringify(data)); mem[ref.path] = data; if (ECHO && itemsCb) { const i = items.findIndex(x => x.id === ref.id); const rec = { id: ref.id, data: () => data }; if (i < 0) items.push(rec); else items[i] = rec; setTimeout(() => itemsCb({ docs: items, metadata: { fromCache: false, hasPendingWrites: false }, docChanges: () => [1] }), 5); } return Promise.resolve(); };
 // arrayUnion(...values) is a marker that merge() resolves against the stored array, like Firestore does on the server.
 export const arrayUnion = (...vals) => ({ __union: vals });
 const merge = (target, d) => { for (const k of Object.keys(d)) target[k] = d[k] && d[k].__union ? [...new Set([...(target[k] || []), ...d[k].__union])] : d[k]; return target; };
@@ -114,5 +116,5 @@ export const onSnapshot = (col, opts, cb) => {
     else { const list = col.path === "friendships" ? friendships : col.path === "blocks" ? blocksList : []; docs = list.map(d => ({ data: () => d })); }
     setTimeout(() => opts({ docs, metadata: { fromCache: false } }), 10); return () => {};
   }
-  setTimeout(() => cb({ docs: items, metadata: { fromCache: false, hasPendingWrites: false }, docChanges: () => [1] }), 10); return () => {};
+  itemsCb = cb; setTimeout(() => cb({ docs: items, metadata: { fromCache: false, hasPendingWrites: false }, docChanges: () => [1] }), 10); return () => {};
 };

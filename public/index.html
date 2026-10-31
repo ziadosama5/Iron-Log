@@ -525,7 +525,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
             <div class="swatches" id="accent-swatches" role="group" aria-label="Accent"></div></div>
           <div class="stack" style="gap:6px"><span class="label">Large demo on the card</span>
             <div class="seg" role="group" aria-label="Large demo on the card"><button data-act="demo-size-set" data-v="mini">Small</button><button data-act="demo-size-set" data-v="full">Large</button></div></div>
-          <div class="stack" style="gap:6px"><span class="label">Exercise pictures offline</span>
+          <div class="stack" id="pics-row" style="gap:6px"><span class="label">Exercise pictures offline</span>
             <p class="prev" id="pics-line" style="margin:0"></p>
             <div class="row"><button type="button" class="btn" data-act="pics-download">Download exercise pictures</button><button type="button" class="btn ghost" data-act="pics-clear">Remove downloads</button></div></div>
           <div class="stack" style="gap:6px"><span class="label">Theme</span>
@@ -597,7 +597,7 @@ import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./a
 import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth, cacheKey } from "./overview.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
-import { gifUrl, stillUrl, gifUrls } from "./exercise-gifs.js";
+import { gifUrl, stillUrl, gifUrls, stillUrls } from "./exercise-gifs.js";
 import { LOOKS, cleanLook, savedLookOf, suggestLook, shouldPickLook, accentPresetsFor, defaultAccentFor, envFor } from "./looks.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
@@ -1580,21 +1580,23 @@ function warmDemos(names){
   for(const n of names.slice(0,12)){ const u=gifUrl(n); if(!u||warmedDemos.has(u)) continue; warmedDemos.add(u); const im=new Image(); im.crossOrigin="anonymous"; im.src=u; }
 }
 /* "Download exercise pictures" (Me > Appearance): the service worker saves every GIF into a cache that is never trimmed. */
-const picsState={cached:null,progress:null};
+const picsState={cached:null,seen:0,progress:null};
+const picsUrls=()=>[...gifUrls(),...stillUrls()];
 const picsMsg=m=>{ const c=navigator.serviceWorker&&navigator.serviceWorker.controller; if(c) c.postMessage(m); return !!c; };
 function drawPics(){
   const line=$("#pics-line"); if(!line) return;
-  const total=gifUrls().length, dl=document.querySelector('[data-act="pics-download"]'), clr=document.querySelector('[data-act="pics-clear"]');
+  const total=picsUrls().length, row=$("#pics-row"), dl=document.querySelector('[data-act="pics-download"]'), clr=document.querySelector('[data-act="pics-clear"]');
+  if(row) row.hidden=total===0;   // kill switch (no base URL): nothing to download
   const done=picsState.cached>=total, online=navigator.onLine!==false;
   line.textContent=picsState.progress?t("Downloading {done} of {total}…",picsState.progress):picsState.cached>0?t("Downloaded · {n} pictures",{n:picsState.cached}):online?t("Not downloaded"):t("Connect to the internet to download.");
   if(dl) dl.disabled=!!picsState.progress||!online||done;
-  if(clr) clr.hidden=!(picsState.cached>0);
+  if(clr) clr.hidden=!(picsState.cached>0||picsState.seen>0);
 }
 try{ if("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message",e=>{
   const d=e.data||{};
-  if(d.type==="demo-status"){ picsState.cached=d.cached; picsState.progress=null; drawPics(); }
+  if(d.type==="demo-status"){ picsState.cached=d.cached; picsState.seen=d.seen||0; picsState.progress=null; drawPics(); }
   else if(d.type==="demo-progress"){ picsState.progress={done:d.done,total:d.total}; drawPics(); }
-  else if(d.type==="demo-done"){ picsState.progress=null; if(d.failed) toast(t("{n} pictures could not be downloaded. Try again.",{n:d.failed})); picsMsg({type:"demo-status"}); }
+  else if(d.type==="demo-done"){ picsState.progress=null; if(d.failed) toast(t("{n} pictures could not be downloaded. Try again.",{n:d.failed})); picsMsg({type:"demo-status",urls:picsUrls()}); }
 }); }catch(e){}
 window.addEventListener("online",drawPics); window.addEventListener("offline",drawPics);
 // The credit the media owner asks for (NOTICE.md of hasaneyldrm/exercises-dataset): shown wherever a demo GIF is shown big.
@@ -1604,8 +1606,9 @@ function demoPref(){ try{ return localStorage.getItem("ironlog.demo")==="full"?"
 const demoFallbackHtml=info=>`<div class="demo-fallback">${figureBox(info,"start")}${figureBox(info,"end")}</div>`;
 // The demo of an exercise: its GIF, or the two drawings when it has none (custom exercises: nothing at all).
 function demoThumbHtml(name){
-  const g=gifUrl(name), info=infoFor(name), draw=info&&info.img?info:null;
+  let g=gifUrl(name); const info=infoFor(name), draw=info&&info.img?info:null;
   if(!g&&!draw) return "";
+  try{ if(g&&matchMedia("(prefers-reduced-motion: reduce)").matches) g=stillUrl(name); }catch(e){}   // reduced motion: the still picture
   const media=g?`<img class="demo-gif" src="${esc(g)}" crossorigin="anonymous" decoding="async" alt="${esc(nameOf("ex",name))}">`:demoFallbackHtml(draw);
   return `<div class="demo${demoPref()==="full"?" big":""}" data-name="${esc(name)}">${media}<button type="button" class="demo-full" data-act="demo-full" data-name="${esc(name)}" aria-label="${esc(t("Full screen"))}"><span aria-hidden="true">⤢</span></button></div>`;
 }
@@ -1617,7 +1620,9 @@ function tagsHtml(name){
 }
 // A GIF that fails to load (offline on the first view, CDN down) is replaced by the drawings; `error` does not bubble, so listen in capture.
 document.addEventListener("error",e=>{
-  const img=e.target; if(!img||!img.classList||!img.classList.contains("demo-gif")) return;
+  const img=e.target;
+  if(img&&img.classList&&img.classList.contains("demoview-img")){ demoViewImgFailed(img); return; }
+  if(!img||!img.classList||!img.classList.contains("demo-gif")) return;
   const box=img.closest(".demo"), info=box&&infoFor(box.dataset.name);
   if(!box) return;
   if(info&&info.img){ img.replaceWith(Object.assign(document.createElement("div"),{className:"demo-fallback",innerHTML:figureBox(info,"start")+figureBox(info,"end")})); fillFigures(box); }
@@ -1716,6 +1721,7 @@ function markJourneySkipped(){ try{ localStorage.setItem("ironlog.journey","skip
 function endJourney(){ state.journey=null; if(history.state&&history.state.journey) history.back(); }
 window.addEventListener("popstate",()=>{ if(state.journey&&!(history.state&&history.state.journey)){ if(state.journey.fromAuto) markJourneySkipped(); state.journey=null; if(state.view==="journey") go("log"); } });
 function maybeStartJourney(){
+  if($("#lookpick").open||(state.lookPick&&!state.lookPick.existing&&!state.lookPick.done)) return;   // the picker is up: its close handler calls this again
   if(shouldPickLook({authed:state.authed,synced:state.serverSynced===true,days:state.days,workouts:state.workouts,savedLook:savedLook(),shown:state.lookPickShown})){ state.lookPickShown=true; openLookPicker(false); return; }   // a new person chooses a look first; closing it calls this again
   let skipped=false; try{ skipped=localStorage.getItem("ironlog.journey")==="skip"||sessionStorage.getItem("ironlog.wiping")==="1"; }catch(e){}
   if(!shouldAutoJourney({authed:state.authed,synced:state.serverSynced===true,days:state.days,workouts:state.workouts,skipped,shown:state.journeyShown})) return;
@@ -2879,6 +2885,15 @@ function openDemoView(name){
   if(!dlg.open){ dlg.showModal(); history.pushState({demoview:1},""); }
   fillFigures(dlg,()=>token===demoViewToken);
 }
+// The viewer's picture failed: the still of a paused picture goes back to the GIF; a GIF that cannot load is replaced by the drawings.
+function demoViewImgFailed(img){
+  const dlg=$("#demoview"), name=dlg.dataset.name, info=name&&infoFor(name);
+  if(demoPaused&&name&&gifUrl(name)){ demoPaused=false; img.src=gifUrl(name); const b=dlg.querySelector('[data-act="demo-pause"]'); if(b){ b.setAttribute("aria-pressed","false"); b.textContent=t("Pause"); } return; }
+  const stage=dlg.querySelector(".demoview-stage"); if(!stage) return;
+  const pause=dlg.querySelector('[data-act="demo-pause"]'); if(pause) pause.hidden=true;
+  if(info&&info.img){ stage.innerHTML=`<div class="demo-fallback demoview-fallback">${figureBox(info,"start")}${figureBox(info,"end")}</div>`; fillFigures(stage); }
+  else stage.innerHTML=`<p class="prev" style="padding:12px">${esc(t("Not available offline yet"))}</p>`;
+}
 function toggleDemoPause(){
   const dlg=$("#demoview"), img=dlg.querySelector(".demoview-img"), name=dlg.dataset.name; if(!img||!name) return;
   demoPaused=!demoPaused;
@@ -2958,7 +2973,7 @@ function syncMe(){
   root.querySelectorAll("[data-act=lang-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===currentLang()));
   root.querySelectorAll("[data-act=demo-size-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===demoPref()));
   const box=$("#accent-swatches"); if(box&&!box.children.length) drawSwatches();
-  drawLooks(); drawPics(); picsMsg({type:"demo-status"});
+  drawLooks(); drawPics(); picsMsg({type:"demo-status",urls:picsUrls()});
 }
 /* ---------- THEME ---------- */
 // "system" follows the phone; light/dark override it. The <head> script applies it before first paint.
@@ -2999,9 +3014,17 @@ function drawSwatches(){
 // Picking a look also sets that look's default accent, so the colours always belong together.
 function applyLook(look,opts){
   look=cleanLook(look);
+  const prev=currentLook();
+  // The accent follows the look: Classic keeps the person's own accent (remembered while another look is on); the look already in use changes nothing.
+  if(prev==="classic"&&look!=="classic"){ try{ localStorage.setItem("ironlog.accent.classic",currentAccent()); }catch(e){} }
+  let accent=null;
+  if(look!==prev&&(!opts||opts.resetAccent!==false)){
+    if(look==="classic"){ try{ accent=localStorage.getItem("ironlog.accent.classic"); }catch(e){} accent=accent||defaultAccentFor("classic"); }
+    else accent=defaultAccentFor(look);
+  }
   try{ localStorage.setItem("ironlog.look",look); }catch(e){}
   if(look==="classic") delete document.documentElement.dataset.look; else document.documentElement.dataset.look=look;
-  if(!opts||opts.resetAccent!==false) applyAccent(defaultAccentFor(look));
+  if(accent) applyAccent(accent);
   else applyAccent(currentAccent(),false);
   const m=document.querySelector('meta[name="theme-color"]');
   if(m) m.content=getComputedStyle(document.documentElement).getPropertyValue("--surface").trim()||"#ffffff";
@@ -3343,7 +3366,7 @@ document.addEventListener("click",e=>{
     case "lang-set": applyLang(b.dataset.v); syncMe(); drawSwatches(); break;
     case "accent-set": applyAccent(b.dataset.v); drawSwatches(); break;
     case "look-set": applyLook(b.dataset.v); break;
-    case "pics-download": if(!picsMsg({type:"demo-download",urls:gifUrls()})) toast(t("Reload the app once, then try again.")); else { picsState.progress={done:0,total:gifUrls().length}; drawPics(); } break;
+    case "pics-download": if(!picsMsg({type:"demo-download",urls:picsUrls()})) toast(t("Reload the app once, then try again.")); else { picsState.progress={done:0,total:picsUrls().length}; drawPics(); } break;
     case "pics-clear": picsMsg({type:"demo-clear"}); break;
     case "lp-sex": { const st=state.lookPick; st.sex=b.dataset.v; st.sel=suggestLook(st.sex==="skip"?null:st.sex); lookPickRedraw(); break; }
     case "lp-card": state.lookPick.sel=b.dataset.v; lookPickRedraw(); break;

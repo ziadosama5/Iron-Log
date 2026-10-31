@@ -35,3 +35,33 @@ test("gifUrls lists each mapped GIF once", () => {
 test("the exercises with no good picture in the dataset keep their drawings (null)", () => {
   for (const n of ["Pec Deck", "Reverse Pec Deck", "Skull Crusher", "Dumbbell Skull Crusher", "Hip Thrust", "Dumbbell Hip Thrust", "Glute Kickback Machine", "Plank", "Ab Wheel Rollout"]) assert.equal(GIFS[n], null, n);
 });
+
+import { makeGifs, stillUrls } from "../public/exercise-gifs.js";
+
+test("the kill switch: with no base URL there are no GIFs, stills or downloads at all", () => {
+  const off = makeGifs("", GIFS), off2 = makeGifs(null, GIFS);
+  for (const g of [off, off2]) {
+    assert.equal(g.gifUrl("Bench Press"), null);
+    assert.equal(g.stillUrl("Bench Press"), null);
+    assert.deepEqual(g.gifUrls(), []);
+    assert.deepEqual(g.stillUrls(), []);
+  }
+  const on = makeGifs("https://x.test/", { A: "0001-abc", B: null });
+  assert.equal(on.gifUrl("A"), "https://x.test/videos/0001-abc.gif");
+  assert.equal(on.stillUrl("A"), "https://x.test/images/0001-abc.jpg");
+  assert.deepEqual(on.stillUrls(), ["https://x.test/images/0001-abc.jpg"]);
+});
+
+test("stillUrls mirrors gifUrls one to one", () => {
+  assert.equal(stillUrls().length, gifUrls().length);
+  assert.ok(stillUrls().every(u => u.startsWith(DEMO_BASE + "images/") && u.endsWith(".jpg")));
+});
+
+test("no two exercises share one picture (a wrong or duplicated picture is worse than none)", () => {
+  const seen = new Map();
+  for (const [name, id] of Object.entries(GIFS)) if (id) { assert.ok(!seen.has(id), `${name} and ${seen.get(id)} both use ${id}`); seen.set(id, name); }
+});
+
+test("pictures the final review found to be the wrong movement stay off until checked by hand", () => {
+  for (const n of ["Cable Hip Abduction", "Seated Leg Curl", "Single-leg Leg Press", "Dumbbell Floor Press", "Close-grip Pulldown", "Rope Hammer Curl", "Underhand Barbell Row", "Dumbbell Sumo Squat", "High Cable Curl", "Leg Press"]) assert.equal(GIFS[n], null, n);
+});

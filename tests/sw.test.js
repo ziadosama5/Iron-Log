@@ -23,3 +23,13 @@ test("the demo host in the service worker is the one exercise-gifs.js uses, and 
   assert.ok(sw.includes('"ironlog-demo"') && sw.includes('"ironlog-demo-all"'));
   assert.match(sw, /startsWith\("ironlog-demo"\)/, "activate keeps the demo caches");
 });
+
+test("the demo handler does nothing when there is no base URL, and Remove clears both demo caches", () => {
+  assert.match(sw, /DEMO_BASE && req\.url\.startsWith\(DEMO_BASE\)/, "an empty base must not match every request");
+  assert.ok(sw.includes("caches.delete(DEMO_ALL)") && sw.includes("caches.delete(DEMO_CACHE)"), "demo-clear deletes both");
+});
+
+test("demo-status counts only the pictures the page still wants and drops the rest", () => {
+  assert.match(sw, /d\.type === "demo-status"[\s\S]*?d\.urls/, "status receives the current URL list");
+  assert.ok(sw.includes("stale"), "keys outside the list are removed");
+});

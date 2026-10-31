@@ -2149,7 +2149,7 @@ test("Me > Download exercise pictures saves every GIF, works offline, and Remove
   await page.waitForFunction(() => /Downloaded/.test(document.querySelector("#pics-line").textContent), null, { timeout: 60000 });
   const total = await page.evaluate(async () => (await (await caches.open("ironlog-demo-all")).keys()).length);
   assert.ok(total >= 100, "downloaded " + total);
-  assert.equal(new Set(await cdnHits(sw)).size, total, "each picture fetched once");
+  assert.equal(new Set(await cdnHits(sw)).size * 2, total, "each GIF and its still fetched once");
   await ctx.setOffline(true);
   await tab(page, "today"); await startPush(page);
   const ok = await page.evaluate(() => new Promise(res => { const i = document.querySelector("#open-card img.demo-gif"); if (!i) return res(false); if (i.complete) return res(i.naturalWidth > 0); i.onload = () => res(true); i.onerror = () => res(false); }));
@@ -2171,5 +2171,92 @@ test("Download exercise pictures is disabled with a message while offline", asyn
   assert.equal(await page.locator('[data-act="pics-download"]').isDisabled(), true);
   assert.match(await page.locator("#pics-line").textContent(), /internet/);
   await ctx.setOffline(false);
+  await ctx.close();
+});
+
+// ---- final-review fixes ----
+test("review: the journey does not open behind the look picker when a settings write echoes back (echo=1)", async () => {
+  const { page, ctx, errors } = await open("fresh=2&pick=1&echo=1");
+  await pickerOpen(page).waitFor();
+  await page.waitForTimeout(1500);
+  await page.evaluate(() => window.__fakeAuth({ uid: "u1", displayName: "Ziad", email: "ziad@example.com", emailVerified: true }));   // another data snapshot arrives while the picker is open
+  await page.waitForTimeout(1200);
+  assert.equal(await journeyShown(page), false, "still waiting for the picker");
+  await page.locator('#lookpick [data-act="lp-sex"][data-v="male"]').click();
+  await page.locator('#lookpick [data-act="lp-choose"]').click();
+  await page.waitForSelector("#view-journey", { state: "visible" });
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("review: keeping the classic look keeps the person's own accent, and Classic gets it back after trying Carbon", async () => {
+  const { page, ctx } = await open("pick=1", undefined, 'try{localStorage.setItem("ironlog.accent","teal")}catch(e){}');
+  await page.locator('#view-log [data-act="look-hint-open"]').click();
+  await pickerOpen(page).waitFor();
+  await page.locator('#lookpick [data-act="lp-classic"]').click();
+  await page.waitForFunction(() => !document.querySelector("#lookpick").open);
+  assert.equal(await page.evaluate(() => localStorage.getItem("ironlog.accent")), "teal");
+  await tab(page, "me");
+  await page.locator('[data-act="look-set"][data-v="carbon"]').click();
+  assert.equal(await page.evaluate(() => localStorage.getItem("ironlog.accent")), "#ff7a2f");
+  await page.locator('[data-act="look-set"][data-v="classic"]').click();
+  assert.equal(await page.evaluate(() => localStorage.getItem("ironlog.accent")), "teal");
+  await page.locator('[data-act="look-set"][data-v="classic"]').click();
+  assert.equal(await page.evaluate(() => localStorage.getItem("ironlog.accent")), "teal", "tapping the look already in use changes nothing");
+  await ctx.close();
+});
+
+test("review: the full-screen viewer shows the drawings, not a broken image, when the GIF cannot load", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHostDown);
+  await swReady(page); await failCdnInSw(ctx);
+  await startPush(page);
+  await page.locator("#open-card .demo .demo-fallback").waitFor();
+  await page.locator('#open-card [data-act="demo-full"]').click();
+  await page.waitForSelector("#demoview[open]");
+  await page.locator("#demoview .demo-fallback").waitFor();
+  assert.equal(await page.locator("#demoview img.demoview-img").count(), 0, "no broken image left");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("review: with reduced motion the card shows the still picture, not the animation", async () => {
+  const { page, ctx } = await open("", undefined, undefined, gifHost);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await startPush(page);
+  assert.match(await page.locator("#open-card .demo img.demo-gif").getAttribute("src"), /\/images\/0025-EIeI8Vf\.jpg$/);
+  await ctx.close();
+});
+
+test("review: Remove downloads clears the pictures seen while training too, and shows even when nothing was downloaded", async () => {
+  const { page, ctx } = await openSw();
+  await startPush(page);
+  await page.waitForTimeout(1200);
+  const seen = () => page.evaluate(async () => (await (await caches.open("ironlog-demo")).keys()).length);
+  assert.ok(await seen() > 0, "the day's pictures were kept");
+  await tab(page, "me");
+  await page.locator('[data-act="pics-clear"]').waitFor({ state: "visible" });
+  await page.locator('[data-act="pics-clear"]').click();
+  await page.waitForFunction(() => document.querySelector('[data-act="pics-clear"]').hidden);
+  assert.equal(await seen(), 0);
+  await ctx.close();
+});
+
+test("review: the download status counts only pictures still wanted, drops stale ones, and offers the rest", async () => {
+  const { page, ctx } = await openSw();
+  const total = await page.evaluate(async () => {
+    const m = await import("/exercise-gifs.js"), all = [...m.gifUrls(), ...m.stillUrls()];
+    const c = await caches.open("ironlog-demo-all");
+    for (const u of [...all.slice(0, 3), m.DEMO_BASE + "videos/9999-stale.gif"]) await c.put(u, new Response("x", { status: 200 }));
+    return all.length;
+  });
+  await tab(page, "me");
+  await page.waitForFunction(() => /Downloaded/.test(document.querySelector("#pics-line").textContent));
+  assert.match(await page.locator("#pics-line").textContent(), /3 pictures/);
+  assert.equal(await page.locator('[data-act="pics-download"]').isDisabled(), false, "pictures are still missing");
+  await page.locator('[data-act="pics-download"]').click();
+  await page.waitForFunction(n => document.querySelector("#pics-line").textContent.includes(n + " pictures"), String(total), { timeout: 60000 });
+  const keys = await page.evaluate(async () => (await (await caches.open("ironlog-demo-all")).keys()).map(r => r.url));
+  assert.equal(keys.length, total);
+  assert.ok(!keys.some(u => u.includes("9999-stale")), "the stale picture was removed");
   await ctx.close();
 });
