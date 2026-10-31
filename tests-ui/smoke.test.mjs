@@ -2555,6 +2555,15 @@ for (const look of ["classic", "carbon", "bloom"]) {
     assert.ok(scrolledToEnd, "starts at today");
     const labelsInView = await page.evaluate(() => { const w = document.querySelector(".hm-outer").getBoundingClientRect(), d = document.querySelector(".hm-days").getBoundingClientRect(), g = document.querySelector(".hm-wrap").getBoundingClientRect(); return d.left >= w.left - 1 && d.right <= g.left + 1 && d.height > 50; });
     assert.ok(labelsInView, "the weekday labels stay in view at the left while the grid scrolls");
+    const geo = await page.evaluate(() => {
+      const wrap = document.querySelector(".hm-wrap").getBoundingClientRect(), last = [...document.querySelectorAll(".hm-col")].pop(), cells = [...last.querySelectorAll(".hm-c")], labels = [...document.querySelectorAll(".hm-days span")];
+      const today = document.querySelector(".hm-c.today").getBoundingClientRect(), mid = r => (r.top + r.bottom) / 2;
+      return { drift: labels.map((l, i) => Math.abs(mid(l.getBoundingClientRect()) - mid(cells[i].getBoundingClientRect()))), tall: labels.map(l => l.getBoundingClientRect().height), todayRoom: wrap.right - today.right, topRoom: today.top - wrap.top, pitch: cells[1].getBoundingClientRect().top - cells[0].getBoundingClientRect().top };
+    });
+    assert.ok(geo.drift.every(d => d <= 1.5), "each weekday label sits on its row: " + geo.drift.map(d => d.toFixed(1)));
+    assert.ok(geo.pitch >= 15.5 && geo.tall.every(h => h >= 12.5), "rows are tall enough for 12 px labels without crowding");
+    assert.ok(geo.todayRoom >= 2, "today's outline in the right-most column is not cut off by the edge: " + geo.todayRoom);
+    assert.ok(geo.topRoom >= 1.5, "the top row's outline is not cut off either: " + geo.topRoom);
     const cell = page.locator(".hm-c[data-n]:not([data-n='0'])").last();
     await cell.click({ force: true });
     assert.match(await page.locator("#hm-cap").innerText(), /workout.*min/);

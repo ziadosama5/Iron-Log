@@ -124,16 +124,16 @@ button.wd{appearance:none;font:inherit;color:inherit;cursor:pointer}
 .brow.off .t b{color:var(--muted)}
 .row>h2.grow{flex:1 1 150px}
 .dyn{display:contents}
-.hm-wrap{flex:1 1 auto;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+.hm-wrap{flex:1 1 auto;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 4px 2px 0}   /* room on the right so today's outline in the last column is not cut by the edge */
 .hm-wrap::-webkit-scrollbar{display:none}
 .hm-outer{display:flex;gap:3px;align-items:flex-start}
 .hm-months{display:flex;gap:3px;height:14px;line-height:14px;margin-bottom:5px;width:max-content}
-.hm-months span{flex:none;width:11px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:visible}
-.hm-days{display:flex;flex-direction:column;gap:3px;flex:none;min-width:28px;padding-top:19px;padding-inline-end:3px}
-.hm-days span{height:11px;font-size:12px;color:var(--muted);line-height:11px;overflow:visible;white-space:nowrap;text-align:start}
-.hm-grid{display:flex;gap:3px}
+.hm-months span{flex:none;width:13px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:visible}
+.hm-days{display:flex;flex-direction:column;gap:3px;flex:none;min-width:30px;padding-top:21px;padding-inline-end:4px}
+.hm-days span{height:13px;font-size:12px;color:var(--muted);line-height:13px;overflow:visible;white-space:nowrap;text-align:end}   /* one label per row, hugging the grid */
+.hm-grid{display:flex;gap:3px;padding:2px 2px 0 0}   /* 2 px above so the top row's outline is not cut either */
 .hm-col{display:flex;flex-direction:column;gap:3px}
-.hm-c{width:11px;height:11px;border-radius:3px;background:var(--sunk);flex:none;cursor:default}
+.hm-c{width:13px;height:13px;border-radius:3px;background:var(--sunk);flex:none;cursor:default}
 .hm-c[data-date]{cursor:pointer}
 .hm-c.l1{background:color-mix(in srgb,var(--accent) 30%,var(--sunk))}
 .hm-c.l2{background:color-mix(in srgb,var(--accent) 55%,var(--sunk))}
