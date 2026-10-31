@@ -184,3 +184,17 @@
 :root[data-look] .exchip[aria-current="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:none}
 :root[data-look] .btn.small{min-height:44px;font-size:14px}
 .ico{fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ================= Looks 2.0 Me and Friends (both looks) ================= */
+:root[data-look] .more-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:52px;padding:0 2px;border:0;border-top:1px solid var(--line);background:none;color:var(--fg);font:500 16px/1.2 var(--f-body);text-decoration:none;text-align:start;cursor:pointer}
+:root[data-look] .more-row:first-of-type{border-top:0}
+:root[data-look] .more-row svg{width:18px;height:18px;color:var(--muted);flex:none}
+:root[data-look] .look-tile{border:0;background:transparent;padding:0;gap:8px;align-items:center}
+:root[data-look] .look-tile .lk-prev{height:112px;border:0;border-radius:18px;width:100%;box-shadow:inset 0 0 0 1px var(--gborder)}
+:root[data-look] .look-tile[aria-pressed="true"] .lk-prev{box-shadow:0 0 0 3px var(--accent)}
+:root[data-look] .swatch{width:40px;height:40px}
+:root[data-look] .swatches{gap:10px}
+:root[data-look] .lk-board{display:flex;flex-direction:column;gap:12px}
+:root[data-look] .lk-board>.card{gap:14px}
+:root[data-look] .lk-board .podium{padding-top:10px}
+:root[data-look] .boardrow .rank{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--sunk);font-size:14px;color:var(--fg)}

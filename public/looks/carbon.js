@@ -32,6 +32,11 @@ function goals(c) {
   return `<h2>${c.esc(c.t("Goals"))}</h2>${c.streaksHtml}${c.targetHtml}${c.badgesHtml}`;
 }
 
+// Friends: requests, the leaderboard (flat, compact rows), the friends list, Manage.
+function friends(c) {
+  return `<h2>${c.esc(c.t("Friends"))}</h2>${c.requestsHtml}<div class="lk-board">${c.boardHtml}</div>${c.friendsHtml}${c.manageHtml}`;
+}
+
 // The focus card: name, tags and target on the left, a 96 px demo on the right; advice, set type, the sets, two stacked steppers, one big Log button.
 function workout(c) {
   return `<div class="card focus lk-focus" id="open-card">
@@ -51,4 +56,4 @@ function workout(c) {
   ${c.footHtml}`;
 }
 
-export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals };
+export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends };

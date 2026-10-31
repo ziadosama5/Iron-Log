@@ -1158,23 +1158,25 @@ function renderFriends(){
   const g=groupFriendships(f.docs,store.user.uid,f.blocks);
   if(f.open){ renderFriendPage(el,g); return; }
   loadFriendData(false);
-  let h=`<h2>Friends</h2>`;
-  if(g.requests.length) h+=`<div class="card banner"><h3>Requests</h3>${g.requests.map(x=>`<div class="stack" style="gap:6px"><div class="row">${avatarHtml(personName(x))}<div class="grow">${friendLabel(x)}</div></div><div class="row">${frBtn("fr-accept",x,"Accept","primary")}${frBtn("fr-decline",x,"Decline")}${frBtn("fr-block-now",x,"Block")}</div></div>`).join("")}</div>`;
-  h+=boardHtml(g);
-  if(g.friends.length) h+=`<div class="card"><h3>Friends</h3>${g.friends.map(friendRow).join("")}<div class="row" style="justify-content:flex-end"><button class="btn small" data-act="fr-refresh">Refresh</button></div></div>`;
-  else h+=`<div class="card"><h3>Invite a friend</h3><span class="prev">Find someone by username or e-mail and train together.</span><div class="row"><button class="btn primary" data-act="pill" data-view="find">Find a friend</button></div></div>`;
+  let R="",F="",M="";
+  if(g.requests.length) R+=`<div class="card banner"><h3>Requests</h3>${g.requests.map(x=>`<div class="stack" style="gap:6px"><div class="row">${avatarHtml(personName(x))}<div class="grow">${friendLabel(x)}</div></div><div class="row">${frBtn("fr-accept",x,"Accept","primary")}${frBtn("fr-decline",x,"Decline")}${frBtn("fr-block-now",x,"Block")}</div></div>`).join("")}</div>`;
+  const B=boardHtml(g);
+  if(g.friends.length) F+=`<div class="card"><h3>Friends</h3>${g.friends.map(friendRow).join("")}<div class="row" style="justify-content:flex-end"><button class="btn small" data-act="fr-refresh">Refresh</button></div></div>`;
+  else F+=`<div class="card"><h3>Invite a friend</h3><span class="prev">Find someone by username or e-mail and train together.</span><div class="row"><button class="btn primary" data-act="pill" data-view="find">Find a friend</button></div></div>`;
   const manageN=g.sent.length+g.blocked.length;
   if(manageN){
     const open=!!state.showMore.manage;
-    h+=`<div class="card"><button class="btn ghost" data-act="more-list" data-k="manage" aria-expanded="${open}">${t("Manage ({n})",{n:manageN})}</button>`;
+    M+=`<div class="card"><button class="btn ghost" data-act="more-list" data-k="manage" aria-expanded="${open}">${t("Manage ({n})",{n:manageN})}</button>`;
     if(open){
-      if(g.sent.length) h+=`<h3>Sent</h3>${g.sent.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-cancel",x,"Cancel")}</div>`).join("")}`;
-      if(g.blocked.length) h+=`<h3>Blocked</h3>${g.blocked.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-unblock",x,"Unblock")}</div>`).join("")}`;
+      if(g.sent.length) M+=`<h3>Sent</h3>${g.sent.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-cancel",x,"Cancel")}</div>`).join("")}`;
+      if(g.blocked.length) M+=`<h3>Blocked</h3>${g.blocked.map(x=>`<div class="row"><div class="grow">${friendLabel(x)}</div>${frBtn("fr-unblock",x,"Unblock")}</div>`).join("")}`;
     }
-    h+="</div>";
+    M+="</div>";
   }
-  el.innerHTML=h;
+  // named parts so a look can arrange them its own way (screenHtml "friends.board")
+  el.innerHTML=screenHtml("friends.board",{requestsHtml:R,boardHtml:B,friendsHtml:F,manageHtml:M},classicFriends);
 }
+function classicFriends(P){ return `<h2>Friends</h2>${P.requestsHtml}${P.boardHtml}${P.friendsHtml}${P.manageHtml}`; }
 const iso=s=>"\u2068"+s+"\u2069"; // first-strong isolate: keeps "@name" in order inside Arabic text
 function duoHtml(who,mine,theirs){
   const chip=(label,m)=>`<div class="hero" style="flex:1;min-width:0;flex-direction:column;text-align:center;gap:6px;padding:14px 8px"><span class="ring" style="width:58px;height:58px"><svg viewBox="0 0 60 60" aria-hidden="true"><circle class="tr" cx="30" cy="30" r="25" fill="none" stroke-width="6"/><circle class="pr" cx="30" cy="30" r="25" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="0"/></svg><b>${m.level}</b></span><b style="overflow-wrap:anywhere">${esc(label)}</b><span class="prev">${esc(nameOf("level",m.title))}</span><span class="row" style="justify-content:center;gap:12px"><span class="streakflag"><svg class="i" aria-hidden="true"><use href="#i-flame"/></svg>${m.streakWeeks}</span><span class="streakflag"><svg class="i" aria-hidden="true" style="color:#ffd84a"><use href="#i-trophy"/></svg>${m.badges}</span></span></div>`;
