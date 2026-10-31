@@ -1,9 +1,10 @@
 // Bodyweight exercises: which ones are, how a set is scored, how a load is shown. Pure: no DOM, no Firebase;
-// unit-tested in tests/bodyweight.test.js. (Imports only the exercise library; it must not import progression.js.)
+// unit-tested in tests/bodyweight.test.js. (Imports only the exercise library and its generated catalog; it must not import progression.js.)
 //
 // On a bodyweight exercise the weight of a set is EXTRA kg: 0 = just the body, +10 a weighted pull-up, -20 an assisted one.
 // A workout entry records `bw: true` when its first set is logged, so statistics never need the settings.
 import { equipmentOf } from "./exercise-library.js";
+import { CATALOG_HOLDS } from "./exercise-catalog.js";
 
 // Stations a bodyweight exercise may need; any weights or machine (other than the assisted one) make it a weighted lift.
 export const BW_STATIONS = ["bench", "decline-bench", "pullup-bar", "dip-station", "captains-chair", "box", "ab-wheel", "hyper-bench", "assisted-machine"];
@@ -15,7 +16,7 @@ export function bwDefault(name) {
 }
 
 // Isometric holds: their "reps" are seconds.
-export const isHold = name => /plank|wall sit/i.test(String(name ?? ""));
+export const isHold = name => /plank|wall sit/i.test(String(name ?? "")) || CATALOG_HOLDS.has(String(name ?? "").toLowerCase());   // plus every stretch, mobility, cardio and hold exercise of the dataset
 
 // A saved override ({exercise: boolean}) wins over the library default; only the person's own keys count.
 export function bwFor(settings, name) {

@@ -394,6 +394,9 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .prow:not([aria-disabled="true"]){border-style:solid;border-color:var(--accent);color:var(--fg)}
 .ex-top{display:flex;gap:12px;align-items:flex-start}
 .ex-name[data-act]{cursor:pointer}
+.howto h3{margin:12px 0 4px}
+.howto-steps{margin:6px 0 10px;padding-inline-start:22px}
+.howto-steps li{margin:5px 0;line-height:1.45}
 .exinfo-gifbox{width:min(100%,240px);aspect-ratio:1;margin:10px auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
 .exinfo-gifbox img{width:100%;height:100%;object-fit:contain;display:block}
 .ex-top .grow{min-width:0;display:flex;flex-direction:column;gap:6px}
@@ -1432,7 +1435,7 @@ function focusCard(w, ei){
   return `<div class="card focus" id="open-card">
       <div class="row"><span class="label grow">${t("Exercise {n} of {m}",{n:ei+1,m:entries.length})}</span></div>
       ${demoPref()==="full"?demoThumbHtml(e.ex):""}
-      <div class="ex-top">${demoPref()==="full"?"":demoThumbHtml(e.ex)}<div class="grow"><div class="ex-name"${infoFor(e.ex)?` data-act="ex-info" data-name="${esc(e.ex)}" role="button" tabindex="0" aria-label="${esc(t("About {name}",{name:nameOf("ex",e.ex)}))}"`:""}>${esc(nameOf("ex",e.ex))}</div>${tagsHtml(e.ex)}</div></div>
+      <div class="ex-top">${demoPref()==="full"?"":demoThumbHtml(e.ex)}<div class="grow"><div class="ex-name"${infoOf(e.ex)?` data-act="ex-info" data-name="${esc(e.ex)}" role="button" tabindex="0" aria-label="${esc(t("About {name}",{name:nameOf("ex",e.ex)}))}"`:""}>${esc(nameOf("ex",e.ex))}</div>${tagsHtml(e.ex)}</div></div>
       ${(()=>{ const w=avoidWarn(e.ex); return w?`<div class="avoidnote"><span aria-hidden="true">⚠</span><span class="grow">${esc(warnText(w))}</span>${e.sets.length?"":`<button type="button" class="btn small" data-act="skip-avoided" data-ei="${ei}">${t("Skip it")}</button>`}</div>`:""; })()}
       ${last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>(bw?formatLoad(s.w,t("BW")):kg(s.w))+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
       ${targetBlock(e.ex,target,sug,ei,hold,whyText(whyFor({last:last&&last.sets,target,sug,bw,hold,deload:!!dlOn})))}
@@ -1548,7 +1551,26 @@ function cardioCard(){
     </div></div>`;
 }
 // "!" button that opens the exercise info sheet; nothing for exercises without info.
-function infoBtn(name){ return infoFor(name) ? `<button class="infobtn" data-act="ex-info" data-name="${esc(name)}" aria-label="${esc(t("About {name}",{name:nameOf("ex",name)}))}"><span class="ib" aria-hidden="true">!</span></button>` : ""; }
+// The info of an exercise: the curated tips entry, or a minimal one built from the library for a dataset exercise (its How-to loads lazily).
+const LIB_NAME=new Map(ALL_EX.map(n=>[n.toLowerCase(),n]));
+function infoOf(name){
+  const i=infoFor(name); if(i) return i;
+  const lib=LIB_NAME.get(String(name).toLowerCase()); if(!lib) return null;
+  const m=muscleOf(lib);
+  return {name:lib,primary:m?[m]:[],secondary:[],tips:[],synth:true};
+}
+// exercise-howto.js (about 600 KB of English steps for the dataset exercises) is only fetched when an info sheet needs it.
+let howtoP=null;
+function loadHowto(){ return howtoP||(howtoP=import("./exercise-howto.js").then(m=>m.HOWTO).catch(()=>{ howtoP=null; return null; })); }
+function fillHowto(name,alive){
+  loadHowto().then(h=>{
+    const rec=h&&h[String(name).toLowerCase()], slot=$("#howto-slot");
+    if(!rec||!slot||!alive()) return;
+    slot.innerHTML=(rec.s.length?`<p class="ex-works">${t("Also works")}: <b>${rec.s.map(m=>esc(nameOf("muscle",m))).join(", ")}</b></p>`:"")
+      +`<h3>${t("How to")}</h3><ol class="howto-steps">${rec.steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>`+(isRtl()?`<p class="prev">${t("Steps are in English")}</p>`:"");
+  });
+}
+function infoBtn(name){ return infoOf(name) ? `<button class="infobtn" data-act="ex-info" data-name="${esc(name)}" aria-label="${esc(t("About {name}",{name:nameOf("ex",name)}))}"><span class="ib" aria-hidden="true">!</span></button>` : ""; }
 function chipInfo(chip,name){ const i=infoBtn(name); return i ? `<span class="chipgrp">${chip}${i}</span>` : chip; }
 /* ---------- exercise demo: GIF (thumbnail on the card), line drawings as the fallback ---------- */
 // Fetches the GIFs of the day's exercises once in the background (the service worker keeps them), so they are there at the gym.
@@ -1596,7 +1618,7 @@ function demoThumbHtml(name){
 }
 // Muscles and equipment of an exercise as small tags (nothing when the library does not know it).
 function tagsHtml(name){
-  const info=infoFor(name), eq=equipmentOf(name)||[];
+  const info=infoOf(name), eq=equipmentOf(name)||[];
   const tags=[...(info?info.primary.map(m=>nameOf("muscle",m)):[]),...eq.slice(0,2).map(eqLabel)];
   return tags.length?`<div class="tagrow">${tags.map(x=>`<span class="tag2">${esc(x)}</span>`).join("")}</div>`:"";
 }
@@ -2835,18 +2857,20 @@ const EQ_NAME=Object.fromEntries(EQUIPMENT.map(e=>[e.id,e.name]));
 const eqLabel=id=>isRtl()?nameOf("equipment",id):(EQ_NAME[id]||id);
 let exInfoToken=0;
 function openExInfo(name){
-  const info=infoFor(name); if(!info) return;
+  const info=infoOf(name); if(!info) return;
   const dlg=$("#exinfo"), token=++exInfoToken;
   const gifSrc=gifUrl(info.name);
   dlg.innerHTML = `<div class="sheet-head"><h2 id="exinfo-title">${esc(nameOf("ex",info.name))}</h2><button class="btn ghost small" data-act="exinfo-close" aria-label="Close">✕</button></div>
     ${gifSrc?`<div class="exinfo-gifbox"><img class="exinfo-gif" src="${esc(gifSrc)}" crossorigin="anonymous" decoding="async" alt="${esc(nameOf("ex",info.name))}"></div>`:""}
     <p class="ex-works">Works: <b>${info.primary.map(m=>esc(nameOf("muscle",m))).join(", ")}</b>${info.secondary.length?` <span class="prev">· ${info.secondary.map(m=>esc(nameOf("muscle",m))).join(", ")}</span>`:""}</p>
     ${(()=>{ const eq=equipmentOf(info.name); return eq?`<p class="ex-works">${t("Equipment")}: <b>${eq.length?eq.map(eqLabel).join(isRtl()?"، ":" · "):t("No equipment")}</b></p>`:""; })()}
-    <ul class="ex-tips">${(isRtl()&&info.ar&&info.ar.tips?info.ar.tips:info.tips).map(tip=>`<li>${esc(tip)}</li>`).join("")}</ul>
+    ${info.tips.length?`<ul class="ex-tips">${(isRtl()&&info.ar&&info.ar.tips?info.ar.tips:info.tips).map(tip=>`<li>${esc(tip)}</li>`).join("")}</ul>`:""}
+    <div class="howto" id="howto-slot"></div>
     ${(()=>{ const w=avoidWarn(info.name); return w?`<p class="avoidnote"><span aria-hidden="true">⚠</span><span>${esc(warnText(w))}</span></p>`:""; })()}
     <div class="row"><button type="button" class="btn small" data-act="avoid-toggle" data-name="${esc(info.name)}">${t(avoidsName(info.name)?"Stop avoiding":"Avoid this exercise")}</button></div>
     ${gifUrl(info.name)?gifCreditHtml():""}`;
   if(!dlg.open){ dlg.showModal(); history.pushState({exinfo:1},""); }
+  fillHowto(info.name,()=>token===exInfoToken);
 }
 function closeExInfo(){ const d=$("#exinfo"); if(d.open) d.close(); }
 /* ---------- full-screen demo viewer (same history-entry pattern as the info sheet) ---------- */

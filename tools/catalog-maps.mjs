@@ -40,6 +40,19 @@ export function groupFor(entry) {
   return g;
 }
 
+// secondary/muscle_group words of the dataset -> library groups ("also works" in the info sheet)
+const WORD_GROUP = {
+  chest: "Chest", pectorals: "Chest", pectoralis: "Chest", back: "Back", lats: "Back", "latissimus dorsi": "Back", traps: "Back", trapezius: "Back", rhomboids: "Back", "upper back": "Back", "lower back": "Back", spine: "Back", "levator scapulae": "Back", "rotator cuff": "Shoulders",
+  shoulders: "Shoulders", deltoids: "Shoulders", delts: "Shoulders", biceps: "Biceps", forearms: "Biceps", brachialis: "Biceps", wrists: "Biceps", "wrist flexors": "Biceps", "wrist extensors": "Biceps", hands: "Biceps", triceps: "Triceps",
+  quadriceps: "Quads", quads: "Quads", hamstrings: "Hamstrings & Glutes", glutes: "Hamstrings & Glutes", adductors: "Hamstrings & Glutes", abductors: "Hamstrings & Glutes", "hip flexors": "Hamstrings & Glutes", groin: "Hamstrings & Glutes", calves: "Calves", soleus: "Calves", ankles: "Calves", "ankle stabilizers": "Calves", shins: "Calves",
+  core: "Core", abs: "Core", abdominals: "Core", obliques: "Core", "serratus anterior": "Core", "cardiovascular system": "Core"
+};
+export function groupsOfWords(words, exclude) {
+  const out = [];
+  for (const w of words || []) { const g = WORD_GROUP[String(w).toLowerCase()]; if (g && g !== exclude && !out.includes(g)) out.push(g); }
+  return out;
+}
+
 // Machine exercises ("leverage machine" / "sled machine") map to one of our specific machine ids by name words, else the generic id.
 const MACHINE_RULES = [
   [/assisted/, "assisted-machine"], [/seated calf|calf press/, "seated-calf-machine"], [/calf/, "standing-calf-machine"],

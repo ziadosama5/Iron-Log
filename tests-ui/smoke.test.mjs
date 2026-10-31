@@ -2311,3 +2311,59 @@ test("no drawings: an exercise with no GIF (Push Press) shows no demo box and th
   assert.deepEqual(errors, []);
   await ctx.close();
 });
+
+// ---- library expansion: info sheet of a dataset exercise (lazy How-to) ----
+const failHowtoInSw = async ctx => { const sw = ctx.serviceWorkers()[0] || await ctx.waitForEvent("serviceworker"); await sw.evaluate(() => { const real = self.fetch.bind(self); self.fetch = (req, init) => ((typeof req === "string" ? req : req.url).includes("exercise-howto.js") ? Promise.reject(new TypeError("offline")) : real(req, init)); }); };
+
+test("library: a dataset exercise opens its info sheet with GIF, muscles, equipment and a lazily loaded How-to", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  await addEx(page, "Smith Machine Full Squat");
+  await page.locator('#open-card .ex-name[data-act="ex-info"]').click();
+  await page.waitForSelector("#exinfo[open]");
+  await page.waitForSelector("#exinfo .howto-steps li");
+  assert.ok(await page.locator("#exinfo .howto-steps li").count() >= 3, "several steps");
+  const text = await page.locator("#exinfo").innerText();
+  assert.match(text, /Works:/); assert.match(text, /Quads/); assert.match(text, /Smith machine/i);
+  assert.equal(await page.locator("#exinfo img.exinfo-gif").count(), 1, "its own GIF");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("library: when the How-to file cannot load the sheet still opens, without a list and without errors", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
+  await swReady(page); await failHowtoInSw(ctx);
+  await startPush(page);
+  await addEx(page, "Smith Machine Full Squat");
+  await page.locator('#open-card .ex-name[data-act="ex-info"]').click();
+  await page.waitForSelector("#exinfo[open]");
+  await page.waitForTimeout(800);
+  assert.equal(await page.locator("#exinfo .howto-steps").count(), 0);
+  assert.match(await page.locator("#exinfo").innerText(), /Works:/);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("library: a curated exercise keeps its tips and gets no How-to list", async () => {
+  const { page, ctx } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  await page.locator('#open-card .ex-name[data-act="ex-info"]').click();
+  await page.waitForSelector("#exinfo[open]");
+  await page.waitForTimeout(500);
+  assert.ok(await page.locator("#exinfo .ex-tips li").count() >= 2);
+  assert.equal(await page.locator("#exinfo .howto-steps").count(), 0);
+  await ctx.close();
+});
+
+test("library: in Arabic a dataset exercise shows its Arabic name and the steps note", async () => {
+  const { page, ctx, errors } = await open("lang=ar", undefined, undefined, gifHost);
+  await startPush(page);
+  await addEx(page, "Smith Machine Full Squat");
+  await page.locator('#open-card .ex-name[data-act="ex-info"]').click();
+  await page.waitForSelector("#exinfo[open]");
+  await page.waitForSelector("#exinfo .howto-steps li");
+  assert.match(await page.locator("#exinfo .sheet-head h2").textContent(), /[؀-ۿ]/);
+  assert.match(await page.locator("#exinfo").innerText(), /الخطوات بالإنجليزية/);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
