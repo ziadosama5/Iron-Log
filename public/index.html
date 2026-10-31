@@ -1337,17 +1337,27 @@ function gymNote(focus, exclude){
 }
 
 /* ---------- WORKOUT ---------- */
+// The parts of the Today home (no workout open) a look arranges its own way (screenHtml "today"); Classic puts them in a column.
+function todayCtx(F,w){
+  const nd=nextDay(), dow=weekdayOf(state.date), start=addDaysISO(state.date,-((dow+1)%7));
+  const week=Array.from({length:7},(_,i)=>{ const iso=addDaysISO(start,i), wd=weekdayOf(iso); return {iso,label:nameOf("weekday",WD[wd]),num:Number(iso.slice(8)),today:iso===today(),selected:iso===state.date,planned:!!dayForWeekday(wd)||state.workouts.some(x=>x.date===iso)}; });
+  const days=state.days.map((d,i)=>{ const lt=lastTrained(d.id); return {id:d.id,n:i+1,name:nameOf("day",d.name),count:d.exercises.length,last:lt?fmtDate(lt):"",next:!!(nd&&nd.id===d.id),focus:(d.focus||[]).map(m=>nameOf("muscle",m))}; });
+  return {hasDays:state.days.length>0,switching:!!w,week,days,next:days.find(d=>d.next)||null,scheduled:!!dayForWeekday(weekdayOf(state.date)),isToday:state.date===today(),
+    heroHtml:F.hero,deloadHtml:F.deload,hintHtml:F.hint,journeyHtml:F.journey,dateHtml:F.date,dayPickerHtml:dayPicker(w),cardioHtml:cardioRowHtml(),foodHtml:todayCard()};
+}
 function renderLog(){
   const w = workoutFor(state.date);
   const dateLabel = state.date===today()?t("Today"):fmtDate(state.date);
-  let h = levelHero() + deloadBannerHtml() + lookHintHtml() + (state.days.length||state.serverSynced!==true?"":journeyCard()) + `<div class="row">
+  const F={hero:levelHero(),deload:deloadBannerHtml(),hint:lookHintHtml(),journey:(state.days.length||state.serverSynced!==true?"":journeyCard()),
+    date:`<div class="row">
     <div class="grow"><div class="label">Workout date</div><h2>${dateLabel}</h2></div>
     <input type="date" id="log-date" value="${state.date}" max="${today()}" style="width:auto">
-  </div>`;
+  </div>`};
+  let h = F.hero + F.deload + F.hint + F.journey + F.date;
 
   // A day with only cardio still asks which training day it is (the cardio is kept when one is picked).
   const cardioOnly = w && !w.dayId && !w.entries.length && w.dayName==="Cardio";
-  if (!w || state.pickDay || cardioOnly){ $("#view-log").innerHTML = h + dayPicker(cardioOnly&&!state.pickDay?null:w) + cardioRowHtml() + todayCard(); refreshSheets(); syncWake(); return; }
+  if (!w || state.pickDay || cardioOnly){ const dpw=cardioOnly&&!state.pickDay?null:w; $("#view-log").innerHTML = screenHtml("today",todayCtx(F,dpw),c=>h + c.dayPickerHtml + c.cardioHtml + c.foodHtml); refreshSheets(); syncWake(); return; }
 
   const day = dayById(w.dayId), entries = w.entries, M = entries.length;
   const doneN = entries.filter(e=>e.done).length;
@@ -1446,34 +1456,60 @@ function focusCard(w, ei){
   const plannedHtml=left>0?`<ol class="planned" data-bw="${bw?1:0}" data-hold="${hold?1:0}" aria-label="${esc(t("Planned sets"))}">${Array.from({length:left},(_,i)=>{ const n=e.sets.length+i+1;
     return `<li class="prow"${i?' aria-disabled="true"':""}><span class="num">${n}</span><span class="pval">${esc(plannedValue(d,bw,hold))}</span>${i?'<span class="ptick" aria-hidden="true"></span>':`<button type="button" class="ptick live" data-act="add-set" data-ei="${ei}" aria-label="${esc(t("Log set {n}",{n}))}">✓</button>`}</li>`; }).join("")}</ol>`:"";
   let runBest=best;
-  const nx = nextUnfinished(entries, ei);
-  return `<div class="card focus" id="open-card">
-      <div class="row"><span class="label grow">${t("Exercise {n} of {m}",{n:ei+1,m:entries.length})}</span></div>
-      ${demoPref()==="full"?demoThumbHtml(e.ex):""}
-      <div class="ex-top">${demoPref()==="full"?"":demoThumbHtml(e.ex)}<div class="grow"><div class="ex-name"${infoOf(e.ex)?` data-act="ex-info" data-name="${esc(e.ex)}" role="button" tabindex="0" aria-label="${esc(t("About {name}",{name:nameOf("ex",e.ex)}))}"`:""}>${esc(nameOf("ex",e.ex))}</div>${tagsHtml(e.ex)}</div></div>
-      ${(()=>{ const w=avoidWarn(e.ex); return w?`<div class="avoidnote"><span aria-hidden="true">⚠</span><span class="grow">${esc(warnText(w))}</span>${e.sets.length?"":`<button type="button" class="btn small" data-act="skip-avoided" data-ei="${ei}">${t("Skip it")}</button>`}</div>`:""; })()}
-      ${last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>(bw?formatLoad(s.w,t("BW")):kg(s.w))+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
-      ${targetBlock(e.ex,target,sug,ei,hold,whyText(whyFor({last:last&&last.sets,target,sug,bw,hold,deload:!!dlOn})))}
-      <div class="row" style="gap:8px"><button type="button" class="chip" data-act="bw-toggle" data-ei="${ei}" aria-pressed="${bw}"${e.sets.length?" disabled":""}>${t("Bodyweight")}</button>${e.sets.length?`<span class="prev">${t("Switch before your first set")}</span>`:""}</div>
-      <div class="stack" style="gap:4px"><span class="label">${t(bw?"Extra weight · kg":"Weight · kg")}</span>${bw?`<span class="prev">${t("0 = your body. Negative = assisted.")}</span>`:""}
-        <div class="bigstep"><button data-act="step" data-f="w" data-d="-2.5" data-ei="${ei}" aria-label="Minus 2.5 kg">−</button><input id="w-${ei}" inputmode="${bw?"text":"decimal"}" value="${d.w}" data-f="w" data-ex="${esc(e.ex)}" aria-label="${esc(t(bw?"Extra weight in kg":"Weight in kg"))}"><button data-act="step" data-f="w" data-d="2.5" data-ei="${ei}" aria-label="Plus 2.5 kg">+</button></div></div>
-      <div class="stack" style="gap:4px"><span class="label">${t(hold?"Seconds":"Reps")}</span>
-        <div class="bigstep"><button data-act="step" data-f="r" data-d="${hold?-5:-1}" data-ei="${ei}" aria-label="${esc(t(hold?"Minus 5 seconds":"Minus 1 rep"))}">−</button><input id="r-${ei}" inputmode="numeric" value="${d.r}" data-f="r" data-ex="${esc(e.ex)}" aria-label="${esc(t(hold?"Seconds":"Reps"))}"><button data-act="step" data-f="r" data-d="${hold?5:1}" data-ei="${ei}" aria-label="${esc(t(hold?"Plus 5 seconds":"Plus 1 rep"))}">+</button></div></div>
-      <div class="chips" role="group" aria-label="${esc(t("Set type"))}">${SET_TYPES.map(ty=>`<button type="button" class="chip" data-act="set-kind" data-k="${ty}" aria-pressed="${kind===ty}">${esc(t(KIND_LABEL[ty]))}</button>`).join("")}</div>
-      ${editSi>=0
-        ? `<button class="btn primary" data-act="save-set" data-ei="${ei}">${t("Save set {n}",{n:editSi+1})}</button><div class="row"><span class="prev grow">${t("Editing set {n}",{n:editSi+1})}</span><button class="btn ghost small" data-act="cancel-edit">Cancel</button></div>`
-        : left>0 ? "" : `<button class="btn primary" data-act="add-set" data-ei="${ei}">${t("Add set {n}",{n:e.sets.length+1})}</button>`}
-      ${e.sets.length?`<table><thead><tr><th>Set</th><th class="r">kg</th><th class="r">Reps</th><th class="r">e1RM</th><th></th></tr></thead><tbody>${
-        e.sets.map((s,si)=>{ const wk=isWorking(s), est=wk&&!bw?e1rm(s.w,s.r):0, score=wk?(bw?bwScore(s):e1rm(s.w,s.r)):0, ty=setType(s); const isPr=score>0&&score>runBest&&best>0; if(score>runBest) runBest=score;   // only normal sets can be a PR
-          return `<tr class="setrow${si===editSi?" editing":""}" data-act="edit-set" data-ei="${ei}" data-si="${si}" tabindex="0" aria-label="${esc(t("Edit set {n}",{n:si+1}))}"><td class="num">${si+1}${ty==="normal"?"":`<span class="settag">${esc(t(KIND_LABEL[ty]))}</span>`}</td><td class="r num">${bw?formatLoad(s.w,t("BW")):kg(s.w)}</td><td class="r num">${s.r}</td><td class="r num">${est?kg(Math.round(est*10)/10):"–"}${isPr?'<span class="pr">PR</span>':""}</td><td class="r"><button class="btn ghost small" data-act="rm-set" data-ei="${ei}" data-si="${si}" aria-label="${esc(t("Delete set {n}",{n:si+1}))}">✕</button></td></tr>`;}).join("")
-      }</tbody></table>`:""}
-      ${plannedHtml}
-      <div class="row"><button class="btn ghost small danger" data-act="rm-ex" data-ei="${ei}">Remove exercise</button></div>
-    </div>
-    <div class="row">${e.done
+  const nx = nextUnfinished(entries, ei), aw=avoidWarn(e.ex), kindLabel=ty=>esc(t(KIND_LABEL[ty]));
+  const rows=e.sets.map((s,si)=>{ const wk=isWorking(s), est=wk&&!bw?e1rm(s.w,s.r):0, score=wk?(bw?bwScore(s):e1rm(s.w,s.r)):0, ty=setType(s); const isPr=score>0&&score>runBest&&best>0; if(score>runBest) runBest=score;   // only normal sets can be a PR
+    return {si,n:si+1,w:bw?formatLoad(s.w,t("BW")):kg(s.w),r:s.r,est:est?kg(Math.round(est*10)/10):"–",pr:isPr,kind:ty,kindLabel:ty==="normal"?"":t(KIND_LABEL[ty]),editing:si===editSi}; });
+  // The card is assembled from named parts so a look can arrange the same pieces (and the same data-act hooks) its own way (screenHtml "workout").
+  const P={
+    ei, n:ei+1, m:entries.length, ex:e.ex, label:nameOf("ex",e.ex), sets:e.sets.length, left, editing:editSi>=0, editN:editSi+1, done:!!e.done, next:nx>=0?nameOf("ex",entries[nx].ex):"", bw, hold, kind,
+    exLabel:t("Exercise {n} of {m}",{n:ei+1,m:entries.length}), full:demoPref()==="full", demoHtml:demoThumbHtml(e.ex), hasInfo:!!infoOf(e.ex),
+    nameHtml:`<div class="ex-name"${infoOf(e.ex)?` data-act="ex-info" data-name="${esc(e.ex)}" role="button" tabindex="0" aria-label="${esc(t("About {name}",{name:nameOf("ex",e.ex)}))}"`:""}>${esc(nameOf("ex",e.ex))}</div>`,
+    tagsHtml:tagsHtml(e.ex),
+    avoidHtml:aw?`<div class="avoidnote"><span aria-hidden="true">⚠</span><span class="grow">${esc(warnText(aw))}</span>${e.sets.length?"":`<button type="button" class="btn small" data-act="skip-avoided" data-ei="${ei}">${t("Skip it")}</button>`}</div>`:"",
+    lastHtml:last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>(bw?formatLoad(s.w,t("BW")):kg(s.w))+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`,
+    targetHtml:targetBlock(e.ex,target,sug,ei,hold,whyText(whyFor({last:last&&last.sets,target,sug,bw,hold,deload:!!dlOn}))),
+    advice:adviceText(sug), why:whyText(whyFor({last:last&&last.sets,target,sug,bw,hold,deload:!!dlOn})), target,
+    bwHtml:`<div class="row" style="gap:8px"><button type="button" class="chip" data-act="bw-toggle" data-ei="${ei}" aria-pressed="${bw}"${e.sets.length?" disabled":""}>${t("Bodyweight")}</button>${e.sets.length?`<span class="prev">${t("Switch before your first set")}</span>`:""}</div>`,
+    weightHtml:`<div class="stack" style="gap:4px"><span class="label">${t(bw?"Extra weight · kg":"Weight · kg")}</span>${bw?`<span class="prev">${t("0 = your body. Negative = assisted.")}</span>`:""}
+        <div class="bigstep"><button data-act="step" data-f="w" data-d="-2.5" data-ei="${ei}" aria-label="Minus 2.5 kg">−</button><input id="w-${ei}" inputmode="${bw?"text":"decimal"}" value="${d.w}" data-f="w" data-ex="${esc(e.ex)}" aria-label="${esc(t(bw?"Extra weight in kg":"Weight in kg"))}"><button data-act="step" data-f="w" data-d="2.5" data-ei="${ei}" aria-label="Plus 2.5 kg">+</button></div></div>`,
+    repsHtml:`<div class="stack" style="gap:4px"><span class="label">${t(hold?"Seconds":"Reps")}</span>
+        <div class="bigstep"><button data-act="step" data-f="r" data-d="${hold?-5:-1}" data-ei="${ei}" aria-label="${esc(t(hold?"Minus 5 seconds":"Minus 1 rep"))}">−</button><input id="r-${ei}" inputmode="numeric" value="${d.r}" data-f="r" data-ex="${esc(e.ex)}" aria-label="${esc(t(hold?"Seconds":"Reps"))}"><button data-act="step" data-f="r" data-d="${hold?5:1}" data-ei="${ei}" aria-label="${esc(t(hold?"Plus 5 seconds":"Plus 1 rep"))}">+</button></div></div>`,
+    kindHtml:`<div class="chips" role="group" aria-label="${esc(t("Set type"))}">${SET_TYPES.map(ty=>`<button type="button" class="chip" data-act="set-kind" data-k="${ty}" aria-pressed="${kind===ty}">${esc(t(KIND_LABEL[ty]))}</button>`).join("")}</div>`,
+    kinds:SET_TYPES.map(ty=>({k:ty,label:t(KIND_LABEL[ty]),on:kind===ty})),
+    actionHtml:editSi>=0
+      ? `<button class="btn primary" data-act="save-set" data-ei="${ei}">${t("Save set {n}",{n:editSi+1})}</button><div class="row"><span class="prev grow">${t("Editing set {n}",{n:editSi+1})}</span><button class="btn ghost small" data-act="cancel-edit">Cancel</button></div>`
+      : left>0 ? "" : `<button class="btn primary" data-act="add-set" data-ei="${ei}">${t("Add set {n}",{n:e.sets.length+1})}</button>`,
+    rows,
+    tableHtml:e.sets.length?`<table><thead><tr><th>Set</th><th class="r">kg</th><th class="r">Reps</th><th class="r">e1RM</th><th></th></tr></thead><tbody>${
+      rows.map(r=>`<tr class="setrow${r.editing?" editing":""}" data-act="edit-set" data-ei="${ei}" data-si="${r.si}" tabindex="0" aria-label="${esc(t("Edit set {n}",{n:r.n}))}"><td class="num">${r.n}${r.kind==="normal"?"":`<span class="settag">${esc(r.kindLabel)}</span>`}</td><td class="r num">${r.w}</td><td class="r num">${r.r}</td><td class="r num">${r.est}${r.pr?'<span class="pr">PR</span>':""}</td><td class="r"><button class="btn ghost small" data-act="rm-set" data-ei="${ei}" data-si="${r.si}" aria-label="${esc(t("Delete set {n}",{n:r.n}))}">✕</button></td></tr>`).join("")
+    }</tbody></table>`:"",
+    plannedHtml,
+    removeHtml:`<div class="row"><button class="btn ghost small danger" data-act="rm-ex" data-ei="${ei}">Remove exercise</button></div>`,
+    footHtml:`<div class="row">${e.done
       ? `<button class="btn secondary grow" data-act="undone-ex" data-ei="${ei}">Mark as not done</button>`
       : `<button class="btn ${left===0&&editSi<0&&e.sets.length?"primary":"secondary"} grow" data-act="done-ex" data-ei="${ei}">✓ Done</button>`}${
-      nx>=0?`<button class="btn secondary grow nextbtn" data-act="next-ex" data-ei="${ei}">${esc(t("Next: {name}",{name:nameOf("ex",entries[nx].ex)}))}</button>`:""}</div>`;
+      nx>=0?`<button class="btn secondary grow nextbtn" data-act="next-ex" data-ei="${ei}">${esc(t("Next: {name}",{name:nameOf("ex",entries[nx].ex)}))}</button>`:""}</div>`
+  };
+  return screenHtml("workout",P,classicFocus);
+}
+function classicFocus(P){
+  return `<div class="card focus" id="open-card">
+      <div class="row"><span class="label grow">${P.exLabel}</span></div>
+      ${P.full?P.demoHtml:""}
+      <div class="ex-top">${P.full?"":P.demoHtml}<div class="grow">${P.nameHtml}${P.tagsHtml}</div></div>
+      ${P.avoidHtml}
+      ${P.lastHtml}
+      ${P.targetHtml}
+      ${P.bwHtml}
+      ${P.weightHtml}
+      ${P.repsHtml}
+      ${P.kindHtml}
+      ${P.actionHtml}
+      ${P.tableHtml}
+      ${P.plannedHtml}
+      ${P.removeHtml}
+    </div>
+    ${P.footHtml}`;
 }
 function completeCard(w){
   const sets=w.entries.reduce((a,e)=>a+countedSets(e.sets).length,0), volume=w.entries.reduce((a,e)=>a+vol(volumeSets(e.sets)),0);

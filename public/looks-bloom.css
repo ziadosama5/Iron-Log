@@ -21,3 +21,6 @@
 :root[data-look="bloom"] .exchip{min-height:44px;border-radius:999px}
 :root[data-look="bloom"] .restbar{border-radius:32px}
 :root[data-look="bloom"] .demo{border-radius:22px}
+:root[data-look="bloom"] .lk-name{font-family:var(--f-display);font-weight:800;font-size:30px;line-height:36px}
+:root[data-look="bloom"] .lk-wd b{border-radius:50%}
+:root[data-look="bloom"] .lk-glance>.btn.primary{border-radius:28px}

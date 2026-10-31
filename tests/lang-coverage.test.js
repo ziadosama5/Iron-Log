@@ -28,7 +28,7 @@ function sectionsOfIndex() {
 
 const sections = [
   ...sectionsOfIndex(),
-  ...["achievements.js", "energy.js", "workout-tools.js"].map(f => ({ name: f, text: read(f), kind: "js", firstLine: 1 }))
+  ...["achievements.js", "energy.js", "workout-tools.js", "looks/carbon.js", "looks/bloom.js", "looks/today-parts.js"].map(f => ({ name: f, text: read(f), kind: "js", firstLine: 1 }))
 ];
 
 const placeholders = s => [...String(s).matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort().join(",");

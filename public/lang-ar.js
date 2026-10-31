@@ -80,7 +80,7 @@ export const AR = {
     "Split your week into days like Push, Pull and Legs. Each day keeps its own exercise list, so starting a workout is one tap.":
       "قسّم أسبوعك إلى أيام مثل الدفع والسحب والأرجل. لكل يوم قائمة تمارينه الخاصة، فيصبح بدء التمرين بضغطة واحدة.",
     "Set up days": "إعداد الأيام", "Log a free workout": "تسجيل تمرين حر",
-    "Free workout": "تمرين حر", "Pick exercises as you go": "اختر التمارين أثناء التمرين",
+    "Free workout": "تمرين حر", "Start workout": "ابدأ التمرين", "Other days": "أيام أخرى", "Pick exercises as you go": "اختر التمارين أثناء التمرين",
     "Switch to another day": "التبديل إلى يوم آخر", "Which day are you training?": "أي يوم تتدرب؟",
     "Up next": "التالي", "Keep {name}": "إبقاء {name}", "current workout": "التمرين الحالي",
     "last {d}": "آخر مرة {d}", "{n} exercise": "{n} تمرين", "{n} exercises": "{n} تمارين",
