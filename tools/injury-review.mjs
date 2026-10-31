@@ -2,7 +2,7 @@
 // Run from the repo root: node tools/injury-review.mjs
 // Corrections are edits to the JOINTS table in public/injuries.js; then run this again.
 import { writeFileSync } from "node:fs";
-import { LIB, MUSCLES } from "../public/exercise-library.js";
+import { CURATED_LIB as LIB, MUSCLES } from "../public/exercise-library.js";   // the reviewed 183; the dataset exercises are in docs/injury-tags-catalog.md
 import { AREAS, AREA_EN, JOINTS } from "../public/injuries.js";
 import { AR } from "../public/lang-ar.js";
 
@@ -22,6 +22,8 @@ for (const g of MUSCLES) {
   md += "\n";
 }
 md += `## Count per area\n\n| Area | Exercises |\n|---|---|\n`;
-for (const a of AREAS) md += `| ${AREA_EN[a]} | ${Object.values(JOINTS).filter(l => l.includes(a)).length} |\n`;
+const reviewed = MUSCLES.flatMap(g => LIB[g]);
+for (const a of AREAS) md += `| ${AREA_EN[a]} | ${reviewed.filter(n => JOINTS[n].includes(a)).length} |
+`;
 writeFileSync(new URL("../docs/injury-tags.md", import.meta.url), md);
 console.log("wrote docs/injury-tags.md");

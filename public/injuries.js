@@ -1,4 +1,5 @@
-// Injuries and exercises to avoid. Pure: no DOM, no Firebase, no imports; unit-tested in tests/injuries.test.js.
+// Injuries and exercises to avoid. Pure: no DOM, no Firebase; its only import is the generated joint table of the dataset exercises. Unit-tested in tests/injuries.test.js.
+import { JOINTS_CATALOG } from "./injuries-catalog.js";
 //
 // A person marks body areas that hurt (AREAS) and single exercises to avoid. Every library exercise lists the joints it loads
 // (JOINTS), so one area hides all the exercises that load it. The filter only trims suggestions; what the person already has
@@ -13,7 +14,7 @@ export const AREA_EN = { shoulder: "Shoulder", elbow: "Elbow", wrist: "Wrist", "
 // (docs/injury-tags.md is generated from this table: node tools/injury-review.mjs). Letters: shoulder, elbow, wrist,
 // lower-back, hip, knee, ankle.
 const [S, E, W, B, H, K, A] = AREAS;
-export const JOINTS = {
+const CURATED_JOINTS = {
   // Chest
   "Bench Press": [S, E, W], "Incline Barbell Press": [S, E, W], "Incline Dumbbell Press": [S, E, W], "Dumbbell Bench Press": [S, E, W],
   "Machine Chest Press": [S, E], "Dumbbell Fly": [S, E], "Cable Crossover": [S, E], "Push-up": [S, E, W], "Decline Bench Press": [S, E, W],
@@ -63,6 +64,8 @@ export const JOINTS = {
   "Decline Sit-up": [B, H], "Sit-up": [B, H], "Reverse Crunch": [B], "Bicycle Crunch": [], "V-up": [B, H], "Flutter Kick": [B, H],
   "Mountain Climber": [S, W, H], "Dead Bug": [], "Cable Woodchop": [S, B], "Pallof Press": [B], "Dumbbell Side Bend": [B],
 };
+// the 183 reviewed entries above, then the rules-based ones of the dataset exercises (tools/joint-rules.mjs)
+export const JOINTS = { ...CURATED_JOINTS, ...JOINTS_CATALOG };
 
 const MAX_EXERCISES = 100;
 const norm = s => String(s ?? "").trim().toLowerCase();
