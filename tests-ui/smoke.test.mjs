@@ -233,11 +233,12 @@ test("the Progress tab opens on the Overview", async () => {
   await ctx.close();
 });
 
-test("Overview: headline numbers and four graph cards", async () => {
+test("Overview: headline numbers, the year activity grid and four graph cards", async () => {
   const { page, ctx, errors } = await open();
   await tab(page, "progress");
   assert.equal(await page.locator("#view-overview .stats .stat").count(), 4);
-  assert.equal(await page.locator("#view-overview .ovcard").count(), 4);
+  assert.equal(await page.locator("#view-overview .ovcard").count(), 5);
+  assert.equal(await page.locator('#view-overview [data-card="year"] .hm-col').count(), 53);
   assert.equal(await page.locator('#view-overview [data-card="weight"] svg.chart').count(), 1);
   assert.equal(await page.locator('#view-overview [data-card="training"] rect.bar').count(), 8);
   assert.equal(await page.locator('#view-overview [data-card="calories"] rect.bar').count(), 5);
