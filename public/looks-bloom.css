@@ -24,3 +24,12 @@
 :root[data-look="bloom"] .lk-name{font-family:var(--f-display);font-weight:800;font-size:30px;line-height:36px}
 :root[data-look="bloom"] .lk-wd b{border-radius:50%}
 :root[data-look="bloom"] .lk-glance>.btn.primary{border-radius:28px}
+
+/* Plan: cards with a round tile before the name and bubble tags */
+:root[data-look="bloom"] .daysum{padding:2px 0;gap:8px}
+:root[data-look="bloom"] .daysum .dayname{font-family:var(--f-display);font-size:20px;font-weight:800}
+:root[data-look="bloom"] .daysum .chip{background:var(--glass2);box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder);color:var(--fg)}
+/* Friends: a rounder podium with a lifted first step, rows as soft separators */
+:root[data-look="bloom"] .podium .blk{border-radius:18px 18px 6px 6px}
+:root[data-look="bloom"] .podium .r1 .blk{box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 28%,transparent)}
+:root[data-look="bloom"] .boardrow{padding:12px 0}
