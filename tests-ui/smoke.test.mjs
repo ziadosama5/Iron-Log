@@ -2549,7 +2549,7 @@ for (const look of ["classic", "carbon", "bloom"]) {
     assert.ok(await page.locator(".hm-c.l1, .hm-c.l2, .hm-c.l3, .hm-c.l4").count() > 5, "shaded days");
     assert.equal(await page.locator(".hm-legend .hm-c").count(), 5);
     assert.ok((await page.locator(".hm-months span").allInnerTexts()).filter(Boolean).length >= 11, "month labels");
-    assert.equal((await page.locator(".hm-days span").allInnerTexts()).filter(Boolean).length, 3, "three weekday labels");
+    assert.deepEqual(await page.locator(".hm-days span").allInnerTexts(), ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"], "all seven weekdays, Saturday first, one per row");
     const scrolledToEnd = await page.locator(".hm-wrap").evaluate(e => e.scrollLeft + e.clientWidth >= e.scrollWidth - 2);
     assert.ok(scrolledToEnd, "starts at today");
     const labelsInView = await page.evaluate(() => { const w = document.querySelector(".hm-outer").getBoundingClientRect(), d = document.querySelector(".hm-days").getBoundingClientRect(), g = document.querySelector(".hm-wrap").getBoundingClientRect(); return d.left >= w.left - 1 && d.right <= g.left + 1 && d.height > 50; });
