@@ -59,7 +59,7 @@ What I read in openGym (for reference, nothing is copied): a big autoplaying GIF
 - Holds show seconds, bodyweight shows BW / +10 / −20, exactly as the table does today.
 
 ## 3. The "why" line
-`suggestNext` stays the only rule (double progression). It gains an extra field `why` (a code plus numbers), and `adviceWhy(sug)` in index.html turns it into one short sentence shown under the advice:
+`suggestNext` stays the only rule (double progression) and its return value does not change. A new pure function `whyFor(...)` in `progression.js` returns a code plus numbers, and `whyText(why)` in index.html turns it into one short sentence shown under the advice:
 - increase: "All {n} sets reached {r} reps last time, the top of your range."
 - same weight, more reps: "Last time your lowest set was {r} reps. One more rep each set."
 - below the range: "Last time was under {min} reps. Build up to {min} first."
@@ -103,7 +103,7 @@ The owner checked that the dataset's GIFs are public and need no licence, so the
 - `public/index.html`: `focusCard` (demo box, tags row, rows), `openExInfo` (shared figures helper), CSS (`.demo`, `.demo.mini`, crossfade fallback, rows, reduced motion), event handlers (`demo-toggle`, `demo-size`, `log-planned`), background fetch of the day's GIFs when a workout opens.
 - `public/exercise-gifs.js` (new, generated from `tools/exercise-gifs.json` by `tools/match-gifs.mjs`): `DEMO_BASE`, `GIFS`, `gifFor(name)`, `stillFor(name)`. Added to `APP_SHELL`.
 - `tools/exercise-gifs.json`, `tools/match-gifs.mjs`, `docs/gif-matches.md` (the review list for the owner).
-- `public/progression.js`: `plannedRows`, `why` field on `suggestNext` results (+ `deloadAdvice` already has its own kind).
+- `public/progression.js`: `plannedRows`, `whyFor` (pure; `suggestNext` unchanged).
 - `public/looks.js` (new): see section 4. First-launch picker, Me › Appearance › Look tiles, Today "New looks" card, `<head>` script change for `data-look`, per-look presets in the accent code, look CSS.
 - `public/lang-ar.js`: every new string.
 - `public/sw.js`: bump `VERSION`, new `exercise-gifs.js` and `looks.js` in `APP_SHELL`, a capped runtime cache for the demo host and an uncapped one for "Download exercise pictures", the two display fonts in the font cache.
