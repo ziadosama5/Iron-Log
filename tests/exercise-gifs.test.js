@@ -4,9 +4,10 @@ import { ALL_EX, isCurated } from "../public/exercise-library.js";
 import { DEMO_BASE, GIFS, gifUrl, stillUrl, gifUrls } from "../public/exercise-gifs.js";
 
 test("every library exercise has a GIF id or an explicit null", () => {
-  for (const name of ALL_EX.filter(isCurated)) {   // the catalog exercises get their pictures in Task 3
-    assert.ok(Object.prototype.hasOwnProperty.call(GIFS, name), name + " is missing from tools/exercise-gifs.json");
+  for (const name of ALL_EX) {
+    assert.ok(Object.prototype.hasOwnProperty.call(GIFS, name), name + " has no entry in the picture map");
     assert.ok(GIFS[name] === null || typeof GIFS[name] === "string", name);
+    if (!isCurated(name)) assert.equal(typeof GIFS[name], "string", name + ": every dataset exercise has its own picture");
   }
 });
 
@@ -33,7 +34,18 @@ test("gifUrls lists each mapped GIF once", () => {
 });
 
 
-import { makeGifs, stillUrls } from "../public/exercise-gifs.js";
+import { makeGifs, stillUrls, allGifUrls, allStillUrls } from "../public/exercise-gifs.js";
+import { CATALOG } from "../public/exercise-catalog.js";
+
+test("the download set is the curated pictures only; allGifUrls covers every exercise", () => {
+  const curatedIds = new Set(ALL_EX.filter(isCurated).map(n => GIFS[n]).filter(Boolean));
+  assert.equal(gifUrls().length, curatedIds.size);
+  assert.equal(allGifUrls().length, curatedIds.size + CATALOG.length);
+  assert.equal(allStillUrls().length, allGifUrls().length);
+  assert.ok(gifUrls().length < 200, "the Download exercise pictures set stays small (about 17 MB)");
+  const all = new Set(allGifUrls()); for (const u of gifUrls()) assert.ok(all.has(u));
+});
+
 
 test("the kill switch: with no base URL there are no GIFs, stills or downloads at all", () => {
   const off = makeGifs("", GIFS), off2 = makeGifs(null, GIFS);
@@ -77,7 +89,7 @@ test("almost every exercise has a picture, and none uses a movement the final re
 });
 
 import { equipmentOf } from "../public/exercise-library.js";
-const META = JSON.parse(readFileSync(new URL("../tools/exercise-gifs.meta.json", import.meta.url), "utf8"));
+const META = { ...JSON.parse(readFileSync(new URL("../tools/exercise-gifs.meta.json", import.meta.url), "utf8")), ...JSON.parse(readFileSync(new URL("../tools/catalog-meta.json", import.meta.url), "utf8")) };
 const NEEDS = { barbell: ["barbell", "ez barbell", "olympic barbell", "trap bar"], "ez-bar": ["ez barbell", "barbell"], "trap-bar": ["trap bar"], dumbbell: ["dumbbell"], cable: ["cable"], smith: ["smith machine"], kettlebell: ["kettlebell"] };
 
 test("a picture shows the equipment the exercise needs: no barbell for a dumbbell lift, no band for a cable one", () => {
@@ -94,6 +106,7 @@ test("a body-weight or machine exercise never shows a picture with a loose weigh
     const eq = equipmentOf(name) || [];
     if (eq.some(e => NEEDS[e])) continue;
     if (eq.includes("lat-pulldown") && m.equipment === "cable") continue;   // a lat pulldown machine runs on a cable
+    if (!isCurated(name)) continue;   // dataset exercises take their equipment from the same record as their picture (checked above)
     assert.ok(!["dumbbell", "barbell", "ez barbell", "olympic barbell", "band", "kettlebell", "smith machine", "cable"].includes(m.equipment), `${name} [${eq}] shows "${m.name}" (${m.equipment})`);
   }
 });
