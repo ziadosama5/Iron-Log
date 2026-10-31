@@ -11,6 +11,7 @@ export const BW_STATIONS = ["bench", "decline-bench", "pullup-bar", "dip-station
 
 // Library exercises whose every needed item is a station above (none at all counts). Typed (custom) exercises are weighted.
 export function bwDefault(name) {
+  if (CATALOG_HOLDS.has(String(name ?? "").toLowerCase())) return true;   // a stretch, a cardio move or a plank is held, in seconds, whatever gear it uses
   const eq = equipmentOf(String(name ?? ""));
   return !!eq && eq.every(id => BW_STATIONS.includes(id));
 }
@@ -19,9 +20,12 @@ export function bwDefault(name) {
 export const isHold = name => /plank|wall sit/i.test(String(name ?? "")) || CATALOG_HOLDS.has(String(name ?? "").toLowerCase());   // plus every stretch, mobility, cardio and hold exercise of the dataset
 
 // A saved override ({exercise: boolean}) wins over the library default; only the person's own keys count.
-export function bwFor(settings, name) {
+// `last` = how the person's latest saved session of this name was logged (the entry's bw flag), if it was: a name they used before the
+// library knew it keeps its kind, so its history continues. Their own switch (settings.bodyweight) wins, then `last`, then the library default.
+export function bwFor(settings, name, last) {
   const o = settings && settings.bodyweight;
-  return o && typeof o === "object" && Object.hasOwn(o, name) && typeof o[name] === "boolean" ? o[name] : bwDefault(name);
+  if (o && typeof o === "object" && Object.hasOwn(o, name) && typeof o[name] === "boolean") return o[name];
+  return typeof last === "boolean" ? last : bwDefault(name);
 }
 
 // The valid entries of a saved overrides object. Keys are exercise names (1-80 characters), at most 300.

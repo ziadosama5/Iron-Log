@@ -223,9 +223,11 @@ export const TEMPLATES = [
 ];
 
 // Muscle group an exercise belongs to (first group listing it), or null for custom exercises.
+// lowercase name -> group, built once (a scan over 1,300 names per call made typing in the search and the Days editor slow)
+const GROUP_BY_NAME = new Map();
+for (const m of MUSCLES) for (const x of LIB[m]) { const k = x.toLowerCase(); if (!GROUP_BY_NAME.has(k)) GROUP_BY_NAME.set(k, m); }
 export function muscleOf(name) {
-  const n = String(resolveAlias(name)).toLowerCase();
-  return MUSCLES.find(m => LIB[m].some(x => x.toLowerCase() === n)) || null;
+  return GROUP_BY_NAME.get(String(resolveAlias(name)).toLowerCase()) || null;
 }
 
 // The day's focus plus the group of every library exercise on it, in the standard muscle order.

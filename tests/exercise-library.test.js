@@ -256,3 +256,13 @@ test("presets with the new ids: home gains bands and balls, basic stays weights 
   assert.equal(GYM_PRESETS[3].equipment.length, 53);
   assert.equal(gymCounts([]).itemsTotal, 53);
 });
+
+test("review: muscleOf is a table lookup (a scan over 1,314 names per call made typing and the Days editor slow)", () => {
+  const names = ALL_EX;
+  let best = Infinity;
+  for (let i = 0; i < 5; i++) { const t0 = performance.now(); for (const n of names) muscleOf(n); best = Math.min(best, performance.now() - t0); }
+  assert.ok(best < 8, "muscleOf over all names took " + best.toFixed(1) + " ms");
+  assert.equal(muscleOf("bench press"), "Chest");
+  assert.equal(muscleOf("My Custom Lift"), null);
+  assert.equal(muscleOf("constructor"), null);
+});

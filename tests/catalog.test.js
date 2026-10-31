@@ -53,7 +53,7 @@ test("eqIdsFor maps dataset equipment to library equipment ids", () => {
   assert.deepEqual(ids("chest dip", "body weight"), ["dip-station"]);
   assert.deepEqual(ids("pull-up", "body weight"), ["pullup-bar"]);
   assert.deepEqual(ids("assisted pull-up", "leverage machine"), ["assisted-machine"]);
-  assert.deepEqual(ids("weighted bench dip", "weighted"), ["weight-plate"]);
+  assert.deepEqual(ids("weighted bench dip", "weighted").sort(), ["bench", "weight-plate"]);   // a bench dip needs its bench
   assert.deepEqual(ids("dumbbell preacher curl", "dumbbell").sort(), ["dumbbell", "preacher-bench"]);
   assert.deepEqual(ids("burpee", "body weight"), []);
 });
@@ -117,3 +117,60 @@ test("the gym filter works over the whole library", () => {
   assert.equal(exercisesFor(EQUIPMENT.map(e => e.id)).length, 1314);
   assert.ok(exercisesFor([]).length > 250, "body weight only");
 });
+
+// ---- final review fixes ----
+import { bwDefault } from "../public/bodyweight.js";
+import { readFileSync } from "node:fs";
+const META = JSON.parse(readFileSync(new URL("../tools/catalog-meta.json", import.meta.url), "utf8"));
+
+test("review: hold kind has no false positives (rollerout, hang clean) and every hold is a body-weight entry so it is logged in seconds", () => {
+  assert.equal(isHoldKind({ name: "barbell rollerout", equipment: "barbell", category: "waist" }), false);
+  assert.equal(isHoldKind({ name: "standing wheel rollerout", equipment: "wheel roller", category: "waist" }), false);
+  assert.equal(isHoldKind({ name: "kettlebell alternating hang clean", equipment: "kettlebell", category: "upper legs" }), false);
+  assert.equal(isHoldKind({ name: "roller back stretch", equipment: "roller", category: "back" }), true);
+  assert.equal(isHoldKind({ name: "dead hang", equipment: "body weight", category: "back" }), true);
+  for (const name of CATALOG_HOLDS) assert.equal(bwDefault(name), true, name + " must open as a body-weight hold, not as kg x reps");
+  assert.ok(!CATALOG.some(r => /rollerout|hang clean|hang snatch/i.test(META[r[0]].dataset) && r[4] === "hold"));
+});
+
+test("review: eqIdsFor knows the stations bodyweight moves need and ignores partner help and jump ropes", () => {
+  const ids = (name, equipment) => eqIdsFor({ name, equipment }).sort();
+  assert.deepEqual(ids("archer pull up", "body weight"), ["pullup-bar"]);
+  assert.deepEqual(ids("pull up (neutral grip)", "body weight"), ["pullup-bar"]);
+  assert.deepEqual(ids("gorilla chin", "body weight"), ["pullup-bar"]);
+  assert.deepEqual(ids("muscle-up (on vertical bar)", "body weight"), ["pullup-bar"]);
+  assert.deepEqual(ids("front lever", "body weight"), ["pullup-bar"]);
+  assert.deepEqual(ids("weighted one hand pull up", "weighted"), ["pullup-bar", "weight-plate"]);
+  assert.deepEqual(ids("weighted hanging leg-hip raise", "weighted"), ["pullup-bar", "weight-plate"]);
+  assert.deepEqual(ids("vertical leg raise (on parallel bars)", "body weight"), ["dip-station"]);
+  assert.deepEqual(ids("triceps dip", "body weight"), ["dip-station"]);
+  assert.deepEqual(ids("three bench dip", "body weight"), ["bench"]);
+  assert.deepEqual(ids("bench hip extension", "body weight"), ["bench"]);
+  assert.deepEqual(ids("incline push-up", "body weight"), ["bench"]);
+  assert.deepEqual(ids("decline push-up", "body weight"), ["bench"]);
+  assert.deepEqual(ids("decline crunch", "body weight"), ["bench"]);
+  assert.deepEqual(ids("dumbbell incline fly", "dumbbell"), ["bench", "dumbbell"]);
+  assert.deepEqual(ids("assisted lying glutes stretch", "assisted"), []);
+  assert.deepEqual(ids("assisted sit-up", "assisted"), []);
+  assert.deepEqual(ids("assisted hanging knee raise", "assisted"), ["pullup-bar"]);
+  assert.deepEqual(ids("assisted pull-up", "leverage machine"), ["assisted-machine"]);
+  assert.deepEqual(ids("jump rope", "rope"), []);
+  assert.deepEqual(ids("calf stretch with rope", "rope"), []);
+  assert.deepEqual(ids("battling ropes", "rope"), ["battle-rope"]);
+  assert.deepEqual(ids("walking on incline treadmill", "leverage machine"), ["ergometer"]);
+  assert.deepEqual(ids("stationary bike walk", "leverage machine"), ["ergometer"]);
+});
+
+test("review: across the catalog, bar and bench moves carry their station and no partner move needs a machine", () => {
+  for (const [name, , eq] of CATALOG) {
+    const d = META[name].dataset, e = META[name].equipment;
+    if (/pull[- ]?ups?\b|chin[- ]?ups?\b|muscle[- ]?up|front lever|back lever|skin the cat|hanging/.test(d) && e !== "leverage machine") assert.ok(eq.includes("pullup-bar"), name + " needs a bar");
+    if (/parallel bars/.test(d)) assert.ok(eq.includes("dip-station"), name);
+    if (/\bbench\b/.test(d) && e !== "leverage machine") assert.ok(eq.includes("bench") || eq.includes("decline-bench"), name + " needs a bench");
+    if (e === "assisted") assert.ok(!eq.includes("assisted-machine"), name);
+  }
+  const home = GYM_PRESETS_HOME();
+  assert.ok(exercisesFor(home).includes("Jump Rope") && exercisesFor(home).includes("Assisted Lying Glutes Stretch"), "Home keeps what needs no gear");
+  assert.ok(!exercisesFor([]).includes("Archer Pull Up") && !exercisesFor([]).includes("Front Lever"), "Bodyweight only has no bar");
+});
+function GYM_PRESETS_HOME() { return EQUIPMENT.length ? ["dumbbell", "bench", "pullup-bar", "kettlebell", "box", "ab-wheel", "resistance-band", "stability-ball", "medicine-ball", "foam-roller"] : []; }

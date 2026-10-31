@@ -56,3 +56,17 @@ test("avoiding the knee hides dataset squats and lunges; avoiding the wrist hide
   assert.ok(!wrist.some(n => /^Push-up|Wrist Curl/.test(n)));
   assert.deepEqual(jointsOf("smith machine full squat"), JOINTS["Smith Machine Full Squat"]);
 });
+
+test("review: planches, wheel rollouts and the stretches named in the review get joint tags", () => {
+  for (const n of ["Full Planche", "Frog Planche", "Lean Planche", "Straddle Planche"]) assert.ok(["shoulder", "wrist"].every(a => JOINTS[n].includes(a)), n + ": " + JOINTS[n]);
+  for (const n of Object.keys(JOINTS).filter(x => /rollerout/i.test(x))) assert.ok(JOINTS[n].includes("shoulder") && JOINTS[n].includes("wrist"), n + ": " + JOINTS[n]);
+  for (const n of ["Rear Deltoid Stretch", "Peroneals Stretch", "Posterior Tibialis Stretch"]) assert.ok(JOINTS[n] && JOINTS[n].length > 0, n);
+  const wrist = avoidFilter(["Full Planche", "Barbell Rollerout", "Bench Press"], { areas: ["wrist"], exercises: [] });
+  assert.deepEqual(wrist, []);
+});
+
+test("review: no strength exercise (not a hold) is left without joint tags", () => {
+  const holds = new Set(CATALOG.filter(r => r[4] === "hold").map(r => r[0]));
+  const bare = CATALOG.filter(r => !holds.has(r[0]) && JOINTS_CATALOG[r[0]].length === 0).map(r => r[0]);
+  assert.deepEqual(bare, []);
+});

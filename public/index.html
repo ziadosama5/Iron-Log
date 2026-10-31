@@ -1273,7 +1273,15 @@ const sessionsOfKind = (ex,bw) => sessionsFor(ex).filter(x=>sessionBw(x,ex)===bw
 function lastBefore(ex,date,bw=false){ const s=sessionsOfKind(ex,bw).filter(x=>x.date<date&&!x.deload); return s[s.length-1]||null; }   // a deload week is not "last time": the next normal week continues from the numbers before it
 function bestBefore(ex,date,bw=false){ let b=0; sessionsOfKind(ex,bw).filter(x=>x.date<date).forEach(x=>x.sets.forEach(s=>b=Math.max(b,bw?bwScore(s):e1rm(s.w,s.r)))); return b; }
 // Bodyweight exercises (extra kg, see bodyweight.js): an entry that has sets keeps the kind it was logged as; before the first set the library or the switch decides.
-const isBw = e => e.sets.length ? !!e.bw : bwFor(state.settings, e.ex);
+// How the person's latest saved session of an exercise was logged (its bw flag), when it was: a name used before the library knew it keeps its
+// kind (the library default only applies to a name with no history and no switch of its own, see bwFor).
+function lastKindOf(name){
+  const k=String(name).toLowerCase(); let best=null;
+  for(const w of state.workouts){ const e=(w.entries||[]).find(x=>String(x.ex).toLowerCase()===k&&x.sets&&x.sets.length&&typeof x.bw==="boolean"); if(e&&(!best||w.date>best.date)) best={date:w.date,bw:e.bw}; }
+  return best?best.bw:undefined;
+}
+const bwNow=name=>bwFor(state.settings,name,lastKindOf(name));
+const isBw = e => e.sets.length ? !!e.bw : bwNow(e.ex);
 // Flips an exercise between weighted and bodyweight; only a difference from the library default is stored.
 function setBodyweight(ex,on){
   const all={...(state.settings.bodyweight||{})}; if(on===bwDefault(ex)) delete all[ex]; else all[ex]=on;
@@ -1947,7 +1955,7 @@ function renderProgress(){
   const names=liftNames(sorted());   // only lifts with a working set: the charts have nothing to draw for warm-ups alone
   if(!names.length){ $("#view-progress").innerHTML=`<h2>Progress</h2><div class="empty"><strong>Nothing to chart yet</strong>Log a few sessions of any lift and its estimated 1-rep max and top weight will be charted here.</div>`; return; }
   if(!state.progressEx||!names.includes(state.progressEx)){ state.progressEx=names.map(n=>[n,sessionsFor(n).length]).sort((a,b)=>b[1]-a[1])[0][0]; }
-  const ex=state.progressEx; let bwView=bwFor(state.settings,ex), sess=sessionsOfKind(ex,bwView);
+  const ex=state.progressEx; let bwView=bwNow(ex), sess=sessionsOfKind(ex,bwView);
   if(!sess.length){ bwView=!bwView; sess=sessionsOfKind(ex,bwView); }   // nothing logged in the current kind: show the other one
   if(bwView){ renderBwProgress(names,ex,sess); return; }
   const pts=sess.map(s=>{ let best=0,top=0; s.sets.forEach(x=>{best=Math.max(best,e1rm(x.w,x.r)); top=Math.max(top,x.w);}); return {date:s.date,e1:best,top,sets:s.sets}; });
@@ -2239,9 +2247,9 @@ function insights(){
   }
 
   // Lift progress
-  const stalls=stalledLifts(state.workouts,{isBw:n=>bwFor(state.settings,n)}), wins=[];   // one stall rule, shared with the deload suggestion (deload weeks and bodyweight lifts are ignored)
+  const stalls=stalledLifts(state.workouts,{isBw:n=>bwNow(n)}), wins=[];   // one stall rule, shared with the deload suggestion (deload weeks and bodyweight lifts are ignored)
   exerciseNames().forEach(ex=>{
-    if(bwFor(state.settings,ex)||stalls.some(n=>n.toLowerCase()===ex.toLowerCase())) return;   // bodyweight lifts have no one-rep max
+    if(bwNow(ex)||stalls.some(n=>n.toLowerCase()===ex.toLowerCase())) return;   // bodyweight lifts have no one-rep max
     const s=sessionsOfKind(ex,false).filter(x=>!x.deload).map(x=>({date:x.date,b:Math.max(...x.sets.map(z=>e1rm(z.w,z.r)))}));
     if(s.length<4) return;
     const before=Math.max(...s.slice(0,-3).map(x=>x.b)), recent=Math.max(...s.slice(-3).map(x=>x.b));
@@ -2269,7 +2277,7 @@ function deloadBannerHtml(){
   const td=today(), dl=state.settings.deload, act=activeDeload(dl,td);
   if(act) return `<div class="card"><b>${t("Deload week · day {d} of {n}",{d:act.day,n:DELOAD_DAYS})}</b><p class="prev" style="margin:0">${t("Use about 90% of your usual weight for about 60% of your sets.")}</p><div class="row"><button type="button" class="btn small" data-act="deload-end">${t("End deload")}</button></div></div>`;
   if(!state.authed||state.serverSynced!==true||!canSuggest(dl,td)) return "";
-  const stalled=stalledLifts(state.workouts,{isBw:n=>bwFor(state.settings,n),since:addDaysISO(td,-28)}), s=suggestDeload({deload:dl,today:td,streakWeeks:trainingStreak(state.workouts,state.days,td).weeks,stalled});
+  const stalled=stalledLifts(state.workouts,{isBw:n=>bwNow(n),since:addDaysISO(td,-28)}), s=suggestDeload({deload:dl,today:td,streakWeeks:trainingStreak(state.workouts,state.days,td).weeks,stalled});
   if(!s) return "";
   const why=s.reason==="streak"?t("You have trained {n} weeks in a row.",{n:s.weeks}):t("Several lifts have stalled ({names}).",{names:stalled.slice(0,3).map(n=>nameOf("ex",n)).join(isRtl()?"، ":", ")});
   return `<div class="card"><b>${t("Time for an easy week?")}</b><p class="prev" style="margin:0">${why} ${t("A lighter week helps your body recover. Nothing is blocked: it only changes the advice.")}</p><div class="row"><button type="button" class="btn small primary" data-act="deload-start">${t("Start a deload week")}</button><button type="button" class="btn small" data-act="deload-later">${t("Not now")}</button></div></div>`;
@@ -3325,15 +3333,15 @@ document.addEventListener("click",e=>{
     case "step":{ const inp=document.getElementById(b.dataset.f+"-"+ei); const enS=ensureWorkout().entries[ei], lo=b.dataset.f==="w"&&enS&&isBw(enS)?-500:0; let v=Math.max(lo,(parseFloat(inp.value)||0)+parseFloat(b.dataset.d)); inp.value=b.dataset.f==="r"?Math.round(v):kg(v); inp.dispatchEvent(new Event("input",{bubbles:true})); break; }
     case "edit-set":{ const en=ensureWorkout().entries[ei], si=+b.dataset.si, s=en.sets[si];
       state.targetEdit=null; state.editSet={date:state.date,ex:en.ex,si}; state.setKind=setType(s); ui[en.ex]={w:kg(s.w),r:String(s.r)}; renderLog(); break; }
-    case "bw-toggle":{ const enB=ensureWorkout().entries[ei]; if(!enB||enB.sets.length) break; setBodyweight(enB.ex,!bwFor(state.settings,enB.ex)); renderLog(); break; }
+    case "bw-toggle":{ const enB=ensureWorkout().entries[ei]; if(!enB||enB.sets.length) break; setBodyweight(enB.ex,!bwNow(enB.ex)); renderLog(); break; }
     case "deload-start": store.saveSettings({deload:{start:today()}}); refreshPrefills(); render(); break;
     case "deload-later": store.saveSettings({deload:{...cleanDeload(state.settings.deload),dismissedUntil:addDaysISO(today(),DISMISS_DAYS)}}); render(); break;
     case "deload-end":{ const d=cleanDeload(state.settings.deload), y=addDaysISO(today(),-1); if(!d.start) break; store.saveSettings({deload:{...d,end:y>=d.start?y:addDaysISO(d.start,-1)}}); refreshPrefills(); render(); break; }
     case "target-edit": stopEditing(); state.targetEdit=ensureWorkout().entries[ei].ex; renderLog(); break;
     case "tgt-step":{ const ex=state.targetEdit; if(!ex) break; const cur={...targetFor(state.settings,ex)}, f=b.dataset.f, dd=+b.dataset.d;
       if(f==="sets") cur.sets=Math.min(10,Math.max(1,cur.sets+dd));
-      else if(f==="min") cur.min=Math.min(cur.max,Math.max(1,cur.min+dd*(isHold(ex)&&bwFor(state.settings,ex)?5:1)));   // holds count seconds: steps of 5, up to 600
-      else if(f==="max") cur.max=Math.min(isHold(ex)&&bwFor(state.settings,ex)?600:50,Math.max(cur.min,cur.max+dd*(isHold(ex)&&bwFor(state.settings,ex)?5:1)));
+      else if(f==="min") cur.min=Math.min(cur.max,Math.max(1,cur.min+dd*(isHold(ex)&&bwNow(ex)?5:1)));   // holds count seconds: steps of 5, up to 600
+      else if(f==="max") cur.max=Math.min(isHold(ex)&&bwNow(ex)?600:50,Math.max(cur.min,cur.max+dd*(isHold(ex)&&bwNow(ex)?5:1)));
       setTarget(ex,cur); renderLog(); break; }
     case "tgt-reset":{ const ex=state.targetEdit; if(!ex) break; setTarget(ex,defaultTarget(ex)); renderLog(); break; }
     case "tgt-done": state.targetEdit=null; flushTargets(); renderLog(); break;
@@ -3349,7 +3357,7 @@ document.addEventListener("click",e=>{
       if(!v) return;
       const wt=v.w, r=v.r;
       const k=kOf(state.setKind||"normal");
-      if(!en.sets.length) en.bw=bwFor(state.settings,en.ex);   // the entry remembers what its sets mean (true = extra kg, false = weighted)
+      if(!en.sets.length) en.bw=bwNow(en.ex);   // the entry remembers what its sets mean (true = extra kg, false = weighted)
       en.sets.push({w:wt,r,t:Date.now(),...(k?{k}:{})}); state.setKind="normal"; delete ui[en.ex]; store.save(w); renderLog(); startRestFor(en.ex);
       const scoreOf=s=>en.bw?bwScore(s):e1rm(s.w,s.r), best=bestBefore(en.ex,state.date,!!en.bw);
       if(!k&&best>0&&scoreOf({w:wt,r})>best&&en.sets.filter(s=>isWorking(s)&&scoreOf(s)>best).length===1) toast(t("New PR on {name}!",{name:nameOf("ex",en.ex)}));

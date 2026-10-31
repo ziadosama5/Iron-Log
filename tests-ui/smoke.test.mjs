@@ -2462,3 +2462,15 @@ test("library: Today, the Add sheet and typing a search stay responsive with the
   assert.ok(max < 500, "longest task " + Math.round(max) + " ms");
   await ctx.close();
 });
+
+// ---- library expansion: a name the person used before the library knew it keeps its kind ----
+test("library: a former custom exercise that is now a body-weight library exercise continues its weighted history", async () => {
+  const { page, ctx, errors } = await open("kind=1", undefined, undefined, gifHost);
+  await startPush(page);
+  await addEx(page, "Jump Squat");
+  assert.equal(await page.locator('#open-card [data-act="bw-toggle"]').getAttribute("aria-pressed"), "false", "still logged with weight, like its history");
+  assert.match(await page.locator("#open-card .prev").first().textContent(), /Last time/);
+  assert.match(await page.locator("#open-card").innerText(), /10.*12/);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});

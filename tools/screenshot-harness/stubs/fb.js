@@ -28,6 +28,8 @@ if (["1", "2"].includes(new URLSearchParams(location.search).get("bw"))) add("w-
   { ex: "Push-up", bw: true, sets: [S(0, 12, 40), S(0, 12, 35), S(0, 12, 30)] }, { ex: "Pull-up", bw: true, sets: [S(0, 6, 25), S(0, 6, 20), S(0, 6, 15)] }, { ex: "Plank", bw: true, sets: [S(0, 60, 10), S(0, 60, 8), S(0, 60, 6)] }] });
 // ?bw=2 also: an older session from before the feature (no bw flag) of the same pull-up
 // ?bw=3: only an old pull-up session that was logged with the body weight typed in (80 kg), nothing flagged
+// ?kind=1: two days ago the person logged "Jump Squat" (a name the library did not know then) as a weighted lift, 10 kg x 12
+if (new URLSearchParams(location.search).get("kind") === "1") add("w-" + day(2), { date: day(2), dayId: "d1", dayName: "Push", updated: T, entries: [{ ex: "Jump Squat", bw: false, sets: [S(10, 12, 20)], done: true }] });
 if (new URLSearchParams(location.search).get("bw") === "3") add("w-" + day(4), { date: day(4), dayId: "d2", dayName: "Pull", updated: T, entries: [{ ex: "Pull-up", sets: [S(80, 5, 30), S(80, 5, 25), S(80, 5, 20)] }] });
 if (new URLSearchParams(location.search).get("bw") === "2") add("w-" + day(4), { date: day(4), dayId: "d2", dayName: "Pull", updated: T, entries: [{ ex: "Pull-up", sets: [S(0, 5, 30), S(0, 5, 25), S(0, 5, 20)] }] });
 // ?deloadwk=1: yesterday's workout was a deload week session (light Bench Press, flagged)

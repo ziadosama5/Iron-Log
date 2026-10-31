@@ -55,6 +55,7 @@ export function groupsOfWords(words, exclude) {
 
 // Machine exercises ("leverage machine" / "sled machine") map to one of our specific machine ids by name words, else the generic id.
 const MACHINE_RULES = [
+  [/treadmill|stationary bike|cross trainer|elliptical|stepmill|stair ?master/, "ergometer"],
   [/assisted/, "assisted-machine"], [/seated calf|calf press/, "seated-calf-machine"], [/calf/, "standing-calf-machine"],
   [/seated fly|pec deck|\bfly\b.*machine|machine.*\bfly\b/, "pec-deck"], [/incline chest press|incline press/, "incline-press-machine"], [/chest press/, "chest-press"],
   [/shoulder press/, "shoulder-press-machine"], [/lateral raise/, "lateral-raise-machine"], [/t[- ]bar/, "tbar-row"], [/pulldown|pull-down/, "lat-pulldown"],
@@ -66,8 +67,8 @@ const MACHINE_RULES = [
 const PLAIN = {
   "body weight": [], dumbbell: ["dumbbell"], barbell: ["barbell"], "olympic barbell": ["olympic-barbell"], "ez barbell": ["ez-bar"], "trap bar": ["trap-bar"],
   kettlebell: ["kettlebell"], cable: ["cable"], "smith machine": ["smith"], band: ["resistance-band"], "resistance band": ["resistance-band"],
-  "stability ball": ["stability-ball"], "medicine ball": ["medicine-ball"], "bosu ball": ["bosu-ball"], rope: ["battle-rope"], roller: ["foam-roller"],
-  "wheel roller": ["wheel-roller"], weighted: ["weight-plate"], assisted: ["assisted-machine"], tire: ["tire"], hammer: ["sledgehammer"],
+  "stability ball": ["stability-ball"], "medicine ball": ["medicine-ball"], "bosu ball": ["bosu-ball"], rope: [] /* see eqIdsFor: only battling ropes need a rope */, roller: ["foam-roller"],
+  "wheel roller": ["wheel-roller"], weighted: ["weight-plate"], assisted: [] /* a partner helps: no gear */, tire: ["tire"], hammer: ["sledgehammer"],
   "upper body ergometer": ["ergometer"], "skierg machine": ["ergometer"], "stationary bike": ["ergometer"], "elliptical machine": ["ergometer"], "stepmill machine": ["ergometer"]
 };
 export function eqIdsFor(entry) {
@@ -78,13 +79,17 @@ export function eqIdsFor(entry) {
   } else for (const id of PLAIN[eq] || []) out.add(id);
   if (!(eq in PLAIN) && eq !== "leverage machine" && eq !== "sled machine") out.add("lever-machine");   // an equipment kind we have not seen
   // stations the exercise implies (a bench, a pull-up bar, a dip station, a preacher bench ...)
-  if (/\bbench\b/.test(name) && !/bench dip|bench squat|bench hip|bench press sit|over bench|jump over|bench jump/.test(name) && eq !== "leverage machine") out.add("bench");
-  if (/decline/.test(name) && /bench|press|fly|dumbbell|barbell/.test(name) && eq !== "body weight" && eq !== "cable" && !out.has("tbar-row")) { out.add("decline-bench"); out.delete("bench"); }
-  if (/pull-?up|chin-?up/.test(name) && !/assisted/.test(name) && eq === "body weight") out.add("pullup-bar");
-  if (/\bdip\b|\bdips\b/.test(name) && !/bench dip|three bench|reverse dip/.test(name) && eq === "body weight") out.add("dip-station");
+  const LOADED_FREE = ["body weight", "dumbbell", "barbell", "ez barbell", "smith machine", "kettlebell", "weighted"];   // the kinds that are done on a bench, not in a machine
+  if (/\bbench\b/.test(name) && eq !== "leverage machine") out.add("bench");
+  if (/\bdecline\b/.test(name) && LOADED_FREE.includes(eq)) { if (eq === "body weight") out.add("bench"); else { out.add("decline-bench"); out.delete("bench"); } }
+  else if (/\bincline\b/.test(name) && LOADED_FREE.includes(eq)) out.add("bench");
+  // a bar to hang from: pull-ups, chin-ups, muscle-ups, levers, hanging raises (not the assisted-pull-up machine)
+  if (/pull[- ]?ups?\b|chin[- ]?ups?\b|\bchin\b(?! tuck)|muscle[- ]?up|front lever|back lever|skin the cat|hanging|vertical bar|gironda/.test(name) && eq !== "leverage machine") out.add("pullup-bar");
+  if (/parallel bars?|dip bars?/.test(name)) out.add("dip-station");
+  if (/\bdips?\b/.test(name) && !/bench dip|three bench|reverse dip/.test(name) && (eq === "body weight" || eq === "weighted")) out.add("dip-station");
   if (/preacher/.test(name)) out.add("preacher-bench");
   if (/captains? chair/.test(name)) out.add("captains-chair");
-  if (/hanging/.test(name) && eq === "body weight") out.add("pullup-bar");
+  if (eq === "rope" && /battling|rope climb/.test(name)) out.add("battle-rope");
   if (/rack pull|rack /.test(name) && /barbell/.test(eq)) out.add("rack");
   if (/step-up|box jump|box squat|\bbox\b/.test(name)) out.add("box");
   return [...out];
@@ -93,5 +98,5 @@ export function eqIdsFor(entry) {
 // Logged as seconds (like Plank): stretches, mobility, rollers, holds and every cardio-category exercise.
 export function isHoldKind(entry) {
   return entry.category === "cardio" || String(entry.equipment).toLowerCase() === "roller"
-    || /stretch|mobility|foam|massage|roller|\bplank\b|\bhold\b|isometric|wall sit|\bhang\b|dead hang|\bpose\b|rotation \(|circles/.test(String(entry.name).toLowerCase());
+    || /stretch|mobility|foam|massage|\broller\b|\bplank\b|\bhold\b|isometric|wall sit|\bhang\b(?! (clean|snatch|power|high|pull))|dead hang|\bpose\b|rotation \(|circles/.test(String(entry.name).toLowerCase());
 }

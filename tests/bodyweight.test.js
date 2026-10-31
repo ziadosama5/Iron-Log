@@ -79,3 +79,11 @@ test("legacyBodyweight: a session from before bodyweight mode keeps its reps and
   assert.equal(s.sets[0].w, 80, "the input is not changed");
   assert.deepEqual(legacyBodyweight({ date: "d", sets: [], bw: undefined }).sets, []);
 });
+
+test("review: a name with saved sessions keeps the kind of its latest session over the library default", () => {
+  assert.equal(bwFor({}, "Jump Squat", false), false);
+  assert.equal(bwFor({}, "Jump Squat", true), true);
+  assert.equal(bwFor({}, "Jump Squat", undefined), bwDefault("Jump Squat"));
+  assert.equal(bwFor({ bodyweight: { "Jump Squat": true } }, "Jump Squat", false), true, "the person's own switch wins");
+  assert.equal(bwFor({}, "Bench Press", "yes"), bwDefault("Bench Press"), "only a real boolean counts");
+});

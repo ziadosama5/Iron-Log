@@ -20,25 +20,25 @@ const RULES = [
   [/leg extension|leg curl|hamstring curl|knee|quad|sled|bike|cycle|elliptical|treadmill|stepmill|ergometer|skier|\bleg curl/, ["knee"]],
   [/hip thrust|bridge|glute|kickback|abduction|adduction|donkey|fire hydrant|clam|pull[- ]?through|hip |hips|groin|piriformis|inner thigh|outer thigh|\bleg raise|knee raise|v[- ]?up|jackknife|flutter|scissor/, ["hip"]],
   [/hip thrust|bridge|barbell glute|weighted glute/, ["lower-back"]],
-  [/crunch|sit[- ]?up|twist|woodchop|russian|bicycle|dead bug|hollow|rollout|rollerout|wheel|toe touch|side bend|oblique|windshield|wiper|v[- ]?up|jackknife|leg raise|knee raise|cocoon|\bab\b/, ["lower-back"]],
+  [/crunch|curl[- ]?up|pallof|sit[- ]?up|twist|woodchop|russian|bicycle|dead bug|hollow|rollout|rollerout|wheel|toe touch|side bend|oblique|windshield|wiper|v[- ]?up|jackknife|leg raise|knee raise|cocoon|\bab\b/, ["lower-back"]],
   [/rollout|rollerout|wheel|saw|plank|body saw|ab wheel|pallof|battling ropes?|jump rope/, ["shoulder", "wrist"]]
 ];
 
 // stretches and mobility drills load the joint they name
 const STRETCH = [
-  [/shoulder|chest|lat\b|arm|pectoral|triceps|biceps|neck|trap/, ["shoulder"]],
+  [/shoulder|chest|lat\b|arm|pectoral|triceps|biceps|neck|trap|deltoid/, ["shoulder"]],
   [/elbow|triceps/, ["elbow"]],
   [/wrist|forearm|finger/, ["wrist"]],
   [/back|spine|cobra|child|cat|camel|twist|lumbar|seated forward|lower back/, ["lower-back"]],
   [/hip|glute|piriformis|groin|adductor|abductor|hamstring|thigh|butterfly|pigeon|frog|figure|cross/, ["hip"]],
   [/knee|quad|thigh/, ["knee"]],
-  [/calf|ankle|achilles|soleus|shin|foot|toe/, ["ankle"]],
+  [/calf|ankle|achilles|soleus|shin|foot|toe|peroneal|tibialis/, ["ankle"]],
   [/lunge|squat/, ["hip", "knee"]]
 ];
 
 export function jointRules(entry, group) {
   const name = String(entry.name).toLowerCase(), eq = String(entry.equipment).toLowerCase(), set = new Set();
-  const isStretch = /stretch|mobility|foam|massage|roller|pose|release/.test(name) || eq === "roller";
+  const isStretch = /stretch|mobility|foam|massage|\broller\b|pose|release/.test(name) || eq === "roller";
   if (isStretch) { for (const [re, areas] of STRETCH) if (re.test(name)) areas.forEach(a => set.add(a)); }
   else {
     for (const [re, areas] of RULES) if (re.test(name)) areas.forEach(a => set.add(a));
@@ -57,7 +57,7 @@ export function jointRules(entry, group) {
   }
   // upper-body joints do not belong to a leg or ab exercise unless the movement really loads the arms (planks, climbers, cleans, hanging...)
   const UPPER = ["shoulder", "elbow", "wrist"];
-  const ARMS_IN_IT = /push[- ]?up|plank|burpee|crawl|mountain|renegade|walkout|clean|snatch|jerk|thruster|swing|\brow\b|overhead|shoulder|bench|pullover|hang|roll|saw|climb|handstand|wall ball|battling|kettlebell/;
+  const ARMS_IN_IT = /push[- ]?up|plank|burpee|crawl|mountain|renegade|walkout|clean|snatch|jerk|thruster|swing|\brow\b|overhead|shoulder|bench|pullover|hang|roll|saw|climb|handstand|planche|lever|rollerout|wall ball|battling|kettlebell/;
   if (!isStretch && ["Quads", "Hamstrings & Glutes", "Calves", "Core"].includes(group) && !ARMS_IN_IT.test(name)) UPPER.forEach(a => set.delete(a));
   return AREAS.filter(a => set.has(a)).slice(0, 5);
 }
