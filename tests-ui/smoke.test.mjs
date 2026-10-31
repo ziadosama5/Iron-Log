@@ -19,9 +19,10 @@ before(async () => {
 });
 after(async () => { await browser?.close(); server?.kill(); });
 
-async function open(query = "", viewport = { width: 420, height: 860 }, initScript) {
+async function open(query = "", viewport = { width: 420, height: 860 }, initScript, setup) {
   const ctx = await browser.newContext({ viewport, hasTouch: true, isMobile: true });
   if (initScript) await ctx.addInitScript(initScript);
+  if (setup) await setup(ctx);
   const page = await ctx.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(String(e)));
@@ -1726,4 +1727,62 @@ test("deload: starting or ending a deload refreshes the pre-fill of an exercise 
   await page.locator('#view-log [data-act="deload-end"]').click();
   assert.equal(await w.inputValue(), "62.5", "back to normal");
   await ctx.close();
+});
+
+// ---- workout screen 2.0: demo on the card ----
+const GIF_1PX = Buffer.from("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", "base64");
+const gifHost = async ctx => { ctx.__gifHits = []; await ctx.route("https://cdn.jsdelivr.net/**", route => { ctx.__gifHits.push(route.request().url()); return route.fulfill({ status: 200, contentType: "image/gif", headers: { "access-control-allow-origin": "*" }, body: GIF_1PX }); }); };
+const gifHostDown = async ctx => { await ctx.route("https://cdn.jsdelivr.net/**", route => route.abort()); };
+
+test("the workout card shows the exercise GIF as a small thumbnail beside the name and tags", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  const img = page.locator("#open-card .demo img.demo-gif");
+  await img.waitFor();
+  assert.match(await img.getAttribute("src"), /\/videos\/0025-EIeI8Vf\.gif$/, "Bench Press shows its own GIF");
+  const box = await page.locator("#open-card .demo").boundingBox();
+  assert.ok(box.width <= 112 && box.width >= 80, "thumbnail width " + box.width);
+  const name = await page.locator("#open-card .ex-name").boundingBox();
+  assert.ok(Math.abs(name.y - box.y) < 40, "the name sits beside the thumbnail");
+  const tags = (await page.locator("#open-card .tagrow .tag2").allTextContents()).map(s => s.trim());
+  assert.ok(tags.includes("Chest"), "muscle tag: " + tags);
+  assert.ok(tags.some(x => /barbell/i.test(x)), "equipment tag: " + tags);
+  assert.equal(await page.locator('#open-card [data-act="demo-full"]').count(), 1, "full-screen button");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("a custom exercise has no demo and no empty gap, and still logs sets", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  await addEx(page, "My Cable Thing");
+  assert.equal(await page.locator("#open-card .demo").count(), 0);
+  const nameBox = await page.locator("#open-card .ex-name").boundingBox(), cardBox = await page.locator("#open-card").boundingBox();
+  assert.ok(nameBox.y - cardBox.y < 90, "name is near the top of the card");
+  await page.locator("#w-" + (await page.locator("#open-card [id^=w-]").first().getAttribute("id")).slice(2)).fill("20");
+  await page.locator('#open-card [data-act="add-set"]').click(); await page.waitForTimeout(250);
+  assert.equal(await page.locator("#open-card tr.setrow").count(), 1);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("when the GIF cannot load the two drawings take its place, with no broken image left", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHostDown);
+  await startPush(page);
+  await page.locator("#open-card .demo .demo-fallback").waitFor();
+  assert.equal(await page.locator("#open-card .demo img.demo-gif").count(), 0, "failed image removed");
+  await page.waitForFunction(() => document.querySelectorAll("#open-card .demo-fallback .ex-fig svg").length === 2);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("a bad ironlog.demo value or a throwing localStorage still gives the thumbnail", async () => {
+  for (const init of ['try{localStorage.setItem("ironlog.demo","garbage")}catch(e){}', 'Object.defineProperty(window,"localStorage",{get(){throw new Error("blocked")}})']) {
+    const { page, ctx, errors } = await open("", undefined, init, gifHost);
+    await startPush(page);
+    await page.locator("#open-card .demo").waitFor();
+    assert.ok((await page.locator("#open-card .demo").boundingBox()).width <= 112, init);
+    assert.deepEqual(errors.filter(e => !/blocked/.test(e)), []);
+    await ctx.close();
+  }
 });

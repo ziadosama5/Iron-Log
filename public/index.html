@@ -385,6 +385,24 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 .ex-figs figure{margin:0;display:flex;flex-direction:column;gap:4px;min-width:0}
 .ex-fig{aspect-ratio:1;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);display:grid;place-items:center;overflow:hidden;padding:6px;text-align:center}
 .ex-fig svg{width:100%;height:100%;display:block}
+.ex-top{display:flex;gap:12px;align-items:flex-start}
+.ex-top .grow{min-width:0;display:flex;flex-direction:column;gap:6px}
+.tagrow{display:flex;flex-wrap:wrap;gap:6px}
+.tag2{font-size:12px;line-height:1.2;padding:3px 9px;border-radius:999px;background:var(--sunk);color:var(--muted)}
+.demo{position:relative;flex:none;width:96px;height:96px;border-radius:14px;background:#fff;overflow:hidden;border:1px solid var(--line)}
+.demo img.demo-gif{width:100%;height:100%;object-fit:contain;display:block}
+.demo.big{width:100%;height:auto;aspect-ratio:1;max-height:min(180px,26vh);margin-bottom:10px}
+.demo-fallback{position:absolute;inset:0;color:#141a23}
+.demo-fallback .ex-fig{position:absolute;inset:0;border:0;border-radius:0;background:#fff;padding:4px;animation:demoA 2.4s ease-in-out infinite}
+.demo-fallback .ex-fig:last-child{animation-name:demoB}
+.demo-fallback .exbg{fill:#fff}
+.demo-fallback .exbg-s{stroke:#fff}
+@keyframes demoA{0%,40%{opacity:1}55%,90%{opacity:0}100%{opacity:1}}
+@keyframes demoB{0%,40%{opacity:0}55%,90%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.demo-fallback .ex-fig{animation:none}.demo-fallback .ex-fig:last-child{opacity:0}}
+.demo-full{position:absolute;inset-inline-end:0;bottom:0;width:44px;height:44px;appearance:none;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:end;color:#fff}
+.demo-full span{width:26px;height:26px;margin:0 3px 3px 0;border-radius:8px;background:rgba(15,17,21,.78);display:grid;place-items:center;font-size:14px;line-height:1}
+:root[dir="rtl"] .demo-full span{margin:0 0 3px 3px}
 .ex-fig .exbg{fill:var(--surface)}
 .ex-fig .exbg-s{stroke:var(--surface)}
 .ex-works{margin:10px 0 4px}
@@ -557,6 +575,7 @@ import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./a
 import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth, cacheKey } from "./overview.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
+import { gifUrl, stillUrl } from "./exercise-gifs.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
@@ -1323,7 +1342,7 @@ function renderLog(){
   h += `<div class="row"><button class="btn secondary grow" data-act="open-exsheet">+ Exercise</button><button class="btn secondary grow" data-act="open-cardiosheet">+ Cardio</button></div>`;
   h += cardioListHtml(w.cardio||[], weightOn(state.body,state.date));
 
-  $("#view-log").innerHTML = h + todayCard(); refreshSheets(); syncWake();
+  $("#view-log").innerHTML = h + todayCard(); refreshSheets(); syncWake(); fillFigures($("#open-card"));
   // keep the open exercise's chip in view without scrolling the page
   const c=$("#exchips"), on=c&&c.querySelector('[aria-current="true"]');
   if(on){ const a=on.getBoundingClientRect(), b=c.getBoundingClientRect(); c.scrollLeft+=(a.left+a.width/2)-(b.left+b.width/2); }
@@ -1372,7 +1391,8 @@ function focusCard(w, ei){
   const nx = nextUnfinished(entries, ei);
   return `<div class="card focus" id="open-card">
       <div class="row"><span class="label grow">${t("Exercise {n} of {m}",{n:ei+1,m:entries.length})}</span>${infoBtn(e.ex)}</div>
-      <div class="ex-name">${esc(nameOf("ex",e.ex))}</div>
+      ${demoPref()==="full"?demoThumbHtml(e.ex):""}
+      <div class="ex-top">${demoPref()==="full"?"":demoThumbHtml(e.ex)}<div class="grow"><div class="ex-name">${esc(nameOf("ex",e.ex))}</div>${tagsHtml(e.ex)}</div></div>
       ${(()=>{ const w=avoidWarn(e.ex); return w?`<div class="avoidnote"><span aria-hidden="true">⚠</span><span class="grow">${esc(warnText(w))}</span>${e.sets.length?"":`<button type="button" class="btn small" data-act="skip-avoided" data-ei="${ei}">${t("Skip it")}</button>`}</div>`:""; })()}
       ${last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>(bw?formatLoad(s.w,t("BW")):kg(s.w))+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`}
       ${targetBlock(e.ex,target,sug,ei,hold)}
@@ -1489,6 +1509,46 @@ function cardioCard(){
 // "!" button that opens the exercise info sheet; nothing for exercises without info.
 function infoBtn(name){ return infoFor(name) ? `<button class="infobtn" data-act="ex-info" data-name="${esc(name)}" aria-label="${esc(t("About {name}",{name:nameOf("ex",name)}))}"><span class="ib" aria-hidden="true">!</span></button>` : ""; }
 function chipInfo(chip,name){ const i=infoBtn(name); return i ? `<span class="chipgrp">${chip}${i}</span>` : chip; }
+/* ---------- exercise demo: GIF (thumbnail on the card), line drawings as the fallback ---------- */
+// One drawing box; openExInfo and the card's fallback both fill it through fillFigures.
+const figureBox=(info,p)=>`<div class="ex-fig" data-src="/exercises/${info.slug}-${p}.svg" aria-hidden="true"></div>`;
+function exerciseFigures(name){
+  const info=infoFor(name); if(!info||!info.img) return "";
+  return `<div class="ex-figs">${[["start",t("Start")],["end",t("Finish")]].map(([p,l])=>`<figure>${figureBox(info,p)}<figcaption class="label">${l}</figcaption></figure>`).join("")}</div>`;
+}
+// Loads the SVG of every drawing box under root (cached by the service worker after the first view).
+function fillFigures(root,alive){
+  if(!root) return;
+  root.querySelectorAll(".ex-fig[data-src]").forEach(box=>{
+    fetch(box.dataset.src).then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
+      .then(svg=>{ if(!alive||alive()) box.innerHTML=svg; })
+      .catch(()=>{ if(!alive||alive()) box.innerHTML=`<span class="prev">Drawing not available offline yet</span>`; });
+  });
+}
+// "mini" (default) = a thumbnail beside the name, "full" = the big box above it; per device, never throws.
+function demoPref(){ try{ return localStorage.getItem("ironlog.demo")==="full"?"full":"mini"; }catch(e){ return "mini"; } }
+const demoFallbackHtml=info=>`<div class="demo-fallback">${figureBox(info,"start")}${figureBox(info,"end")}</div>`;
+// The demo of an exercise: its GIF, or the two drawings when it has none (custom exercises: nothing at all).
+function demoThumbHtml(name){
+  const g=gifUrl(name), info=infoFor(name), draw=info&&info.img?info:null;
+  if(!g&&!draw) return "";
+  const media=g?`<img class="demo-gif" src="${esc(g)}" crossorigin="anonymous" decoding="async" alt="${esc(nameOf("ex",name))}">`:demoFallbackHtml(draw);
+  return `<div class="demo${demoPref()==="full"?" big":""}" data-name="${esc(name)}">${media}<button type="button" class="demo-full" data-act="demo-full" data-name="${esc(name)}" aria-label="${esc(t("Full screen"))}"><span aria-hidden="true">⤢</span></button></div>`;
+}
+// Muscles and equipment of an exercise as small tags (nothing when the library does not know it).
+function tagsHtml(name){
+  const info=infoFor(name), eq=equipmentOf(name)||[];
+  const tags=[...(info?info.primary.map(m=>nameOf("muscle",m)):[]),...eq.slice(0,2).map(eqLabel)];
+  return tags.length?`<div class="tagrow">${tags.map(x=>`<span class="tag2">${esc(x)}</span>`).join("")}</div>`:"";
+}
+// A GIF that fails to load (offline on the first view, CDN down) is replaced by the drawings; `error` does not bubble, so listen in capture.
+document.addEventListener("error",e=>{
+  const img=e.target; if(!img||!img.classList||!img.classList.contains("demo-gif")) return;
+  const box=img.closest(".demo"), info=box&&infoFor(box.dataset.name);
+  if(!box) return;
+  if(info&&info.img){ img.replaceWith(Object.assign(document.createElement("div"),{className:"demo-fallback",innerHTML:figureBox(info,"start")+figureBox(info,"end")})); fillFigures(box); }
+  else box.querySelector(".demo-full")&&box.remove();
+},true);
 // Reads the weight/reps inputs of exercise ei; shows a toast and returns null if invalid.
 function readSet(ei){
   const en=ensureWorkout().entries[ei], lo=en&&isBw(en)?-500:0;   // an assisted bodyweight set has a negative extra load
@@ -2717,8 +2777,7 @@ let exInfoToken=0;
 function openExInfo(name){
   const info=infoFor(name); if(!info) return;
   const dlg=$("#exinfo"), token=++exInfoToken;
-  const figs = info.img ? `<div class="ex-figs">${[["start",t("Start")],["end",t("Finish")]].map(([p,l])=>
-      `<figure><div class="ex-fig" data-src="/exercises/${info.slug}-${p}.svg" aria-hidden="true"></div><figcaption class="label">${l}</figcaption></figure>`).join("")}</div>` : "";
+  const figs = exerciseFigures(info.name);
   dlg.innerHTML = `<div class="sheet-head"><h2 id="exinfo-title">${esc(nameOf("ex",info.name))}</h2><button class="btn ghost small" data-act="exinfo-close" aria-label="Close">✕</button></div>
     ${figs}
     <p class="ex-works">Works: <b>${info.primary.map(m=>esc(nameOf("muscle",m))).join(", ")}</b>${info.secondary.length?` <span class="prev">· ${info.secondary.map(m=>esc(nameOf("muscle",m))).join(", ")}</span>`:""}</p>
@@ -2728,11 +2787,7 @@ function openExInfo(name){
     <div class="row"><button type="button" class="btn small" data-act="avoid-toggle" data-name="${esc(info.name)}">${t(avoidsName(info.name)?"Stop avoiding":"Avoid this exercise")}</button></div>
     ${info.img&&!info.own?`<p class="prev ex-credit">Illustrations: Everkinetic, CC BY-SA 4.0</p>`:""}`;
   if(!dlg.open){ dlg.showModal(); history.pushState({exinfo:1},""); }
-  dlg.querySelectorAll(".ex-fig").forEach(box=>{
-    fetch(box.dataset.src).then(r=>{ if(!r.ok) throw new Error(r.status); return r.text(); })
-      .then(svg=>{ if(token===exInfoToken) box.innerHTML=svg; })
-      .catch(()=>{ if(token===exInfoToken) box.innerHTML=`<span class="prev">Drawing not available offline yet</span>`; });
-  });
+  fillFigures(dlg,()=>token===exInfoToken);
 }
 function closeExInfo(){ const d=$("#exinfo"); if(d.open) d.close(); }
 // Every way of closing (✕, backdrop, Esc, back gesture) ends in the dialog's "close" event.
