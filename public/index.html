@@ -2158,7 +2158,8 @@ function quickWeightCard(entry){
 }
 function renderBody(){
   const p=state.profile, entry=state.body.find(e=>e.date===state.bdate)||{date:state.bdate};
-  let h=`<h2>Body</h2>`+quickWeightCard(entry);
+  const SEP="";   // splits the page into named parts for screenHtml "progress.body"
+  let h=quickWeightCard(entry)+SEP;
   if(!profileReady()||state.editProfile){
     h+=`<form class="card" id="profile-form" autocomplete="off"><h3>About you</h3>
       <p class="prev" style="margin:0">Used to estimate calories, protein and healthy ranges in Coach. Only you can see it.</p>
@@ -2175,6 +2176,7 @@ function renderBody(){
     h+=`<div class="row prev"><span class="grow">${t(p.sex==="male"?"Male":"Female")} · ${p.height} cm · ${t("{n} yrs",{n:new Date().getFullYear()-p.birthYear})} · ${t("Goal: {goal}",{goal:"<b>"+esc(nameOf("goal",GOALS[p.goal]))+"</b>"})}${p.goalWeight!=null?` · ${t("Target {n} kg",{n:kg(p.goalWeight)})}`:""}</span><button class="btn ghost small" data-act="edit-profile">Edit</button></div>`;
   }
 
+  h+=SEP;
   const hasM=["waist","chest","hips","neck","arm","thigh","calf"].some(k=>entry[k]!=null), hasI=["smm","bfm","pbf","vfl","bmr","tbw","score"].some(k=>entry[k]!=null);
   // Measurements and InBody open on request (or when the selected day already has them).
   if(!(state.bodyFull||hasM||hasI)) h+=`<button class="btn secondary" data-act="body-full">Add measurements / scan</button>`;
@@ -2188,6 +2190,7 @@ function renderBody(){
     <div class="row"><button class="btn primary" type="submit">Save entry</button>${state.body.some(e=>e.date===state.bdate)?`<button class="btn ghost danger" type="button" data-act="del-body">Delete</button>`:""}</div>
   </form>`;
 
+  h+=SEP;
   const metrics=Object.keys(BF).filter(k=>state.body.some(e=>typeof e[k]==="number"));
   if(metrics.length){
     if(!metrics.includes(state.metric)) state.metric=metrics[0];
@@ -2205,14 +2208,17 @@ function renderBody(){
       </div>
       ${lineChart(s,[{k,c:"var(--accent)",main:true}],t("{label} over time",{label:bfLabel(k)}),t("Add a second entry to see the trend."))}
     </div>`;
+    h+=SEP;
     const more=moreList(bodySorted().reverse(),"body"), rows=more.shown;
     h+=`<div class="card" style="overflow-x:auto"><h3>Recent entries</h3><table><thead><tr><th>Date</th><th class="r">Weight</th><th class="r">Waist</th><th class="r">Fat %</th><th class="r">Muscle</th></tr></thead><tbody>${
       rows.map(e=>`<tr data-bdate="${esc(e.date)}" style="cursor:pointer"><td style="white-space:nowrap">${fmtDate(e.date)}</td>${["weight","waist","pbf","smm"].map(k=>`<td class="r num">${e[k]!=null?kg(e[k]):"–"}</td>`).join("")}</tr>`).join("")}</tbody></table>${more.btn}</div>`;
   } else {
-    h+=`<div class="empty"><strong>No body data yet</strong>Log your weight above. Add measurements or an InBody scan whenever you have them, and Coach will start using them.</div>`;
+    h+=SEP+`<div class="empty"><strong>No body data yet</strong>Log your weight above. Add measurements or an InBody scan whenever you have them, and Coach will start using them.</div>`;
   }
-  $("#view-body").innerHTML=h;
+  const [qh,pf,en,tr,rc]=h.split(SEP);
+  $("#view-body").innerHTML=screenHtml("progress.body",{quickHtml:qh,profileHtml:pf,entryHtml:en,trendHtml:tr,recentHtml:rc||""},classicBody);
 }
+function classicBody(P){ return `<h2>Body</h2>${P.quickHtml}${P.profileHtml}${P.entryHtml}${P.trendHtml}${P.recentHtml}`; }
 
 /* ---------- COACH ---------- */
 const MUSCLE_OF = {}; Object.entries(LIB).forEach(([m,list])=>list.forEach(n=>{ if(!MUSCLE_OF[n.toLowerCase()]) MUSCLE_OF[n.toLowerCase()]=m; }));

@@ -37,6 +37,11 @@ function friends(c) {
   return `<h2>${c.esc(c.t("Friends"))}</h2>${c.requestsHtml}<div class="lk-board">${c.boardHtml}</div>${c.friendsHtml}${c.manageHtml}`;
 }
 
+// Body: the weight and the entry actions first, the trend after, your profile line last.
+function body(c) {
+  return `<h2>${c.esc(c.t("Body"))}</h2>${c.quickHtml}${c.entryHtml}${c.trendHtml}${c.recentHtml}${c.profileHtml}`;
+}
+
 // The focus card: name, tags and target on the left, a 96 px demo on the right; advice, set type, the sets, two stacked steppers, one big Log button.
 function workout(c) {
   return `<div class="card focus lk-focus" id="open-card">
@@ -56,4 +61,4 @@ function workout(c) {
   ${c.footHtml}`;
 }
 
-export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends };
+export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends, "progress.body": body };
