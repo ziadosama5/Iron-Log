@@ -12,11 +12,13 @@
 <title>Iron Log</title>
 <link rel="icon" type="image/svg+xml" href="/logo-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<script>/* apply the saved look (carbon / bloom; anything else = classic) before the page draws */try{var k=localStorage.getItem("ironlog.look");if(k==="carbon"||k==="bloom")document.documentElement.dataset.look=k;}catch(e){}</script>
 <script>/* apply the saved theme before the page draws */try{var t=localStorage.getItem("ironlog.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
 <script>/* language + direction before the page draws */try{var l=localStorage.getItem("ironlog.lang");if(l!=="ar"&&l!=="en")l=/^ar/i.test(navigator.language||"")?"ar":"en";document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";}catch(e){}</script>
 <script>/* accent colour before the page draws (computed values are cached by the app) */try{var c=JSON.parse(localStorage.getItem("ironlog.accent.css")||"null");if(c){var th=localStorage.getItem("ironlog.theme"),dk=th==="dark"||(th!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches),v=c[dk?"dark":"light"],ok=v&&v.length===3&&v.every(function(x){return /^#[0-9a-f]{6}$/i.test(x);});if(ok){var st=document.documentElement.style;st.setProperty("--accent",v[0]);st.setProperty("--accent-ink",v[1]);st.setProperty("--accent-soft",v[2]);}}}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Oswald:wght@500;600;700&family=Manrope:wght@400;500;700&family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@600;700&display=swap">
+<link rel="stylesheet" href="/looks.css">
 <style>
 /* "Clean plate": phone-first single column, soft white cards on a light steel background (navy/slate in dark), plate-blue accent, bottom tab bar */
 :root{
@@ -517,6 +519,8 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
         <div class="card"><h3>Appearance</h3>
           <div class="stack" style="gap:6px"><span class="label">Language</span>
             <div class="seg" role="group" aria-label="Language" data-no-tr><button data-act="lang-set" data-v="en">English</button><button data-act="lang-set" data-v="ar">العربية</button></div></div>
+          <div class="stack" style="gap:6px"><span class="label">Look</span>
+            <div class="looks" id="look-tiles" role="group" aria-label="Look"></div></div>
           <div class="stack" style="gap:6px"><span class="label">Accent</span>
             <div class="swatches" id="accent-swatches" role="group" aria-label="Accent"></div></div>
           <div class="stack" style="gap:6px"><span class="label">Large demo on the card</span>
@@ -590,6 +594,7 @@ import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsTh
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
 import { gifUrl, stillUrl } from "./exercise-gifs.js";
+import { LOOKS, cleanLook, accentPresetsFor, defaultAccentFor, envFor } from "./looks.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
@@ -2923,6 +2928,7 @@ function syncMe(){
   root.querySelectorAll("[data-act=lang-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===currentLang()));
   root.querySelectorAll("[data-act=demo-size-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===demoPref()));
   const box=$("#accent-swatches"); if(box&&!box.children.length) drawSwatches();
+  drawLooks();
 }
 /* ---------- THEME ---------- */
 // "system" follows the phone; light/dark override it. The <head> script applies it before first paint.
@@ -2938,12 +2944,14 @@ function applyTheme(setting){
 /* ---------- ACCENT ---------- */
 // One chosen colour -> accent, text-on-accent and soft tint for light and dark (theme-tools.js). The result for both modes is
 // cached in localStorage so the <head> script can apply it before first paint. Plate blue = the CSS defaults (nothing set).
-const ACCENT_ENV={light:{surface:"#ffffff",bg:"#f3f5f9"},dark:{surface:"#171d26",bg:"#0f1319"}};
+// The surfaces the accent must stay readable on depend on the look (looks.js, envFor).
+function currentLook(){ try{ return cleanLook(localStorage.getItem("ironlog.look")); }catch(e){ return "classic"; } }
+const accentEnv=()=>envFor(currentLook());
 function currentAccent(){ try{ const a=localStorage.getItem("ironlog.accent"); return a&&(PRESETS.some(p=>p.id===a)||parseHex(a))?a:"plate"; }catch(e){ return "plate"; } }
 function isDarkNow(){ const th=document.documentElement.dataset.theme; return th==="dark"||(th!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches); }
 function applyAccent(setting,save){
   const s=PRESETS.some(p=>p.id===setting)?setting:(parseHex(setting)||"plate"), st=document.documentElement.style;
-  const both={light:deriveAccent(s,"light",ACCENT_ENV.light.surface,ACCENT_ENV.light.bg),dark:deriveAccent(s,"dark",ACCENT_ENV.dark.surface,ACCENT_ENV.dark.bg)};
+  const env=accentEnv(), both={light:deriveAccent(s,"light",env.light.surface,env.light.bg),dark:deriveAccent(s,"dark",env.dark.surface,env.dark.bg)};
   if(save!==false){ try{ localStorage.setItem("ironlog.accent",s); if(s==="plate") localStorage.removeItem("ironlog.accent.css"); else localStorage.setItem("ironlog.accent.css",JSON.stringify({light:[both.light.accent,both.light.ink,both.light.soft],dark:[both.dark.accent,both.dark.ink,both.dark.soft]})); }catch(e){} }
   if(s==="plate"){ ["--accent","--accent-ink","--accent-soft"].forEach(n=>st.removeProperty(n)); return; }
   const v=both[isDarkNow()?"dark":"light"];
@@ -2951,9 +2959,35 @@ function applyAccent(setting,save){
 }
 function drawSwatches(){
   const box=$("#accent-swatches"); if(!box) return;
-  const cur=currentAccent(), custom=!PRESETS.some(p=>p.id===cur);
-  box.innerHTML=PRESETS.map(p=>`<button class="swatch" data-act="accent-set" data-v="${p.id}" style="--sw:${p.hex}" aria-pressed="${cur===p.id}" aria-label="${esc(t(p.name))}"></button>`).join("")+
-    `<label class="swatch custom" aria-pressed="${custom}" title="${esc(t("Custom"))}"><input type="color" id="accent-custom" value="${custom?cur:"#1f5fd1"}" aria-label="${esc(t("Custom"))}"></label>`;
+  const look=currentLook(), list=accentPresetsFor(look), val=p=>look==="classic"?p.id:p.hex;
+  const cur=currentAccent(), custom=!list.some(p=>val(p)===cur);
+  box.innerHTML=list.map(p=>`<button class="swatch" data-act="accent-set" data-v="${val(p)}" style="--sw:${p.hex}" aria-pressed="${cur===val(p)}" aria-label="${esc(t(p.name))}"></button>`).join("")+
+    `<label class="swatch custom" aria-pressed="${custom}" title="${esc(t("Custom"))}"><input type="color" id="accent-custom" value="${custom&&cur.startsWith("#")?cur:(list[0].hex)}" aria-label="${esc(t("Custom"))}"></label>`;
+}
+/* ---------- LOOK (Classic / Carbon / Bloom) ---------- */
+// Per device (localStorage ironlog.look), applied before first paint by a <head> script; nothing is stored in Firestore.
+// Picking a look also sets that look's default accent, so the colours always belong together.
+function applyLook(look,opts){
+  look=cleanLook(look);
+  try{ localStorage.setItem("ironlog.look",look); }catch(e){}
+  if(look==="classic") delete document.documentElement.dataset.look; else document.documentElement.dataset.look=look;
+  if(!opts||opts.resetAccent!==false) applyAccent(defaultAccentFor(look));
+  else applyAccent(currentAccent(),false);
+  const m=document.querySelector('meta[name="theme-color"]');
+  if(m) m.content=getComputedStyle(document.documentElement).getPropertyValue("--surface").trim()||"#ffffff";
+  drawSwatches(); drawLooks();
+}
+const LOOK_NAME={classic:"Classic",carbon:"Carbon",bloom:"Bloom"};
+// A tile is a tiny mock screen drawn with the look's own tokens (.look-scope), with that look's default accent.
+function lookPreviewHtml(look){
+  const env=envFor(look)[isDarkNow()?"dark":"light"], acc=defaultAccentFor(look);
+  const d=acc==="plate"?null:deriveAccent(acc,isDarkNow()?"dark":"light",env.surface,env.bg);
+  return `<span class="lk-prev look-scope" data-look="${look}"${d?` style="--accent:${d.accent};--accent-ink:${d.ink}"`:""} aria-hidden="true"><span class="lk-card"></span><span class="lk-btn"></span><span class="lk-bar"></span></span>`;
+}
+function drawLooks(){
+  const box=$("#look-tiles"); if(!box) return;
+  const cur=currentLook();
+  box.innerHTML=LOOKS.map(l=>`<button type="button" class="look-tile" data-act="look-set" data-v="${l}" aria-pressed="${cur===l}">${lookPreviewHtml(l)}<span>${esc(t(LOOK_NAME[l]))}</span></button>`).join("");
 }
 document.addEventListener("input",e=>{ if(e.target.id==="accent-custom"){ applyAccent(e.target.value); const c=e.target.closest(".swatch"); document.querySelectorAll("#accent-swatches .swatch").forEach(b=>b.setAttribute("aria-pressed",b===c)); } });
 document.addEventListener("input",e=>{ if(e.target.id==="find-q") state.friends.q=e.target.value; if(state.journey&&e.target.id==="jr-height") state.journey.about.height=e.target.value; if(state.journey&&e.target.id==="jr-year") state.journey.about.birthYear=e.target.value; });
@@ -3235,6 +3269,7 @@ document.addEventListener("click",e=>{
     case "share-delete-yes": store.deleteShare().then(ok=>{ state.share.confirmDelete=false; toast(t(ok?"Profile deleted":"Couldn't save. Check your connection.")); if(state.view==="profile") renderProfile(); }); break;
     case "lang-set": applyLang(b.dataset.v); syncMe(); drawSwatches(); break;
     case "accent-set": applyAccent(b.dataset.v); drawSwatches(); break;
+    case "look-set": applyLook(b.dataset.v); break;
     case "set-goal": state.editProfile=true; go("body"); setTimeout(()=>document.getElementById("pf-goalw")?.focus(),0); break;
     case "food-open": case "food-serving": case "food-amount": case "food-add": case "food-more": case "tray-step": case "tray-remove": case "manual-toggle": case "recent-add": case "myfood-new": case "myfood-cancel": case "myfood-edit": case "myfood-save": case "myfood-delete": case "meal-edit": case "scan-open": case "scan-close": case "scan-start": case "scan-dismiss": foodClick(b.dataset.act,b.dataset); break;
     case "meal-name": $("#meal-name").value=state.mealDraft.name=nameOf("meal",b.dataset.name); break;

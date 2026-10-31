@@ -1947,3 +1947,72 @@ test("planned rows mirror in Arabic and cause no sideways scrolling", async () =
   assert.deepEqual(errors, []);
   await ctx.close();
 });
+
+// ---- looks: Classic (default), Carbon, Bloom ----
+const lookInit = look => `try{localStorage.setItem("ironlog.look",${JSON.stringify(look)})}catch(e){}`;
+const rootVar = (page, name) => page.evaluate(n => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), name);
+const dataLook = page => page.evaluate(() => document.documentElement.dataset.look || null);
+
+test("looks: with no saved look the page is Classic (no data-look, today's card radius)", async () => {
+  const { page, ctx, errors } = await open();
+  assert.equal(await dataLook(page), null);
+  assert.equal(await rootVar(page, "--r-card"), "20px");
+  assert.ok(await page.evaluate(() => [...document.styleSheets].some(s => (s.href || "").endsWith("/looks.css"))), "looks.css is linked");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("looks: a saved look is on <html> before the page draws and changes the tokens", async () => {
+  for (const [look, radius] of [["carbon", "10px"], ["bloom", "24px"]]) {
+    const { page, ctx, errors } = await open("", undefined, lookInit(look));
+    assert.equal(await dataLook(page), look);
+    assert.equal(await rootVar(page, "--r-card"), radius, look);
+    assert.deepEqual(errors, []);
+    await ctx.close();
+  }
+});
+
+test("looks: an unknown saved value or a throwing localStorage gives Classic without errors", async () => {
+  for (const init of [lookInit("CARBON"), lookInit("x"), lookInit(""), 'Object.defineProperty(window,"localStorage",{get(){throw new Error("blocked")}})']) {
+    const { page, ctx, errors } = await open("", undefined, init);
+    assert.equal(await dataLook(page), null, init);
+    assert.deepEqual(errors.filter(e => !/blocked/.test(e)), [], init);
+    await ctx.close();
+  }
+});
+
+test("looks: Me > Appearance has three tiles; Carbon sets its accent and swatches, Classic restores plate blue; both survive a reload", async () => {
+  const { page, ctx, errors } = await open();
+  await tab(page, "me");
+  assert.deepEqual(await page.locator('[data-act="look-set"]').evaluateAll(els => els.map(e => e.dataset.v)), ["classic", "carbon", "bloom"]);
+  assert.equal(await page.locator('[data-act="look-set"][data-v="classic"]').getAttribute("aria-pressed"), "true");
+  await page.locator('[data-act="look-set"][data-v="carbon"]').click();
+  assert.equal(await dataLook(page), "carbon");
+  assert.equal(await page.evaluate(() => localStorage.getItem("ironlog.accent")), "#ff7a2f");
+  assert.equal(await page.locator("#accent-swatches .swatch").count(), 7, "six Carbon accents plus custom");
+  await page.reload(); await page.waitForSelector(".tabbar:not([hidden])");
+  assert.equal(await dataLook(page), "carbon");
+  await tab(page, "me");
+  assert.equal(await page.locator('[data-act="look-set"][data-v="carbon"]').getAttribute("aria-pressed"), "true");
+  await page.locator('[data-act="look-set"][data-v="classic"]').click();
+  assert.equal(await dataLook(page), null);
+  assert.equal(await page.evaluate(() => localStorage.getItem("ironlog.accent")), "plate");
+  assert.equal(await page.locator("#accent-swatches .swatch").count(), 9, "eight Classic accents plus custom");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("looks: every main screen fits the phone in Carbon and Bloom, light and dark, English and Arabic", async () => {
+  for (const look of ["carbon", "bloom"]) for (const theme of ["light", "dark"]) for (const lang of ["en", "ar"]) {
+    const init = lookInit(look) + `try{localStorage.setItem("ironlog.theme","${theme}");localStorage.setItem("ironlog.lang","${lang}")}catch(e){}`;
+    const { page, ctx, errors } = await open("", { width: 360, height: 740 }, init);
+    for (const id of ["today", "plan", "progress", "friends", "me"]) {
+      await tab(page, id); await page.waitForTimeout(150);
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `${look} ${theme} ${lang} ${id}: no sideways scroll`);
+    }
+    const bar = await page.locator(".tabbar button").first().boundingBox();
+    assert.ok(bar.height >= 44, `${look} ${theme} ${lang}: tab targets`);
+    assert.deepEqual(errors, [], `${look} ${theme} ${lang}`);
+    await ctx.close();
+  }
+});

@@ -1,0 +1,80 @@
+/* Looks: Carbon and Bloom (Classic = the CSS in index.html, nothing here applies to it).
+   <html data-look="carbon|bloom"> (set by the <head> script from localStorage ironlog.look) overrides the design tokens of
+   index.html; .look-scope[data-look] gives a small preview (picker, tiles) the same tokens without changing the page.
+   This file is linked BEFORE the inline <style>, so every selector here carries :root[data-look] to win by specificity.
+   --good, --danger and the reward colours are never overridden. */
+
+/* ---- Classic tokens for previews only (so a Classic tile looks like Classic inside a Carbon page) ---- */
+.look-scope[data-look="classic"]{
+  --bg:#f3f5f9; --surface:#ffffff; --sunk:#eef2f8; --line:#e3e8ef; --fg:#141a23; --muted:#5b6676;
+  --shadow:0 1px 3px rgb(20 30 50 / .08); --card-border:transparent; --r-card:20px; --r-btn:14px;
+  --hero:#0f1115; --hero-ink:#ffffff; --bar:#0f1115; --bar-ink:#8a90a0; --bar-on:#ffffff; --pop:0 10px 28px rgb(15 17 21 / .28);
+  --accent:#1f5fd1; --accent-ink:#ffffff; --accent-soft:#dbe6fb; --bg-grad:none; color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .look-scope[data-look="classic"]{
+  --bg:#0f1319; --surface:#171d26; --sunk:#0b0f14; --line:#283140; --fg:#e6ebf2; --muted:#8c97a8; --shadow:none; --card-border:var(--line);
+  --hero:#262a35; --bar:#232731; --bar-ink:#8f95a3; --accent:#6c9cff; --accent-ink:#0b1220; --accent-soft:#1b2a47; color-scheme:dark}}
+:root[data-theme="dark"] .look-scope[data-look="classic"]{
+  --bg:#0f1319; --surface:#171d26; --sunk:#0b0f14; --line:#283140; --fg:#e6ebf2; --muted:#8c97a8; --shadow:none; --card-border:var(--line);
+  --hero:#262a35; --bar:#232731; --bar-ink:#8f95a3; --accent:#6c9cff; --accent-ink:#0b1220; --accent-soft:#1b2a47; color-scheme:dark}
+
+/* ================= CARBON: charcoal, condensed uppercase type, angled cuts, a flat full-width bar ================= */
+:root[data-look="carbon"],.look-scope[data-look="carbon"]{
+  --bg:#f4f1ee; --surface:#ffffff; --sunk:#ece7e2; --line:#ddd5cd; --fg:#1b1a19; --muted:#6a625b;
+  --shadow:0 1px 2px rgb(27 26 25 / .08); --card-border:transparent; --r-card:10px; --r-btn:6px;
+  --hero:#101114; --hero-ink:#f4f1ee; --bar:#0c0d10; --bar-ink:#9a9aa3; --bar-on:#ffffff; --pop:0 -4px 18px rgb(12 13 16 / .25);
+  --bg-grad:linear-gradient(180deg,#f4f1ee 0%,#ebe6e1 100%);
+  --f-display:"Oswald","Arial Narrow",system-ui,sans-serif; --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme:dark){
+  :root[data-look="carbon"]:not([data-theme="light"]),:root:not([data-theme="light"]) .look-scope[data-look="carbon"]{
+    --bg:#101114; --surface:#181a1f; --sunk:#0c0d10; --line:#2a2d34; --fg:#f4f1ee; --muted:#a1a1a8; --shadow:none; --card-border:var(--line);
+    --hero:#1d2027; --bar:#0c0d10; --bar-ink:#9a9aa3; --pop:0 -4px 18px rgb(0 0 0 / .5);
+    --bg-grad:linear-gradient(180deg,#101114 0%,#0c0d10 100%); color-scheme:dark}}
+:root[data-look="carbon"][data-theme="dark"],:root[data-theme="dark"] .look-scope[data-look="carbon"]{
+  --bg:#101114; --surface:#181a1f; --sunk:#0c0d10; --line:#2a2d34; --fg:#f4f1ee; --muted:#a1a1a8; --shadow:none; --card-border:var(--line);
+  --hero:#1d2027; --bar:#0c0d10; --bar-ink:#9a9aa3; --pop:0 -4px 18px rgb(0 0 0 / .5);
+  --bg-grad:linear-gradient(180deg,#101114 0%,#0c0d10 100%); color-scheme:dark}
+:root[data-look="carbon"] .ex-name,:root[data-look="carbon"] .dayname,:root[data-look="carbon"] h1,:root[data-look="carbon"] h2{letter-spacing:.04em}
+:root[data-look="carbon"] .btn.primary{border-radius:0;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);text-transform:uppercase;letter-spacing:.08em}
+:root[data-look="carbon"] .demo{border-radius:0;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
+:root[data-look="carbon"] .tag2{border-radius:0;clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%)}
+:root[data-look="carbon"] .bigstep button{border-radius:0;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
+:root[data-look="carbon"] .tabbar{inset-inline:0;max-width:none;bottom:0;height:calc(64px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);border-radius:0;box-shadow:var(--pop)}
+:root[data-look="carbon"] .hero{border-radius:6px}
+:root[data-look="carbon"] .ebar>i{background:linear-gradient(90deg,var(--accent),#ff3d3d)}
+:root[data-look="carbon"] .prow{border-radius:6px}
+
+/* ================= BLOOM: blush, plum text, serif headings, round pills, a floating white bar ================= */
+:root[data-look="bloom"],.look-scope[data-look="bloom"]{
+  --bg:#fff4f6; --surface:#ffffff; --sunk:#fbe3ea; --line:#f1d9df; --fg:#3a1d2e; --muted:#7d5e6c;
+  --shadow:0 4px 18px rgb(122 45 74 / .08); --card-border:transparent; --r-card:24px; --r-btn:22px;
+  --hero:#3a1d2e; --hero-ink:#fff4f6; --bar:#ffffff; --bar-ink:#7d5e6c; --bar-on:#3a1d2e; --pop:0 8px 28px rgb(122 45 74 / .16);
+  --bg-grad:linear-gradient(180deg,#ffe9ef 0%,#fff4f6 45%,#fff4f6 100%);
+  --f-display:"Fraunces",Georgia,"Times New Roman",serif; --f-body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme:dark){
+  :root[data-look="bloom"]:not([data-theme="light"]),:root:not([data-theme="light"]) .look-scope[data-look="bloom"]{
+    --bg:#17102a; --surface:#2a1c3a; --sunk:#120b21; --line:#3d2a55; --fg:#f6eeff; --muted:#bbaad6; --shadow:none; --card-border:var(--line);
+    --hero:#3a2656; --hero-ink:#f6eeff; --bar:#2a1c3a; --bar-ink:#bbaad6; --bar-on:#ffffff; --pop:0 8px 28px rgb(0 0 0 / .5);
+    --bg-grad:radial-gradient(120% 60% at 80% 0%,#3a1b63 0%,#17102a 60%); color-scheme:dark}}
+:root[data-look="bloom"][data-theme="dark"],:root[data-theme="dark"] .look-scope[data-look="bloom"]{
+  --bg:#17102a; --surface:#2a1c3a; --sunk:#120b21; --line:#3d2a55; --fg:#f6eeff; --muted:#bbaad6; --shadow:none; --card-border:var(--line);
+  --hero:#3a2656; --hero-ink:#f6eeff; --bar:#2a1c3a; --bar-ink:#bbaad6; --bar-on:#ffffff; --pop:0 8px 28px rgb(0 0 0 / .5);
+  --bg-grad:radial-gradient(120% 60% at 80% 0%,#3a1b63 0%,#17102a 60%); color-scheme:dark}
+:root[data-look="bloom"] .ex-name,:root[data-look="bloom"] .dayname,:root[data-look="bloom"] .daytag,:root[data-look="bloom"] .label,:root[data-look="bloom"] h1,:root[data-look="bloom"] h2{text-transform:none;letter-spacing:0}
+:root[data-look="bloom"] .btn.primary{box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 30%,transparent)}
+:root[data-look="bloom"] .demo{border-radius:22px}
+:root[data-look="bloom"] .tabbar{border-radius:32px;border:1px solid var(--line)}
+:root[data-look="bloom"] .hero{border-radius:28px}
+:root[data-look="bloom"] .prow{border-radius:18px}
+
+/* ================= Arabic keeps its own faces in every look ================= */
+:root[lang="ar"][data-look]{--f-body:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;--f-display:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
+:root[lang="ar"][data-look] .ex-name,:root[lang="ar"][data-look] .dayname,:root[lang="ar"][data-look] .daytag,:root[lang="ar"][data-look] .label{text-transform:none;letter-spacing:0}
+
+/* ================= look tiles and previews (Me > Appearance, first-launch picker) ================= */
+.looks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.look-tile{appearance:none;border:2px solid var(--line);border-radius:14px;background:var(--surface);color:var(--fg);padding:6px;display:flex;flex-direction:column;gap:6px;align-items:stretch;font:600 13px/1.2 var(--f-body);cursor:pointer;min-height:44px}
+.look-tile[aria-pressed="true"]{border-color:var(--accent)}
+.lk-prev{display:flex;flex-direction:column;gap:5px;background:var(--bg);color:var(--fg);border-radius:var(--r-card);padding:8px;height:84px;overflow:hidden;border:1px solid var(--line)}
+.lk-prev .lk-card{background:var(--surface);border-radius:calc(var(--r-card) / 2);height:22px;box-shadow:var(--shadow)}
+.lk-prev .lk-btn{background:var(--accent);border-radius:var(--r-btn);height:16px;width:60%}
+.lk-prev .lk-bar{margin-top:auto;background:var(--bar);border-radius:calc(var(--r-card) / 2);height:12px}
