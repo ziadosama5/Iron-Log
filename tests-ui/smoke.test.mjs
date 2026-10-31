@@ -1786,3 +1786,61 @@ test("a bad ironlog.demo value or a throwing localStorage still gives the thumbn
     await ctx.close();
   }
 });
+
+// ---- workout screen 2.0: full-screen demo viewer and the large-demo switch ----
+test("the full-screen button opens the viewer: pause shows the still, X and Back close it", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
+  await startPush(page);
+  await page.locator('#open-card [data-act="demo-full"]').click();
+  await page.waitForSelector("#demoview[open]");
+  const img = page.locator("#demoview img.demoview-img");
+  assert.match(await img.getAttribute("src"), /\/videos\/0025-EIeI8Vf\.gif$/);
+  const w = (await img.boundingBox()).width;
+  assert.ok(w >= 300 && w <= 372, "viewer image about twice the 180 px source, got " + w);
+  const pause = page.locator('#demoview [data-act="demo-pause"]');
+  assert.equal(await pause.getAttribute("aria-pressed"), "false");
+  await pause.click();
+  assert.match(await img.getAttribute("src"), /\/images\/0025-EIeI8Vf\.jpg$/);
+  assert.equal(await pause.getAttribute("aria-pressed"), "true");
+  await pause.click();
+  assert.match(await img.getAttribute("src"), /\.gif$/);
+  await page.locator('#demoview [data-act="demo-view-close"]').click();
+  await page.waitForFunction(() => !document.querySelector("#demoview").open);
+  await page.locator('#open-card [data-act="demo-full"]').click();
+  await page.waitForSelector("#demoview[open]");
+  await page.goBack();
+  await page.waitForFunction(() => !document.querySelector("#demoview").open);
+  assert.equal(await title(page), "Today");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("Me > Appearance: the large demo switch shows the big box on the card and survives a reload", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
+  await tab(page, "me");
+  const full = page.locator('[data-act="demo-size-set"][data-v="full"]'), mini = page.locator('[data-act="demo-size-set"][data-v="mini"]');
+  assert.equal(await mini.getAttribute("aria-pressed"), "true", "mini is the default");
+  await full.click();
+  assert.equal(await full.getAttribute("aria-pressed"), "true");
+  assert.equal(await page.evaluate(() => localStorage.getItem("ironlog.demo")), "full");
+  await tab(page, "today"); await startPush(page);
+  const big = await page.locator("#open-card .demo.big").boundingBox();
+  assert.ok(big.width > 200, "inline big box, width " + big.width);
+  assert.ok(big.height <= 190, "capped height " + big.height);
+  await page.reload(); await page.waitForSelector(".tabbar:not([hidden])");
+  await tab(page, "me");
+  assert.equal(await page.locator('[data-act="demo-size-set"][data-v="full"]').getAttribute("aria-pressed"), "true");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("the viewer works in Arabic without sideways scrolling", async () => {
+  const { page, ctx, errors } = await open("lang=ar", undefined, undefined, gifHost);
+  await startPush(page);
+  await page.locator('#open-card [data-act="demo-full"]').click();
+  await page.waitForSelector("#demoview[open]");
+  assert.equal(await page.evaluate(() => document.documentElement.dir), "rtl");
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), "no horizontal scroll");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});

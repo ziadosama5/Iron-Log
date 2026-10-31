@@ -400,6 +400,8 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
 @keyframes demoA{0%,40%{opacity:1}55%,90%{opacity:0}100%{opacity:1}}
 @keyframes demoB{0%,40%{opacity:0}55%,90%{opacity:1}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){.demo-fallback .ex-fig{animation:none}.demo-fallback .ex-fig:last-child{opacity:0}}
+.demoview-stage{width:min(100%,360px);margin:10px auto 12px;aspect-ratio:1;background:#fff;border-radius:16px;position:relative;overflow:hidden;border:1px solid var(--line)}
+.demoview-img{width:100%;height:100%;object-fit:contain;display:block}
 .demo-full{position:absolute;inset-inline-end:0;bottom:0;width:44px;height:44px;appearance:none;border:0;background:none;padding:0;cursor:pointer;display:grid;place-items:end;color:#fff}
 .demo-full span{width:26px;height:26px;margin:0 3px 3px 0;border-radius:8px;background:rgba(15,17,21,.78);display:grid;place-items:center;font-size:14px;line-height:1}
 :root[dir="rtl"] .demo-full span{margin:0 0 3px 3px}
@@ -508,6 +510,8 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
             <div class="seg" role="group" aria-label="Language" data-no-tr><button data-act="lang-set" data-v="en">English</button><button data-act="lang-set" data-v="ar">العربية</button></div></div>
           <div class="stack" style="gap:6px"><span class="label">Accent</span>
             <div class="swatches" id="accent-swatches" role="group" aria-label="Accent"></div></div>
+          <div class="stack" style="gap:6px"><span class="label">Large demo on the card</span>
+            <div class="seg" role="group" aria-label="Large demo on the card"><button data-act="demo-size-set" data-v="mini">Small</button><button data-act="demo-size-set" data-v="full">Large</button></div></div>
           <div class="stack" style="gap:6px"><span class="label">Theme</span>
             <div class="seg" role="group" aria-label="Theme"><button data-act="theme-set" data-v="system">System</button><button data-act="theme-set" data-v="light">Light</button><button data-act="theme-set" data-v="dark">Dark</button></div></div></div>
         <div class="card"><h3>Your data</h3>
@@ -540,6 +544,7 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
   </div>
 </div>
 <dialog id="exinfo" class="sheet" aria-labelledby="exinfo-title"></dialog>
+<dialog id="demoview" class="sheet" aria-labelledby="demoview-title"></dialog>
 <dialog id="familysheet" class="sheet" aria-labelledby="family-title"></dialog>
 <dialog id="celebrate" class="celebrate" role="alertdialog" aria-labelledby="cele-title"></dialog>
 <dialog id="exsheet" class="sheet" aria-label="Add an exercise"></dialog>
@@ -2790,6 +2795,34 @@ function openExInfo(name){
   fillFigures(dlg,()=>token===exInfoToken);
 }
 function closeExInfo(){ const d=$("#exinfo"); if(d.open) d.close(); }
+/* ---------- full-screen demo viewer (same history-entry pattern as the info sheet) ---------- */
+// The picture is shown at most about twice its 180 px source, so it stays sharp. With reduced motion it opens on the still.
+let demoViewToken=0, demoPaused=false;
+function openDemoView(name){
+  const g=gifUrl(name), info=infoFor(name), draw=info&&info.img?info:null; if(!g&&!draw) return;
+  const dlg=$("#demoview"), token=++demoViewToken;
+  demoPaused=!!g&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  dlg.dataset.name=name;
+  dlg.innerHTML=`<div class="sheet-head"><h2 id="demoview-title">${esc(nameOf("ex",name))}</h2><button class="btn ghost small" data-act="demo-view-close" aria-label="Close">✕</button></div>
+    <div class="demoview-stage">${g?`<img class="demoview-img" src="${esc(demoPaused?stillUrl(name):g)}" crossorigin="anonymous" alt="${esc(nameOf("ex",name))}">`:`<div class="demo-fallback demoview-fallback">${figureBox(draw,"start")}${figureBox(draw,"end")}</div>`}</div>
+    ${g?`<div class="row" style="justify-content:center"><button type="button" class="btn" data-act="demo-pause" aria-pressed="${demoPaused}">${t(demoPaused?"Play":"Pause")}</button></div>`:""}`;
+  if(!dlg.open){ dlg.showModal(); history.pushState({demoview:1},""); }
+  fillFigures(dlg,()=>token===demoViewToken);
+}
+function toggleDemoPause(){
+  const dlg=$("#demoview"), img=dlg.querySelector(".demoview-img"), name=dlg.dataset.name; if(!img||!name) return;
+  demoPaused=!demoPaused;
+  img.src=demoPaused?stillUrl(name):gifUrl(name);
+  const b=dlg.querySelector('[data-act="demo-pause"]'); b.setAttribute("aria-pressed",demoPaused); b.textContent=t(demoPaused?"Play":"Pause");
+}
+function closeDemoView(){ const d=$("#demoview"); if(d.open) d.close(); }
+$("#demoview").addEventListener("close",()=>{ demoViewToken++; $("#demoview").innerHTML=""; if(history.state&&history.state.demoview) history.back(); });
+$("#demoview").addEventListener("click",e=>{
+  if(e.target!==e.currentTarget) return;
+  const r=e.currentTarget.getBoundingClientRect();
+  if(e.clientY<r.top||e.clientY>r.bottom||e.clientX<r.left||e.clientX>r.right) closeDemoView();
+});
+window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.demoview)) closeDemoView(); });
 // Every way of closing (✕, backdrop, Esc, back gesture) ends in the dialog's "close" event.
 // Opening pushed a history entry so the phone's back gesture closes the sheet; remove it here.
 $("#exinfo").addEventListener("close",()=>{ exInfoToken++; if(history.state&&history.state.exinfo) history.back(); });
@@ -2800,7 +2833,7 @@ $("#exinfo").addEventListener("click",e=>{
 });
 window.addEventListener("popstate",()=>{ if(!(history.state&&history.state.exinfo)) closeExInfo(); });
 const SCREEN_TITLES={log:"Today",overview:"Overview",coach:"Coach",body:"Body",goals:"Goals",days:"Days",progress:"Lifts",history:"History",profile:"Me",friends:"Friends",find:"Find a friend",gym:"My Gym",journey:"Plan my training",delete:"Delete my account",challenges:"Challenges"};
-if(history.state&&(history.state.exinfo||history.state.family||history.state.sheet||history.state.journey||history.state.tab)) history.replaceState(null,""); // reloaded while a sheet was open
+if(history.state&&(history.state.exinfo||history.state.demoview||history.state.family||history.state.sheet||history.state.journey||history.state.tab)) history.replaceState(null,""); // reloaded while a sheet was open
 
 /* ---------- SCREEN WAKE LOCK ---------- */
 const wake = createWakeLock();
@@ -2853,6 +2886,7 @@ function syncMe(){
   const th=currentTheme(), root=$("#view-profile"); if(!root) return;
   root.querySelectorAll("[data-act=theme-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===th));
   root.querySelectorAll("[data-act=lang-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===currentLang()));
+  root.querySelectorAll("[data-act=demo-size-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===demoPref()));
   const box=$("#accent-swatches"); if(box&&!box.children.length) drawSwatches();
 }
 /* ---------- THEME ---------- */
@@ -3138,6 +3172,10 @@ document.addEventListener("click",e=>{
     case "rest-adj": adjustRestBy(+b.dataset.d); break;
     case "rest-skip": clearRest(); break;
     case "ex-info": openExInfo(b.dataset.name); break;
+    case "demo-full": openDemoView(b.dataset.name); break;
+    case "demo-pause": toggleDemoPause(); break;
+    case "demo-view-close": closeDemoView(); break;
+    case "demo-size-set": try{ localStorage.setItem("ironlog.demo",b.dataset.v==="full"?"full":"mini"); }catch(e){} syncMe(); if(state.view==="log") renderLog(); break;
     case "tab": { const tb=b.dataset.tab; if(tabOf(state.view)===tb) window.scrollTo(0,0); else go(state.tabView[tb]||TABS.find(x=>x.id===tb).views[0]); break; }
     case "tips-all": state.coachAllTips=!state.coachAllTips; renderCoach(); break;
     case "coach-more": state.coachMore=!state.coachMore; renderCoach(); break;

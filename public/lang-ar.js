@@ -142,7 +142,7 @@ export const AR = {
     "That file isn't an Iron Log backup": "هذا الملف ليس نسخة احتياطية من Iron Log", "Couldn't restore that file": "تعذّرت استعادة هذا الملف",
 
     /* ---- Exercise info sheet ---- */
-    "Start": "البداية", "Finish": "النهاية", "Full screen": "ملء الشاشة", "Works:": "يعمل على:",
+    "Start": "البداية", "Finish": "النهاية", "Full screen": "ملء الشاشة", "Large demo on the card": "عرض توضيحي كبير على البطاقة", "Small": "صغير", "Large": "كبير", "Play": "تشغيل", "Pause": "إيقاف مؤقت", "Works:": "يعمل على:",
     "Illustrations: Everkinetic, CC BY-SA 4.0": "الرسوم التوضيحية: Everkinetic، CC BY-SA 4.0",
     "Drawing not available offline yet": "الرسم غير متاح دون اتصال بعد",
 
