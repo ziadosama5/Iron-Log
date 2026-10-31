@@ -2367,3 +2367,71 @@ test("library: in Arabic a dataset exercise shows its Arabic name and the steps 
   assert.deepEqual(errors, []);
   await ctx.close();
 });
+
+// ---- library expansion: search in the Add exercise sheet ----
+const openAddSheet = async page => { await page.locator('#view-log [data-act="open-exsheet"]').first().click(); await page.waitForSelector("#exsheet[open]"); };
+const searchBox = page => page.locator("#exsheet #ex-search");
+const resRows = page => page.locator("#exsheet .exres");
+
+test("search: typing finds exercises of the whole library with muscle and equipment tags, and tapping one adds it", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
+  await startPush(page); await openAddSheet(page);
+  await searchBox(page).fill("full squat");
+  await resRows(page).first().waitFor();
+  assert.ok(await resRows(page).count() >= 1);
+  assert.match(await resRows(page).first().textContent(), /Full.*Squat/);
+  assert.ok((await resRows(page).first().locator(".tag2").count()) >= 1, "tags");
+  for (const h of await resRows(page).evaluateAll(els => els.map(e => e.getBoundingClientRect().height))) assert.ok(h >= 44, "row height " + h);
+  const name = (await resRows(page).first().locator("b").textContent()).trim();
+  await resRows(page).first().click();
+  await page.waitForTimeout(500);
+  assert.ok((await page.locator("#exchips").innerText()).toLowerCase().includes(name.toLowerCase()), name + " is now on today's workout");
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("search: words in any order, a message when nothing matches, and the show more button", async () => {
+  const { page, ctx } = await open("", undefined, undefined, gifHost);
+  await startPush(page); await openAddSheet(page);
+  await searchBox(page).fill("zzzz qqqq");
+  await page.locator("#exsheet .exres-none").waitFor();
+  await searchBox(page).fill("dumbbell");
+  await resRows(page).first().waitFor();
+  assert.equal(await resRows(page).count(), 20);
+  await page.locator('#exsheet [data-act="ex-search-more"]').click();
+  assert.equal(await resRows(page).count(), 40);
+  await ctx.close();
+});
+
+test("search: the gym filter applies (bodyweight only hides machine and barbell exercises)", async () => {
+  const { page, ctx } = await open("gym=%5B%5D", undefined, undefined, gifHost);
+  await startPush(page); await openAddSheet(page);
+  await searchBox(page).fill("squat");
+  await resRows(page).first().waitFor();
+  const names = await resRows(page).evaluateAll(els => els.map(e => e.dataset.name));
+  assert.ok(!names.includes("Smith Machine Full Squat") && !names.includes("Front Squat"), "no equipment squats: " + names.slice(0, 6));
+  assert.ok(names.length >= 1);
+  await ctx.close();
+});
+
+test("search: in Arabic the Arabic names are searched and shown", async () => {
+  const { page, ctx, errors } = await open("lang=ar", undefined, undefined, gifHost);
+  await startPush(page); await openAddSheet(page);
+  await searchBox(page).fill("سكوات");
+  await resRows(page).first().waitFor();
+  assert.match(await resRows(page).first().textContent(), /[؀-ۿ]/);
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("search: a data refresh while typing keeps the text and the focus", async () => {
+  const { page, ctx } = await open("echo=1", undefined, undefined, gifHost);
+  await startPush(page); await openAddSheet(page);
+  await searchBox(page).click(); await searchBox(page).pressSequentially("press");
+  await page.evaluate(() => window.__fakeAuth({ uid: "u1", displayName: "Ziad", email: "ziad@example.com", emailVerified: true }));
+  await page.waitForTimeout(900);
+  assert.equal(await searchBox(page).inputValue(), "press");
+  assert.equal(await page.evaluate(() => document.activeElement && document.activeElement.id), "ex-search");
+  await ctx.close();
+});
