@@ -525,6 +525,9 @@ dialog.sheet::backdrop{background:rgb(0 0 0 / .45)}
             <div class="swatches" id="accent-swatches" role="group" aria-label="Accent"></div></div>
           <div class="stack" style="gap:6px"><span class="label">Large demo on the card</span>
             <div class="seg" role="group" aria-label="Large demo on the card"><button data-act="demo-size-set" data-v="mini">Small</button><button data-act="demo-size-set" data-v="full">Large</button></div></div>
+          <div class="stack" style="gap:6px"><span class="label">Exercise pictures offline</span>
+            <p class="prev" id="pics-line" style="margin:0"></p>
+            <div class="row"><button type="button" class="btn" data-act="pics-download">Download exercise pictures</button><button type="button" class="btn ghost" data-act="pics-clear">Remove downloads</button></div></div>
           <div class="stack" style="gap:6px"><span class="label">Theme</span>
             <div class="seg" role="group" aria-label="Theme"><button data-act="theme-set" data-v="system">System</button><button data-act="theme-set" data-v="light">Light</button><button data-act="theme-set" data-v="dark">Dark</button></div></div></div>
         <div class="card"><h3>Your data</h3>
@@ -594,7 +597,7 @@ import { badges, xpSummary, goalProgress, trainingStreak, foodStreak } from "./a
 import { weeklyCounts, weightSeries, weightChange, caloriesWeek, topLifts, prsThisMonth, cacheKey } from "./overview.js";
 import { LIB, MUSCLES, ALL_EX, TEMPLATES, EQUIPMENT, equipmentOf, migrateProgram, PROGRAM_VERSION, resolveAlias, gymFilter, hiddenCount, GYM_PRESETS, gymCounts, sameGym, typeaheadNames } from "./exercise-library.js";
 import { infoFor } from "./exercise-info.js";
-import { gifUrl, stillUrl } from "./exercise-gifs.js";
+import { gifUrl, stillUrl, gifUrls } from "./exercise-gifs.js";
 import { LOOKS, cleanLook, savedLookOf, suggestLook, shouldPickLook, accentPresetsFor, defaultAccentFor, envFor } from "./looks.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
@@ -1362,7 +1365,7 @@ function renderLog(){
   h += `<div class="row"><button class="btn secondary grow" data-act="open-exsheet">+ Exercise</button><button class="btn secondary grow" data-act="open-cardiosheet">+ Cardio</button></div>`;
   h += cardioListHtml(w.cardio||[], weightOn(state.body,state.date));
 
-  $("#view-log").innerHTML = h + todayCard(); refreshSheets(); syncWake(); fillFigures($("#open-card"));
+  $("#view-log").innerHTML = h + todayCard(); refreshSheets(); syncWake(); fillFigures($("#open-card")); warmDemos(entries.map(e=>e.ex));
   // keep the open exercise's chip in view without scrolling the page
   const c=$("#exchips"), on=c&&c.querySelector('[aria-current="true"]');
   if(on){ const a=on.getBoundingClientRect(), b=c.getBoundingClientRect(); c.scrollLeft+=(a.left+a.width/2)-(b.left+b.width/2); }
@@ -1571,6 +1574,29 @@ function fillFigures(root,alive){
       .catch(()=>{ if(!alive||alive()) box.innerHTML=`<span class="prev">Drawing not available offline yet</span>`; });
   });
 }
+// Fetches the GIFs of the day's exercises once in the background (the service worker keeps them), so they are there at the gym.
+const warmedDemos=new Set();
+function warmDemos(names){
+  for(const n of names.slice(0,12)){ const u=gifUrl(n); if(!u||warmedDemos.has(u)) continue; warmedDemos.add(u); const im=new Image(); im.crossOrigin="anonymous"; im.src=u; }
+}
+/* "Download exercise pictures" (Me > Appearance): the service worker saves every GIF into a cache that is never trimmed. */
+const picsState={cached:null,progress:null};
+const picsMsg=m=>{ const c=navigator.serviceWorker&&navigator.serviceWorker.controller; if(c) c.postMessage(m); return !!c; };
+function drawPics(){
+  const line=$("#pics-line"); if(!line) return;
+  const total=gifUrls().length, dl=document.querySelector('[data-act="pics-download"]'), clr=document.querySelector('[data-act="pics-clear"]');
+  const done=picsState.cached>=total, online=navigator.onLine!==false;
+  line.textContent=picsState.progress?t("Downloading {done} of {total}…",picsState.progress):picsState.cached>0?t("Downloaded · {n} pictures",{n:picsState.cached}):online?t("Not downloaded"):t("Connect to the internet to download.");
+  if(dl) dl.disabled=!!picsState.progress||!online||done;
+  if(clr) clr.hidden=!(picsState.cached>0);
+}
+try{ if("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message",e=>{
+  const d=e.data||{};
+  if(d.type==="demo-status"){ picsState.cached=d.cached; picsState.progress=null; drawPics(); }
+  else if(d.type==="demo-progress"){ picsState.progress={done:d.done,total:d.total}; drawPics(); }
+  else if(d.type==="demo-done"){ picsState.progress=null; if(d.failed) toast(t("{n} pictures could not be downloaded. Try again.",{n:d.failed})); picsMsg({type:"demo-status"}); }
+}); }catch(e){}
+window.addEventListener("online",drawPics); window.addEventListener("offline",drawPics);
 // "mini" (default) = a thumbnail beside the name, "full" = the big box above it; per device, never throws.
 function demoPref(){ try{ return localStorage.getItem("ironlog.demo")==="full"?"full":"mini"; }catch(e){ return "mini"; } }
 const demoFallbackHtml=info=>`<div class="demo-fallback">${figureBox(info,"start")}${figureBox(info,"end")}</div>`;
@@ -2930,7 +2956,7 @@ function syncMe(){
   root.querySelectorAll("[data-act=lang-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===currentLang()));
   root.querySelectorAll("[data-act=demo-size-set]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===demoPref()));
   const box=$("#accent-swatches"); if(box&&!box.children.length) drawSwatches();
-  drawLooks();
+  drawLooks(); drawPics(); picsMsg({type:"demo-status"});
 }
 /* ---------- THEME ---------- */
 // "system" follows the phone; light/dark override it. The <head> script applies it before first paint.
@@ -3315,6 +3341,8 @@ document.addEventListener("click",e=>{
     case "lang-set": applyLang(b.dataset.v); syncMe(); drawSwatches(); break;
     case "accent-set": applyAccent(b.dataset.v); drawSwatches(); break;
     case "look-set": applyLook(b.dataset.v); break;
+    case "pics-download": if(!picsMsg({type:"demo-download",urls:gifUrls()})) toast(t("Reload the app once, then try again.")); else { picsState.progress={done:0,total:gifUrls().length}; drawPics(); } break;
+    case "pics-clear": picsMsg({type:"demo-clear"}); break;
     case "lp-sex": { const st=state.lookPick; st.sex=b.dataset.v; st.sel=suggestLook(st.sex==="skip"?null:st.sex); lookPickRedraw(); break; }
     case "lp-card": state.lookPick.sel=b.dataset.v; lookPickRedraw(); break;
     case "lp-choose": if(state.lookPick&&state.lookPick.sel) finishLookPick(state.lookPick.sel); break;

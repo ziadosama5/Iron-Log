@@ -1770,6 +1770,7 @@ test("a custom exercise has no demo and no empty gap, and still logs sets", asyn
 
 test("when the GIF cannot load the two drawings take its place, with no broken image left", async () => {
   const { page, ctx, errors } = await open("", undefined, undefined, gifHostDown);
+  await swReady(page); await failCdnInSw(ctx);   // the service worker answers the picture requests, so make its network fail
   await startPush(page);
   await page.locator("#open-card .demo .demo-fallback").waitFor();
   assert.equal(await page.locator("#open-card .demo img.demo-gif").count(), 0, "failed image removed");
@@ -2108,5 +2109,67 @@ test("picker: Arabic is right-to-left and fits the phone", async () => {
     for (const h of await page.locator("#lookpick " + sel).evaluateAll(els => els.map(e => e.getBoundingClientRect().height))) assert.ok(h >= 44, sel + " height " + h);
   }
   assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+// ---- offline pictures: service worker caches, warm-up and the Download button ----
+// Playwright routes cannot see the service worker's own requests, so the worker's fetch is replaced inside it by a fake CDN
+// (tiny GIFs) that records the URLs it was asked for.
+const swReady = async page => { await page.evaluate(() => navigator.serviceWorker.ready); await page.reload(); await page.waitForSelector(".tabbar:not([hidden])"); await page.waitForTimeout(500); };
+const fakeCdnInSw = async ctx => {
+  const sw = ctx.serviceWorkers()[0] || await ctx.waitForEvent("serviceworker");
+  await sw.evaluate(b64 => {
+    self.__cdnHits = []; const real = self.fetch.bind(self);
+    self.fetch = (req, init) => { const u = typeof req === "string" ? req : req.url; if (!u.includes("cdn.jsdelivr.net")) return real(req, init); self.__cdnHits.push(u); return Promise.resolve(new Response(Uint8Array.from(atob(b64), c => c.charCodeAt(0)), { status: 200, headers: { "content-type": "image/gif" } })); };
+  }, GIF_1PX.toString("base64"));
+  return sw;
+};
+const failCdnInSw = async ctx => { const sw = ctx.serviceWorkers()[0] || await ctx.waitForEvent("serviceworker"); await sw.evaluate(() => { const real = self.fetch.bind(self); self.fetch = (req, init) => ((typeof req === "string" ? req : req.url).includes("cdn.jsdelivr.net") ? Promise.reject(new TypeError("offline")) : real(req, init)); }); };
+const cdnHits = sw => sw.evaluate(() => self.__cdnHits.filter(u => u.includes("/videos/")));
+const openSw = async () => { const o = await open("", undefined, undefined, gifHostDown); await swReady(o.page); o.sw = await fakeCdnInSw(o.ctx); return o; };
+
+test("opening a workout day fetches that day's GIFs once, ahead of time", async () => {
+  const { page, ctx, sw } = await openSw();
+  await startPush(page);
+  await page.waitForTimeout(1200);
+  const hits = await cdnHits(sw);
+  assert.ok(hits.some(u => u.includes("0025-EIeI8Vf")), "Bench Press GIF requested");
+  assert.ok(new Set(hits).size >= 2, "the other exercises of the day are warmed too: " + hits.length);
+  const before = hits.length;
+  await page.locator('#view-log [data-act="next-ex"]').click(); await page.waitForTimeout(600);
+  assert.equal((await cdnHits(sw)).length, before, "already cached: no new requests when moving between exercises");
+  await ctx.close();
+});
+
+test("Me > Download exercise pictures saves every GIF, works offline, and Remove downloads clears it", async () => {
+  const { page, ctx, errors, sw } = await openSw();
+  await tab(page, "me");
+  assert.match(await page.locator("#pics-line").textContent(), /Not downloaded/);
+  await page.locator('[data-act="pics-download"]').click();
+  await page.waitForFunction(() => /Downloaded/.test(document.querySelector("#pics-line").textContent), null, { timeout: 60000 });
+  const total = await page.evaluate(async () => (await (await caches.open("ironlog-demo-all")).keys()).length);
+  assert.ok(total >= 100, "downloaded " + total);
+  assert.equal(new Set(await cdnHits(sw)).size, total, "each picture fetched once");
+  await ctx.setOffline(true);
+  await tab(page, "today"); await startPush(page);
+  const ok = await page.evaluate(() => new Promise(res => { const i = document.querySelector("#open-card img.demo-gif"); if (!i) return res(false); if (i.complete) return res(i.naturalWidth > 0); i.onload = () => res(true); i.onerror = () => res(false); }));
+  assert.equal(ok, true, "the GIF loads with no network");
+  await ctx.setOffline(false);
+  await tab(page, "me");
+  await page.locator('[data-act="pics-clear"]').click();
+  await page.waitForFunction(() => /Not downloaded/.test(document.querySelector("#pics-line").textContent));
+  assert.equal(await page.evaluate(async () => (await (await caches.open("ironlog-demo-all")).keys()).length), 0);
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("Download exercise pictures is disabled with a message while offline", async () => {
+  const { page, ctx } = await openSw();
+  await ctx.setOffline(true);
+  await tab(page, "me");
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator('[data-act="pics-download"]').isDisabled(), true);
+  assert.match(await page.locator("#pics-line").textContent(), /internet/);
+  await ctx.setOffline(false);
   await ctx.close();
 });
