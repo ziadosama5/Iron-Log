@@ -239,3 +239,9 @@
 :root[data-look] .lk-hchips .chip{flex:none}
 :root[data-look] .lk-duo{display:block}
 :root[data-look] .lk-duo .hero{box-shadow:var(--soft)}
+
+/* ================= Looks 2.0 remaining screens (both looks) ================= */
+:root[data-look] .lk-edit{gap:14px}
+:root[data-look] .lk-find>.card,:root[data-look] .lk-chboard>.card{gap:12px}
+:root[data-look] .lk-chboard{display:flex;flex-direction:column;gap:12px}
+:root[data-look] .lk-form{display:flex;flex-direction:column;gap:12px}

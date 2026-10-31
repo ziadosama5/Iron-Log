@@ -1093,12 +1093,14 @@ function renderChallengeForm(el){
     <div class="card"><span class="label">How long</span><div class="chips">${WEEK_CHOICES.map(n=>`<button type="button" class="chip" data-act="ch-weeks" data-v="${n}" aria-pressed="${f.weeks===n}"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg>${esc(chWeeksLabel(n))}</button>`).join("")}</div>
     <span class="label">Starts</span><div class="chips"><button type="button" class="chip" data-act="ch-start" data-v="today" aria-pressed="${f.start==="today"}"><svg class="i" aria-hidden="true"><use href="#i-today"/></svg>${t("Today")}</button><button type="button" class="chip" data-act="ch-start" data-v="saturday" aria-pressed="${f.start==="saturday"}"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg>${esc(t("Next Saturday ({d})",{d:fmtDate(nextSaturday(today()))}))}</button></div>
     <span class="prev">${esc(t("Runs {a} – {b}",{a:fmtDate(d.start),b:fmtDate(d.end)}))}</span></div>`;
+  const setupHtml=h; h="";   // named parts for screenHtml "challenges.new"
   h+=`<div class="card"><span class="label">Invite friends (up to 5)</span>`;
   if(!friends.length) h+=`<p class="prev" style="margin:0">You need friends first.</p><div class="row"><button type="button" class="btn small" data-act="ch-to-friends">Open Friends</button></div>`;
   else h+=`<div class="chips">${friends.map(x=>`<button type="button" class="chip" data-act="ch-friend" data-uid="${esc(x.uid)}" data-name="${esc(x.name)}" aria-pressed="${f.picks.some(p=>p.uid===x.uid)}">${avatarHtml(x.name)}@${esc(x.name)}</button>`).join("")}</div>`;
   h+=`</div>${full?`<p class="prev">You are already in the most challenges allowed. Finish or leave one first.</p>`:""}<div class="row"><button type="button" class="btn primary" data-act="ch-create" ${f.picks.length>=1&&!f.busy&&!full?"":"disabled"}>Create challenge</button></div>`;
-  el.innerHTML=h;
+  el.innerHTML=screenHtml("challenges.new",{setupHtml,inviteHtml:h},classicChallengeForm);
 }
+function classicChallengeForm(P){ return P.setupHtml+P.inviteHtml; }
 function renderChallengePage(el){
   const c=state.challenges, ch=c.docs.find(x=>x.id===c.open), me=store.user.uid;
   if(!ch){ c.open=null; store.stopProgress(); renderChallenges(); return; }
@@ -1107,25 +1109,32 @@ function renderChallengePage(el){
   const rows=rankMembers({members:ch.members,joined:ch.joined,progress:prog,names:ch.names}), final=t0>addDaysISO(ch.end,1), win=final?winners(rows,st):[];
   const tl=timeLeft(ch,t0), sd=standing(rows,me), res=myResult(rows,me), won=win.includes(me);
   const ringIn=tl.status==="active"?tl.day:`<svg class="i" aria-hidden="true"><use href="#i-${tl.status==="finished"?"trophy":"calendar"}"/></svg>`;
-  let h=`<div class="row"><button class="btn small" data-act="ch-back">Back</button></div>
+  const parts=[]; let h=""; const cut=()=>{ parts.push(h); h=""; };   // named parts for screenHtml "challenges.open"
+  h=`<div class="row"><button class="btn small" data-act="ch-back">Back</button></div>
     <div class="hero chhero"><span class="ring"><svg viewBox="0 0 60 60" aria-hidden="true"><circle class="tr" cx="30" cy="30" r="25" fill="none" stroke-width="6"/><circle class="pr" cx="30" cy="30" r="25" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="${(157*(1-tl.pct/100)).toFixed(1)}"/></svg><b>${ringIn}</b></span><span class="grow stack" style="gap:3px"><b>${esc(chWeeksLabel(ch.weeks))}</b><span class="prev">${esc(chRange(ch))}</span><span class="prev">${esc(chTimeText(ch,tl))}</span></span></div>`;
+  cut();
   const stLine=final&&res?{icon:won?"trophy":"star",text:t("Rank {a} of {b}",{a:res.rank,b:res.of})}
     :st==="active"&&sd?(sd.kind==="leading"?{icon:"crown",text:tn("You're leading by {n} day","You're leading by {n} days",sd.gap)}:sd.kind==="tied"?{icon:"crown",text:t("Tied for first")}:sd.kind==="behind"?{icon:"flame",text:tn("{n} day behind {name}","{n} days behind {name}",sd.gap,{name:iso("@"+sd.leader)})}:{icon:"people",text:t("Waiting for friends to join")}):null;
   if(stLine) h+=`<div class="standing"><svg class="i" aria-hidden="true"><use href="#i-${stLine.icon}"/></svg><span>${esc(stLine.text)}</span></div>`;
+  cut();
   h+=podiumHtml(rows,me)+`<div class="card">${rows.map(r=>`<div class="chrow"><span class="rankcell">${r.rank&&r.rank<=3?`<span class="medal r${r.rank}">${r.rank}</span>`:`<span class="rank">${r.rank===null?"–":r.rank}</span>`}</span>${avatarHtml(r.name)}<span class="nm"><bdi dir="ltr">@${esc(r.name)}</bdi>${r.uid===me?" "+esc(t("(you)")):""}${r.joined?"":" "+chBadge("invited",t("Invited"))}</span><b>${r.days}</b>${r.joined?`<div class="chbar" role="img" aria-label="${esc(t("{n} of {m} days",{n:r.days,m:total}))}"><span style="width:${Math.min(100,Math.round(r.days/total*100))}%"></span></div>`:""}</div>`).join("")}</div>`;
+  cut();
   if(st==="finished"&&!final) h+=`<p class="prev">${esc(t("Results after {d}",{d:fmtDate(addDaysISO(ch.end,1))}))}</p>`;
   else if(st==="finished") h+=win.length?`<div class="winner"><svg class="i" aria-hidden="true"><use href="#i-trophy"/></svg><span>${esc(win.length>1?t("Winners: {name}",{name:win.map(u=>iso("@"+(ch.names[u]||"?"))).join(", ")}):t("Winner: {name}",{name:iso("@"+(ch.names[win[0]]||"?"))}))}</span></div>`:`<p class="prev">${esc(t("No winner this time."))}</p>`;
   h+=`<p class="prev note"><svg class="i" aria-hidden="true"><use href="#i-user"/></svg><span>Scores are self-reported. A final score is whatever each person last published.</span></p>`;
+  cut();
   const owner=ch.owner===me;
   h+=c.confirm?`<div class="card"><span>${esc(owner?t("Delete this challenge for everyone?"):t("Leave this challenge?"))}</span><div class="row"><button type="button" class="btn small" data-act="ch-no">Keep</button><button type="button" class="btn small danger" data-act="${owner?"ch-delete-yes":"ch-leave-yes"}" data-id="${esc(ch.id)}">${owner?"Delete":"Leave"}</button></div></div>`
     :`<div class="row"><button type="button" class="btn small danger" data-act="ch-confirm">${owner?"Delete challenge":"Leave challenge"}</button></div>`;
-  el.innerHTML=h;
+  cut(); const [headHtml,standingHtml,boardHtml,resultHtml,actionsHtml]=parts;
+  el.innerHTML=screenHtml("challenges.open",{headHtml,standingHtml,boardHtml,resultHtml,actionsHtml},classicChallengePage);
   if(win.includes(me)&&c.progressReady===ch.id){
     let seenW=[]; try{ seenW=JSON.parse(lsGet("ironlog.seenWins")||"[]"); }catch(e){}
     const fresh=newWins([{cid:ch.id,name:chRange(ch),finished:true,won:true}],Array.isArray(seenW)?seenW:[]);
     if(fresh.length){ lsSet("ironlog.seenWins",JSON.stringify([...(Array.isArray(seenW)?seenW:[]),ch.id].slice(-50))); setTimeout(()=>showCelebrations(buildCards({wins:fresh})),250); }
   }
 }
+function classicChallengePage(P){ return P.headHtml+P.standingHtml+P.boardHtml+P.resultHtml+P.actionsHtml; }
 // One podium for Challenges and Friends: steps are already in display order (2-1-3, 2-1 or just 1).
 // step = {rank, crown, av (escaped html), who (escaped html), valueText (escaped html)}.
 function podiumMarkup(steps){
@@ -1175,8 +1184,9 @@ function chClick(act,d){
 const inFriends=()=>state.view==="friends"||state.view==="find";
 function renderFind(){
   if(!store.user) return;
-  $("#view-find").innerHTML=findCardHtml()+reportPanelHtml();
+  $("#view-find").innerHTML=screenHtml("friends.find",{cardHtml:findCardHtml(),reportHtml:reportPanelHtml()},classicFind);
 }
+function classicFind(P){ return P.cardHtml+P.reportHtml; }
 function renderFriends(){
   if(state.view==="find"){ renderFind(); return; }
   const f=state.friends, el=$("#view-friends"); if(!store.user) return;
@@ -2001,31 +2011,49 @@ function renderDays(){
         trainHtml:`<button class="btn primary small" data-act="train-day" data-id="${d.id}">Train this day</button>`};
       h += screenHtml("plan.dayCard",P,classicDayCard); return;
     }
-    h += `<div class="card open">`;
+    const ep=[]; let eh=""; const cut=()=>{ ep.push(eh); eh=""; };   // the editing card is cut into named parts for screenHtml "plan.dayEdit"
     {
-      h += `<div class="ex-head"><button class="dayhead" data-act="edit-day" data-id="${d.id}" aria-expanded="true">${dayInfo}</button><button class="btn small primary" data-act="edit-day" data-id="${d.id}">${t("✓ Done")}</button></div>`;
-      h += `<label class="stack" style="gap:4px"><span class="label">Day name</span><input id="dn-${d.id}" value="${esc(d.name)}" data-act-change="rename" data-id="${d.id}" maxlength="40"></label>
-        <div class="stack" style="gap:6px"><span class="label">Train on</span><div class="chips">${WEEK.map(x=>{ const other=state.days.find(o=>o.id!==d.id&&(o.weekdays||[]).includes(x));
+      eh += `<div class="ex-head"><button class="dayhead" data-act="edit-day" data-id="${d.id}" aria-expanded="true">${dayInfo}</button><button class="btn small primary" data-act="edit-day" data-id="${d.id}">${t("✓ Done")}</button></div>`;
+      cut();
+      eh += `<label class="stack" style="gap:4px"><span class="label">Day name</span><input id="dn-${d.id}" value="${esc(d.name)}" data-act-change="rename" data-id="${d.id}" maxlength="40"></label>
+`;
+      cut();
+      eh += `<div class="stack" style="gap:6px"><span class="label">Train on</span><div class="chips">${WEEK.map(x=>{ const other=state.days.find(o=>o.id!==d.id&&(o.weekdays||[]).includes(x));
           return `<button class="chip" data-act="toggle-wd" data-id="${d.id}" data-wd="${x}" aria-pressed="${wds.includes(x)}" title="${other?esc(t("Currently {name}",{name:nameOf("day",other.name)})):""}">${nameOf("weekday",WD[x])}${other&&!wds.includes(x)?` <span style="opacity:.6">· ${esc(nameOf("day",other.name))}</span>`:""}</button>`;}).join("")}</div></div>
-        <div class="stack" style="gap:6px"><span class="label">Muscles trained</span><div class="chips">${MUSCLES.map(m=>`<button class="chip" data-act="toggle-m" data-id="${d.id}" data-m="${esc(m)}" aria-pressed="${d.focus.includes(m)}">${esc(nameOf("muscle",m))}</button>`).join("")}</div></div>
-        <div class="stack" style="gap:6px"><span class="label">Exercises, in order</span>
+`;
+      cut();
+      eh += `<div class="stack" style="gap:6px"><span class="label">Muscles trained</span><div class="chips">${MUSCLES.map(m=>`<button class="chip" data-act="toggle-m" data-id="${d.id}" data-m="${esc(m)}" aria-pressed="${d.focus.includes(m)}">${esc(nameOf("muscle",m))}</button>`).join("")}</div></div>
+`;
+      cut();
+      eh += `<div class="stack" style="gap:6px"><span class="label">Exercises, in order</span>
         ${d.exercises.length?`<ol class="exlist">${d.exercises.map((n,k)=>`<li><span class="n">${k+1}</span><span class="t">${esc(nameOf("ex",n))}</span>${warnMark(n)}${infoBtn(n)}
           <button class="btn ghost small" data-act="mv" data-id="${d.id}" data-k="${k}" data-d="-1" aria-label="${esc(t("Move {name} up",{name:nameOf("ex",n)}))}" ${k===0?"disabled":""}>↑</button>
           <button class="btn ghost small" data-act="mv" data-id="${d.id}" data-k="${k}" data-d="1" aria-label="${esc(t("Move {name} down",{name:nameOf("ex",n)}))}" ${k===d.exercises.length-1?"disabled":""}>↓</button>
           <button class="btn ghost small danger" data-act="rm-dex" data-id="${d.id}" data-k="${k}" aria-label="${esc(t("Remove {name}",{name:nameOf("ex",n)}))}">✕</button></li>`).join("")}</ol>`:`<span class="prev">Tap suggestions below or type an exercise.</span>`}</div>
-        ${(()=>{ const s=suggestionsFor(d.focus,d.exercises), note=gymNote(d.focus,d.exercises); return s.length?`<div class="stack" style="gap:10px"><span class="label">Suggestions</span>${s.map(g=>`<div class="stack" style="gap:6px"><span class="prev">${esc(nameOf("muscle",g.muscle))}</span>${chipRow(g.items,"day:"+d.id+":"+g.muscle,"add-dex",` data-id="${d.id}"`)}</div>`).join("")}${note}</div>`:(d.focus.length?note:`<span class="prev">Pick the muscles this day trains to get exercise suggestions.</span>`); })()}
-        <form class="row" data-form="add-dex" data-id="${d.id}" autocomplete="off"><input list="exl-${d.id}" placeholder="Type any exercise" style="flex:1 1 180px"><button class="btn" type="submit">Add</button></form>${exDatalist("exl-"+d.id,d.focus)}
-        <div class="row" style="justify-content:space-between">
+`;
+      cut();
+      eh += `${(()=>{ const s=suggestionsFor(d.focus,d.exercises), note=gymNote(d.focus,d.exercises); return s.length?`<div class="stack" style="gap:10px"><span class="label">Suggestions</span>${s.map(g=>`<div class="stack" style="gap:6px"><span class="prev">${esc(nameOf("muscle",g.muscle))}</span>${chipRow(g.items,"day:"+d.id+":"+g.muscle,"add-dex",` data-id="${d.id}"`)}</div>`).join("")}${note}</div>`:(d.focus.length?note:`<span class="prev">Pick the muscles this day trains to get exercise suggestions.</span>`); })()}
+`;
+      cut();
+      eh += `<form class="row" data-form="add-dex" data-id="${d.id}" autocomplete="off"><input list="exl-${d.id}" placeholder="Type any exercise" style="flex:1 1 180px"><button class="btn" type="submit">Add</button></form>${exDatalist("exl-"+d.id,d.focus)}
+`;
+      cut();
+      eh += `<div class="row" style="justify-content:space-between">
           <div class="row" style="gap:4px"><button class="btn ghost small" data-act="mv-day" data-id="${d.id}" data-d="-1" ${i===0?"disabled":""}>Move day up</button><button class="btn ghost small" data-act="mv-day" data-id="${d.id}" data-d="1" ${i===state.days.length-1?"disabled":""}>Move day down</button></div>
           ${state.confirmDayDel===d.id?`<div class="row" style="gap:6px"><span class="prev">${esc(t("Delete {name}?",{name:nameOf("day",d.name)}))}</span><button class="btn small" data-act="cancel-ddel">Keep</button><button class="btn small danger" data-act="del-day" data-id="${d.id}">Delete</button></div>`
             :`<button class="btn ghost small danger" data-act="ask-ddel" data-id="${d.id}">Delete day</button>`}
         </div>
-        <button class="btn primary" data-act="edit-day" data-id="${d.id}">✓ Done editing</button>`;
+`;
+      cut();
+      eh += `<button class="btn primary" data-act="edit-day" data-id="${d.id}">✓ Done editing</button>`;
     }
-    h += `</div>`;
+    cut();   // the last part
+    const [headHtml,nameHtml,trainHtml,musclesHtml,exercisesHtml,suggestHtml,addHtml,moveHtml,doneHtml]=ep;
+    h += screenHtml("plan.dayEdit",{id:d.id,headHtml,nameHtml,trainHtml,musclesHtml,exercisesHtml,suggestHtml,addHtml,moveHtml,doneHtml},classicDayEdit);
   });
   $("#view-days").innerHTML=h;
 }
+function classicDayEdit(P){ return `<div class="card open">${P.headHtml}${P.nameHtml}${P.trainHtml}${P.musclesHtml}${P.exercisesHtml}${P.suggestHtml}${P.addHtml}${P.moveHtml}${P.doneHtml}</div>`; }
 // Keep today's workout in step with edits to its training day:
 // new exercises are added, removed ones go if no sets were logged, order follows the day.
 function syncTodayWithDay(day){
@@ -2052,20 +2080,23 @@ function renderProgress(){
   const first=pts[0], lastP=pts[pts.length-1];
   const lifts=moreList([...pts].reverse(),"lifts");
   const change=pts.length>1&&first.e1?((lastP.e1-first.e1)/first.e1*100):null;
-  $("#view-progress").innerHTML=`<div class="row"><h2 class="grow">Progress</h2>
-    <select id="prog-ex" style="width:auto;max-width:60%">${names.sort().map(n=>`<option value="${esc(n)}" ${n===ex?"selected":""}>${esc(nameOf("ex",n))}</option>`).join("")}</select></div>
-  <div class="stats">
+  const HEAD=`<div class="row"><h2 class="grow">Progress</h2>
+    <select id="prog-ex" style="width:auto;max-width:60%">${names.sort().map(n=>`<option value="${esc(n)}" ${n===ex?"selected":""}>${esc(nameOf("ex",n))}</option>`).join("")}</select></div>`,
+  STATS=`<div class="stats">
     <div class="stat"><div class="label">Best e1RM</div><div class="v">${kg(Math.round(allBest*10)/10)} <small>kg</small></div></div>
     <div class="stat"><div class="label">Heaviest set</div><div class="v">${kg(allTop)} <small>kg</small></div></div>
     <div class="stat"><div class="label">Sessions</div><div class="v">${pts.length}</div></div>
     <div class="stat"><div class="label">e1RM change</div><div class="v" style="color:${change==null?"inherit":change>=0?"var(--good)":"var(--danger)"}">${change==null?"–":(change>=0?"+":"")+change.toFixed(1)+"<small>%</small>"}</div></div>
-  </div>
-  <div class="card"><div class="legend"><span><i style="background:var(--accent)"></i>Estimated 1RM</span><span><i style="background:var(--muted)"></i>Top set weight</span></div>${chart(pts)}</div>
-  <div class="card" style="overflow-x:auto"><table><thead><tr><th>Date</th><th>Sets (kg×reps)</th><th class="r">e1RM</th></tr></thead><tbody>${
+  </div>`,
+  CHART=`<div class="card"><div class="legend"><span><i style="background:var(--accent)"></i>Estimated 1RM</span><span><i style="background:var(--muted)"></i>Top set weight</span></div>${chart(pts)}</div>`,
+  TABLE=`<div class="card" style="overflow-x:auto"><table><thead><tr><th>Date</th><th>Sets (kg×reps)</th><th class="r">e1RM</th></tr></thead><tbody>${
     lifts.shown.map(p=>`<tr><td style="white-space:nowrap">${fmtDate(p.date)}</td><td class="num" style="font-size:13px">${p.sets.map(s=>kg(s.w)+"×"+s.r).join(" · ")}</td><td class="r num">${kg(Math.round(p.e1*10)/10)}${p.e1===allBest?'<span class="pr">PR</span>':""}</td></tr>`).join("")
-  }</tbody></table>${lifts.btn}</div>
-  <p class="prev">e1RM uses the Epley formula: weight × (1 + reps ÷ 30). It lets sets of different rep counts be compared on one line.</p>`;
+  }</tbody></table>${lifts.btn}</div>`,
+  NOTE=`<p class="prev">e1RM uses the Epley formula: weight × (1 + reps ÷ 30). It lets sets of different rep counts be compared on one line.</p>`;
+  // named parts so a look can arrange them its own way (screenHtml "progress.lifts")
+  $("#view-progress").innerHTML=screenHtml("progress.lifts",{headHtml:HEAD,statsHtml:STATS,chartHtml:CHART,tableHtml:TABLE,noteHtml:NOTE},classicLifts);
 }
+function classicLifts(P){ return P.headHtml+P.statsHtml+P.chartHtml+P.tableHtml+P.noteHtml; }
 // Lifts for a bodyweight exercise: no one-rep max; the best set (extra kg x reps) of each session and its reps over time.
 function renderBwProgress(names,ex,sess){
   const hold=isHold(ex), load=s=>formatLoad(s.w,t("BW"));
@@ -2742,25 +2773,27 @@ function todayCard(){
 }
 function renderCoach(){
   const list=sortTips(insights());
-  let h=`<h2>Coach</h2>`;
-  if(!profileReady()) h+=`<div class="notice">Add your sex, height, birth year and goal in Progress › Body for calorie targets and personalised ranges. <button class="btn small" data-act="goto-body" style="margin-inline-start:6px">Go to Body</button></div>`;
+  let notice="",tips="",more="";
+  if(!profileReady()) notice+=`<div class="notice">Add your sex, height, birth year and goal in Progress › Body for calorie targets and personalised ranges. <button class="btn small" data-act="goto-body" style="margin-inline-start:6px">Go to Body</button></div>`;
   if(!list.length){
-    h+=`<div class="empty"><strong>Nothing to analyse yet</strong>Log a few workouts and your body weight, and suggestions will show up here.</div>`;
+    tips+=`<div class="empty"><strong>Nothing to analyse yet</strong>Log a few workouts and your body weight, and suggestions will show up here.</div>`;
   } else {
     // Warnings first; the first 3 are shown, the rest on request.
     const shown=state.coachAllTips?list:list.slice(0,3);
-    h+=`<div class="card"><h3>Tips</h3>${shown.map(i=>`<div class="insight ${i.tone}"><span class="label">${esc(t(i.sec))}</span><b>${esc(i.title)}</b><span class="prev" style="color:var(--fg)">${i.text}</span>${
+    tips+=`<div class="card"><h3>Tips</h3>${shown.map(i=>`<div class="insight ${i.tone}"><span class="label">${esc(t(i.sec))}</span><b>${esc(i.title)}</b><span class="prev" style="color:var(--fg)">${i.text}</span>${
       i.chips&&i.chips.length?`<div class="chips">${i.chips.map(c=>`<button class="chip add" data-act="coach-add" data-name="${esc(c)}">${esc(nameOf("ex",c))}</button>`).join("")}</div><span class="prev">Tap to add to today's workout.</span>`:""}</div>`).join("")}${
       list.length>3?`<button class="btn ghost small" data-act="tips-all">${state.coachAllTips?t("Show fewer"):t("Show all tips ({n})",{n:list.length})}</button>`:""}</div>`;
   }
-  h+=`<button class="btn secondary" data-act="coach-more" aria-expanded="${!!state.coachMore}">${state.coachMore?t("Hide sets per muscle and written review"):t("More from Coach")}</button>`;
-  if(state.coachMore) h+=volumeBars()+`<div class="card"><h3>Get a written review</h3>
+  more+=`<button class="btn secondary" data-act="coach-more" aria-expanded="${!!state.coachMore}">${state.coachMore?t("Hide sets per muscle and written review"):t("More from Coach")}</button>`;
+  if(state.coachMore) more+=volumeBars()+`<div class="card"><h3>Get a written review</h3>
     <p class="prev" style="margin:0">Copies a summary of your recent workouts, body data and goal (no name) with coaching instructions. Paste it into Claude or any AI chat for a personal review.</p>
     <div class="row"><button class="btn primary" data-act="copy-review" id="copy-review">Copy my summary</button></div>
     <textarea id="review-text" readonly hidden style="width:100%;min-height:160px;font:12px/1.4 var(--f-num);background:var(--sunk);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px"></textarea></div>`;
-  h+=`<p class="prev">General fitness guidance based on common evidence-based ranges, not medical advice.</p>`;
-  $("#view-coach").innerHTML=h;
+  const disclaimer=`<p class="prev">General fitness guidance based on common evidence-based ranges, not medical advice.</p>`;
+  // named parts so a look can arrange them its own way (screenHtml "progress.coach")
+  $("#view-coach").innerHTML=screenHtml("progress.coach",{noticeHtml:notice,tipsHtml:tips,moreHtml:more,disclaimerHtml:disclaimer},classicCoach);
 }
+function classicCoach(P){ return `<h2>Coach</h2>${P.noticeHtml}${P.tipsHtml}${P.moreHtml}${P.disclaimerHtml}`; }
 function volumeBars(){
   if(!state.workouts.some(w=>daysAgo(w.date)<7&&w.entries.some(e=>e.sets.length))) return "";
   const s=weeklySets(), max=Math.max(24,...Object.values(s));

@@ -69,6 +69,37 @@ function challenges(c) {
   return c.headHtml + c.emptyHtml + c.invHtml + c.actHtml + c.finHtml + c.oldHtml;
 }
 
+// Day editor: the same nine parts in a flat card in editing order.
+function dayEdit(c) {
+  const order = ["headHtml", "nameHtml", "trainHtml", "musclesHtml", "exercisesHtml", "suggestHtml", "addHtml", "moveHtml", "doneHtml"];
+  return `<div class="card open lk-edit">${order.map(k => c[k]).join("")}</div>`;
+}
+
+// Lifts: the four numbers lead, then the chart.
+function lifts(c) {
+  return c.headHtml + c.statsHtml + c.chartHtml + c.tableHtml + c.noteHtml;
+}
+
+// Coach: the notice about your profile first, then the tips.
+function coach(c) {
+  return `<h2>${c.esc(c.t("Coach"))}</h2>` + c.noticeHtml + c.tipsHtml + c.moreHtml + c.disclaimerHtml;
+}
+
+// Find a friend: the search card in a flat card.
+function find(c) {
+  return `<div class="lk-find">${c.cardHtml}</div>` + c.reportHtml;
+}
+
+// Open challenge: the standing line, then the podium and the member list.
+function challengeOpen(c) {
+  return c.headHtml + c.standingHtml + `<div class="lk-chboard">${c.boardHtml}</div>` + c.resultHtml + c.actionsHtml;
+}
+
+// New challenge: the setup card, then the friends to invite, in one column.
+function challengeNew(c) {
+  return `<div class="lk-form">${c.setupHtml}${c.inviteHtml}</div>`;
+}
+
 // The focus card: name, tags and target on the left, a 96 px demo on the right; advice, set type, the sets, two stacked steppers, one big Log button.
 function workout(c) {
   return `<div class="card focus lk-focus" id="open-card">
@@ -89,4 +120,4 @@ function workout(c) {
   ${c.footHtml}`;
 }
 
-export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends, "progress.body": body, "plan.gym": gym, "progress.history": history, "friends.page": friendPage, "challenges.list": challenges };
+export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends, "progress.body": body, "plan.gym": gym, "progress.history": history, "friends.page": friendPage, "challenges.list": challenges, "plan.dayEdit": dayEdit, "progress.lifts": lifts, "progress.coach": coach, "friends.find": find, "challenges.open": challengeOpen, "challenges.new": challengeNew };

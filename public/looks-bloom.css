@@ -42,3 +42,5 @@ html:root[data-look="bloom"] .lk-bodyhero>.card{padding:22px;background:linear-g
 html:root[data-look="bloom"] .lk-bodyhero .bignum{font-size:56px;line-height:1.05}
 html:root[data-look="bloom"] .lk-count{align-self:flex-start;background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:6px 14px}
 html:root[data-look="bloom"] .lk-duo{background:linear-gradient(160deg,var(--accent-soft),var(--glass));border-radius:var(--r-card);padding:12px;box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder)}
+html:root[data-look="bloom"] .lk-find>.card{padding:20px}
+html:root[data-look="bloom"] .lk-edit{padding:20px}

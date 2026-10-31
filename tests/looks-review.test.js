@@ -21,6 +21,12 @@ const BUILDERS = {
   "progress.history": { parts: ["summaryHtml", "moreHtml", "backupHtml"], ctx: { items: [{ date: "2026-10-30", dateLabel: "30 Oct", name: "Push", summaryHtml: "<i data-act=\"mark-item\">x</i>", chipsHtml: "<div class=\"chips\"></div>", deleteHtml: "<button data-act=\"ask-del\">d</button>" }] } },
   "friends.page": { parts: ["headHtml", "bodyHtml", "duoHtml", "tableHtml", "actionsHtml", "reportHtml"], ctx: {} },
   "challenges.list": { parts: ["headHtml", "emptyHtml", "invHtml", "actHtml", "finHtml", "oldHtml"], ctx: {} },
+  "plan.dayEdit": { parts: ["headHtml", "nameHtml", "trainHtml", "musclesHtml", "exercisesHtml", "suggestHtml", "addHtml", "moveHtml", "doneHtml"], ctx: {} },
+  "progress.lifts": { parts: ["headHtml", "statsHtml", "chartHtml", "tableHtml", "noteHtml"], ctx: {} },
+  "progress.coach": { parts: ["noticeHtml", "tipsHtml", "moreHtml", "disclaimerHtml"], ctx: {} },
+  "friends.find": { parts: ["cardHtml", "reportHtml"], ctx: {} },
+  "challenges.open": { parts: ["headHtml", "standingHtml", "boardHtml", "resultHtml", "actionsHtml"], ctx: {} },
+  "challenges.new": { parts: ["setupHtml", "inviteHtml"], ctx: {} },
   "plan.gym": { parts: ["introHtml", "injuriesHtml", "endHtml"], ctx: { groups: [{ id: "w", label: "Weights", items: [{ id: "barbell", label: "Barbell", on: true }] }], count: "1 of 53 items" } }
 };
 for (const look of ["carbon", "bloom"]) for (const [name, b] of Object.entries(BUILDERS)) {
