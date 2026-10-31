@@ -57,7 +57,7 @@ export function jointRules(entry, group) {
   }
   // upper-body joints do not belong to a leg or ab exercise unless the movement really loads the arms (planks, climbers, cleans, hanging...)
   const UPPER = ["shoulder", "elbow", "wrist"];
-  const ARMS_IN_IT = /push[- ]?up|plank|burpee|crawl|mountain|renegade|walkout|clean|snatch|jerk|thruster|swing|row|overhead|shoulder|bench|pullover|hang|roll|saw|climb|handstand|wall ball|battling|kettlebell/;
+  const ARMS_IN_IT = /push[- ]?up|plank|burpee|crawl|mountain|renegade|walkout|clean|snatch|jerk|thruster|swing|\brow\b|overhead|shoulder|bench|pullover|hang|roll|saw|climb|handstand|wall ball|battling|kettlebell/;
   if (!isStretch && ["Quads", "Hamstrings & Glutes", "Calves", "Core"].includes(group) && !ARMS_IN_IT.test(name)) UPPER.forEach(a => set.delete(a));
   return AREAS.filter(a => set.has(a)).slice(0, 5);
 }

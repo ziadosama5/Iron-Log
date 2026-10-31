@@ -724,7 +724,7 @@ export const JOINTS_CATALOG = {
  "Band One Arm Single Leg Split Squat": ["hip","knee"],
  "Band Single Leg Split Squat": ["hip","knee"],
  "Band Squat": ["hip","knee"],
- "Band Squat Row": ["lower-back","hip","knee"],
+ "Band Squat Row": ["shoulder","elbow","wrist","lower-back","hip"],
  "Band Step-up": ["hip","knee","ankle"],
  "Barbell Bench Front Squat": ["lower-back","hip","knee"],
  "Barbell Bench Squat": ["lower-back","hip","knee"],

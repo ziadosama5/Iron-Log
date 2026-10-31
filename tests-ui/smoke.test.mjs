@@ -2435,3 +2435,30 @@ test("search: a data refresh while typing keeps the text and the focus", async (
   assert.equal(await page.evaluate(() => document.activeElement && document.activeElement.id), "ex-search");
   await ctx.close();
 });
+
+// ---- library expansion: My Gym at 53 items and speed with the whole library ----
+test("library: My Gym counts 53 items and every exercise for the Full gym; Bodyweight only keeps the body-weight ones", async () => {
+  const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
+  await openGym(page);
+  assert.equal(await page.locator('#view-gym [data-act="gym-toggle"]').count(), 53);
+  assert.ok(await page.locator('#view-gym h3', { hasText: "Accessories" }).count() >= 1, "the Accessories group");
+  await page.locator('#view-gym [data-act="gym-preset"][data-p="full"]').click();
+  assert.match(await page.locator("#view-gym").innerText(), /53 of 53 items · 1314 exercises available/);
+  await page.locator('#view-gym [data-act="gym-preset"][data-p="bodyweight"]').click();
+  const bw = /0 of 53 items · (\d+) exercises available/.exec(await page.locator("#view-gym").innerText());
+  assert.ok(bw && +bw[1] > 250 && +bw[1] < 700, "body-weight exercises: " + (bw && bw[1]));
+  assert.deepEqual(errors, []);
+  await ctx.close();
+});
+
+test("library: Today, the Add sheet and typing a search stay responsive with the whole library (no long task over 500 ms)", async () => {
+  const { page, ctx } = await open("", undefined, undefined, gifHost);
+  await page.evaluate(() => { window.__long = []; try { new PerformanceObserver(l => l.getEntries().forEach(e => window.__long.push(e.duration))).observe({ entryTypes: ["longtask"] }); } catch (e) {} });
+  await startPush(page); await openAddSheet(page);
+  await searchBox(page).pressSequentially("dumbbell press", { delay: 20 });
+  await resRows(page).first().waitFor();
+  await page.waitForTimeout(400);
+  const max = await page.evaluate(() => Math.max(0, ...window.__long));
+  assert.ok(max < 500, "longest task " + Math.round(max) + " ms");
+  await ctx.close();
+});

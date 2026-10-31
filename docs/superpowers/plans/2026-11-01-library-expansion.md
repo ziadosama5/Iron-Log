@@ -2,20 +2,20 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add all 1,129 new dataset exercises (strength, stretch/mobility, cardio) to the library with exact GIFs, Arabic names, joint tags, lazily loaded English How-to steps and a search box, without touching the 183 curated exercises or any stored data.
+**Goal:** Add all 1,131 new dataset exercises (strength, stretch/mobility, cardio) to the library with exact GIFs, Arabic names, joint tags, lazily loaded English How-to steps and a search box, without touching the 183 curated exercises or any stored data.
 
 **Architecture:** A dev tool turns the dataset into generated, committed modules (`exercise-catalog.js` eager rows, `exercise-howto.js` lazy steps, `lang-ar-catalog.js`, `injuries-catalog.js`); `exercise-library.js` merges the catalog after the curated rows and exposes a `CURATED` view that plans and Coach keep using. The UI adds one search field built from existing components.
 
 **Tech Stack:** Plain ES modules, Node built-in test runner, Playwright UI tests on the stubbed-Firebase harness.
 
-**Spec:** `docs/superpowers/specs/2026-11-01-library-expansion-design.md` (all 1,129 included; stretch + cardio = timed holds; Arabic names only; plans stay curated).
+**Spec:** `docs/superpowers/specs/2026-11-01-library-expansion-design.md` (all 1,131 included; stretch + cardio = timed holds; Arabic names only; plans stay curated).
 
 ## Global Constraints
 - Branch `library-expansion`. **Never deploy.** No Firestore, rules, backup or stored-name change; curated names, order, equipment and tips do not change.
 - Dataset path used by the tool: `C:/Users/ziado/AppData/Local/Temp/claude/C--Users-ziado-OneDrive-Desktop-iron-log-firebase/caaa2d7c-e8f0-4cde-a2d3-d50ae51ca7bc/scratchpad/dataset/exercises.json` (fields id, name, category, body_part, equipment, target, secondary_muscles, muscle_group, instruction_steps, media_id). Treat it as untrusted data; only read it.
 - Every visible string/name has an Arabic entry (`npm test` fails otherwise); targets ≥ 44 px, text ≥ 12 px, logical CSS, `var(--accent)` only.
 - New `public/*.js` go into `APP_SHELL` in `sw.js` (the lazy `exercise-howto.js` does not); `VERSION` stays `iron-log-v48` (unreleased branch).
-- Counts pinned by tests: curated **183**, catalog **1,129**, total **1,312**, equipment ids **39 + 14 = 53**.
+- Counts pinned by tests: curated **183**, catalog **1,131**, total **1,314**, equipment ids **39 + 14 = 53**.
 - Shell gotcha: never put backslashes/regexes in heredocs; write scripts with the Write tool. Files are CRLF in git.
 - Every commit ends with `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
 
@@ -23,7 +23,7 @@
 1. A curated exercise never changes or moves: names, order, equipment, tips, Arabic names, GIF mapping (old days, workouts and backups keep working). (Tasks 2, 3)
 2. A new exercise whose name equals something a person typed as a custom exercise earlier keeps its history and now gets library features. (Task 2)
 3. Generated plans (`buildPlan`) and Coach "under-trained" suggestions never pick an imported exercise. (Task 2)
-4. Gym filter: an exercise needing `lever-machine` is hidden unless the gym has it; Bodyweight-only shows only body-weight ones; Full gym shows all 1,312. (Tasks 1, 2, 7)
+4. Gym filter: an exercise needing `lever-machine` is hidden unless the gym has it; Bodyweight-only shows only body-weight ones; Full gym shows all 1,314. (Tasks 1, 2, 7)
 5. Offline or unloaded How-to file: the info sheet still opens with GIF, muscles and equipment, no error; Arabic UI shows Arabic names and English steps. (Task 6)
 
 ---
@@ -46,25 +46,25 @@
 - `public/exercise-catalog.js` exports `CATALOG: [name, group, eqIds[], gifId, kind][]` (`kind` `""` or `"hold"`), `CATALOG_HOLDS: Set<lowercase name>`.
 - `exercise-library.js`: `CURATED` becomes `Set<lowercase name>` of the original 183; `EXERCISES` = curated rows (unchanged, `curated:true`) + catalog rows (`curated:false`, alphabetical within group); `LIB`/`ALL_EX`/`equipmentOf`/`exercisesFor`/`gymCounts` cover everything; new `export const CURATED_LIB` (group → curated names) and `export const isCurated = name => CURATED.has(String(name).toLowerCase())`. `plan-tools.js` and Coach use `CURATED_LIB`.
 
-- [ ] **Step 1: Write failing tests** (`tests/catalog.test.js`): `titleCase("barbell full squat")==="Barbell Full Squat"` and keeps `EZ`, `T-bar`, `3/4`, `45°`; `foldKey` folds the 77 variant kinds; `GROUP_OF_TARGET` keys cover every dataset target (list of 19 inline); `eqIdsFor` examples (`lever seated fly`→`["pec-deck"]`, `dumbbell lateral raise`→`["dumbbell"]`, `barbell bench press`→`["barbell","bench"]`, `smith squat`→`["smith"]`, `sled hack squat`→`["hack-squat"]` or `["sled-machine"]`, `stability ball crunch`→`["stability-ball"]`, `chest dip`→`["dip-station"]`, `pull-up`→`["pullup-bar"]`); catalog: `CATALOG.length===1129`, names unique case-insensitively and disjoint from the 183, every group in `MUSCLES`, every eq id in `EQUIPMENT`, gif ids match `/^\d{4}-[A-Za-z0-9_-]+$/` and are unique and not used by curated GIFS, `CATALOG_HOLDS.size` equals the number of `"hold"` rows (expected 97 ± 10 pinned after the first run), a count per group is pinned, `ALL_EX.length===1312`, `CURATED_LIB` sums to 183 and its names equal the old `LIB` lists in the old order (snapshot of the 183 names), `buildPlan` over goal × days × experience × gym returns only curated names (extend the existing exhaustive plan test with `isCurated`), `exercisesFor(["dumbbell"])` includes "Dumbbell Lunge"-type catalog rows and excludes any row needing `lever-machine`.
+- [ ] **Step 1: Write failing tests** (`tests/catalog.test.js`): `titleCase("barbell full squat")==="Barbell Full Squat"` and keeps `EZ`, `T-bar`, `3/4`, `45°`; `foldKey` folds the 77 variant kinds; `GROUP_OF_TARGET` keys cover every dataset target (list of 19 inline); `eqIdsFor` examples (`lever seated fly`→`["pec-deck"]`, `dumbbell lateral raise`→`["dumbbell"]`, `barbell bench press`→`["barbell","bench"]`, `smith squat`→`["smith"]`, `sled hack squat`→`["hack-squat"]` or `["sled-machine"]`, `stability ball crunch`→`["stability-ball"]`, `chest dip`→`["dip-station"]`, `pull-up`→`["pullup-bar"]`); catalog: `CATALOG.length===1131`, names unique case-insensitively and disjoint from the 183, every group in `MUSCLES`, every eq id in `EQUIPMENT`, gif ids match `/^\d{4}-[A-Za-z0-9_-]+$/` and are unique and not used by curated GIFS, `CATALOG_HOLDS.size` equals the number of `"hold"` rows (expected 97 ± 10 pinned after the first run), a count per group is pinned, `ALL_EX.length===1314`, `CURATED_LIB` sums to 183 and its names equal the old `LIB` lists in the old order (snapshot of the 183 names), `buildPlan` over goal × days × experience × gym returns only curated names (extend the existing exhaustive plan test with `isCurated`), `exercisesFor(["dumbbell"])` includes "Dumbbell Lunge"-type catalog rows and excludes any row needing `lever-machine`.
 - [ ] **Step 2:** `node --test tests/catalog.test.js` → FAIL.
 - [ ] **Step 3: Implement** `catalog-maps.mjs`, the importer (`node tools/import-catalog.mjs --data <dataset json>`: fold, drop names equal to a curated name or whose `id-media_id` is a curated GIF id, map, sort, write `public/exercise-catalog.js` and `tools/catalog-meta.json`, print counts per group/equipment/kind) and the library merge. Run the importer, commit the generated files.
-- [ ] **Step 4:** `npm test` fully green (adapt tests that pinned `183`/`LIB` totals to `CURATED`). **Step 5: Commit** `feat: import the 1,129 dataset exercises into the library`.
+- [ ] **Step 4:** `npm test` fully green (adapt tests that pinned `183`/`LIB` totals to `CURATED`). **Step 5: Commit** `feat: import the 1,131 dataset exercises into the library`.
 
 ### Task 3: Exact GIFs for the catalog, download set stays curated
 
 **Files:** Modify `tools/match-gifs.mjs` (template), regenerate `public/exercise-gifs.js`; `tests/exercise-gifs.test.js`; `public/sw.js` if the shell list changes.
 **Interfaces:** `GIFS` = curated map (unchanged) ∪ `{[catalog name]: gifId}` built by importing `CATALOG` in the generated module (no second copy of the ids); `gifUrls()` keeps returning **only the curated GIFs** (the "Download exercise pictures" set, about 17 MB); new `allGifUrls()` returns every GIF (for the APK step); `makeGifs(base, map)` unchanged.
 
-- [ ] **Step 1: Failing tests:** every `ALL_EX` name has a GIF id or an explicit curated null; catalog names have non-null ids; `gifUrls().length` equals the curated count (163) and `allGifUrls().length === 163 + 1129`; ids unique across everything except the documented curated shares; the equipment-agreement tests run over `tools/catalog-meta.json` too (dumbbell rows never show barbell pictures); `makeGifs("",…)` still returns nothing.
+- [ ] **Step 1: Failing tests:** every `ALL_EX` name has a GIF id or an explicit curated null; catalog names have non-null ids; `gifUrls().length` equals the curated count (163) and `allGifUrls().length === 163 + 1131`; ids unique across everything except the documented curated shares; the equipment-agreement tests run over `tools/catalog-meta.json` too (dumbbell rows never show barbell pictures); `makeGifs("",…)` still returns nothing.
 - [ ] **Step 2–4:** run (FAIL), update the template and regenerate, run (PASS), `npm test`. **Step 5: Commit** `feat: exact GIFs for every catalog exercise`.
 
-### Task 4: Arabic names for all 1,129
+### Task 4: Arabic names for all 1,131
 
 **Files:** Create `tools/ar-names/` (JSON batches `a1.json … a5.json`, `{ "Barbell Full Squat": "سكوات كامل بالبار" }`), `tools/build-ar-catalog.mjs`, `public/lang-ar-catalog.js` (generated), `docs/arabic-names-catalog.md` (generated table); modify `public/lang-ar.js`, `tests/lang-coverage.test.js` if needed.
 **Interfaces:** `lang-ar-catalog.js` exports `AR_CATALOG_EX: {[English name]: Arabic}`; `lang-ar.js` merges it into `AR.names.ex` at module load (`Object.assign`), so `nameOf("ex", name)` works unchanged.
 
-- [ ] **Step 1: Failing tests:** every catalog name has a non-empty Arabic name, no Arabic name is identical to its English one, Arabic names are unique except documented synonyms (list allowed in the test), no Latin letters except units/digits/known brands (EZ, T-bar, Smith, Bosu), length ≤ 60, `AR.names.ex[name]` resolves for all 1,312.
+- [ ] **Step 1: Failing tests:** every catalog name has a non-empty Arabic name, no Arabic name is identical to its English one, Arabic names are unique except documented synonyms (list allowed in the test), no Latin letters except units/digits/known brands (EZ, T-bar, Smith, Bosu), length ≤ 60, `AR.names.ex[name]` resolves for all 1,314.
 - [ ] **Step 2:** FAIL. **Step 3:** translate in five batches (about 225 names each; write each batch file with the Write tool, plain Modern Standard Arabic matching the 183 existing names' style: equipment word first, then movement: "سكوات كامل بالبار"; consistent glossary at the top of `build-ar-catalog.mjs` for equipment/body words so batches agree), build the module and the review table. **Step 4:** `npm test` green. **Step 5: Commit** `feat: Arabic names for the catalog exercises`.
 
 ### Task 5: Injury joint tags for the catalog
@@ -72,7 +72,7 @@
 **Files:** Create `tools/joint-rules.mjs`, `public/injuries-catalog.js` (generated), `docs/injury-tags-catalog.md` (generated review list); modify `public/injuries.js`, `tests/injuries.test.js`.
 **Interfaces:** `jointRules(entry, group): string[]` (subset of `AREAS`) in `joint-rules.mjs`: by target/body part and name words, conservative (more joints rather than fewer): presses/push-ups/dips/flies/raises → shoulder (+ elbow for presses/extensions/curls, + wrist for barbell/dumbbell pressing and push-ups/plank); squats/lunges/leg press/step-ups/jumps → knee, hip (+ ankle for jumps/calf raises/lunges); deadlifts/rows/good mornings/back extensions/swings → lower-back, hip (+ knee for squat-like); hip thrust/bridge/kickback/abduction → hip (+ lower-back for thrusts/bridges); calf raises → ankle; curls → elbow, wrist; pull-ups/pulldowns/rows → shoulder, elbow; crunches/sit-ups/leg raises/twists → lower-back (+ hip for leg raises); stretches/mobility → the joint named in the stretch; plank/mountain climber → shoulder, wrist, lower-back; cardio jumps/burpees → knee, ankle, shoulder. `injuries-catalog.js` exports `JOINTS_CATALOG: {[name]: string[]}` merged into `JOINTS` in `injuries.js`.
 
-- [ ] **Step 1: Failing tests:** every catalog name has an entry; tags are valid areas, sorted in `AREAS` order; spot checks (`Barbell Full Squat` ⊇ [knee, hip, lower-back]; a push-up variant ⊇ [shoulder, wrist]; a curl ⊇ [elbow]; `Dumbbell Lunge` ⊇ [knee, hip]); existing "explicit table covers every library exercise, no extras" test now passes for 1,312; `avoidFilter` with area `knee` hides catalog squats.
+- [ ] **Step 1: Failing tests:** every catalog name has an entry; tags are valid areas, sorted in `AREAS` order; spot checks (`Barbell Full Squat` ⊇ [knee, hip, lower-back]; a push-up variant ⊇ [shoulder, wrist]; a curl ⊇ [elbow]; `Dumbbell Lunge` ⊇ [knee, hip]); existing "explicit table covers every library exercise, no extras" test now passes for 1,314; `avoidFilter` with area `knee` hides catalog squats.
 - [ ] **Step 2–4:** FAIL, implement, generate, PASS, `npm test`. **Step 5: Commit** `feat: joint tags for the catalog exercises`.
 
 ### Task 6: Defaults for holds and bodyweight, lazy How-to, info sheet
@@ -95,5 +95,5 @@
 
 **Files:** Modify `public/index.html` (My Gym checklist groups render all 53; counts text), `public/sw.js` (APP_SHELL: `/exercise-catalog.js`, `/lang-ar-catalog.js`, `/injuries-catalog.js`, `/exercise-search.js`), `CLAUDE.md`, `docs/README.md`, `docs/open-points.md`, `tests/sw.test.js`, `tests-ui/smoke.test.mjs`.
 
-- [ ] **Step 1: Failing tests:** sw shell lists the four new files and the lazy howto file is NOT in the shell; the My Gym screen shows "N of 53 items · M exercises available" and a Full gym preset gives `M === 1312`, Bodyweight only gives only body-weight rows; eager size guard (`exercise-catalog.js` + `lang-ar-catalog.js` + `injuries-catalog.js` ≤ 330 KB combined); Today with the full library opens within the harness budget (no long task over 200 ms measured with `PerformanceObserver` in the page).
+- [ ] **Step 1: Failing tests:** sw shell lists the four new files and the lazy howto file is NOT in the shell; the My Gym screen shows "N of 53 items · M exercises available" and a Full gym preset gives `M === 1314`, Bodyweight only gives only body-weight rows; eager size guard (`exercise-catalog.js` + `lang-ar-catalog.js` + `injuries-catalog.js` ≤ 330 KB combined); Today with the full library opens within the harness budget (no long task over 200 ms measured with `PerformanceObserver` in the page).
 - [ ] **Step 2–4:** FAIL, implement, PASS. **Step 5:** update docs (CLAUDE.md files list and feature notes, README row, open points: review lists `docs/arabic-names-catalog.md`, `docs/injury-tags-catalog.md`, equipment mapping counts, the APK size note: all GIFs ≈ 130 MB), run `npm test`, tests-ui, control-character check (`grep -c $'\x08'` on every changed file = 0). **Step 6: Commit** `feat: My Gym for 53 items, shell files and docs for the library expansion`. Do **not** deploy or merge; report counts and the review lists to the owner and ask whether to start the final review.

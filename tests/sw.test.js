@@ -34,3 +34,12 @@ test("demo-status counts only the pictures the page still wants and drops the re
   assert.match(sw, /d\.type === "demo-status"[\s\S]*?d\.urls/, "status receives the current URL list");
   assert.ok(sw.includes("stale"), "keys outside the list are removed");
 });
+
+test("library expansion: the eager catalog files are in the shell, the lazy How-to is not, and the eager size stays small", async () => {
+  for (const f of ["/exercise-catalog.js", "/lang-ar-catalog.js", "/injuries-catalog.js", "/exercise-search.js"]) assert.ok(shell.includes(`"${f}"`), f + " is in APP_SHELL");
+  assert.ok(!shell.includes("exercise-howto"), "the How-to file is fetched on demand, not at install");
+  const { statSync } = await import("node:fs");
+  const bytes = f => statSync(new URL("../public/" + f, import.meta.url)).size;
+  const eager = bytes("exercise-catalog.js") + bytes("lang-ar-catalog.js") + bytes("injuries-catalog.js");
+  assert.ok(eager <= 330 * 1024, "eager catalog files: " + Math.round(eager / 1024) + " KB (limit 330 KB)");
+});

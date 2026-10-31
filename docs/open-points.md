@@ -15,6 +15,8 @@ In progress now: the owner is testing the later features on a real phone; expect
 
 **Workout screen 2.0 (sub-project 25, built, not deployed):** open items for the owner: review `docs/gif-matches.md` (which GIF each exercise shows; wrong ones set to `null` in `tools/exercise-gifs.json` then `node tools/match-gifs.mjs --keep`); read the Gym visual terms before any public release; try the looks and the first-launch picker on a phone. The look is per device (an old app version ignores it; a new device asks again).
 
+**Library expansion (sub-project 26, built, not deployed):** to review: the Arabic names (`docs/arabic-names-catalog.md`: fix one in `tools/ar-names/overrides.json` and rerun `node tools/build-ar-catalog.mjs`), the injury tags (`docs/injury-tags-catalog.md`), the muscle-group and equipment mapping (`tools/catalog-maps.mjs`), the stretch/cardio exercises logged as timed holds. Arabic How-to steps are not translated (English shown). The full GIF set is about 130 MB (the APK decision). The look layouts are still the old ones (Looks 2.0, see the roadmap doc).
+
 ## A. Needs the owner (not code)
 1. ~~**Read `public/privacy.html` and `public/terms.html`.**~~ **Done (owner read both, 2026-10-23).** They are plain-language drafts, not legal advice; a legal review (GDPR, Egypt's data protection law) is still optional. `terms.html` does not mention challenges (the privacy policy does).
 2. **Try the later features on real phones** (journey, friends, challenges, My Gym, delete my account on a throwaway Google account, Arabic/RTL). Most of this was checked only in a headless browser with stubbed Firebase and the rules emulator.

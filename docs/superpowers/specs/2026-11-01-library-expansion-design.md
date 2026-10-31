@@ -8,11 +8,11 @@ Today the app knows 183 curated exercises. The GIF dataset it now uses (`hasaney
 ## What is in the dataset (measured)
 - 1,324 records; fields: name, category (body part), target muscle, secondary muscles, muscle group, equipment (28 kinds), instructions in 10 languages (**no Arabic**), step lists, GIF/image ids.
 - 77 are the same exercise repeated as "v. 2", "(male)", "(female)" or "pov" views → **1,286 distinct**.
-- 157 are already in our library (the pictures we use now) → **1,129 new**: 1,034 strength-type, 68 stretch/mobility/foam-roller, 29 cardio.
+- 157 are already in our library (the pictures we use now) → **1,131 new**: 1,034 strength-type, 68 stretch/mobility/foam-roller, 29 cardio.
 - New ones by equipment: dumbbell 245, body weight 236, cable 132, barbell 115, machine ("leverage") 51, band 60, smith 37, kettlebell 40, weighted 33, stability ball 20, EZ bar 21, sled machine 11, medicine ball 13, other 20.
 
 ## Scope
-**In:** import **all 1,129** new exercises into the library with name, muscle group, equipment, GIF and a How-to; Arabic names; injury joint tags; a real search in the Add-exercise sheet; My Gym and Injuries keep working on all of them.
+**In:** import **all 1,131** new exercises into the library with name, muscle group, equipment, GIF and a How-to; Arabic names; injury joint tags; a real search in the Add-exercise sheet; My Gym and Injuries keep working on all of them.
 **Out:** Arabic instructions (English steps are shown), tips for the new ones (the curated 183 keep their tips), changing generated training plans, new muscle groups, any change to stored data (workouts keep storing the exercise name).
 
 ## Design
@@ -50,14 +50,14 @@ The owner pointed out that the Carbon and Bloom looks so far change colours, typ
 
 ## Decisions (defaults I chose; tell me to change any)
 1. **Fold the 77 duplicates** (v. 2, male, female, pov) into one entry each.
-2. **All 1,129 are included (owner's decision).** Strength-type (1,034) log weight × reps as usual. **Stretch/mobility/foam-roller (68) and cardio-category (29)** are logged as **timed holds** (seconds, no weight, like Plank); in the library they appear under their body part (cardio under Core). The separate "+ Cardio" log (minutes, kcal) is unchanged.
+2. **All 1,131 are included (owner's decision).** Strength-type (1,034) log weight × reps as usual. **Stretch/mobility/foam-roller (68) and cardio-category (29)** are logged as **timed holds** (seconds, no weight, like Plank); in the library they appear under their body part (cardio under Core). The separate "+ Cardio" log (minutes, kcal) is unchanged.
 3. **Forearm exercises go under "Biceps"** (no new muscle group).
 4. **Arabic for names only;** the How-to steps show in English in the Arabic app (translating ~560 KB of steps is a separate, optional step).
 5. **Generated plans and Coach suggestions stay on the curated 183.**
 6. Specific machines map to our existing machine ids; unmatched machines use the generic `lever-machine` id.
 
 ## Tests
-- **Tool/unit:** every new row has a unique non-colliding name, a valid group, valid equipment ids, a GIF id that exists in the dataset, an Arabic name and joint tags; counts (1,129 minus exclusions) pinned; curated 183 untouched (names, order, equipment, tips); My Gym preset counts; `exercisesFor(gym)` and the injury filter work over the whole list; no new exercise shares a GIF with another; the equipment-agreement test from the GIF work now covers every exercise.
+- **Tool/unit:** every new row has a unique non-colliding name, a valid group, valid equipment ids, a GIF id that exists in the dataset, an Arabic name and joint tags; counts (1,131 minus exclusions) pinned; curated 183 untouched (names, order, equipment, tips); My Gym preset counts; `exercisesFor(gym)` and the injury filter work over the whole list; no new exercise shares a GIF with another; the equipment-agreement test from the GIF work now covers every exercise.
 - **UI:** the search finds "full squat", "سكوات" and "dumbbell" results and adds one; adding an imported exercise logs sets (weight/reps, bodyweight, hold variants); My Gym hides/shows by equipment; Arabic names show; the info sheet loads How-to lazily and offline from cache; Today stays fast with the whole library.
 
 ## Risks
