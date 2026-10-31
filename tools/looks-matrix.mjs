@@ -23,7 +23,10 @@ for (const look of ["carbon", "bloom"]) for (const theme of ["dark", "light"]) f
   const ctx = await b.newContext({ viewport: { width: 360, height: 780 }, serviceWorkers: "block" });
   await ctx.addInitScript('try{localStorage.setItem("ironlog.journey","skip")}catch(e){}');
   for (const [name, clicks, extra = ""] of screens) {
-    const p = await ctx.newPage();
+    // a sheet screen starts from a clean phone: an earlier screen may already have started today's workout
+    const own = /sheet|addexercise/.test(name), c2 = own ? await b.newContext({ viewport: { width: 360, height: 780 }, serviceWorkers: "block" }) : ctx;
+    if (own) await c2.addInitScript('try{localStorage.setItem("ironlog.journey","skip")}catch(e){}');
+    const p = await c2.newPage();
     await p.goto(`http://localhost:${PORT}/?friends=1&ch=1&mine=1&look=${look}&theme=${theme}&lang=${lang}${extra}`);
     await p.waitForSelector(".tabbar:not([hidden])"); await p.waitForTimeout(700);
     for (const sel of clicks) { try { await p.locator(sel).first().click({ timeout: 2000 }); } catch (e) { out.push(`${look}/${theme}/${lang}/${name}: click failed ${sel}`); break; } await p.waitForTimeout(350); }
@@ -40,7 +43,7 @@ for (const look of ["carbon", "bloom"]) for (const theme of ["dark", "light"]) f
       return { over, issues: [...new Set(issues)].slice(0, 8) };
     });
     if (r.over > 1 || r.issues.length) out.push(`${look}/${theme}/${lang}/${name}: overflow=${r.over} ${r.issues.join(" | ")}`);
-    await p.close();
+    await p.close(); if (own) await c2.close();
   }
   await ctx.close();
 }
