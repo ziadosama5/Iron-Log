@@ -12,7 +12,7 @@
 <title>Iron Log</title>
 <link rel="icon" type="image/svg+xml" href="/logo-mark.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-<script>/* apply the saved look (carbon / bloom; anything else = classic) before the page draws */try{var k=localStorage.getItem("ironlog.look");if(k==="carbon"||k==="bloom")document.documentElement.dataset.look=k;}catch(e){}</script>
+<script>/* apply the saved look (carbon / bloom; anything else = classic) before the page draws */try{var k=localStorage.getItem("ironlog.look");if(k==="carbon"||k==="bloom"){document.documentElement.dataset.look=k;document.write('<link rel="stylesheet" id="look-css" href="/looks-'+k+'.css">');}}catch(e){}</script>
 <script>/* apply the saved theme before the page draws */try{var t=localStorage.getItem("ironlog.theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t;}catch(e){}</script>
 <script>/* language + direction before the page draws */try{var l=localStorage.getItem("ironlog.lang");if(l!=="ar"&&l!=="en")l=/^ar/i.test(navigator.language||"")?"ar":"en";document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";}catch(e){}</script>
 <script>/* accent colour before the page draws (computed values are cached by the app) */try{var c=JSON.parse(localStorage.getItem("ironlog.accent.css")||"null");if(c){var th=localStorage.getItem("ironlog.theme"),dk=th==="dark"||(th!=="light"&&matchMedia("(prefers-color-scheme: dark)").matches),v=c[dk?"dark":"light"],ok=v&&v.length===3&&v.every(function(x){return /^#[0-9a-f]{6}$/i.test(x);});if(ok){var st=document.documentElement.style;st.setProperty("--accent",v[0]);st.setProperty("--accent-ink",v[1]);st.setProperty("--accent-soft",v[2]);}}}catch(e){}</script>
@@ -597,6 +597,7 @@ import { infoFor } from "./exercise-info.js";
 import { gifUrl, stillUrl, gifUrls, stillUrls } from "./exercise-gifs.js";
 import { searchExercises } from "./exercise-search.js";
 import { LOOKS, cleanLook, savedLookOf, suggestLook, shouldPickLook, accentPresetsFor, defaultAccentFor, envFor } from "./looks.js";
+import { loadLayout, buildCtx } from "./looks/layout.js";
 import { registerLang, setLang, isRtl, detectLang, withLang, t, tn, nameOf, reverseName, locale, trDom } from "./i18n.js";
 import { AR } from "./lang-ar.js";
 import { PRESETS, parseHex, deriveAccent } from "./theme-tools.js";
@@ -3056,8 +3057,31 @@ function applyLook(look,opts){
   const m=document.querySelector('meta[name="theme-color"]');
   if(m) m.content=getComputedStyle(document.documentElement).getPropertyValue("--surface").trim()||"#ffffff";
   drawSwatches(); drawLooks();
+  if(look!==prev) activateLayout(look);
 }
 const LOOK_NAME={classic:"Classic",carbon:"Carbon",bloom:"Bloom"};
+/* ---------- per-look layouts (Looks 2.0) ---------- */
+// A look supplies pure HTML builders (public/looks/<look>.js, loaded only while that look is on). screenHtml asks for one by name and
+// falls back to the Classic builder, so a screen a look does not define (or a module that cannot load) still draws, in the look's colours.
+let LAYOUT={}, layoutFor="classic";
+function screenHtml(name,ctx,classic){
+  const b=LAYOUT[name];
+  if(b){ try{ return b(buildCtx({t,tn,nameOf,rtl:isRtl(),look:layoutFor,...ctx})); }catch(e){ console.warn("look builder failed, using Classic:",name,e&&e.message); } }
+  return classic(ctx);
+}
+function setLookCss(look){
+  let l=document.getElementById("look-css");
+  if(look==="classic"){ if(l) l.remove(); return; }
+  if(!l){ l=document.createElement("link"); l.rel="stylesheet"; l.id="look-css"; document.head.appendChild(l); }
+  const href="/looks-"+look+".css"; if(l.getAttribute("href")!==href) l.setAttribute("href",href);
+}
+async function activateLayout(look){
+  look=cleanLook(look); setLookCss(look);
+  const next=await loadLayout(look);
+  if(cleanLook(currentLook())!==look) return;   // the person switched again while this was loading
+  LAYOUT=next; layoutFor=look;
+  if(state.authed) render();
+}
 // A tile is a tiny mock screen drawn with the look's own tokens (.look-scope), with that look's default accent.
 function lookPreviewHtml(look){
   const env=envFor(look)[isDarkNow()?"dark":"light"], acc=defaultAccentFor(look);
@@ -3552,6 +3576,7 @@ if(!configured) $("#signout").hidden=true;
 render();
 applyTheme(currentTheme());
 applyLang(currentLang(),true);
+activateLayout(currentLook());
 applyAccent(currentAccent(),false);
 resumeRest();
 // Don't redraw under someone who is typing; redraw as soon as they leave the field instead.

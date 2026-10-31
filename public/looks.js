@@ -34,8 +34,8 @@ export function defaultAccentFor(look) { return own(LOOK_ACCENTS, look) ? LOOK_A
 // Card surface and page background per look and mode, used to keep the accent readable (applyAccent).
 export const LOOK_ENV = {
   classic: { light: { surface: "#ffffff", bg: "#f3f5f9" }, dark: { surface: "#171d26", bg: "#0f1319" } },
-  carbon: { light: { surface: "#ffffff", bg: "#f4f1ee" }, dark: { surface: "#181a1f", bg: "#101114" } },
-  bloom: { light: { surface: "#ffffff", bg: "#fff4f6" }, dark: { surface: "#2a1c3a", bg: "#17102a" } }
+  carbon: { light: { surface: "#ffffff", bg: "#f2f2f5" }, dark: { surface: "#161619", bg: "#0b0b0d" } },
+  bloom: { light: { surface: "#ffffff", bg: "#fbf6f8" }, dark: { surface: "#1e171c", bg: "#140f13" } }
 };
 export function envFor(look) { return own(LOOK_ENV, look) ? LOOK_ENV[look] : LOOK_ENV.classic; }
 

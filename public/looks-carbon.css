@@ -1,0 +1,19 @@
+/* Carbon layout styles (Looks 2.0, docs/looks/language.md + today.md): flat and exact. Linked only while Carbon is on; linked BEFORE the inline
+   <style>, so every selector carries :root[data-look="carbon"]. */
+
+/* tab bar: a wide glass bar, the current tab only changes colour */
+:root[data-look="carbon"] .tabbar{inset-inline:12px;max-width:none;bottom:calc(12px + env(safe-area-inset-bottom,0px));height:62px;border-radius:22px;padding:0 4px}
+
+/* section tabs: text with one accent underline (no bubbles, no second line) */
+:root[data-look="carbon"] .pills{gap:24px;padding-inline:0;margin-inline:0;border:0}
+:root[data-look="carbon"] .pill{background:none;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;padding:0;min-height:44px;color:var(--muted);font-size:16px;font-weight:500}
+:root[data-look="carbon"] .pill[aria-pressed="true"]{background:none;color:var(--fg);font-weight:600;box-shadow:inset 0 -3px 0 var(--accent)}
+
+/* large left-aligned titles, big tabular numerals */
+:root[data-look="carbon"] h2{font-size:34px;line-height:41px;font-weight:700;letter-spacing:-.02em}
+:root[data-look="carbon"] .card h3{font-size:17px;font-weight:600}
+:root[data-look="carbon"] .num{font-weight:600;letter-spacing:-.02em}
+:root[data-look="carbon"] .exchip{min-height:34px;padding:0 13px 0 6px;border-radius:999px}
+:root[data-look="carbon"] .exchip[aria-current="true"]{box-shadow:none}
+:root[data-look="carbon"] .btn.primary{border-radius:var(--r-btn);min-height:56px;font-size:17px}
+:root[data-look="carbon"] .restbar{border-radius:20px}

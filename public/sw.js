@@ -34,6 +34,7 @@ const APP_SHELL = [
   "/theme-tools.js",
   "/looks.js",
   "/looks.css",
+  "/looks/layout.js",
   "/exercise-gifs.js",
   "/exercise-catalog.js",
   "/lang-ar-catalog.js",

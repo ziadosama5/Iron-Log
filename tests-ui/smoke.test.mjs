@@ -1967,7 +1967,7 @@ test("looks: with no saved look the page is Classic (no data-look, today's card 
 });
 
 test("looks: a saved look is on <html> before the page draws and changes the tokens", async () => {
-  for (const [look, radius] of [["carbon", "10px"], ["bloom", "24px"]]) {
+  for (const [look, radius] of [["carbon", "18px"], ["bloom", "24px"]]) {
     const { page, ctx, errors } = await open("", undefined, lookInit(look));
     assert.equal(await dataLook(page), look);
     assert.equal(await rootVar(page, "--r-card"), radius, look);

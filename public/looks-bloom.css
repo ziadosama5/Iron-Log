@@ -1,0 +1,23 @@
+/* Bloom layout styles (Looks 2.0, docs/looks/language.md + today.md): soft, rounded, guided. Linked only while Bloom is on; linked BEFORE the inline
+   <style>, so every selector carries :root[data-look="bloom"]. */
+
+/* tab bar: a floating pill, the current tab sits in a soft accent bubble */
+:root[data-look="bloom"] .tabbar{inset-inline:16px;max-width:none;bottom:calc(14px + env(safe-area-inset-bottom,0px));height:64px;border-radius:32px;padding:0 6px}
+:root[data-look="bloom"] .tabbar button{border-radius:26px;margin-block:6px}
+:root[data-look="bloom"] .tabbar button[aria-current="page"]{background:var(--accent-soft)}
+
+/* section tabs: glass bubbles, the current one filled */
+:root[data-look="bloom"] .pill{min-height:44px;padding:0 18px;font-size:15px}
+:root[data-look="bloom"] .pill[aria-pressed="true"]{box-shadow:none}
+
+/* rounded display face for titles and numerals */
+:root[data-look="bloom"] h2{font-family:var(--f-display);font-size:32px;line-height:38px;font-weight:800}
+:root[data-look="bloom"] .card h3{font-family:var(--f-display);font-size:20px;font-weight:800}
+:root[data-look="bloom"] .num,:root[data-look="bloom"] .bigstep input{font-family:var(--f-num)}
+:root[data-look="bloom"] .btn,:root[data-look="bloom"] .chip{border-radius:999px}
+:root[data-look="bloom"] .btn.primary{min-height:56px;font-size:17px}
+:root[data-look="bloom"] .seg{border-radius:20px}
+:root[data-look="bloom"] .seg button{border-radius:17px}
+:root[data-look="bloom"] .exchip{min-height:44px;border-radius:999px}
+:root[data-look="bloom"] .restbar{border-radius:32px}
+:root[data-look="bloom"] .demo{border-radius:22px}

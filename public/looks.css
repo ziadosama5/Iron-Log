@@ -18,54 +18,84 @@
   --bg:#0f1319; --surface:#171d26; --sunk:#0b0f14; --line:#283140; --fg:#e6ebf2; --muted:#8c97a8; --shadow:none; --card-border:var(--line);
   --hero:#262a35; --bar:#232731; --bar-ink:#8f95a3; --accent:#6c9cff; --accent-ink:#0b1220; --accent-soft:#1b2a47; color-scheme:dark}
 
-/* ================= CARBON: charcoal, condensed uppercase type, angled cuts, a flat full-width bar ================= */
+/* ================= Looks 2.0 tokens: Carbon (dark-first, exact) and Bloom (light-first, warm). Both are frosted glass (docs/looks/language.md) ================= */
+/* Carbon, light */
 :root[data-look="carbon"],.look-scope[data-look="carbon"]{
-  --bg:#f4f1ee; --surface:#ffffff; --sunk:#ece7e2; --line:#ddd5cd; --fg:#1b1a19; --muted:#6a625b;
-  --shadow:0 1px 2px rgb(27 26 25 / .08); --card-border:transparent; --r-card:10px; --r-btn:6px;
-  --hero:#101114; --hero-ink:#f4f1ee; --bar:#0c0d10; --bar-ink:#9a9aa3; --bar-on:#ffffff; --pop:0 -4px 18px rgb(12 13 16 / .25);
-  --bg-grad:linear-gradient(180deg,#f4f1ee 0%,#ebe6e1 100%);
-  --f-display:"Oswald","Arial Narrow",system-ui,sans-serif; --f-body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif}
+  --f-sys:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif;
+  --bg:#f2f2f5; --surface:#ffffff; --sunk:#e9e9ed; --line:rgb(0 0 0 / .08); --fg:#111113; --muted:#5e5e66;
+  --shadow:none; --card-border:transparent; --r-card:18px; --r-btn:12px;
+  --hero:#1c1c1e; --hero-ink:#f5f5f7; --bar:rgb(255 255 255 / .74); --bar-ink:#5e5e66; --bar-on:var(--accent); --pop:0 12px 32px rgb(20 20 30 / .16);
+  --glass:rgb(255 255 255 / .62); --glass2:rgb(255 255 255 / .55); --glass-hi:rgb(255 255 255 / .95); --gborder:rgb(255 255 255 / .85); --hi:#fff; --soft:0 8px 28px rgb(40 40 70 / .10); --scrim:rgb(20 20 30 / .32);
+  --bg-grad:radial-gradient(520px 460px at 10% 4%,rgb(255 150 90 / .26),transparent 70%),radial-gradient(560px 520px at 100% 34%,rgb(110 150 255 / .20),transparent 70%),radial-gradient(520px 460px at 20% 96%,rgb(255 150 90 / .26),transparent 70%);
+  --f-display:var(--f-sys); --f-body:var(--f-sys); --f-num:var(--f-sys)}
+/* Carbon, dark */
 @media (prefers-color-scheme:dark){
   :root[data-look="carbon"]:not([data-theme="light"]),:root:not([data-theme="light"]) .look-scope[data-look="carbon"]{
-    --bg:#101114; --surface:#181a1f; --sunk:#0c0d10; --line:#2a2d34; --fg:#f4f1ee; --muted:#a1a1a8; --shadow:none; --card-border:var(--line);
-    --hero:#1d2027; --bar:#0c0d10; --bar-ink:#9a9aa3; --pop:0 -4px 18px rgb(0 0 0 / .5);
-    --bg-grad:linear-gradient(180deg,#101114 0%,#0c0d10 100%); color-scheme:dark}}
+    --bg:#0b0b0d; --surface:#161619; --sunk:#26262b; --line:rgb(255 255 255 / .09); --fg:#f5f5f7; --muted:#a1a1a8;
+    --hero:#1e1e22; --bar:rgb(30 30 34 / .72); --bar-ink:#a1a1a8; --pop:0 12px 32px rgb(0 0 0 / .55);
+    --glass:rgb(255 255 255 / .07); --glass2:rgb(255 255 255 / .10); --glass-hi:rgb(255 255 255 / .20); --gborder:rgb(255 255 255 / .14); --hi:rgb(255 255 255 / .24); --soft:0 8px 28px rgb(0 0 0 / .35); --scrim:rgb(0 0 0 / .55);
+    --bg-grad:radial-gradient(520px 460px at 10% 4%,rgb(255 122 47 / .20),transparent 70%),radial-gradient(560px 520px at 100% 34%,rgb(70 120 255 / .20),transparent 70%),radial-gradient(520px 460px at 20% 96%,rgb(255 122 47 / .20),transparent 70%); color-scheme:dark}}
 :root[data-look="carbon"][data-theme="dark"],:root[data-theme="dark"] .look-scope[data-look="carbon"]{
-  --bg:#101114; --surface:#181a1f; --sunk:#0c0d10; --line:#2a2d34; --fg:#f4f1ee; --muted:#a1a1a8; --shadow:none; --card-border:var(--line);
-  --hero:#1d2027; --bar:#0c0d10; --bar-ink:#9a9aa3; --pop:0 -4px 18px rgb(0 0 0 / .5);
-  --bg-grad:linear-gradient(180deg,#101114 0%,#0c0d10 100%); color-scheme:dark}
-:root[data-look="carbon"] .ex-name,:root[data-look="carbon"] .dayname,:root[data-look="carbon"] h1,:root[data-look="carbon"] h2{letter-spacing:.04em}
-:root[data-look="carbon"] .btn.primary{border-radius:0;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%);text-transform:uppercase;letter-spacing:.08em}
-:root[data-look="carbon"] .demo{border-radius:0;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
-:root[data-look="carbon"] .tag2{border-radius:0;clip-path:polygon(5px 0,100% 0,calc(100% - 5px) 100%,0 100%)}
-:root[data-look="carbon"] .bigstep button{border-radius:0;clip-path:polygon(8px 0,100% 0,calc(100% - 8px) 100%,0 100%)}
-:root[data-look="carbon"] .tabbar{inset-inline:0;max-width:none;bottom:0;height:calc(64px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);border-radius:0;box-shadow:var(--pop)}
-:root[data-look="carbon"] .hero{border-radius:6px}
-:root[data-look="carbon"] .ebar>i{background:linear-gradient(90deg,var(--accent),#ff3d3d)}
-:root[data-look="carbon"] .prow{border-radius:6px}
+  --bg:#0b0b0d; --surface:#161619; --sunk:#26262b; --line:rgb(255 255 255 / .09); --fg:#f5f5f7; --muted:#a1a1a8;
+  --hero:#1e1e22; --bar:rgb(30 30 34 / .72); --bar-ink:#a1a1a8; --pop:0 12px 32px rgb(0 0 0 / .55);
+  --glass:rgb(255 255 255 / .07); --glass2:rgb(255 255 255 / .10); --glass-hi:rgb(255 255 255 / .20); --gborder:rgb(255 255 255 / .14); --hi:rgb(255 255 255 / .24); --soft:0 8px 28px rgb(0 0 0 / .35); --scrim:rgb(0 0 0 / .55);
+  --bg-grad:radial-gradient(520px 460px at 10% 4%,rgb(255 122 47 / .20),transparent 70%),radial-gradient(560px 520px at 100% 34%,rgb(70 120 255 / .20),transparent 70%),radial-gradient(520px 460px at 20% 96%,rgb(255 122 47 / .20),transparent 70%); color-scheme:dark}
 
-/* ================= BLOOM: blush, plum text, serif headings, round pills, a floating white bar ================= */
+/* Bloom, light */
 :root[data-look="bloom"],.look-scope[data-look="bloom"]{
-  --bg:#fff4f6; --surface:#ffffff; --sunk:#fbe3ea; --line:#f1d9df; --fg:#3a1d2e; --muted:#7d5e6c;
-  --shadow:0 4px 18px rgb(122 45 74 / .08); --card-border:transparent; --r-card:24px; --r-btn:22px;
-  --hero:#3a1d2e; --hero-ink:#fff4f6; --bar:#ffffff; --bar-ink:#7d5e6c; --bar-on:#3a1d2e; --pop:0 8px 28px rgb(122 45 74 / .16);
-  --bg-grad:linear-gradient(180deg,#ffe9ef 0%,#fff4f6 45%,#fff4f6 100%);
-  --f-display:"Fraunces",Georgia,"Times New Roman",serif; --f-body:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+  --f-sys:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif;
+  --bg:#fbf6f8; --surface:#ffffff; --sunk:#f4eaee; --line:rgb(70 25 45 / .09); --fg:#1e1519; --muted:#6b5b63;
+  --shadow:none; --card-border:transparent; --r-card:24px; --r-btn:16px;
+  --hero:#2a1c24; --hero-ink:#fbf6f8; --bar:rgb(255 255 255 / .76); --bar-ink:#6b5b63; --bar-on:var(--accent); --pop:0 14px 36px rgb(122 45 74 / .16);
+  --glass:rgb(255 255 255 / .62); --glass2:rgb(255 255 255 / .55); --glass-hi:rgb(255 255 255 / .95); --gborder:rgb(255 255 255 / .85); --hi:#fff; --soft:0 8px 28px rgb(122 45 74 / .10); --scrim:rgb(40 15 30 / .32);
+  --bg-grad:radial-gradient(520px 460px at 10% 4%,rgb(255 150 185 / .30),transparent 70%),radial-gradient(560px 520px at 100% 34%,rgb(190 140 255 / .22),transparent 70%),radial-gradient(520px 460px at 20% 96%,rgb(255 150 185 / .30),transparent 70%);
+  --f-display:ui-rounded,"SF Pro Rounded",var(--f-sys); --f-body:var(--f-sys); --f-num:ui-rounded,"SF Pro Rounded",var(--f-sys)}
+/* Bloom, dark */
 @media (prefers-color-scheme:dark){
   :root[data-look="bloom"]:not([data-theme="light"]),:root:not([data-theme="light"]) .look-scope[data-look="bloom"]{
-    --bg:#17102a; --surface:#2a1c3a; --sunk:#120b21; --line:#3d2a55; --fg:#f6eeff; --muted:#bbaad6; --shadow:none; --card-border:var(--line);
-    --hero:#3a2656; --hero-ink:#f6eeff; --bar:#2a1c3a; --bar-ink:#bbaad6; --bar-on:#ffffff; --pop:0 8px 28px rgb(0 0 0 / .5);
-    --bg-grad:radial-gradient(120% 60% at 80% 0%,#3a1b63 0%,#17102a 60%); color-scheme:dark}}
+    --bg:#140f13; --surface:#1e171c; --sunk:#31272f; --line:rgb(255 255 255 / .09); --fg:#f7eff3; --muted:#bbaab4;
+    --hero:#271f26; --bar:rgb(39 31 38 / .74); --bar-ink:#bbaab4; --pop:0 14px 36px rgb(0 0 0 / .5);
+    --glass:rgb(255 255 255 / .07); --glass2:rgb(255 255 255 / .10); --glass-hi:rgb(255 255 255 / .20); --gborder:rgb(255 255 255 / .14); --hi:rgb(255 255 255 / .24); --soft:0 8px 28px rgb(0 0 0 / .35); --scrim:rgb(0 0 0 / .55);
+    --bg-grad:radial-gradient(520px 460px at 10% 4%,rgb(255 122 168 / .22),transparent 70%),radial-gradient(560px 520px at 100% 34%,rgb(170 110 255 / .20),transparent 70%),radial-gradient(520px 460px at 20% 96%,rgb(255 122 168 / .22),transparent 70%); color-scheme:dark}}
 :root[data-look="bloom"][data-theme="dark"],:root[data-theme="dark"] .look-scope[data-look="bloom"]{
-  --bg:#17102a; --surface:#2a1c3a; --sunk:#120b21; --line:#3d2a55; --fg:#f6eeff; --muted:#bbaad6; --shadow:none; --card-border:var(--line);
-  --hero:#3a2656; --hero-ink:#f6eeff; --bar:#2a1c3a; --bar-ink:#bbaad6; --bar-on:#ffffff; --pop:0 8px 28px rgb(0 0 0 / .5);
-  --bg-grad:radial-gradient(120% 60% at 80% 0%,#3a1b63 0%,#17102a 60%); color-scheme:dark}
-:root[data-look="bloom"] .ex-name,:root[data-look="bloom"] .dayname,:root[data-look="bloom"] .daytag,:root[data-look="bloom"] .label,:root[data-look="bloom"] h1,:root[data-look="bloom"] h2{text-transform:none;letter-spacing:0}
-:root[data-look="bloom"] .btn.primary{box-shadow:0 6px 16px color-mix(in srgb,var(--accent) 30%,transparent)}
-:root[data-look="bloom"] .demo{border-radius:22px}
-:root[data-look="bloom"] .tabbar{border-radius:32px;border:1px solid var(--line)}
-:root[data-look="bloom"] .hero{border-radius:28px}
-:root[data-look="bloom"] .prow{border-radius:18px}
+  --bg:#140f13; --surface:#1e171c; --sunk:#31272f; --line:rgb(255 255 255 / .09); --fg:#f7eff3; --muted:#bbaab4;
+  --hero:#271f26; --bar:rgb(39 31 38 / .74); --bar-ink:#bbaab4; --pop:0 14px 36px rgb(0 0 0 / .5);
+  --glass:rgb(255 255 255 / .07); --glass2:rgb(255 255 255 / .10); --glass-hi:rgb(255 255 255 / .20); --gborder:rgb(255 255 255 / .14); --hi:rgb(255 255 255 / .24); --soft:0 8px 28px rgb(0 0 0 / .35); --scrim:rgb(0 0 0 / .55);
+  --bg-grad:radial-gradient(520px 460px at 10% 4%,rgb(255 122 168 / .22),transparent 70%),radial-gradient(560px 520px at 100% 34%,rgb(170 110 255 / .20),transparent 70%),radial-gradient(520px 460px at 20% 96%,rgb(255 122 168 / .22),transparent 70%); color-scheme:dark}
+
+/* ================= Glass surfaces shared by both looks (the page already uses these classes in every screen) ================= */
+:root[data-look] body{font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+:root[data-look] .card,:root[data-look] .pill,:root[data-look] .exchip,:root[data-look] .btn:not(.primary):not(.danger):not(.ghost){
+  background:var(--glass);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);
+  border-color:transparent;box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder),var(--soft)}
+:root[data-look] .btn:not(.primary):not(.danger):not(.ghost),:root[data-look] .pill{box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder)}
+:root[data-look] .btn.primary{border-color:transparent;box-shadow:inset 0 1px 0 rgb(255 255 255 / .28)}
+:root[data-look] .btn.ghost{background:transparent;border-color:transparent}
+:root[data-look] .card.banner{background:var(--accent-soft);border:0;box-shadow:inset 0 0 0 1px var(--gborder)}
+:root[data-look] .card.open{box-shadow:inset 0 0 0 2px var(--accent)}
+:root[data-look] header{background:var(--bar);-webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);border-bottom:0;box-shadow:0 1px 0 var(--line)}
+:root[data-look] .seg{background:var(--sunk);border-radius:var(--r-btn)}
+:root[data-look] .seg button{border-radius:calc(var(--r-btn) - 3px)}
+:root[data-look] .seg button[aria-pressed="true"]{background:var(--glass-hi);box-shadow:var(--shadow),inset 0 1px 0 var(--hi)}
+:root[data-look] .bigstep{background:transparent;padding:0;gap:10px}
+:root[data-look] .bigstep button{border-radius:var(--r-btn);background:var(--glass2);box-shadow:inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder);color:var(--fg)}
+:root[data-look] .bigstep input{font-size:36px;font-weight:600;letter-spacing:-.02em}
+:root[data-look] .prow{border-radius:var(--r-btn)}
+:root[data-look] .ebar,:root[data-look] .ebar>i{border-radius:3px}
+:root[data-look] .ebar{height:6px}
+:root[data-look] dialog.sheet{background:var(--bar);-webkit-backdrop-filter:blur(32px) saturate(180%);backdrop-filter:blur(32px) saturate(180%);border-radius:var(--r-card) var(--r-card) 0 0;box-shadow:var(--pop),inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder)}
+:root[data-look] dialog.sheet::backdrop{background:var(--scrim)}
+:root[data-look] .tabbar{background:var(--bar);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);box-shadow:var(--pop),inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder)}
+:root[data-look] .tabbar button[aria-current="page"],:root[data-look] .tabbar button[aria-current="page"] svg{color:var(--accent)}
+:root[data-look] .restbar{left:12px;right:12px;bottom:calc(var(--tabbar) + 18px + env(safe-area-inset-bottom,0px));padding:0;background:var(--bar);-webkit-backdrop-filter:blur(28px) saturate(180%);backdrop-filter:blur(28px) saturate(180%);border:0;border-radius:20px;box-shadow:var(--pop),inset 0 1px 0 var(--hi),inset 0 0 0 1px var(--gborder)}
+:root[data-look] .restbar-in{padding:10px 12px}
+:root[data-look] .restbar.go{background:var(--accent)}
+:root[data-look] .toast{border-radius:26px;padding:12px 20px;box-shadow:var(--pop)}
+:root[data-look] .hero{border-radius:var(--r-card)}
+:root[data-look] .demo{border-radius:var(--r-btn)}
+:root[data-look] .tag2{border-radius:999px}
+:root[data-look] .exchips,:root[data-look] .pills{-webkit-mask-image:linear-gradient(to right,#000 88%,transparent);mask-image:linear-gradient(to right,#000 88%,transparent);padding-block:4px;margin-block:-4px}
+:root[dir="rtl"][data-look] .exchips,:root[dir="rtl"][data-look] .pills{-webkit-mask-image:linear-gradient(to left,#000 88%,transparent);mask-image:linear-gradient(to left,#000 88%,transparent)}
 
 /* ================= Arabic keeps its own faces in every look ================= */
 :root[lang="ar"][data-look]{--f-body:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;--f-display:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
@@ -87,7 +117,6 @@
 .lp-name{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .lk-prev.big{height:170px;padding:12px;gap:8px}
 .lk-prev.big .lk-title{font:700 19px/1.1 var(--f-display);color:var(--fg)}
-.lk-prev[data-look="carbon"] .lk-title{text-transform:uppercase;letter-spacing:.04em}
 .lk-prev.big .lk-card{height:auto;padding:8px 10px;display:flex;align-items:center}
 .lk-prev.big .lk-card b{font:600 13px/1 var(--f-body)}
 .lk-prev.big .lk-btn{width:auto;height:auto;padding:8px 12px;color:var(--accent-ink);font:700 12px/1 var(--f-body);align-self:flex-start}
