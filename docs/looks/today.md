@@ -31,3 +31,9 @@ Target sheet: target-activity, target-adjust, target-adjust-reset, tgt-*.
 ## Approved 2026-11-01 (owner), with two rules added
 - **Demo picture room stays:** Carbon = 96 px thumbnail beside the name, Bloom = 150 px banner on top of the card, 240 px in the info sheet, full screen in the viewer. No GIF / failed load = the box is not drawn (the text takes the room).
 - **Long text never breaks a layout** (board "Overflow rules" in both looks): a row or chip label is one line with an ellipsis (`min-width:0` on every flex child, `text-overflow:ellipsis`); a card title is clamped to two lines; big numbers do not wrap (`white-space:nowrap`, font shrinks by a step at 7+ characters); buttons never wrap, the label is shortened with an ellipsis; chips cap at 120-170 px; Arabic runs about 30% longer, so containers flex instead of fixing widths. A test renders each builder with a 70-character exercise name and 7-digit numbers and fails on horizontal overflow.
+
+## Layout fixes (2026-11-01, owner report: text not fitting, +/- overlapping)
+- Steppers are full-width rows: [-] big number with its unit under it [+] (48 px buttons, never side by side), two rows for weight and reps.
+- Exercise chips and section tabs (Progress has six) scroll sideways with a fade at the edge instead of squeezing or truncating; chips keep their natural width.
+- Next button shows two lines (Next / exercise name, name ellipsized); segmented labels and chips never wrap.
+- Build rule: a UI test measures every builder at 360 px (RTL too) and fails on controls that overlap or text that overflows its container (the script used for the boards: scratchpad check.mjs, to be ported).
