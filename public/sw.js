@@ -2,7 +2,7 @@
 // Keeps the app itself on the device so it opens with no signal.
 // Your workout data is cached separately by Firestore and syncs when you're back online.
 // Bump VERSION whenever you deploy changes, so phones pick up the new files.
-const VERSION = "iron-log-v53";
+const VERSION = "iron-log-v54";
 const FIREBASE_SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
 // Exercise demo GIFs (same pinned base as public/exercise-gifs.js). Two caches that outlive app versions: pictures seen while
 // training (at most DEMO_KEEP, oldest dropped) and the ones saved by "Download exercise pictures" (never trimmed).
