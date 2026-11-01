@@ -20,7 +20,7 @@
     "path": "C:/Android/keys/ironlog.keystore",
     "alias": "ironlog"
   },
-  "appVersionCode": 1,
+  "appVersionCode": 2,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://gym-logger-85d4c.web.app/manifest.webmanifest",
