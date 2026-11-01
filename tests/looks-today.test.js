@@ -6,7 +6,7 @@ import { t, tn } from "../public/i18n.js";
 const acts = html => new Set([...String(html).matchAll(/data-act="([^"]+)"/g)].map(m => m[1]));
 
 // A card whose every named part carries its own marker act, so a builder that drops or duplicates a part is caught.
-const PARTS = ["nameHtml", "tagsHtml", "demoHtml", "avoidHtml", "targetHtml", "kindHtml", "tableHtml", "plannedHtml", "bwHtml", "weightHtml", "repsHtml", "actionHtml", "lastHtml", "removeHtml", "footHtml"];
+const PARTS = ["nameHtml", "tagsHtml", "demoHtml", "avoidHtml", "targetHtml", "kindHtml", "tableHtml", "plannedHtml", "bwHtml", "weightHtml", "repsHtml", "actionHtml", "lastHtml", "removeHtml", "doneHtml"];
 const workoutCtx = (over = {}) => ({ ...Object.fromEntries(PARTS.map(p => [p, `<i data-act="mark-${p}">${p}</i>`])), ...over });
 const todayCtx = (over = {}) => ({
   hasDays: true, switching: false, scheduled: true, isToday: true,
@@ -72,13 +72,11 @@ test("carbon puts the day to train before the level card, bloom after it", async
   assert.ok(pos(bh, 'data-act="hero-go"') < pos(bh, 'data-act="start-day"'));
 });
 
-test("carbon: with the Large demo setting the wide demo sits above the name row, so the name keeps its room", async () => {
+test("carbon: the demo is a wide banner above the name, like Bloom, whatever the Large demo setting", async () => {
   const C = await loadLayout("carbon");
-  const html = C.workout(buildCtx({ ...workoutCtx({ demoHtml: '<div class="demo big" data-name="x"></div>' }), full: true, t, tn }));
-  const demoAt = html.indexOf('class="demo big"'), rowAt = html.indexOf('class="ex-top lk-top"');
-  assert.ok(demoAt >= 0 && rowAt >= 0);
-  assert.ok(demoAt < rowAt, "the big demo comes before the name row");
-  assert.equal((html.match(/class="demo big"/g) || []).length, 1);
-  const mini = C.workout(buildCtx({ ...workoutCtx({ demoHtml: '<div class="demo" data-name="x"></div>' }), full: false, t, tn }));
-  assert.ok(mini.indexOf('class="ex-top lk-top"') < mini.indexOf('class="demo"'), "the small demo stays beside the name");
+  for (const full of [true, false]) {
+    const html = C.workout(buildCtx({ ...workoutCtx({ demoHtml: '<div class="demo" data-name="x"></div>' }), full, t, tn }));
+    assert.ok(html.indexOf('class="lk-banner"') >= 0 && html.indexOf('class="lk-banner"') < html.indexOf("mark-nameHtml"), "the banner comes before the name");
+    assert.equal((html.match(/class="demo"/g) || []).length, 1);
+  }
 });

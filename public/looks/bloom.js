@@ -109,7 +109,8 @@ function workout(c) {
   return `<div class="card focus lk-focus lk-bloomcard" id="open-card">
     ${c.demoHtml ? `<div class="lk-banner">${c.demoHtml}</div>` : ""}
     <div class="lk-body">
-      <div class="lk-who">${c.nameHtml}${c.tagsHtml}</div>
+      ${c.nameHtml}
+      <div class="lk-who exsub">${c.tagsHtml}${c.doneHtml}</div>
       ${c.avoidHtml}
       ${c.targetHtml}
       ${c.kindHtml}
@@ -122,8 +123,7 @@ function workout(c) {
       ${c.lastHtml}
       ${c.removeHtml}
     </div>
-  </div>
-  ${c.footHtml}`;
+  </div>`;
 }
 
 export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends, "progress.body": body, "plan.gym": gym, "progress.history": history, "friends.page": friendPage, "challenges.list": challenges, "plan.dayEdit": dayEdit, "progress.lifts": lifts, "progress.coach": coach, "friends.find": find, "challenges.open": challengeOpen, "challenges.new": challengeNew };

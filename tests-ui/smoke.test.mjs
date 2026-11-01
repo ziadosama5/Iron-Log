@@ -1738,7 +1738,7 @@ const GIF_1PX = Buffer.from("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAI
 const gifHost = async ctx => { ctx.__gifHits = []; await ctx.route("https://cdn.jsdelivr.net/**", route => { ctx.__gifHits.push(route.request().url()); return route.fulfill({ status: 200, contentType: "image/gif", headers: { "access-control-allow-origin": "*" }, body: GIF_1PX }); }); };
 const gifHostDown = async ctx => { await ctx.route("https://cdn.jsdelivr.net/**", route => route.abort()); };
 
-test("the workout card shows the exercise GIF as a small thumbnail beside the name and tags", async () => {
+test("the workout card shows the exercise GIF as a small thumbnail beside the tags, under the name", async () => {
   const { page, ctx, errors } = await open("", undefined, undefined, gifHost);
   await startPush(page);
   const img = page.locator("#open-card .demo img.demo-gif");
@@ -1746,8 +1746,8 @@ test("the workout card shows the exercise GIF as a small thumbnail beside the na
   assert.match(await img.getAttribute("src"), /\/videos\/0025-EIeI8Vf\.gif$/, "Bench Press shows its own GIF");
   const box = await page.locator("#open-card .demo").boundingBox();
   assert.ok(box.width <= 112 && box.width >= 80, "thumbnail width " + box.width);
-  const name = await page.locator("#open-card .ex-name").boundingBox();
-  assert.ok(Math.abs(name.y - box.y) < 40, "the name sits beside the thumbnail");
+  const name = await page.locator("#open-card .ex-name").boundingBox(), arrows = await page.locator('#open-card [data-act="prev-ex"]').boundingBox();
+  assert.ok(Math.abs(name.y - arrows.y) < 40 && name.y < box.y, "the name sits between the arrows, above the thumbnail");
   const tags = (await page.locator("#open-card .tagrow .tag2").allTextContents()).map(s => s.trim());
   assert.ok(tags.includes("Chest"), "muscle tag: " + tags);
   assert.ok(tags.some(x => /barbell/i.test(x)), "equipment tag: " + tags);
@@ -2494,7 +2494,7 @@ for (const look of ["carbon", "bloom"]) {
     assert.equal(await page.locator('#view-log [data-act="start-free"]').count(), 1);
     await page.locator('.lk-glance [data-act="start-day"]').first().click();
     await page.waitForSelector("#open-card.lk-focus");
-    assert.equal(await page.locator("#open-card.lk-bloomcard .lk-banner").count(), look === "bloom" ? 1 : 0);
+    assert.equal(await page.locator("#open-card.lk-bloomcard .lk-banner").count(), 1);   // Carbon and Bloom share the wide demo banner
     for (const act of ["add-set", "done-ex", "set-kind", "step", "target-edit"]) assert.ok(await page.locator(`#view-log [data-act="${act}"]`).count() >= 1, act);
     assert.deepEqual(errors, []);
     await ctx.close();

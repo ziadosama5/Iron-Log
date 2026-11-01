@@ -100,24 +100,26 @@ function challengeNew(c) {
   return `<div class="lk-form">${c.setupHtml}${c.inviteHtml}</div>`;
 }
 
-// The focus card: name, tags and target on the left, a 96 px demo on the right; advice, set type, the sets, two stacked steppers, one big Log button.
+// The focus card: a wide demo banner on top (same as Bloom), then the name with its tags, the advice, the sets, two stacked steppers and a pill Log button.
 function workout(c) {
-  return `<div class="card focus lk-focus" id="open-card">
-    ${c.full ? c.demoHtml : ""}
-    <div class="ex-top lk-top"><div class="grow lk-who">${c.nameHtml}${c.tagsHtml}</div>${c.full ? "" : c.demoHtml}</div>
-    ${c.avoidHtml}
-    ${c.targetHtml}
-    ${c.kindHtml}
-    ${c.tableHtml}
-    ${c.plannedHtml}
-    ${c.bwHtml}
-    ${c.weightHtml}
-    ${c.repsHtml}
-    ${c.actionHtml}
-    ${c.lastHtml}
-    ${c.removeHtml}
-  </div>
-  ${c.footHtml}`;
+  return `<div class="card focus lk-focus lk-bloomcard" id="open-card">
+    ${c.demoHtml ? `<div class="lk-banner">${c.demoHtml}</div>` : ""}
+    <div class="lk-body">
+      ${c.nameHtml}
+      <div class="lk-who exsub">${c.tagsHtml}${c.doneHtml}</div>
+      ${c.avoidHtml}
+      ${c.targetHtml}
+      ${c.kindHtml}
+      ${c.tableHtml}
+      ${c.plannedHtml}
+      ${c.bwHtml}
+      ${c.weightHtml}
+      ${c.repsHtml}
+      ${c.actionHtml}
+      ${c.lastHtml}
+      ${c.removeHtml}
+    </div>
+  </div>`;
 }
 
 export const screens = { today, workout, "plan.dayCard": dayCard, "progress.overview": overview, "progress.goals": goals, "friends.board": friends, "progress.body": body, "plan.gym": gym, "progress.history": history, "friends.page": friendPage, "challenges.list": challenges, "plan.dayEdit": dayEdit, "progress.lifts": lifts, "progress.coach": coach, "friends.find": find, "challenges.open": challengeOpen, "challenges.new": challengeNew };

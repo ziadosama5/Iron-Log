@@ -297,8 +297,16 @@ tr.setrow.editing td{background:var(--accent-soft)}
 .swatch[aria-pressed="true"]{outline:2px solid var(--fg);outline-offset:2px}
 .swatch.custom{background:conic-gradient(#e03131,#f0a500,#2f9e44,#0f9488,#1f5fd1,#7048e8,#d6336c,#e03131)}
 .swatch.custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
-.nextbtn::after{content:" ›"}
-[dir="rtl"] .nextbtn::after{content:" ‹"}
+.exnav{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:4px}
+.exmid{text-align:center;display:flex;flex-direction:column;gap:2px;min-width:0}
+.exmid .label{font-size:12px}
+.exarrow{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--sunk);color:var(--fg);font-size:28px;line-height:1;padding:0;display:grid;place-items:center;cursor:pointer}
+.exarrow:disabled{opacity:.35;cursor:default}
+[dir="rtl"] .exarrow span{display:inline-block;transform:scaleX(-1)}
+.exsub{justify-content:center}
+.donebtn{flex:none;width:44px;height:44px;border-radius:50%;border:2px solid var(--line);background:transparent;color:var(--muted);font-size:22px;line-height:1;padding:0;display:grid;place-items:center;cursor:pointer}
+.donebtn.ready{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.donebtn.on{border-color:var(--good);background:var(--good);color:#fff}
 [dir="rtl"] b.num,[dir="rtl"] span.num{direction:ltr;unicode-bidi:isolate}
 [dir="rtl"] .daytag .num{direction:rtl;unicode-bidi:normal;font-family:var(--f-body)}
 [dir="rtl"] span.num.prev{direction:rtl;unicode-bidi:normal}
@@ -1508,7 +1516,7 @@ function focusCard(w, ei){
   const P={
     ei, n:ei+1, m:entries.length, ex:e.ex, label:nameOf("ex",e.ex), sets:e.sets.length, left, editing:editSi>=0, editN:editSi+1, done:!!e.done, next:nx>=0?nameOf("ex",entries[nx].ex):"", bw, hold, kind,
     exLabel:t("Exercise {n} of {m}",{n:ei+1,m:entries.length}), full:demoPref()==="full", demoHtml:demoThumbHtml(e.ex), hasInfo:!!infoOf(e.ex),
-    nameHtml:`<div class="ex-name"${infoOf(e.ex)?` data-act="ex-info" data-name="${esc(e.ex)}" role="button" tabindex="0" aria-label="${esc(t("About {name}",{name:nameOf("ex",e.ex)}))}"`:""}>${esc(nameOf("ex",e.ex))}</div>`,
+    nameHtml:`<div class="exnav"><button type="button" class="exarrow" data-act="prev-ex" data-ei="${ei}" aria-label="${esc(t("Previous exercise"))}"${entries.length<2?" disabled":""}><span aria-hidden="true">‹</span></button><div class="exmid"><div class="ex-name"${infoOf(e.ex)?` data-act="ex-info" data-name="${esc(e.ex)}" role="button" tabindex="0" aria-label="${esc(t("About {name}",{name:nameOf("ex",e.ex)}))}"`:""}>${esc(nameOf("ex",e.ex))}</div><span class="label">${esc(t("Exercise {n} of {m}",{n:ei+1,m:entries.length}))}</span></div><button type="button" class="exarrow" data-act="next-ex" data-ei="${ei}" aria-label="${esc(t("Next exercise"))}"${entries.length<2?" disabled":""}><span aria-hidden="true">›</span></button></div>`,
     tagsHtml:tagsHtml(e.ex),
     avoidHtml:aw?`<div class="avoidnote"><span aria-hidden="true">⚠</span><span class="grow">${esc(warnText(aw))}</span>${e.sets.length?"":`<button type="button" class="btn small" data-act="skip-avoided" data-ei="${ei}">${t("Skip it")}</button>`}</div>`:"",
     lastHtml:last?`<div class="prev">${t("Last time ({d}):",{d:fmtDate(last.date)})} <b class="num">${last.sets.map(s=>(bw?formatLoad(s.w,t("BW")):kg(s.w))+"×"+s.r).join(" · ")}</b></div>`:`<div class="prev">First time logging this one.</div>`,
@@ -1530,18 +1538,17 @@ function focusCard(w, ei){
     }</tbody></table>`:"",
     plannedHtml,
     removeHtml:`<div class="row"><button class="btn ghost small danger" data-act="rm-ex" data-ei="${ei}">Remove exercise</button></div>`,
-    footHtml:`<div class="row">${e.done
-      ? `<button class="btn secondary grow" data-act="undone-ex" data-ei="${ei}">Mark as not done</button>`
-      : `<button class="btn ${left===0&&editSi<0&&e.sets.length?"primary":"secondary"} grow" data-act="done-ex" data-ei="${ei}">✓ Done</button>`}${
-      nx>=0?`<button class="btn secondary grow nextbtn" data-act="next-ex" data-ei="${ei}">${esc(t("Next: {name}",{name:nameOf("ex",entries[nx].ex)}))}</button>`:""}</div>`
+    doneHtml:e.done
+      ? `<button type="button" class="donebtn on" data-act="undone-ex" data-ei="${ei}" aria-pressed="true" aria-label="${esc(t("Mark as not done"))}">✓</button>`
+      : `<button type="button" class="donebtn${left===0&&editSi<0&&e.sets.length?" ready":""}" data-act="done-ex" data-ei="${ei}" aria-pressed="false" aria-label="${esc(t("Mark as done"))}">✓</button>`
   };
   return screenHtml("workout",P,classicFocus);
 }
 function classicFocus(P){
   return `<div class="card focus" id="open-card">
-      <div class="row"><span class="label grow">${P.exLabel}</span></div>
+      ${P.nameHtml}
       ${P.full?P.demoHtml:""}
-      <div class="ex-top">${P.full?"":P.demoHtml}<div class="grow">${P.nameHtml}${P.tagsHtml}</div></div>
+      <div class="ex-top">${P.full?"":P.demoHtml}<div class="grow exsub">${P.tagsHtml}</div>${P.doneHtml}</div>
       ${P.avoidHtml}
       ${P.lastHtml}
       ${P.targetHtml}
@@ -1553,8 +1560,7 @@ function classicFocus(P){
       ${P.tableHtml}
       ${P.plannedHtml}
       ${P.removeHtml}
-    </div>
-    ${P.footHtml}`;
+    </div>`;
 }
 function completeCard(w){
   const sets=w.entries.reduce((a,e)=>a+countedSets(e.sets).length,0), volume=w.entries.reduce((a,e)=>a+vol(volumeSets(e.sets)),0);
@@ -3574,7 +3580,7 @@ document.addEventListener("click",e=>{
     case "coach-more": state.coachMore=!state.coachMore; renderCoach(); break;
     case "body-full": state.bodyFull=true; renderBody(); break;
     case "jump-ex": stopEditing(); state.openEx=b.dataset.name; renderLog(); break;
-    case "next-ex":{ const w=workoutFor(state.date); const nx=w?nextUnfinished(w.entries,ei):-1; if(nx>=0){ stopEditing(); state.openEx=w.entries[nx].ex; renderLog(); scrollToOpen(); } break; }
+    case "next-ex": case "prev-ex":{ const w=workoutFor(state.date), n=w?w.entries.length:0; if(n>1){ const k=(ei+(b.dataset.act==="next-ex"?1:n-1))%n; stopEditing(); state.openEx=w.entries[k].ex; renderLog(); scrollToOpen(); } break; }
     case "open-exsheet": openSheet("#exsheet"); break;
     case "open-cardiosheet": openSheet("#cardiosheet"); break;
     case "sheet-close": closeSheet("#exsheet"); closeSheet("#cardiosheet"); closeSheet("#mealsheet"); closeSheet("#plansheet"); closeSheet("#targetsheet"); break;

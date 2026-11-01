@@ -290,3 +290,6 @@
 :root[data-look] .lk-wd u{display:none}
 :root[data-look] .lk-week{margin-bottom:-6px}
 #body-form summary{list-style-position:inside}   /* the fold arrow sits inside the card, not on its edge */
+:root[data-look] .lk-who.exsub{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+:root[data-look] .lk-who.exsub .tagrow{flex:1 1 auto;min-width:0}
+:root[data-look] .lk-who.exsub .donebtn{margin-inline-start:auto}
