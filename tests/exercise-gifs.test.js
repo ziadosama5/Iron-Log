@@ -40,7 +40,8 @@ import { CATALOG } from "../public/exercise-catalog.js";
 test("the download set is the curated pictures only; allGifUrls covers every exercise", () => {
   const curatedIds = new Set(ALL_EX.filter(isCurated).map(n => GIFS[n]).filter(Boolean));
   assert.equal(gifUrls().length, curatedIds.size);
-  assert.equal(allGifUrls().length, curatedIds.size + CATALOG.length);
+  // a hand pick may reuse a picture the catalog also lists (Lat Pulldown and Cable Bar Lateral Pulldown): count each picture once
+  assert.equal(allGifUrls().length, new Set([...curatedIds, ...CATALOG.map(r => r[3])]).size);
   assert.equal(allStillUrls().length, allGifUrls().length);
   assert.ok(gifUrls().length < 200, "the Download exercise pictures set stays small (about 17 MB)");
   const all = new Set(allGifUrls()); for (const u of gifUrls()) assert.ok(all.has(u));

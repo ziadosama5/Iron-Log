@@ -4,8 +4,8 @@
  "Smith Machine Incline Press": "0757-5v7KYld",
  "Low Cable Crossover": "0179-FVmZVhk",
  "Cable Fly (Flat Bench)": "0185-lJJ7Yq8",
- "Dumbbell Floor Press": "0289-SpYC0Kp",
- "Lat Pulldown": "2330-LEprlgG",
+ "Dumbbell Floor Press": null,
+ "Lat Pulldown": "0150-eYnzaCm",
  "T-bar Row": "0606-aaXr7ld",
  "Straight-arm Pulldown": "0238-x69MAlq",
  "Close-grip Pulldown": "0818-rkg41Fb",
@@ -54,7 +54,7 @@
  "Smith Machine Hip Thrust": "0756-CqhoytW",
  "Glute Bridge": "3013-u0cNiij",
  "Cable Glute Kickback": "0860-HEJ6DIX",
- "Dumbbell Sumo Squat": "0413-HsvHqgf",
+ "Dumbbell Sumo Squat": null,
  "Calf Press (Leg Press)": "1391-ykHcWme",
  "Single-leg Calf Raise": null,
  "Plank": "3665-hCjGsRQ",
@@ -84,5 +84,6 @@
  "Dumbbell Calf Raise": "0417-dPmaUaU",
  "Hip Abduction": "0597-CHpahtl",
  "Hip Adduction": "0598-oHsrypV",
- "V-up": null
+ "V-up": null,
+ "Machine Shoulder Press": "0587-CggQhII"
 }
