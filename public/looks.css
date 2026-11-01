@@ -289,3 +289,4 @@
 :root[data-look] .hero{padding:10px 14px}
 :root[data-look] .lk-wd u{display:none}
 :root[data-look] .lk-week{margin-bottom:-6px}
+:root[data-look] #body-form summary{list-style-position:inside}   /* the fold arrow sits inside the card, not on its edge */
